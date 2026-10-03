@@ -13,10 +13,9 @@ import {Validator} from '../Validator.ts';
 import type {
 	Block,
 	TYPE as AST_TYPE,
-	EXPR,
-	STMT,
 } from './index.ts';
 import {AstNode} from './AstNode.ts';
+import type {Functionlike} from './Functionlike.ts';
 import type {Key} from './Key.ts';
 
 
@@ -48,7 +47,7 @@ export class ParameterFunction extends AstNode {
 	public override varCheck(): void {
 		super.varCheck();
 		if (this.identifier) {
-			const block: Block = (this.parent as EXPR.Function | STMT.DeclarationFunction).block;
+			const block: Block = (this.parent as Functionlike).block;
 			if (block.validator.hasSymbol(this.id!)) {
 				throw new AssignmentErrorDuplicateDeclaration(this.identifier);
 			}
@@ -60,7 +59,7 @@ export class ParameterFunction extends AstNode {
 		super.typeCheck();
 		const param_type: TYPE.Type = this.typenode.eval();
 		if (this.identifier) {
-			const block: Block = (this.parent as EXPR.Function | STMT.DeclarationFunction).block;
+			const block: Block = (this.parent as Functionlike).block;
 			assert.ok(block.validator.hasSymbol(this.id!), `The validator symbol table should include ${ this.id }.`);
 			(block.validator.getSymbol(this.id!) as SymbolSchemaVar).type = param_type;
 		}
@@ -69,7 +68,7 @@ export class ParameterFunction extends AstNode {
 	@runOnceMethod
 	public build(builder: Builder): void {
 		if (this.identifier) {
-			const block: Block = (this.parent as EXPR.Function | STMT.DeclarationFunction).block;
+			const block: Block = (this.parent as Functionlike).block;
 			const symbol = block.validator.getSymbol(this.id!) as SymbolSchemaVar;
 			symbol.irType = symbol.type;
 			return builder.pushInstruction(new OP.Decl(symbol, symbol.irType));

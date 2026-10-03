@@ -11,13 +11,77 @@ import type {
 import type {Interpreter} from '../Interpreter.ts';
 import {
 	type ValueTac,
+	Trap,
+	Const,
 	Get,
+	Template,
+	CollectionLinearNew,
+	RecordNew,
+	DictNew,
+	MapNew,
+	MaybeNew,
+	TupleGet,
+	RecordGet,
+	CollectionDynamicGet,
+	Call,
+	Unop,
+	Instance,
+	Binop,
 	Decl,
 } from './index.ts';
 import {
 	type OpCode,
 	Opcode,
 } from './Opcode.ts';
+
+
+
+export abstract class ValueVisitor<T> {
+	/* eslint-disable @stylistic/space-before-function-paren */
+	public visitTrap                 (val: Trap):                 T { return this.defaultVisit(val); }
+	public visitConst                (val: Const):                T { return this.defaultVisit(val); }
+	public visitGet                  (val: Get):                  T { return this.defaultVisit(val); }
+	public visitTemplate             (val: Template):             T { return this.defaultVisit(val); }
+	public visitCollectionLinearNew  (val: CollectionLinearNew):  T { return this.defaultVisit(val); }
+	public visitRecordNew            (val: RecordNew):            T { return this.defaultVisit(val); }
+	public visitDictNew              (val: DictNew):              T { return this.defaultVisit(val); }
+	public visitMapNew               (val: MapNew):               T { return this.defaultVisit(val); }
+	public visitMaybeNew             (val: MaybeNew):             T { return this.defaultVisit(val); }
+	public visitTupleGet             (val: TupleGet):             T { return this.defaultVisit(val); }
+	public visitRecordGet            (val: RecordGet):            T { return this.defaultVisit(val); }
+	public visitCollectionDynamicGet (val: CollectionDynamicGet): T { return this.defaultVisit(val); }
+	public visitCall                 (val: Call):                 T { return this.defaultVisit(val); }
+	public visitUnop                 (val: Unop):                 T { return this.defaultVisit(val); }
+	public visitInstance             (val: Instance):             T { return this.defaultVisit(val); }
+	public visitBinop                (val: Binop):                T { return this.defaultVisit(val); }
+	/* eslint-enable @stylistic/space-before-function-paren */
+
+	public abstract defaultVisit(val: Value): T;
+
+	/** @final */
+	public visit(val: Value): T {
+		switch (val.constructor) {
+			case Trap:                 { return this.visitTrap                 (val as Trap); }
+			case Const:                { return this.visitConst                (val as Const); }
+			case Get:                  { return this.visitGet                  (val as Get); }
+			case Template:             { return this.visitTemplate             (val as Template); }
+			case CollectionLinearNew:  { return this.visitCollectionLinearNew  (val as CollectionLinearNew); }
+			case RecordNew:            { return this.visitRecordNew            (val as RecordNew); }
+			case DictNew:              { return this.visitDictNew              (val as DictNew); }
+			case MapNew:               { return this.visitMapNew               (val as MapNew); }
+			case MaybeNew:             { return this.visitMaybeNew             (val as MaybeNew); }
+			case TupleGet:             { return this.visitTupleGet             (val as TupleGet); }
+			case RecordGet:            { return this.visitRecordGet            (val as RecordGet); }
+			case CollectionDynamicGet: { return this.visitCollectionDynamicGet (val as CollectionDynamicGet); }
+			case Call:                 { return this.visitCall                 (val as Call); }
+			case Unop:                 { return this.visitUnop                 (val as Unop); }
+			case Instance:             { return this.visitInstance             (val as Instance); }
+			case Binop:                { return this.visitBinop                (val as Binop); }
+
+			default: { return this.defaultVisit(val); }
+		}
+	}
+}
 
 
 

@@ -105,40 +105,40 @@ export class Vect implements HasFuncData {
 	@memoizeGetter
 	public get funcImportDataMap(): ReadonlyMap<string, FuncImportData> {
 		return new Map<string, FuncImportData>([
-			['Vect#newInt',   {name: 'Vect.new-int',   param: binaryen.i64,  result: binaryen.v128}],
-			['Vect#newNat',   {name: 'Vect.new-nat',   param: binaryen.i64,  result: binaryen.v128}],
-			['Vect#newFloat', {name: 'Vect.new-float', param: binaryen.f64,  result: binaryen.v128}],
-			['Vect#isNull',   {name: 'Vect.is-null',   param: binaryen.v128, result: binaryen.i32}],
-			['Vect#isFalse',  {name: 'Vect.is-false',  param: binaryen.v128, result: binaryen.i32}],
-			['Vect#isTrue',   {name: 'Vect.is-true',   param: binaryen.v128, result: binaryen.i32}],
-			['Vect#isInt',    {name: 'Vect.is-int',    param: binaryen.v128, result: binaryen.i32}],
-			['Vect#isNat',    {name: 'Vect.is-nat',    param: binaryen.v128, result: binaryen.i32}],
-			['Vect#isFloat',  {name: 'Vect.is-float',  param: binaryen.v128, result: binaryen.i32}],
-			['Vect#asInt',    {name: 'Vect.as-int',    param: binaryen.v128, result: binaryen.i64}],
-			['Vect#asNat',    {name: 'Vect.as-nat',    param: binaryen.v128, result: binaryen.i64}],
-			['Vect#asFloat',  {name: 'Vect.as-float',  param: binaryen.v128, result: binaryen.f64}],
+			['Vect#newInt',   {name: 'Vect.new-int',   param: binaryen.Type.i64,  result: binaryen.Type.v128}],
+			['Vect#newNat',   {name: 'Vect.new-nat',   param: binaryen.Type.i64,  result: binaryen.Type.v128}],
+			['Vect#newFloat', {name: 'Vect.new-float', param: binaryen.Type.f64,  result: binaryen.Type.v128}],
+			['Vect#isNull',   {name: 'Vect.is-null',   param: binaryen.Type.v128, result: binaryen.Type.i32}],
+			['Vect#isFalse',  {name: 'Vect.is-false',  param: binaryen.Type.v128, result: binaryen.Type.i32}],
+			['Vect#isTrue',   {name: 'Vect.is-true',   param: binaryen.Type.v128, result: binaryen.Type.i32}],
+			['Vect#isInt',    {name: 'Vect.is-int',    param: binaryen.Type.v128, result: binaryen.Type.i32}],
+			['Vect#isNat',    {name: 'Vect.is-nat',    param: binaryen.Type.v128, result: binaryen.Type.i32}],
+			['Vect#isFloat',  {name: 'Vect.is-float',  param: binaryen.Type.v128, result: binaryen.Type.i32}],
+			['Vect#asInt',    {name: 'Vect.as-int',    param: binaryen.Type.v128, result: binaryen.Type.i64}],
+			['Vect#asNat',    {name: 'Vect.as-nat',    param: binaryen.Type.v128, result: binaryen.Type.i64}],
+			['Vect#asFloat',  {name: 'Vect.as-float',  param: binaryen.Type.v128, result: binaryen.Type.f64}],
 		]);
 	}
 
-	public get VOID():  binaryen.ExpressionRef /* v128 */ { return this.vm.mod.wasm.global.get('Vect.VOID',  binaryen.v128); }
-	public get NULL():  binaryen.ExpressionRef /* v128 */ { return this.vm.mod.wasm.global.get('Vect.NULL',  binaryen.v128); }
-	public get FALSE(): binaryen.ExpressionRef /* v128 */ { return this.vm.mod.wasm.global.get('Vect.FALSE', binaryen.v128); }
-	public get TRUE():  binaryen.ExpressionRef /* v128 */ { return this.vm.mod.wasm.global.get('Vect.TRUE',  binaryen.v128); }
+	public get VOID():  binaryen.ExpressionRef /* v128 */ { return this.vm.mod.wasm.global.get('Vect.VOID',  binaryen.Type.v128); }
+	public get NULL():  binaryen.ExpressionRef /* v128 */ { return this.vm.mod.wasm.global.get('Vect.NULL',  binaryen.Type.v128); }
+	public get FALSE(): binaryen.ExpressionRef /* v128 */ { return this.vm.mod.wasm.global.get('Vect.FALSE', binaryen.Type.v128); }
+	public get TRUE():  binaryen.ExpressionRef /* v128 */ { return this.vm.mod.wasm.global.get('Vect.TRUE',  binaryen.Type.v128); }
 
 
 	/** Returns a v128 encoding the given i64 as signed. */
 	public newInt(int: binaryen.ExpressionRef /* i64 */): binaryen.ExpressionRef /* v128 */ {
-		return this.vm.mod.wasm.call('Vect.new-int', [int], binaryen.v128);
+		return this.vm.mod.wasm.call('Vect.new-int', [int], binaryen.Type.v128);
 	}
 
 	/** Returns a v128 encoding the given i64 as unsigned. */
 	public newNat(nat: binaryen.ExpressionRef /* i64 */): binaryen.ExpressionRef /* v128 */ {
-		return this.vm.mod.wasm.call('Vect.new-nat', [nat], binaryen.v128);
+		return this.vm.mod.wasm.call('Vect.new-nat', [nat], binaryen.Type.v128);
 	}
 
 	/** Returns a v128 encoding the given f64. */
 	public newFloat(float: binaryen.ExpressionRef /* f64 */): binaryen.ExpressionRef /* v128 */ {
-		return this.vm.mod.wasm.call('Vect.new-float', [float], binaryen.v128);
+		return this.vm.mod.wasm.call('Vect.new-float', [float], binaryen.Type.v128);
 	}
 
 	/**
@@ -148,36 +148,36 @@ export class Vect implements HasFuncData {
 	 * @returns      the result of calling `$Vect.is-{null,false,true}` based on the given tag
 	 */
 	public isConst(vect: binaryen.ExpressionRef /* v128 */, tag: boolean | null): binaryen.ExpressionRef /* i32 */ {
-		return this.vm.mod.wasm.call(`Vect.is-${ tag }`, [vect], binaryen.i32);
+		return this.vm.mod.wasm.call(`Vect.is-${ tag }`, [vect], binaryen.Type.i32);
 	}
 
 	/** Whether the value is intended to be interpreted as a signed integer. */
 	public isInt(vect: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* i32 */ {
-		return this.vm.mod.wasm.call('Vect.is-int', [vect], binaryen.i32);
+		return this.vm.mod.wasm.call('Vect.is-int', [vect], binaryen.Type.i32);
 	}
 
 	/** Whether the value is intended to be interpreted as an unsigned integer. */
 	public isNat(vect: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* i32 */ {
-		return this.vm.mod.wasm.call('Vect.is-nat', [vect], binaryen.i32);
+		return this.vm.mod.wasm.call('Vect.is-nat', [vect], binaryen.Type.i32);
 	}
 
 	/** Whether the value is intended to be interpreted as a float. */
 	public isFloat(vect: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* i32 */ {
-		return this.vm.mod.wasm.call('Vect.is-float', [vect], binaryen.i32);
+		return this.vm.mod.wasm.call('Vect.is-float', [vect], binaryen.Type.i32);
 	}
 
 	/** The value as interpreted as a signed integer. */
 	public asInt(vect: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* i64 */ {
-		return this.vm.mod.wasm.call('Vect.as-int', [vect], binaryen.i64);
+		return this.vm.mod.wasm.call('Vect.as-int', [vect], binaryen.Type.i64);
 	}
 
 	/** The value as interpreted as an unsigned integer. */
 	public asNat(vect: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* i64 */ {
-		return this.vm.mod.wasm.call('Vect.as-nat', [vect], binaryen.i64);
+		return this.vm.mod.wasm.call('Vect.as-nat', [vect], binaryen.Type.i64);
 	}
 
 	/** The value as interpreted as a float. */
 	public asFloat(vect: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* f64 */ {
-		return this.vm.mod.wasm.call('Vect.as-float', [vect], binaryen.f64);
+		return this.vm.mod.wasm.call('Vect.as-float', [vect], binaryen.Type.f64);
 	}
 }

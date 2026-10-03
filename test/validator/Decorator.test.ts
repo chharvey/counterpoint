@@ -131,7 +131,7 @@ test.suite('Decorator', () => {
 				}
 				% (entry_type)
 			`]],
-			['Decorate(EntryType<-Named><+Optional> ::= "?:" Type) -> SemanticItemType', [AST.ItemType, `
+			['Decorate(EntryType<-Named><+Optional> ::= "?" ":" Type) -> SemanticItemType', [AST.ItemType, `
 				{
 					type T = (?: int);
 				}
@@ -143,7 +143,7 @@ test.suite('Decorator', () => {
 				}
 				% (entry_type__named)
 			`]],
-			['Decorate(EntryType<+Named><+Optional> ::= Word "?:" Type) -> SemanticPropertyType', [AST.PropertyType, `
+			['Decorate(EntryType<+Named><+Optional> ::= Word "?" ":" Type) -> SemanticPropertyType', [AST.PropertyType, `
 				{
 					type T = (a?: int);
 				}
@@ -155,7 +155,7 @@ test.suite('Decorator', () => {
 				}
 				% (entry_type__named)
 			`]],
-			['Decorate(EntryType<+Named><+Optional> ::= Word "?:" Type) -> SemanticPropertyType', [AST.PropertyType, `
+			['Decorate(EntryType<+Named><+Optional> ::= Word "?" ":" Type) -> SemanticPropertyType', [AST.PropertyType, `
 				{
 					type T = (_?: int);
 				}
@@ -580,15 +580,15 @@ test.suite('Decorator', () => {
 				}
 				% (expression_cast)
 			`]],
-			['Decorate(ExpressionCast<Block, Break, Return> ::= ExpressionCast<?Block><?Break><?Return> "as!" ExpressionUnarySymbol<?Block><?Break><?Return>) -> SemanticExpressionOperation', [AST.EXPR.OperationBinaryCast, `
-				{
-					a as! Klass;
-				}
-				% (expression_cast)
-			`]],
 			['Decorate(ExpressionCast<Block, Break, Return> ::= ExpressionCast<?Block><?Break><?Return> "as" "<" Type ">") -> SemanticExpressionClaim', [AST.EXPR.Claim, `
 				{
 					a as <T>;
+				}
+				% (expression_cast)
+			`]],
+			['Decorate(ExpressionCast<Block, Break, Return> ::= ExpressionCast<?Block><?Break><?Return> "as!" "<" Type ">") -> SemanticExpressionClaim', [AST.EXPR.Claim, `
+				{
+					a as! <T>;
 				}
 				% (expression_cast)
 			`]],

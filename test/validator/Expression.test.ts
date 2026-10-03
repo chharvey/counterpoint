@@ -20,6 +20,7 @@ import {
 } from '../../src/index.ts';
 import {
 	extract_tokens,
+	extract_lines,
 	repeat,
 	assert_shallowStrictEqual,
 	assertAssignable,
@@ -70,6 +71,54 @@ test.suite('Expression', () => {
 		});
 
 
+		test.suite('Claim', () => {
+			test.test('returns the type value of the claimed type.', () => {
+				assert.ok(AST.EXPR.Claim.fromSource('3 as <int | null>').type().equals(TYPE.INT.union(TYPE.NULL)));
+			});
+			test.test('allows claiming to a type alias.', () => {
+				const claim: AST.EXPR.Claim = AST.EXPR.Claim.fromSource('"Alice" as <Name>');
+				const id: bigint = Validator.cookTokenIdentifier('Name');
+				claim.validator.addSymbol(new SymbolSchemaType(id, claim.claimed_type));
+				(claim.validator.getSymbol(id) as SymbolSchemaType).typevalue = TYPE.STR;
+				return assert.strictEqual(claim.type(), TYPE.STR);
+			});
+			test.test('allows claiming to `nothing` even though types are disjoint.', () => {
+				assert.ok(AST.EXPR.Claim.fromSource('42 as <nothing>').type().isBottomType);
+			});
+			test.test('allows claiming a `nothing` expression even though types are disjoint.', () => {
+				const claim: AST.EXPR.Claim = AST.EXPR.Claim.fromSource('n as <int>');
+				const id: bigint = Validator.cookTokenIdentifier('n');
+				claim.validator.addSymbol(new SymbolSchemaVar(id, claim.operand, false, false));
+				(claim.validator.getSymbol(id) as SymbolSchemaVar).type = TYPE.NOTHING;
+				return assert.strictEqual(claim.type(), TYPE.INT);
+			});
+			test.test('throws when the operand type and claimed type are disjoint (and neither is `nothing`).', () => {
+				xjs.Array.forEachAggregated(extract_lines`
+					3       as <str>
+					"three" as <int>
+					3       as <float>
+					3.0     as <int>
+				`, (src) => assert.throws(() => AST.EXPR.Claim.fromSource(src).type(), TypeErrorNotAssignable));
+			});
+			test.test('allows disjoint types when claiming to top type first.', () => {
+				setupScript(`{
+					3       as <anything> as <str>;
+					"three" as <anything> as <int>;
+					3       as <anything> as <float>;
+					3.0     as <anything> as <int>;
+				}`, {build: false}); // assert does not throw
+			});
+			test.test('allows disjoint types when forcing.', () => {
+				setupScript(`{
+					3       as! <str>;
+					"three" as! <int>;
+					3       as! <float>;
+					3.0     as! <int>;
+				}`, {build: false}); // assert does not throw
+			});
+		});
+
+
 		test.suite('Switch', () => {
 			test.test('returns `nothing` if the compared value is type `nothing`.', () => {
 				assert_shallowStrictEqual(
@@ -115,7 +164,7 @@ test.suite('Expression', () => {
 				const {stmts} = setupScript(`{
 					\\(a: int, mut b: float | null, mut $c: bool, delta= d: nat): void { return; };
 					% TODO: test optional parameters (steal from 'test/validator/Type.test.ts')
-					\\(): int? => 4.2; % TODO: type-check return value
+					\\(): int | float => 4.2;
 				}`, {build: false});
 				return assertEqualTypes(stmts.map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()), [
 					new TYPE.Function(TYPE.Tuple.fromTypes([
@@ -125,7 +174,7 @@ test.suite('Expression', () => {
 						[Validator.cookTokenIdentifier('c'),     TYPE.BOOL],
 						[Validator.cookTokenIdentifier('delta'), TYPE.NAT],
 					]))),
-					new TYPE.Function(undefined, undefined, new TYPE.Maybe(TYPE.INT)),
+					new TYPE.Function(undefined, undefined, TYPE.INT.union(TYPE.FLOAT)),
 				]);
 			});
 		});
@@ -686,39 +735,6 @@ test.suite('Expression', () => {
 					(   1,    [2.2],    "three");
 					(a= 1, b= [2.2], c= "three");
 				}`, {build: false}); // assert does not throw
-			});
-		});
-	});
-
-
-
-	test.suite('Claim', () => {
-		test.suite('#type', () => {
-			test.test('returns the type value of the claimed type.', () => {
-				assert.ok(AST.EXPR.Claim.fromSource('3 as <int | null>').type().equals(TYPE.INT.union(TYPE.NULL)));
-			});
-			test.test('allows claiming to `nothing` even though intersection is empty.', () => {
-				assert.ok(AST.EXPR.Claim.fromSource('42 as <nothing>').type().isBottomType);
-			});
-			test.test('allows claiming a `nothing` expression even though intersection is empty.', () => {
-				const claim: AST.EXPR.Claim = AST.EXPR.Claim.fromSource('n as <int>');
-				const id: bigint = Validator.cookTokenIdentifier('n');
-				claim.validator.addSymbol(new SymbolSchemaVar(id, claim.operand, false, false));
-				(claim.validator.getSymbol(id) as SymbolSchemaVar).type = TYPE.NOTHING;
-				assert.strictEqual(claim.type(), TYPE.INT);
-			});
-			test.test('allows claiming to a type alias.', () => {
-				const claim: AST.EXPR.Claim = AST.EXPR.Claim.fromSource('"Alice" as <Name>');
-				const id: bigint = Validator.cookTokenIdentifier('Name');
-				claim.validator.addSymbol(new SymbolSchemaType(id, claim.claimed_type));
-				(claim.validator.getSymbol(id) as SymbolSchemaType).typevalue = TYPE.STR;
-				assert.strictEqual(claim.type(), TYPE.STR);
-			});
-			test.test('throws when the operand type and claimed type do not overlap (and neither is `nothing`).', () => {
-				assert.throws(() => AST.EXPR.Claim.fromSource('3 as <str>')       .type(), TypeErrorNotAssignable);
-				assert.throws(() => AST.EXPR.Claim.fromSource('"three" as <int>') .type(), TypeErrorNotAssignable);
-				assert.throws(() => AST.EXPR.Claim.fromSource('3 as <float>')     .type(), TypeErrorNotAssignable);
-				assert.throws(() => AST.EXPR.Claim.fromSource('3.0 as <int>')     .type(), TypeErrorNotAssignable);
 			});
 		});
 	});

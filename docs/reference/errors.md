@@ -197,6 +197,18 @@ x.(2, 4);                      % TypeErrorArgCount: Got 2 arguments, but expecte
 ```
 Solution(s): Pass in an expected number of arguments.
 
+#### 2307: TypeErrorFunctionExit
+Cause: Not every control route in a function body exits the function.
+```cpl
+func f(b: bool): str {
+	if b then {
+		return "true";
+	};
+	% TypeErrorFunctionExit: Function does not exit in every control route.
+}
+```
+Solution(s): Ensure every code path contains an explicit return or throw statement.
+
 
 ### Mutability Errors (24xx)
 A mutability error is raised when the compiler recognizes an attempt to mutate an immutable object.

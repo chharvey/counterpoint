@@ -191,7 +191,7 @@ export class Binop extends Value {
 				wasm.call(
 					bothInts(t0, t1) ? 'op:int-add' : bothNats(t0, t1) ? 'op:nat-add' : (assert.ok(bothFloats(t0, t1)), 'op:float-add'),
 					[local0.get(), arg1],
-					binaryen.v128,
+					binaryen.Type.v128,
 				),
 			);
 		}
@@ -222,7 +222,7 @@ export class Binop extends Value {
 					wasm.call(
 						bothInts(t0, t1) ? 'op:int-mul' : bothNats(t0, t1) ? 'op:nat-mul' : (assert.ok(bothFloats(t0, t1)), 'op:float-mul'),
 						[local0.get(), arg1],
-						binaryen.v128,
+						binaryen.Type.v128,
 					),
 				),
 			);
@@ -240,7 +240,7 @@ export class Binop extends Value {
 				wasm.drop(arg0),
 				wasm.drop(arg1),
 				cg.vm.Vect.FALSE,
-			], binaryen.v128);
+			], binaryen.Type.v128);
 		}
 
 		// Operator Logical

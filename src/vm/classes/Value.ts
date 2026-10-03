@@ -27,13 +27,13 @@ export class Value implements HasFuncData {
 	public get funcImportDataMap(): ReadonlyMap<string, FuncImportData> {
 		const {reftype} = this.vm;
 		return new Map<string, FuncImportData>([
-			['Value#newPrimitive', {name: 'Value.new-primitive', param: binaryen.v128,  result: reftype.Value}],
-			['Value#newComposite', {name: 'Value.new-composite', param: binaryen.eqref, result: reftype.Value}], // FIXME: `(ref eq)` (non-null)
-			['Value#isPrimitive',  {name: 'Value.is-primitive',  param: reftype.Value,  result: binaryen.i32}],
-			['Value#isComposite',  {name: 'Value.is-composite',  param: reftype.Value,  result: binaryen.i32}],
-			['Value#boolToI32',    {name: 'Value.bool-to-i32',   param: reftype.Value,  result: binaryen.i32}],
-			['Value#boolFromI32',  {name: 'Value.bool-from-i32', param: binaryen.i32,   result: reftype.Value}],
-			['Value#stringify',    {name: 'Value.stringify',     param: reftype.Value,  result: reftype.String}],
+			['Value#newPrimitive', {name: 'Value.new-primitive', param: binaryen.Type.v128,  result: reftype.Value}],
+			['Value#newComposite', {name: 'Value.new-composite', param: binaryen.Type.eqref, result: reftype.Value}], // FIXME: `(ref eq)` (non-null)
+			['Value#isPrimitive',  {name: 'Value.is-primitive',  param: reftype.Value,       result: binaryen.Type.i32}],
+			['Value#isComposite',  {name: 'Value.is-composite',  param: reftype.Value,       result: binaryen.Type.i32}],
+			['Value#boolToI32',    {name: 'Value.bool-to-i32',   param: reftype.Value,       result: binaryen.Type.i32}],
+			['Value#boolFromI32',  {name: 'Value.bool-from-i32', param: binaryen.Type.i32,   result: reftype.Value}],
+			['Value#stringify',    {name: 'Value.stringify',     param: reftype.Value,       result: reftype.String}],
 		]);
 	}
 
@@ -45,9 +45,9 @@ export class Value implements HasFuncData {
 	} {
 		const {wasm} = this.vm.mod;
 		return {
-			get tag()       { return wasm.struct.get(FIELD.TAG,       ref, binaryen.i32, false); },
-			get primitive() { return wasm.struct.get(FIELD.PRIMITIVE, ref, binaryen.v128); },
-			get composite() { return wasm.struct.get(FIELD.COMPOSITE, ref, binaryen.eqref); },
+			get tag()       { return wasm.struct.get(FIELD.TAG,       ref, binaryen.Type.i32, false); },
+			get primitive() { return wasm.struct.get(FIELD.PRIMITIVE, ref, binaryen.Type.v128); },
+			get composite() { return wasm.struct.get(FIELD.COMPOSITE, ref, binaryen.Type.eqref); },
 		};
 	}
 
@@ -79,17 +79,17 @@ export class Value implements HasFuncData {
 
 	/** Whether the value is primitive (tag == 1). */
 	public isPrimitive(value: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* i32 */ {
-		return this.vm.mod.wasm.call('Value.is-primitive', [value], binaryen.i32);
+		return this.vm.mod.wasm.call('Value.is-primitive', [value], binaryen.Type.i32);
 	}
 
 	/** Whether the value is composite (tag == 2). */
 	public isComposite(value: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* i32 */ {
-		return this.vm.mod.wasm.call('Value.is-composite', [value], binaryen.i32);
+		return this.vm.mod.wasm.call('Value.is-composite', [value], binaryen.Type.i32);
 	}
 
 	/** Converts this value (assuming it’s primitive and boolean) to i32. */
 	public boolToI32(value: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* i32 */ {
-		return this.vm.mod.wasm.call('Value.bool-to-i32', [value], binaryen.i32);
+		return this.vm.mod.wasm.call('Value.bool-to-i32', [value], binaryen.Type.i32);
 	}
 
 	/** Converts an i32 value to a $Value with a boolean primitive. */

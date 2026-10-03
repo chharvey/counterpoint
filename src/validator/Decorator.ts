@@ -59,9 +59,8 @@ export class Decorator {
 	]);
 
 	private static readonly OPERATORS_CAST: ReadonlyMap<Keyword, ValidOperatorCast> = new Map<Keyword, ValidOperatorCast>([
-		[Keyword.AS,     Operator.CAST],
-		[Keyword.AS_MAY, Operator.CAST_MAYBE],
-		[Keyword.AS_RES, Operator.CAST_RESULT],
+		[Keyword.AS,      Operator.CAST],
+		[Keyword.AS_QUST, Operator.CAST_MAYBE],
 	]);
 
 	private static readonly OPERATORS_ARITHMETIC: ReadonlyMap<Punctuator, ValidOperatorArithmetic> = new Map<Punctuator, ValidOperatorArithmetic>([
@@ -414,6 +413,7 @@ export class Decorator {
 					)
 					: new AST.EXPR.Claim(
 						node as SyntaxNodeType<'expression_cast'>,
+						node.children[1].type === Keyword.AS_BANG,
 						this.decorateExprNode(expression_0),
 						this.decorateTypeNode(node.childForFieldName('type_0') as SyntaxNodeSupertype<'type'>),
 					);
@@ -583,7 +583,7 @@ export class Decorator {
 					type_0 && this.decorateTypeNode(type_0),
 					expression_0
 						? AST.Block.fromFunctionSource(`{ return ${ expression_0.text }; }`)
-						: this.decorateBlockNode(node.childForFieldName('block_0') as SyntaxNodeFamily<'block', ['return']>, true),
+						: this.decorateBlockNode(node.childForFieldName('block_0') as SyntaxNodeFamily<'block', ['return']>),
 				);
 			}],
 
@@ -720,7 +720,7 @@ export class Decorator {
 					type_0 && this.decorateTypeNode(type_0),
 					expression_0
 						? AST.Block.fromFunctionSource(`{ return ${ expression_0.text }; }`)
-						: this.decorateBlockNode(node.childForFieldName('block_0') as SyntaxNodeFamily<'block', ['return']>, true),
+						: this.decorateBlockNode(node.childForFieldName('block_0') as SyntaxNodeFamily<'block', ['return']>),
 				);
 			}],
 		]);
@@ -749,12 +749,11 @@ export class Decorator {
 		);
 	}
 
-	private decorateBlockNode(blocknode: SyntaxNodeFamily<'block', ['break', 'return']>, is_func_block: boolean = false): AST.Block {
+	private decorateBlockNode(blocknode: SyntaxNodeFamily<'block', ['break', 'return']>): AST.Block {
 		return new AST.Block(
 			blocknode,
 			blocknode.namedChildren.map((c) => this.decorate(c as SyntaxNodeSupertype<'statement'>)) as NonemptyArray<AST.STMT.Statement>,
 			this.config,
-			is_func_block,
 		);
 	}
 }

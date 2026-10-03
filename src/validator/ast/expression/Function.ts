@@ -1,4 +1,3 @@
-import * as xjs from 'extrajs';
 import {
 	type Temp,
 	type Builder,
@@ -17,7 +16,10 @@ import {
 	TYPE,
 } from '../../../typer/index.ts';
 import type {SyntaxNodeType} from '../../utils-private.ts';
-import {check_unique_param_keys} from '../utils-private.ts';
+import {
+	type Functionlike,
+	Functionlike_varCheck,
+} from '../Functionlike.ts';
 import type {ParameterFunction} from '../ParameterFunction.ts';
 import type {Block} from '../Block.ts';
 import type * as AST_TYPE from '../type/index.ts';
@@ -25,7 +27,7 @@ import {Expression} from './Expression.ts';
 
 
 
-class ExpressionFunction extends Expression {
+class ExpressionFunction extends Expression implements Functionlike {
 	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): ExpressionFunction {
 		const expression: Expression = Expression.fromSource(src, config);
 		assert_instanceof(expression, ExpressionFunction);
@@ -35,18 +37,16 @@ class ExpressionFunction extends Expression {
 
 	public constructor(
 		start_node: SyntaxNodeType<'expression_function'>,
-		public  readonly parameters: readonly ParameterFunction[],
-		private readonly returnType: AST_TYPE.Type | null,
-		public  readonly block:      Block,
+		public readonly parameters: readonly ParameterFunction[],
+		public readonly returnType: AST_TYPE.Type | null,
+		public readonly block:      Block,
 	) {
 		super(start_node, {}, [...parameters, ...(returnType ? [returnType] : []), block]);
 	}
 
 
 	public override varCheck(): void {
-		xjs.Array.forEachAggregated(this.parameters, (param) => param.varCheck());
-		check_unique_param_keys(this.parameters);
-		return this.block.varCheck();
+		return Functionlike_varCheck.call(this);
 	}
 
 	@memoizeMethod
