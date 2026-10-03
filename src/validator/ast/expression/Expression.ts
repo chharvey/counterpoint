@@ -12,6 +12,7 @@ import {STMT} from '../index.ts';
 import {AstNode} from '../AstNode.ts';
 import {
 	Constant,
+	Template,
 	Variable,
 	Tuple,
 	Record,
@@ -39,6 +40,7 @@ import {
 export abstract class ExprVisitor<T> {
 	/* eslint-disable @stylistic/space-before-function-paren */
 	public visitConstant                   (expr: Constant):                   T { return this.defaultVisit(expr); }
+	public visitTemplate                   (expr: Template):                   T { return this.defaultVisit(expr); }
 	public visitVariable                   (expr: Variable):                   T { return this.defaultVisit(expr); }
 	public visitTuple                      (expr: Tuple):                      T { return this.defaultVisit(expr); }
 	public visitRecord                     (expr: Record):                     T { return this.defaultVisit(expr); }
@@ -67,6 +69,7 @@ export abstract class ExprVisitor<T> {
 	public visit(expr: Expression): T {
 		switch (expr.constructor) {
 			case Constant:                   { return this.visitConstant                   (expr as Constant); }
+			case Template:                   { return this.visitTemplate                   (expr as Template); }
 			case Variable:                   { return this.visitVariable                   (expr as Variable); }
 			case Tuple:                      { return this.visitTuple                      (expr as Tuple); }
 			case Record:                     { return this.visitRecord                     (expr as Record); }

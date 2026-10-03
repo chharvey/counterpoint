@@ -95,6 +95,7 @@ export abstract class AstNodeVisitor<T> {
 	public visitType                (typenode: AST_TYPE.Type):            T { return this.defaultVisit(typenode); }
 
 	public visitExprConstant                   (expr: EXPR.Constant):                   T { return this.defaultVisit(expr); }
+	public visitTemplate                       (expr: EXPR.Template):                   T { return this.defaultVisit(expr); }
 	public visitVariable                       (expr: EXPR.Variable):                   T { return this.defaultVisit(expr); }
 	public visitExprTuple                      (expr: EXPR.Tuple):                      T { return this.defaultVisit(expr); }
 	public visitExprRecord                     (expr: EXPR.Record):                     T { return this.defaultVisit(expr); }
@@ -105,7 +106,7 @@ export abstract class AstNodeVisitor<T> {
 	public visitExprBlock                      (expr: EXPR.ExpressionBlock):            T { return this.defaultVisit(expr); }
 	public visitExprAccess                     (expr: EXPR.Access):                     T { return this.defaultVisit(expr); }
 	public visitExprCall                       (expr: EXPR.Call):                       T { return this.defaultVisit(expr); }
-	public visitClaim                          (expr: EXPR.Claim):                      T { return this.defaultVisit(expr); }
+	public visitExprClaim                      (expr: EXPR.Claim):                      T { return this.defaultVisit(expr); }
 	public visitOperationExprUnary             (expr: EXPR.OperationUnary):             T { return this.defaultVisit(expr); }
 	public visitOperationExprBinaryCast        (expr: EXPR.OperationBinaryCast):        T { return this.defaultVisit(expr); }
 	public visitOperationExprBinaryArithmetic  (expr: EXPR.OperationBinaryArithmetic):  T { return this.defaultVisit(expr); }
@@ -161,6 +162,7 @@ export abstract class AstNodeVisitor<T> {
 			case AST_TYPE.Type:            { return this.visitType                (node as AST_TYPE.Type); }
 
 			case EXPR.Constant:                   { return this.visitExprConstant                   (node as EXPR.Constant); }
+			case EXPR.Template:                   { return this.visitTemplate                       (node as EXPR.Template); }
 			case EXPR.Variable:                   { return this.visitVariable                       (node as EXPR.Variable); }
 			case EXPR.Tuple:                      { return this.visitExprTuple                      (node as EXPR.Tuple); }
 			case EXPR.Record:                     { return this.visitExprRecord                     (node as EXPR.Record); }
@@ -171,7 +173,7 @@ export abstract class AstNodeVisitor<T> {
 			case EXPR.ExpressionBlock:            { return this.visitExprBlock                      (node as EXPR.ExpressionBlock); }
 			case EXPR.Access:                     { return this.visitExprAccess                     (node as EXPR.Access); }
 			case EXPR.Call:                       { return this.visitExprCall                       (node as EXPR.Call); }
-			case EXPR.Claim:                      { return this.visitClaim                          (node as EXPR.Claim); }
+			case EXPR.Claim:                      { return this.visitExprClaim                      (node as EXPR.Claim); }
 			case EXPR.OperationUnary:             { return this.visitOperationExprUnary             (node as EXPR.OperationUnary); }
 			case EXPR.OperationBinaryCast:        { return this.visitOperationExprBinaryCast        (node as EXPR.OperationBinaryCast); }
 			case EXPR.OperationBinaryArithmetic:  { return this.visitOperationExprBinaryArithmetic  (node as EXPR.OperationBinaryArithmetic); }

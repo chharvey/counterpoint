@@ -6,10 +6,115 @@ CompletionKind =:=
 
 
 
+CompletionKind CompletionOf(Or<
+	SemanticIndex,
+	SemanticKey,
+	SemanticItemType,
+	SemanticPropertyType,
+	SemanticParameterFunction,
+	SemanticType,
+> node)
+	:= NORMAL;
+
+
+
+CompletionKind CompletionOf(Sequence<SemanticExpression> exprs) :=
+	1. *Let* `completions` be a mapping of `exprs` for each `SemanticExpression` to *UnwrapAffirm:* `CompletionOf(SemanticExpression)`.
+	2. *Return:* `MaximumCompletion(completions)`.
+;
+
+CompletionKind CompletionOf(Sequence<SemanticProperty> props) :=
+	1. *Let* `completions` be a mapping of `props` for each `SemanticProperty` to *UnwrapAffirm:* `CompletionOf(SemanticProperty)`.
+	2. *Return:* `MaximumCompletion(completions)`.
+;
+
+
+
+CompletionKind CompletionOf(SemanticProperty ::= SemanticKey SemanticExpression)
+	:= CompletionOf(SemanticExpression);
+
+CompletionKind CompletionOf(SemanticCase ::= SemanticExpression+ SemanticExpression)
+	:= CompletionOf([...SemanticExpression+, SemanticExpression]);
+
 CompletionKind CompletionOf(SemanticBlock ::= SemanticStatement+) :=
 	1. *Let* `completions` be a mapping of `SemanticStatement+` for each `SemanticStatement` to *UnwrapAffirm:* `CompletionOf(SemanticStatement)`.
 	2. *Return:* `MaximumCompletion(completions)`.
 ;
+
+CompletionKind CompletionOf(SemanticGoal ::= ())
+	:= NORMAL;
+CompletionKind CompletionOf(SemanticGoal ::= SemanticBlock)
+	:= CompletionOf(SemanticBlock);
+
+
+
+CompletionKind CompletionOf(SemanticExpressionConstant)
+	:= NORMAL;
+
+CompletionKind CompletionOf(SemanticExpressionTemplate ::= SemanticExpression+) := CompletionOf(SemanticExpression+);
+
+CompletionKind CompletionOf(SemanticExpressionVariable)
+	:= NORMAL;
+
+CompletionKind CompletionOf(SemanticExpressionTuple ::= ())
+	:= NORMAL;
+CompletionKind CompletionOf(SemanticExpressionTuple ::= SemanticExpression+)
+	:= CompletionOf(SemanticExpression+);
+
+CompletionKind CompletionOf(SemanticExpressionRecord ::= SemanticProperty+) := CompletionOf(SemanticProperty+);
+
+CompletionKind CompletionOf(SemanticExpressionList ::= ())
+	:= NORMAL;
+CompletionKind CompletionOf(SemanticExpressionList ::= SemanticExpression+)
+	:= CompletionOf(SemanticExpression+);
+
+CompletionKind CompletionOf(SemanticExpressionDict ::= SemanticProperty+) := CompletionOf(SemanticProperty+);
+
+CompletionKind CompletionOf(SemanticExpressionSet ::= ())
+	:= NORMAL;
+CompletionKind CompletionOf(SemanticExpressionSet ::= SemanticExpression+)
+	:= CompletionOf(SemanticExpression+);
+
+CompletionKind CompletionOf(SemanticExpressionMap ::= SemanticCase+) :=
+	1. *Let* `completions` be a mapping of `SemanticCase+` for each `SemanticCase` to *UnwrapAffirm:* `CompletionOf(SemanticCase)`.
+	2. *Return:* `MaximumCompletion(completions)`.
+;
+
+CompletionKind CompletionOf(SemanticExpressionBlock ::= SemanticBlock) := CompletionOf(SemanticBlock);
+
+CompletionKind CompletionOf(SemanticExpressionAccess ::= SemanticExpression (SemanticIndex | SemanticKey))
+	:= CompletionOf(SemanticExpression);
+CompletionKind CompletionOf(SemanticExpressionAccess ::= SemanticExpression__0 SemanticExpression__1)
+	:= CompletionOf([SemanticExpression__0, SemanticExpression__1]);
+
+CompletionKind CompletionOf(SemanticExpressionCall ::= SemanticExpression__0 SemanticType* SemanticExpression__1*)
+	:= CompletionOf([SemanticExpression__0, ...SemanticExpression__1*]);
+
+CompletionKind CompletionOf(SemanticExpressionClaim ::= SemanticExpression SemanticType)
+	:= CompletionOf(SemanticExpression);
+
+CompletionKind CompletionOf(SemanticExpressionOperation ::= SemanticExpression+)
+	:= CompletionOf(SemanticExpression+);
+CompletionKind CompletionOf(SemanticExpressionOperation[operator: COND] ::= SemanticExpression__0[type: Boolean] SemanticExpression__1 SemanticExpression__2)
+	:= MaximumCompletion([
+		CompletionOf(SemanticExpression__0),
+		MinimumCompletion([
+			CompletionOf(SemanticExpression__1),
+			CompletionOf(SemanticExpression__2),
+		]),
+	]);
+
+CompletionKind CompletionOf(SemanticExpressionSwitch ::= SemanticExpression__0 SemanticCase* SemanticExpression__1)
+	:= MaximumCompletion([
+		CompletionOf(SemanticExpression__0),
+		MinimumCompletion([
+			...SemanticCase*.map(CompletionOf),
+			CompletionOf(SemanticExpression__1),
+		]),
+	]);
+
+CompletionKind CompletionOf(SemanticExpressionFunction)
+	:= NORMAL;
 
 
 
@@ -37,9 +142,9 @@ CompletionKind CompletionOf(SemanticStatementReassignment ::= SemanticExpression
 CompletionKind CompletionOf(SemanticStatementReassignment ::= SemanticExpressionVariable SemanticExpression)
 	:= CompletionOf(SemanticExpression);
 CompletionKind CompletionOf(SemanticStatementReassignment ::= SemanticExpressionAccess SemanticExpression)
-	:= MaximumCompletion([
-		CompletionOf(SemanticExpressionAccess),
-		CompletionOf(SemanticExpression),
+	:= CompletionOf([
+		SemanticExpressionAccess,
+		SemanticExpression,
 	]);
 
 CompletionKind CompletionOf(SemanticStatementConditional ::= SemanticExpression SemanticBlock)
@@ -62,15 +167,15 @@ CompletionKind CompletionOf(SemanticStatementConditional ::= SemanticExpression 
 	]);
 
 CompletionKind CompletionOf(SemanticStatementLoop ::= SemanticExpression SemanticBlock)
-	:= MaximumCompletion([
-		CompletionOf(SemanticExpression),
-		CompletionOf(SemanticBlock),
+	:= CompletionOf([
+		SemanticExpression,
+		SemanticBlock,
 	]);
 
 CompletionKind CompletionOf(SemanticStatementIteration ::= SemanticType SemanticExpression SemanticBlock)
-	:= MaximumCompletion(
-		CompletionOf(SemanticExpression),
-		CompletionOf(SemanticBlock),
+	:= CompletionOf(
+		SemanticExpression,
+		SemanticBlock,
 	);
 
 CompletionKind CompletionOf(SemanticStatementBreak)  := BREAK_OR_SKIP;
