@@ -28,7 +28,7 @@ import {
 import {AstNode} from './AstNode.ts';
 import {is_Functionlike} from './Functionlike.ts';
 import type {Buildable} from './Buildable.ts';
-import {StmtVisitorCompletion} from './visitors/StmtVisitorCompletion.ts';
+import {VisitorCompletion} from './visitors/VisitorCompletion.ts';
 
 
 
@@ -85,7 +85,7 @@ export class Block extends AstNode implements Buildable {
 	/** The kind of completion of evaluation of this block. */
 	@memoizeGetter
 	public get completion(): CompletionKind {
-		const visitor = new StmtVisitorCompletion();
+		const visitor = new VisitorCompletion();
 		return CompletionKind_max(this.children.map((c) => visitor.visit(c)));
 	}
 

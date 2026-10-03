@@ -3,7 +3,8 @@ import {
 	CompletionKind_min,
 	CompletionKind_max,
 } from '../CompletionKind.ts';
-import * as STMT from '../statement/index.ts';
+import {AstNodeVisitor} from '../AstNode.ts';
+import type * as STMT from '../statement/index.ts';
 
 
 
@@ -14,7 +15,7 @@ function expr_compl(is_bottom_type: boolean): CompletionKind {
 
 
 
-export class StmtVisitorCompletion extends STMT.StmtVisitor<CompletionKind> {
+export class VisitorCompletion extends AstNodeVisitor<CompletionKind> {
 	public override visitDeclVariable(stmt: STMT.DeclarationVariable): CompletionKind {
 		return expr_compl(stmt.assigned?.type().isBottomType ?? false);
 	}
