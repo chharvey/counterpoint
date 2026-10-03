@@ -5,7 +5,6 @@ import {
 } from '../../../index.ts';
 import {
 	assert_instanceof,
-	memoizeGetter,
 	runOnceMethod,
 } from '../../../lib/index.ts';
 import {
@@ -32,16 +31,12 @@ export class StatementClaim extends Statement {
 
 	public constructor(
 		start_node: SyntaxNodeFamily<'statement_claim', ['break', 'return']>,
-		private readonly assignee: EXPR.Variable | EXPR.Access,
+		public  readonly assignee: EXPR.Variable | EXPR.Access,
 		private readonly claimed_type: AST_TYPE.Type,
 	) {
 		super(start_node, {}, [assignee, claimed_type]);
 	}
 
-	@memoizeGetter
-	public override get completion(): boolean {
-		return this.assignee.type().isBottomType;
-	}
 
 	public override typeCheck(): void {
 		super.typeCheck();

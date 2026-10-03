@@ -8,7 +8,6 @@ import {
 import {
 	assert_instanceof,
 	runOnceMethod,
-	memoizeGetter,
 } from '../../../lib/index.ts';
 import {
 	type CplConfig,
@@ -107,10 +106,6 @@ export class DeclarationVariable extends Statement {
 		}
 	}
 
-	@memoizeGetter
-	public override get completion(): boolean {
-		return this.assigned?.type().isBottomType ?? false;
-	}
 
 	public override varCheck(): void {
 		super.varCheck();

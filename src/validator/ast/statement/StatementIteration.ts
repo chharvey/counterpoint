@@ -10,7 +10,6 @@ import {
 } from '../../../index.ts';
 import {
 	assert_instanceof,
-	memoizeGetter,
 	runOnceMethod,
 } from '../../../lib/index.ts';
 import {
@@ -56,10 +55,6 @@ export class StatementIteration extends StatementBreakable {
 		}
 	}
 
-	@memoizeGetter
-	public override get completion(): boolean {
-		return this.iterable.type().isBottomType || this.block.completion;
-	}
 
 	public override varCheck(): void {
 		// Do not call `super.varCheck()` as we want to VarCheck `this.block` at the end.

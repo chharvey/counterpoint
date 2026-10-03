@@ -127,6 +127,7 @@ export abstract class AstNodeVisitor<T> {
 	public visitStatementLoop      (stmt: STMT.StatementLoop):         T { return this.defaultVisit(stmt); }
 	public visitStatementIteration (stmt: STMT.StatementIteration):    T { return this.defaultVisit(stmt); }
 	public visitStatementBreak     (stmt: STMT.StatementBreak):        T { return this.defaultVisit(stmt); }
+	public visitStatementReturn    (stmt: STMT.StatementReturn):       T { return this.defaultVisit(stmt); }
 	public visitStatement          (stmt: STMT.Statement):             T { return this.defaultVisit(stmt); }
 	/* eslint-enable @stylistic/space-before-function-paren */
 
@@ -192,6 +193,7 @@ export abstract class AstNodeVisitor<T> {
 			case STMT.StatementLoop:         { return this.visitStatementLoop      (node as STMT.StatementLoop); }
 			case STMT.StatementIteration:    { return this.visitStatementIteration (node as STMT.StatementIteration); }
 			case STMT.StatementBreak:        { return this.visitStatementBreak     (node as STMT.StatementBreak); }
+			case STMT.StatementReturn:       { return this.visitStatementReturn    (node as STMT.StatementReturn); }
 			case STMT.Statement:             { return this.visitStatement          (node as STMT.Statement); }
 
 			default: { return this.defaultVisit(node); }

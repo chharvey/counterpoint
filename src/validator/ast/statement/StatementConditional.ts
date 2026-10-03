@@ -5,7 +5,6 @@ import {
 } from '../../../index.ts';
 import {
 	assert_instanceof,
-	memoizeGetter,
 	runOnceMethod,
 } from '../../../lib/index.ts';
 import {
@@ -37,10 +36,6 @@ export class StatementConditional extends Statement {
 		super(start_node, {unless}, alternative ? [condition, consequent, alternative] : [condition, consequent]);
 	}
 
-	@memoizeGetter
-	public override get completion(): boolean {
-		return this.condition.type().isBottomType || this.consequent.completion && (this.alternative?.completion ?? false);
-	}
 
 	public override typeCheck(): void {
 		super.typeCheck();

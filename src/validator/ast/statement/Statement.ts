@@ -18,6 +18,7 @@ import {
 	StatementLoop,
 	StatementIteration,
 	StatementBreak,
+	StatementReturn,
 } from './index.ts';
 
 
@@ -34,6 +35,7 @@ export abstract class StmtVisitor<T> {
 	public visitStatementLoop      (stmt: StatementLoop):         T { return this.defaultVisit(stmt); }
 	public visitStatementIteration (stmt: StatementIteration):    T { return this.defaultVisit(stmt); }
 	public visitStatementBreak     (stmt: StatementBreak):        T { return this.defaultVisit(stmt); }
+	public visitStatementReturn    (stmt: StatementReturn):       T { return this.defaultVisit(stmt); }
 	/* eslint-enable @stylistic/space-before-function-paren */
 
 	public abstract defaultVisit(stmt: Statement): T;
@@ -51,6 +53,7 @@ export abstract class StmtVisitor<T> {
 			case StatementLoop:         { return this.visitStatementLoop      (stmt as StatementLoop); }
 			case StatementIteration:    { return this.visitStatementIteration (stmt as StatementIteration); }
 			case StatementBreak:        { return this.visitStatementBreak     (stmt as StatementBreak); }
+			case StatementReturn:       { return this.visitStatementReturn    (stmt as StatementReturn); }
 
 			default: { return this.defaultVisit(stmt); }
 		}
@@ -86,9 +89,6 @@ export abstract class Statement extends AstNode implements Buildable {
 		return block.children[0];
 	}
 
-
-	/** The kind of completion of evaluation of this statement. */
-	public abstract get completion(): boolean;
 
 	/**
 	 * @inheritdoc

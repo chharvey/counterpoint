@@ -9,7 +9,6 @@ import {
 } from '../../../index.ts';
 import {
 	assert_instanceof,
-	memoizeGetter,
 	runOnceMethod,
 } from '../../../lib/index.ts';
 import {
@@ -44,10 +43,6 @@ export class StatementReassignment extends Statement {
 		super(start_node, {}, [assignee, ...(assigned ? [assigned] : [])]);
 	}
 
-	@memoizeGetter
-	public override get completion(): boolean {
-		return this.assignee.type().isBottomType || (this.assigned?.type().isBottomType ?? false);
-	}
 
 	public override varCheck(): void {
 		super.varCheck(); // runtime asserts the var is in the symbol table and is a SymbolSchemaVar

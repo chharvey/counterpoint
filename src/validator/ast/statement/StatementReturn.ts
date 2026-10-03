@@ -4,8 +4,6 @@ import {
 } from '../../../index.ts';
 import {
 	assert_instanceof,
-	noopGetter,
-	memoizeGetter,
 	runOnceMethod,
 } from '../../../lib/index.ts';
 import {
@@ -37,12 +35,6 @@ export class StatementReturn extends Statement {
 		private readonly expression: EXPR.Expression | null,
 	) {
 		super(start_node, {}, expression ? [expression] : []);
-	}
-
-
-	@noopGetter(memoizeGetter)
-	public override get completion(): boolean {
-		return true;
 	}
 
 

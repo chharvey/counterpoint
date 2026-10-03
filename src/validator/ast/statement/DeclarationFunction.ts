@@ -6,8 +6,6 @@ import {
 } from '../../../index.ts';
 import {
 	assert_instanceof,
-	noopGetter,
-	memoizeGetter,
 	runOnceMethod,
 } from '../../../lib/index.ts';
 import {
@@ -55,11 +53,6 @@ export class DeclarationFunction extends Statement implements Functionlike {
 		}
 	}
 
-
-	@noopGetter(memoizeGetter)
-	public override get completion(): boolean {
-		return false;
-	}
 
 	public hoist(): void {
 		if (this.identifier) {

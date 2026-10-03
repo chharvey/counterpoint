@@ -24,6 +24,7 @@ import {
 import {AstNode} from './AstNode.ts';
 import {is_Functionlike} from './Functionlike.ts';
 import type {Buildable} from './Buildable.ts';
+import {StmtVisitorCompletion} from './visitors/StmtVisitorCompletion.ts';
 
 
 
@@ -80,7 +81,8 @@ export class Block extends AstNode implements Buildable {
 	/** The kind of completion of evaluation of this block. */
 	@memoizeGetter
 	public get completion(): boolean {
-		return this.children.some((c) => c.completion);
+		const visitor = new StmtVisitorCompletion();
+		return this.children.some((c) => visitor.visit(c));
 	}
 
 	public override varCheck(): void {

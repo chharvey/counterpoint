@@ -3,8 +3,6 @@ import {AssignmentErrorDuplicateDeclaration} from '../../../index.ts';
 import {
 	assert_instanceof,
 	noopMethod,
-	noopGetter,
-	memoizeGetter,
 	runOnceMethod,
 } from '../../../lib/index.ts';
 import {
@@ -43,10 +41,6 @@ export class DeclarationType extends Statement {
 		}
 	}
 
-	@noopGetter(memoizeGetter)
-	public override get completion(): boolean {
-		return false;
-	}
 
 	public override varCheck(): void {
 		super.varCheck();
