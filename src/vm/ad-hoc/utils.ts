@@ -12,14 +12,14 @@ export function utils(vm: VirtualMachine) {
 	return {
 		get funcImportDataMap(): ReadonlyMap<string, FuncImportData> {
 			func_import_memo ??= new Map<string, FuncImportData>([
-				['util::capacityNeeded', {name: 'util:capacity-needed', param: binaryen.i32, result: binaryen.i32}],
+				['util::capacityNeeded', {name: 'util:capacity-needed', param: binaryen.Type.i32, result: binaryen.Type.i32}],
 			]);
 			return func_import_memo;
 		},
 
 
 		capacityNeeded: (param0: binaryen.ExpressionRef /* i32 */): binaryen.ExpressionRef /* i32 */ => (
-			vm.mod.wasm.call('util:capacity-needed', [param0], binaryen.i32)
+			vm.mod.wasm.call('util:capacity-needed', [param0], binaryen.Type.i32)
 		),
 	} as const;
 }

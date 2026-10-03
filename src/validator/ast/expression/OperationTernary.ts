@@ -38,8 +38,7 @@ export class OperationTernary extends Operation {
 
 	@memoizeMethod
 	public override type(): TYPE.Type {
-		// compute types early to rethrow any errors
-		const [t0, t1, t2]: TYPE.Type[] = this.children.map((operand) => operand.type());
+		const [t0, t1, t2]: readonly TYPE.Type[] = this.children.map((operand) => operand.type());
 		if (!t0.isSubtypeOf(TYPE.BOOL)) {
 			throw new TypeErrorInvalidOperation(this);
 		}

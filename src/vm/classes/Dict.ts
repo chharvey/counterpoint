@@ -26,30 +26,30 @@ export class Dict implements HasFuncData {
 	public get funcImportDataMap(): ReadonlyMap<string, FuncImportData> {
 		const {reftype, reftypeNull} = this.vm;
 		return new Map<string, FuncImportData>([
-			['Dict#count', {name: 'Dict.count', param: reftype.Dict, result: binaryen.i32}],
+			['Dict#count', {name: 'Dict.count', param: reftype.Dict, result: binaryen.Type.i32}],
 			['Dict#find', {
 				name:   'Dict.find',
-				param:  binaryen.createType([reftype.Dict, binaryen.i64]),
-				result: binaryen.createType([binaryen.i32, reftypeNull.Property]),
+				param:  binaryen.createType([reftype.Dict, binaryen.Type.i64]),
+				result: binaryen.createType([binaryen.Type.i32, reftypeNull.Property]),
 			}],
 			['Dict#adjustCapacity', {
 				name:   'Dict.adjust-capacity',
-				param:  binaryen.createType([reftype.Dict, binaryen.i32]),
-				result: binaryen.none,
+				param:  binaryen.createType([reftype.Dict, binaryen.Type.i32]),
+				result: binaryen.Type.none,
 			}],
 			['Dict#get', {
 				name:   'Dict.get',
-				param:  binaryen.createType([reftype.Dict, binaryen.i64]),
+				param:  binaryen.createType([reftype.Dict, binaryen.Type.i64]),
 				result: reftype.Value,
 			}],
 			['Dict#set', {
 				name:   'Dict.set',
-				param:  binaryen.createType([reftype.Dict, binaryen.i64, reftype.Value]),
-				result: binaryen.none,
+				param:  binaryen.createType([reftype.Dict, binaryen.Type.i64, reftype.Value]),
+				result: binaryen.Type.none,
 			}],
 			['Dict#delete', {
 				name:   'Dict.delete',
-				param:  binaryen.createType([reftype.Dict, binaryen.i64]),
+				param:  binaryen.createType([reftype.Dict, binaryen.Type.i64]),
 				result: reftypeNull.Value,
 			}],
 		]);
@@ -65,7 +65,7 @@ export class Dict implements HasFuncData {
 	} {
 		const {mod: {wasm}, reftype} = this.vm;
 		return {
-			get size()     { return wasm.struct.get(FIELD.SIZE,     ref, binaryen.i32); },
+			get size()     { return wasm.struct.get(FIELD.SIZE,     ref, binaryen.Type.i32); },
 			get internal() { return wasm.struct.get(FIELD.INTERNAL, ref, reftype.DictInternal); },
 
 			setSize(val)     { return wasm.struct.set(FIELD.SIZE,     ref, val); },
@@ -78,7 +78,7 @@ export class Dict implements HasFuncData {
 	 * “Live” elements are non-null, non-tombstone properties.
 	 */
 	public count(dict: binaryen.ExpressionRef /* (ref $Dict) */): binaryen.ExpressionRef /* i32 */ {
-		return this.vm.mod.wasm.call('Dict.count', [dict], binaryen.i32);
+		return this.vm.mod.wasm.call('Dict.count', [dict], binaryen.Type.i32);
 	}
 
 	/**
@@ -98,7 +98,7 @@ export class Dict implements HasFuncData {
 	 * 	- if a non-null, “live” Property is returned, it was deleted from the Dict and replaced with a tombstone; *do not* change the Dict’s size (as tombstones are still counted)
 	 */
 	public find(dict: binaryen.ExpressionRef /* (ref $Dict) */, key: binaryen.ExpressionRef /* i64 */): binaryen.ExpressionRef /* i32 (ref null $Property) */ {
-		return this.vm.mod.wasm.call('Dict.find', [dict, key], binaryen.createType([binaryen.i32, this.vm.reftypeNull.Property]));
+		return this.vm.mod.wasm.call('Dict.find', [dict, key], binaryen.createType([binaryen.Type.i32, this.vm.reftypeNull.Property]));
 	}
 
 	/**
@@ -108,7 +108,7 @@ export class Dict implements HasFuncData {
 	 * There is no guarantee the entries’ positioning and/or order will be preserved.
 	 */
 	public adjustCapacity(dict: binaryen.ExpressionRef /* (ref $Dict) */, capacity: binaryen.ExpressionRef /* i32 */): binaryen.ExpressionRef /* void */ {
-		return this.vm.mod.wasm.call('Dict.adjust-capacity', [dict, capacity], binaryen.none);
+		return this.vm.mod.wasm.call('Dict.adjust-capacity', [dict, capacity], binaryen.Type.none);
 	}
 
 	/**
@@ -124,7 +124,7 @@ export class Dict implements HasFuncData {
 	 * This method first reallocates if necessary, then adds the value.
 	 */
 	public set(dict: binaryen.ExpressionRef /* (ref $Dict) */, key: binaryen.ExpressionRef /* i64 */, val: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* void */ {
-		return this.vm.mod.wasm.call('Dict.set', [dict, key, val], binaryen.none);
+		return this.vm.mod.wasm.call('Dict.set', [dict, key, val], binaryen.Type.none);
 	}
 
 	/**

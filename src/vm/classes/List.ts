@@ -26,25 +26,25 @@ export class List implements HasFuncData {
 	public get funcImportDataMap(): ReadonlyMap<string, FuncImportData> {
 		const {reftype} = this.vm;
 		return new Map<string, FuncImportData>([
-			['List#count', {name: 'List.count', param: reftype.List, result: binaryen.i32}],
+			['List#count', {name: 'List.count', param: reftype.List, result: binaryen.Type.i32}],
 			['List#adjustCapacity', {
 				name:   'List.adjust-capacity',
-				param:  binaryen.createType([reftype.List, binaryen.i32]),
-				result: binaryen.none,
+				param:  binaryen.createType([reftype.List, binaryen.Type.i32]),
+				result: binaryen.Type.none,
 			}],
 			['List#get', {
 				name:   'List.get',
-				param:  binaryen.createType([reftype.List, binaryen.i32]),
+				param:  binaryen.createType([reftype.List, binaryen.Type.i32]),
 				result: reftype.Value,
 			}],
 			['List#set', {
 				name:   'List.set',
-				param:  binaryen.createType([reftype.List, binaryen.i32, reftype.Value]),
-				result: binaryen.none,
+				param:  binaryen.createType([reftype.List, binaryen.Type.i32, reftype.Value]),
+				result: binaryen.Type.none,
 			}],
 			['List#delete', {
 				name:   'List.delete',
-				param:  binaryen.createType([reftype.List, binaryen.i32]),
+				param:  binaryen.createType([reftype.List, binaryen.Type.i32]),
 				result: reftype.Value,
 			}],
 		]);
@@ -60,7 +60,7 @@ export class List implements HasFuncData {
 	} {
 		const {mod: {wasm}, reftype} = this.vm;
 		return {
-			get size()     { return wasm.struct.get(FIELD.SIZE,     ref, binaryen.i32); },
+			get size()     { return wasm.struct.get(FIELD.SIZE,     ref, binaryen.Type.i32); },
 			get internal() { return wasm.struct.get(FIELD.INTERNAL, ref, reftype.ListInternal); },
 
 			setSize(val)     { return wasm.struct.set(FIELD.SIZE,     ref, val); },
@@ -74,7 +74,7 @@ export class List implements HasFuncData {
 	 * this should always be equal to the List’s size.
 	 */
 	public count(list: binaryen.ExpressionRef /* (ref $List) */): binaryen.ExpressionRef /* i32 */ {
-		return this.vm.mod.wasm.call('List.count', [list], binaryen.i32);
+		return this.vm.mod.wasm.call('List.count', [list], binaryen.Type.i32);
 	}
 
 	/**
@@ -82,7 +82,7 @@ export class List implements HasFuncData {
 	 * The List’s items are copied over to the new array, preserving the order from the original array.
 	 */
 	public adjustCapacity(list: binaryen.ExpressionRef /* (ref $List) */, capacity: binaryen.ExpressionRef /* i32 */): binaryen.ExpressionRef /* void */ {
-		return this.vm.mod.wasm.call('List.adjust-capacity', [list, capacity], binaryen.none);
+		return this.vm.mod.wasm.call('List.adjust-capacity', [list, capacity], binaryen.Type.none);
 	}
 
 	/**
@@ -102,7 +102,7 @@ export class List implements HasFuncData {
 	 * This method first reallocates if necessary, then adds the item.
 	 */
 	public set(list: binaryen.ExpressionRef /* (ref $List) */, index: binaryen.ExpressionRef /* i32 */, value: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* void */ {
-		return this.vm.mod.wasm.call('List.set', [list, index, value], binaryen.none);
+		return this.vm.mod.wasm.call('List.set', [list, index, value], binaryen.Type.none);
 	}
 
 	/**

@@ -131,7 +131,7 @@ test.suite('Decorator', () => {
 				}
 				% (entry_type)
 			`]],
-			['Decorate(EntryType<-Named><+Optional> ::= "?:" Type) -> SemanticItemType', [AST.ItemType, `
+			['Decorate(EntryType<-Named><+Optional> ::= "?" ":" Type) -> SemanticItemType', [AST.ItemType, `
 				{
 					type T = (?: int);
 				}
@@ -143,7 +143,7 @@ test.suite('Decorator', () => {
 				}
 				% (entry_type__named)
 			`]],
-			['Decorate(EntryType<+Named><+Optional> ::= Word "?:" Type) -> SemanticPropertyType', [AST.PropertyType, `
+			['Decorate(EntryType<+Named><+Optional> ::= Word "?" ":" Type) -> SemanticPropertyType', [AST.PropertyType, `
 				{
 					type T = (a?: int);
 				}
@@ -155,7 +155,7 @@ test.suite('Decorator', () => {
 				}
 				% (entry_type__named)
 			`]],
-			['Decorate(EntryType<+Named><+Optional> ::= Word "?:" Type) -> SemanticPropertyType', [AST.PropertyType, `
+			['Decorate(EntryType<+Named><+Optional> ::= Word "?" ":" Type) -> SemanticPropertyType', [AST.PropertyType, `
 				{
 					type T = (_?: int);
 				}

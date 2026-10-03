@@ -54,14 +54,14 @@ Decorate(PrimitiveLiteral ::= "@" Word) -> SemanticExpressionConstant
 
 Decorate(EntryType<-Named><-Optional> ::= Type) -> SemanticItemType
 	:= (SemanticItemType[optional=false] Decorate(Type));
-Decorate(EntryType<-Named><+Optional> ::= "?:" Type) -> SemanticItemType
+Decorate(EntryType<-Named><+Optional> ::= "?" ":" Type) -> SemanticItemType
 	:= (SemanticItemType[optional=true] Decorate(Type));
 Decorate(EntryType<+Named><-Optional> ::= Word ":" Type) -> SemanticPropertyType
 	:= (SemanticPropertyType[optional=false]
 		Decorate(Word)
 		Decorate(Type)
 	);
-Decorate(EntryType<+Named><+Optional> ::= Word "?:" Type) -> SemanticPropertyType
+Decorate(EntryType<+Named><+Optional> ::= Word "?" ":" Type) -> SemanticPropertyType
 	:= (SemanticPropertyType[optional=true]
 		Decorate(Word)
 		Decorate(Type)

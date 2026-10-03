@@ -25,13 +25,13 @@ class VmObject implements HasFuncData {
 	@memoizeGetter
 	public get funcImportDataMap(): ReadonlyMap<string, FuncImportData> {
 		return new Map<string, FuncImportData>([
-			['Object#ctrPlusPlus', {name: 'Object.ctr-plus-plus', param: binaryen.none, result: binaryen.i64}],
+			['Object#ctrPlusPlus', {name: 'Object.ctr-plus-plus', param: binaryen.Type.none, result: binaryen.Type.i64}],
 		]);
 	}
 
 	/** Global counter for `$Object` structs. Used for values of field `$Object.$id`. */
 	public get ctr(): binaryen.ExpressionRef /* i64 */ {
-		return this.vm.mod.wasm.global.get('Object.ctr', binaryen.i64);
+		return this.vm.mod.wasm.global.get('Object.ctr', binaryen.Type.i64);
 	}
 
 
@@ -42,7 +42,7 @@ class VmObject implements HasFuncData {
 		const {wasm} = this.vm.mod;
 		return {
 			get id() {
-				return wasm.struct.get(FIELD.ID, ref, binaryen.i64);
+				return wasm.struct.get(FIELD.ID, ref, binaryen.Type.i64);
 			},
 		};
 	}
@@ -52,7 +52,7 @@ class VmObject implements HasFuncData {
 	 * Equivalent to `ctr++` in most imperative languages.
 	 */
 	public ctrPlusPlus(): binaryen.ExpressionRef /* i64 */ {
-		return this.vm.mod.wasm.call('Object.ctr-plus-plus', [], binaryen.i64);
+		return this.vm.mod.wasm.call('Object.ctr-plus-plus', [], binaryen.Type.i64);
 	}
 }
 export {VmObject as Object};
