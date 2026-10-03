@@ -257,26 +257,36 @@ test.suite('AstNode', () => {
 							return;
 						}) else 42;
 					};
+					\\(mut b: bool): void {
+						while b do {
+							break;
+						};
+					};
 					\\(): int {
 						switch 1
 							case 2 -> 3
 							case 4 | 5 -> { return 6; }
 						default { return 7; };
 					};
-					func f(): void {
+					func f1(): void {
 						42;
 					}
-					func g(b: bool): void {
+					func f2(b: bool): void {
 						if b then {
 							return;
 						};
 					}
-					func h(b: bool): void {
+					func f3(b: bool): void {
 						if b then ({
 							return;
 						}) else 42;
 					}
-					func i(): int {
+					func f4(mut b: bool): void {
+						while b do {
+							break;
+						};
+					}
+					func f5(): int {
 						switch 1
 							case 2 -> 3
 							case 4 | 5 -> { return 6; }
@@ -284,8 +294,8 @@ test.suite('AstNode', () => {
 					}
 				}`, {typeCheck: false});
 				return xjs.Array.forEachAggregated([
-					...stmts.slice(0, 4).map((stmt) => (stmt as AST.STMT.StatementExpression).expr as AST.EXPR.Function),
-					...stmts.slice(4).map((stmt) => stmt as AST.STMT.DeclarationFunction),
+					...stmts.slice(0, 5).map((stmt) => (stmt as AST.STMT.StatementExpression).expr as AST.EXPR.Function),
+					...stmts.slice(5).map((stmt) => stmt as AST.STMT.DeclarationFunction),
 				], (fn) => assert.throws(() => fn.typeCheck(), TypeErrorFunctionExit));
 			});
 		});
