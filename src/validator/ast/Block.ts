@@ -1,6 +1,9 @@
 import * as assert from 'node:assert';
 import * as xjs from 'extrajs';
-import type {Builder} from '../../index.ts';
+import {
+	type Builder,
+	TypeErrorFunctionExit,
+} from '../../index.ts';
 import {
 	type NonemptyArray,
 	memoizeGetter,
@@ -93,7 +96,7 @@ export class Block extends AstNode implements Buildable {
 	public override typeCheck(): void {
 		super.typeCheck();
 		if (!!this.parent && is_Functionlike(this.parent) && this.completion !== CompletionKind.RETURN_OR_THROW) {
-			throw new Error(`Function \`${ this.parent.source }\` does not return in every control route.`); // TODO: create new error subclass
+			throw new TypeErrorFunctionExit(this.parent);
 		}
 	}
 

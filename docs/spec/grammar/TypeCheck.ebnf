@@ -40,7 +40,7 @@ Nil! TypeCheck(SemanticBlock block) :=
 	1. *For each* `stmt` in `block.children`:
 		1. *Perform:* *Unwrap:* `TypeCheck(stmt)`.
 	2. *If* `block` is a function body *and* *UnwrapAffirm:* `CompletionOf(block)` is not *RETURN_OR_THROW*:
-		1. *Throw:* a new TypeError.
+		1. *Throw:* a new TypeErrorFunctionExit.
 	3. *Else:*
 		1. *Return.*
 ;

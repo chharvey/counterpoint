@@ -14,6 +14,7 @@ import {
 	AssignmentErrorReassignment,
 	TypeErrorInvalidOperation,
 	TypeErrorNotAssignable,
+	TypeErrorFunctionExit,
 } from '../../src/index.ts';
 import {
 	repeat,
@@ -235,12 +236,11 @@ test.suite('AstNode', () => {
 				const block0:  AST.Block = (stmts[0] as AST.STMT.DeclarationFunction).block;
 				const block1a: AST.Block = (fn1.block.children[0] as AST.STMT.StatementConditional).consequent;
 				const block1b: AST.Block = (fn1.block.children[0] as AST.STMT.StatementConditional).alternative as AST.Block;
-				const expected: RegExp = /does not return in every control route/;
-				assert.throws(() => block0.typeCheck(), expected);
+				assert.throws(() => block0.typeCheck(), TypeErrorFunctionExit);
 				xjs.Array.forEachAggregated(fn1.parameters, (p) => p.typeCheck());
 				block1a.typeCheck(); // assert does not throw
 				block1b.typeCheck(); // assert does not throw
-				return assert.throws(() => fn1.block.typeCheck(), expected);
+				return assert.throws(() => fn1.block.typeCheck(), TypeErrorFunctionExit);
 			});
 			test.test('throws when not all code paths return.', () => {
 				const {stmts} = setupScript(`{
@@ -286,7 +286,7 @@ test.suite('AstNode', () => {
 				return xjs.Array.forEachAggregated([
 					...stmts.slice(0, 4).map((stmt) => (stmt as AST.STMT.StatementExpression).expr as AST.EXPR.Function),
 					...stmts.slice(4).map((stmt) => stmt as AST.STMT.DeclarationFunction),
-				], (fn) => assert.throws(() => fn.typeCheck(), /does not return in every control route/));
+				], (fn) => assert.throws(() => fn.typeCheck(), TypeErrorFunctionExit));
 			});
 		});
 	});
