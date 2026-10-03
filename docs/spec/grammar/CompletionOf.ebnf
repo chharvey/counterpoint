@@ -1,0 +1,120 @@
+CompletionKind =:=
+	| NORMAL
+	| BREAK_OR_SKIP
+	| RETURN_OR_THROW
+;
+
+
+
+CompletionKind CompletionOf(SemanticBlock ::= SemanticStatement+) :=
+	1. *Let* `completions` be a mapping of `SemanticStatement+` for each `SemanticStatement` to *UnwrapAffirm:* `CompletionOf(SemanticStatement)`.
+	2. *Return:* `MaximumCompletion(completions)`.
+;
+
+
+
+CompletionKind CompletionOf(SemanticDeclarationType) := NORMAL;
+
+CompletionKind CompletionOf(SemanticDeclarationVariable ::= SemanticType)
+	:= NORMAL;
+CompletionKind CompletionOf(SemanticDeclarationVariable ::= SemanticType? SemanticExpression)
+	:= CompletionOf(SemanticExpression);
+
+CompletionKind CompletionOf(SemanticDeclarationFunction) := NORMAL;
+
+CompletionKind CompletionOf(SemanticStatementExpression ::= ())
+	:= NORMAL;
+CompletionKind CompletionOf(SemanticStatementExpression ::= SemanticExpression)
+	:= CompletionOf(SemanticExpression);
+
+CompletionKind CompletionOf(SemanticStatementClaim ::= SemanticExpressionVariable SemanticType) := CompletionOf(SemanticExpressionVariable);
+CompletionKind CompletionOf(SemanticStatementClaim ::= SemanticExpressionAccess   SemanticType) := CompletionOf(SemanticExpressionAccess);
+
+CompletionKind CompletionOf(SemanticStatementReassignment ::= SemanticExpressionVariable)
+	:= NORMAL;
+CompletionKind CompletionOf(SemanticStatementReassignment ::= SemanticExpressionAccess)
+	:= CompletionOf(SemanticExpressionAccess);
+CompletionKind CompletionOf(SemanticStatementReassignment ::= SemanticExpressionVariable SemanticExpression)
+	:= CompletionOf(SemanticExpression);
+CompletionKind CompletionOf(SemanticStatementReassignment ::= SemanticExpressionAccess SemanticExpression)
+	:= MaximumCompletion([
+		CompletionOf(SemanticExpressionAccess),
+		CompletionOf(SemanticExpression),
+	]);
+
+CompletionKind CompletionOf(SemanticStatementConditional ::= SemanticExpression SemanticBlock)
+	:= CompletionOf(SemanticExpression);
+CompletionKind CompletionOf(SemanticStatementConditional ::= SemanticExpression SemanticBlock__0 SemanticBlock__1)
+	:= MaximumCompletion([
+		CompletionOf(SemanticExpression),
+		MinimumCompletion([
+			CompletionOf(SemanticBlock__0),
+			CompletionOf(SemanticBlock__1),
+		]),
+	]);
+CompletionKind CompletionOf(SemanticStatementConditional ::= SemanticExpression SemanticBlock SemanticStatementConditional)
+	:= MaximumCompletion([
+		CompletionOf(SemanticExpression),
+		MinimumCompletion([
+			CompletionOf(SemanticBlock),
+			CompletionOf(SemanticStatementConditional),
+		]),
+	]);
+
+CompletionKind CompletionOf(SemanticStatementLoop ::= SemanticExpression SemanticBlock)
+	:= MaximumCompletion([
+		CompletionOf(SemanticExpression),
+		CompletionOf(SemanticBlock),
+	]);
+
+CompletionKind CompletionOf(SemanticStatementIteration ::= SemanticType SemanticExpression SemanticBlock)
+	:= MaximumCompletion(
+		CompletionOf(SemanticExpression),
+		CompletionOf(SemanticBlock),
+	);
+
+CompletionKind CompletionOf(SemanticStatementBreak)  := BREAK_OR_SKIP;
+CompletionKind CompletionOf(SemanticStatementReturn) := RETURN_OR_THROW;
+CompletionKind CompletionOf(SemanticStatementThrow)  := RETURN_OR_THROW;
+
+
+
+CompletionKind MinimumCompletion(Sequence<CompletionKind> completions) :=
+	1. *Let* `result` be *RETURN_OR_THROW*.
+	2. *For each* `completion` in `completions`:
+		1. *If* `result` is *RETURN_OR_THROW*:
+			1. *If* `completion` is not *RETURN_OR_THROW*:
+				1. *Set* `result` to `completion`.
+			2. *Else:*
+				1. Fall through.
+		2. *Else If* `result` is *BREAK_OR_SKIP*:
+			1. *If* `completion` is *NORMAL*:
+				1. *Set* `result` to `completion`.
+			2. *Else:*
+				1. Fall through.
+		3. *Else:*
+			1. *Assert:* `result` is *NORMAL*.
+			2. Fall through.
+	3. *Return:* `result`.
+;
+
+
+
+CompletionKind MaximumCompletion(Sequence<CompletionKind> completions) :=
+	1. *Let* `result` be *NORMAL*.
+	2. *For each* `completion` in `completions`:
+		1. *If* `result` is *NORMAL*:
+			1. *If* `completion` is not *NORMAL*:
+				1. *Set* `result` to `completion`.
+			2. *Else:*
+				1. Fall through.
+		2. *Else If* `result` is *BREAK_OR_SKIP*:
+			1. *If* `completion` is *RETURN_OR_THROW*:
+				1. *Set* `result` to `completion`.
+			2. *Else:*
+				1. Fall through.
+		3. *Else:*
+			1. *Assert:* `result` is *RETURN_OR_THROW*.
+			2. Fall through.
+	3. *Return:* `result`.
+;

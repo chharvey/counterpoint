@@ -14,6 +14,7 @@ import {
 import {TYPE} from '../../../typer/index.ts';
 import type {SyntaxNodeType} from '../../utils-private.ts';
 import {STMT} from '../index.ts';
+import {CompletionKind} from '../CompletionKind.ts';
 import type {Block} from '../Block.ts';
 import {Expression} from './Expression.ts';
 
@@ -36,7 +37,7 @@ export class ExpressionBlock extends Expression {
 
 	@memoizeMethod
 	public override type(): TYPE.Type {
-		if (this.block.completion) {
+		if (this.block.completion !== CompletionKind.NORMAL) {
 			return TYPE.NOTHING;
 		}
 		assert.ok(this.block.children.length, 'Expected Block to contain at least 1 statement.');
