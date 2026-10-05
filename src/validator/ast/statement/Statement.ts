@@ -67,6 +67,7 @@ export class StmtVisitor<T> {
  * - StatementConditional
  * - StatementBreakable
  * - StatementBreak
+ * - StatementReturn
  */
 export abstract class Statement extends AstNode implements Buildable {
 	/**

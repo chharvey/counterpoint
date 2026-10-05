@@ -27,7 +27,7 @@ export class OperationTernary extends Operation {
 	}
 
 	public constructor(
-		start_node: SyntaxNodeFamily<'expression_conditional', ['break']>,
+		start_node: SyntaxNodeFamily<'expression_conditional', ['break', 'return']>,
 		operator: Operator.COND,
 		public readonly operand0: Expression,
 		public readonly operand1: Expression,

@@ -259,6 +259,15 @@ test.suite('CodeGenerator', () => {
 				], cg.vm.reftype.Map),
 			);
 		});
+		test.test('`#codegenFunction` (struct.new) with id and arity.', () => {
+			assertEqualBins(
+				cg.codegenFunction(3n),
+				wasm.struct.new([
+					cg.vm.Object.ctrPlusPlus(),
+					wasm.i32.const(3),
+				], cg.vm.heaptype.Function),
+			);
+		});
 
 		test.test('#codegenMaybe', () => {
 			assertEqualBins(

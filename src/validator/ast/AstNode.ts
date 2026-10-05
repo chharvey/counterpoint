@@ -218,11 +218,12 @@ export class AstNodeVisitor<T> {
  * - PropertyType
  * - Property
  * - Case
+ * - ParameterFunction
+ * - Block
+ * - Goal
  * - Type
  * - Expression
  * - Statement
- * - Block
- * - Goal
  *
  * Known subinterfaces:
  * - Buildable

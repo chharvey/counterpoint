@@ -46,7 +46,7 @@ export class InstrVisitor<T> {
  * Known subclasses:
  * - Drop
  * - Decl
- * - Set
+ * - OpSet
  * - CollectionDynamicSet
  * - CollectionDynamicCopy
  */

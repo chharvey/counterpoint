@@ -3,6 +3,7 @@ import * as test from 'node:test';
 import * as binaryen from 'binaryen.ts';
 import * as xjs from 'extrajs';
 import {
+	assert_instanceof,
 	Validator,
 	AST,
 	VALUE,
@@ -439,6 +440,7 @@ test.suite('Opcode', () => {
 							IntrinsicName.DICT,
 							IntrinsicName.SET,
 							IntrinsicName.MAP,
+							IntrinsicName.FUNCTION,
 						] as const).forEach((name, i) => {
 							test.test(name, () => {
 								const builder = new Builder();
@@ -459,6 +461,7 @@ test.suite('Opcode', () => {
 									VALUE.Dict,
 									VALUE.Set,
 									VALUE.Map,
+									VALUE.Function,
 								][i])));
 							});
 						});
@@ -948,6 +951,21 @@ test.suite('Opcode', () => {
 						]);
 					});
 				});
+			});
+
+			test.suite('OpFunction', () => {
+				const {stmts, builder} = setupScript(`{
+					\\(x: int): void {
+						x;
+						return;
+					};
+				}`, {codegen: false});
+				const typ: TYPE.Type = (stmts[0] as AST.STMT.StatementExpression).expr!.type();
+				assert_instanceof(typ, TYPE.Function);
+				return assert.deepStrictEqual(
+					(builder.instructions[0] as OP.Drop).value.interpret(new Interpreter()),
+					new VALUE.Function(typ, '\\(x: int): void { x; return; }'),
+				);
 			});
 		});
 
@@ -1679,21 +1697,7 @@ test.suite('Opcode', () => {
 			test.suite('Instance', () => {
 				test.test('INSTANCEOF', () => {
 					const {builder, cg, wasm} = setupScript(`{
-						${[
-							IntrinsicName.SYMBOL,
-							IntrinsicName.INTEGER,
-							IntrinsicName.NATURAL,
-							IntrinsicName.FLOAT,
-							IntrinsicName.STRING,
-							IntrinsicName.OBJECT,
-							IntrinsicName.LIST,
-							IntrinsicName.DICT,
-							IntrinsicName.SET,
-							IntrinsicName.MAP,
-							IntrinsicName.MAYBE,
-							IntrinsicName.NONE,
-							IntrinsicName.SOME,
-						].map((classname) => `null is ${classname};`).join('\n')};
+						${INTRINSICS.slice(2).map((classname) => `null is ${classname};`).join('\n')};
 					}`);
 					const operand: binaryen.ExpressionRef = genConst(cg);
 					return assertEqualBins(builder.instructions.map((instr) => instr.codegen(cg)), [
@@ -1710,6 +1714,7 @@ test.suite('Opcode', () => {
 						cg.vm.op.isMaybe(operand),
 						cg.vm.op.isNone(operand),
 						cg.vm.op.isSome(operand),
+						cg.vm.op.isFunction(operand),
 					].map((expr) => wasm.drop(expr)));
 				});
 				test.test('CAST', () => {
@@ -1733,6 +1738,7 @@ test.suite('Opcode', () => {
 						cg.vm.op.asMaybe(operand),
 						cg.vm.op.asNone(operand),
 						cg.vm.op.asSome(operand),
+						cg.vm.op.asFunction(operand),
 					].map((expr) => wasm.drop(expr)));
 				});
 			});
@@ -1794,6 +1800,19 @@ test.suite('Opcode', () => {
 						cg.vm.op.id(genConst(cg, 2.0), genConst(cg, 3n)),
 						cg.vm.op.eq(genConst(cg, 2.0), genConst(cg, 3n)),
 					],
+				);
+			});
+
+			test.test('OpFunction', () => {
+				const {stmts, builder, cg} = setupScript(`{
+					\\(x: int, $y: int, zulu= z: int): void {
+						x * y + z;
+						return;
+					};
+				}`);
+				return assertEqualBins(
+					(stmts[0] as AST.STMT.StatementExpression).expr!.build(builder).codegen(cg),
+					cg.vm.Value.newComposite(cg.codegenFunction(3n)),
 				);
 			});
 		});

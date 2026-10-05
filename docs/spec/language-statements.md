@@ -11,6 +11,10 @@ This chapter defines the syntax, semantics, and behavior of statements in the Co
 
 
 
+## Function Declaration
+
+
+
 ## Variable/Property Claim
 
 
@@ -31,4 +35,4 @@ This chapter defines the syntax, semantics, and behavior of statements in the Co
 
 
 
-# Break & Skip
+## Break & Skip

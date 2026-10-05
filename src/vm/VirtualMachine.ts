@@ -31,6 +31,7 @@ type TypeKey = (
 	| 'Dict'
 	| 'Map'
 	| 'Maybe'
+	| 'Function'
 );
 
 
@@ -229,6 +230,7 @@ const TYPES: {
 	tb.setSubType(i_map, tb.getTempHeapType(i_object));
 	tb.setOpen(i_map);
 
+	/* (type $Maybe ...) */
 	const i_maybe: number = tb.getSize();
 	tb.grow(1);
 	tb.setStructType(i_maybe, [
@@ -238,6 +240,17 @@ const TYPES: {
 	// @ts-expect-error --- incorrect `setSubType` signature
 	tb.setSubType(i_maybe, tb.getTempHeapType(i_object));
 	// `$Maybe` is final
+
+	/* (type $Function ...) */
+	const i_function: number = tb.getSize();
+	tb.grow(1);
+	tb.setStructType(i_function, [
+		/* $id */    TypeBuilder_makeField(binaryen.Type.i64),
+		/* $arity */ TypeBuilder_makeField(binaryen.Type.i32, 'notPacked', true),
+	]);
+	// @ts-expect-error --- incorrect `setSubType` signature
+	tb.setSubType(i_function, tb.getTempHeapType(i_object));
+	// `$Function` is final
 
 	const heaptypes: readonly binaryen.HeapType[] = tb.buildAndDispose();
 
@@ -257,6 +270,7 @@ const TYPES: {
 			Dict:         heaptypes[i_dict],
 			Map:          heaptypes[i_map],
 			Maybe:        heaptypes[i_maybe],
+			Function:     heaptypes[i_function],
 		},
 
 		reftypeRegistry: {
@@ -274,6 +288,7 @@ const TYPES: {
 			Dict:         binaryen.getTypeFromHeapType(heaptypes[i_dict],          false),
 			Map:          binaryen.getTypeFromHeapType(heaptypes[i_map],           false),
 			Maybe:        binaryen.getTypeFromHeapType(heaptypes[i_maybe],         false),
+			Function:     binaryen.getTypeFromHeapType(heaptypes[i_function],      false),
 		},
 
 		reftypeNullRegistry: {

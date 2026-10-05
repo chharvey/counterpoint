@@ -2,7 +2,11 @@ import * as assert from 'node:assert';
 import * as test from 'node:test';
 import {
 	assert_instanceof,
+	TYPE,
+	Validator,
 	AST,
+	type SymbolSchema,
+	SymbolSchemaVar,
 	ReferenceErrorUndeclared,
 	ReferenceErrorKind,
 	AssignmentErrorDuplicateDeclaration,
@@ -11,6 +15,8 @@ import {
 	TypeErrorNotAssignable,
 } from '../../src/index.ts';
 import {
+	repeat,
+	assert_shallowStrictEqual,
 	assertAssignable,
 	setupScript,
 } from '../utils.ts';
@@ -18,6 +24,206 @@ import {
 
 
 test.suite('AstNode', () => {
+	test.suite('#varCheck', () => {
+		test.suite('ParameterFunction', () => {
+			test.test('adds a SymbolSchema to the symbol table with a preset `type` value of `anything`.', () => {
+				const {stmts} = setupScript(`{
+					\\(a: int, mut b: int, mut $c: int, delta= d: int): void { return; };
+				}`, {varCheck: false});
+				const id_a:     bigint = Validator.cookTokenIdentifier('a');
+				const id_b:     bigint = Validator.cookTokenIdentifier('b');
+				const id_c:     bigint = Validator.cookTokenIdentifier('c');
+				const id_delta: bigint = Validator.cookTokenIdentifier('delta');
+				const id_d:     bigint = Validator.cookTokenIdentifier('d');
+				const fn = (stmts[0] as AST.STMT.StatementExpression).expr as AST.EXPR.Function;
+				assert.ok(!fn.block.validator.hasSymbol(id_a));
+				assert.ok(!fn.block.validator.hasSymbol(id_b));
+				assert.ok(!fn.block.validator.hasSymbol(id_c));
+				assert.ok(!fn.block.validator.hasSymbol(id_delta));
+				assert.ok(!fn.block.validator.hasSymbol(id_d));
+				fn.varCheck();
+				assert.ok(fn.block.validator.hasSymbol(id_a));
+				assert.ok(fn.block.validator.hasSymbol(id_b));
+				assert.ok(fn.block.validator.hasSymbol(id_c));
+				assert.ok(!fn.block.validator.hasSymbol(id_delta)); // param key `delta` is not in symbol table
+				assert.ok(fn.block.validator.hasSymbol(id_d));
+				const info_a: SymbolSchema | undefined = fn.block.validator.getSymbol(id_a);
+				const info_b: SymbolSchema | undefined = fn.block.validator.getSymbol(id_b);
+				const info_c: SymbolSchema | undefined = fn.block.validator.getSymbol(id_c);
+				const info_d: SymbolSchema | undefined = fn.block.validator.getSymbol(id_d);
+				assert_instanceof(info_a, SymbolSchemaVar);
+				assert_instanceof(info_b, SymbolSchemaVar);
+				assert_instanceof(info_c, SymbolSchemaVar);
+				assert_instanceof(info_d, SymbolSchemaVar);
+				assert.partialDeepStrictEqual(info_a, {
+					isWritable:      false,
+					isUninitialized: false,
+					type:            TYPE.ANYTHING,
+				});
+				assert.partialDeepStrictEqual(info_b, {
+					isWritable:      true,
+					isUninitialized: false,
+					type:            TYPE.ANYTHING,
+				});
+				assert.partialDeepStrictEqual(info_c, {
+					isWritable:      true,
+					isUninitialized: false,
+					type:            TYPE.ANYTHING,
+				});
+				return assert.partialDeepStrictEqual(info_d, {
+					isWritable:      false,
+					isUninitialized: false,
+					type:            TYPE.ANYTHING,
+				});
+			});
+			test.test('for blank params, does not add to symbol table.', () => {
+				const {stmts} = setupScript(`{
+					\\(_: int): void { return; };
+				}`, {varCheck: false});
+				const fn = (stmts[0] as AST.STMT.StatementExpression).expr as AST.EXPR.Function;
+				assert.ok(!fn.block.validator.hasSymbol(0x100n));
+				fn.varCheck();
+				return assert.ok(!fn.block.validator.hasSymbol(0x100n));
+			});
+			test.test('allows duplicate blank param.', () => {
+				setupScript(`{
+					\\(_: int, _: str): void { return; };
+				}`, {typeCheck: false}); // assert does not throw
+			});
+			test.test('disallows duplicate param ids.', () => {
+				const {stmts} = setupScript(`{
+					\\(a: int, a: float): void { return; };
+				}`, {varCheck: false});
+				const fn0 = (stmts[0] as AST.STMT.StatementExpression).expr as AST.EXPR.Function;
+				return assert.throws(() => fn0.varCheck());
+			});
+			test.test('parameters do not shadow outside scope.', () => {
+				setupScript(`{
+					val x: int = 42;
+					\\(x: str): void { x; return; };
+					\\(z: float): void {
+						\\(z: bool): void { z; return; };
+						z;
+						return;
+					};
+					x;
+				}`, {typeCheck: false}); // assert does not throw
+			});
+			test.test('does not throw when parameter name is reused outside of function scope.', () => {
+				setupScript(`{
+					\\(x: str): void { return; };
+					val x: int = 42;
+				}`, {typeCheck: false}); // assert does not throw
+			});
+			test.test('parameter itself does not throw when it is shadowed.', () => {
+				const {stmts} = setupScript(`{
+					val x: int = 42;
+					\\(y: str): void { % no error
+						val y: float = 4.2; %> AssignmentErrorDuplicateDeclaration
+						return;
+					};
+				}`, {varCheck: false});
+				stmts[0].varCheck();
+				const fn = (stmts[1] as AST.STMT.StatementExpression).expr as AST.EXPR.Function;
+				fn.parameters[0].varCheck(); // assert does not throw
+				return assert.throws(() => fn.block.varCheck(), AssignmentErrorDuplicateDeclaration);
+			});
+		});
+
+
+		test.suite('Block', () => {
+			test.suite('hoisting.', () => {
+				test.test('allows function declaration overloads.', () => {
+					const {stmts} = setupScript(`{
+						{
+							func f(): void { return; };
+							func f(a: int): void { return; };
+						};
+						{
+							type f = \\(int) => void;
+							func f(a: int): void { return; };
+						};
+						{
+							val f = \\(): void { return; };
+							func f(a: int): void { return; };
+						};
+					}`, {varCheck: false});
+					const blocks: readonly AST.Block[] = stmts.map((stmt) => ((stmt as AST.STMT.StatementExpression).expr as AST.EXPR.ExpressionBlock).block);
+					blocks[0].varCheck(); // assert does not throw
+					assert.throws(() => blocks[1].varCheck(), AssignmentErrorDuplicateDeclaration);
+					return assert.throws(() => blocks[2].varCheck(), AssignmentErrorDuplicateDeclaration);
+				});
+			});
+			test.suite('function blocks.', () => {
+				test.test('allows implicit captures for type aliases and function names.', () => {
+					setupScript(`{
+						type T = float;
+						func f(): void { return; }
+						\\(): void {
+							val x: T = 42;
+							f;
+							return;
+						};
+					}`, {typeCheck: false}); // assert does not throw
+				});
+				test.test('throws when variable capture is not explicit.', () => {
+					const {stmts} = setupScript(`{
+						val x: int = 42;
+						\\(): void {
+							x; %> error
+							return;
+						};
+					}`, {varCheck: false});
+					stmts[0].varCheck();
+					const fn = (stmts[1] as AST.STMT.StatementExpression).expr as AST.EXPR.Function;
+					return assert.throws(() => fn.block.varCheck(), ReferenceErrorUndeclared);
+				});
+				test.test('throws for undeclared variables.', () => {
+					const {stmts} = setupScript(`{
+						\\(): void {
+							z; %> error
+							return;
+						};
+					}`, {varCheck: false});
+					const fn = (stmts[0] as AST.STMT.StatementExpression).expr as AST.EXPR.Function;
+					return assert.throws(() => fn.block.varCheck(), ReferenceErrorUndeclared);
+				});
+			});
+		});
+	});
+
+
+
+	test.suite('#typeCheck', () => {
+		test.suite('ParameterFunction', () => {
+			test.test('sets the SymbolSchemaVar `type`.', () => {
+				const {stmts} = setupScript(`{
+					\\(a: float, mut b: str): void { return; };
+				}`, {typeCheck: false});
+				const id_a: bigint = Validator.cookTokenIdentifier('a');
+				const id_b: bigint = Validator.cookTokenIdentifier('b');
+				const fn = (stmts[0] as AST.STMT.StatementExpression).expr as AST.EXPR.Function;
+				assert.ok(fn.block.validator.hasSymbol(id_a));
+				assert.ok(fn.block.validator.hasSymbol(id_b));
+				const info_a: SymbolSchema | undefined = fn.block.validator.getSymbol(id_a);
+				const info_b: SymbolSchema | undefined = fn.block.validator.getSymbol(id_b);
+				assert_instanceof(info_a, SymbolSchemaVar);
+				assert_instanceof(info_b, SymbolSchemaVar);
+				assert_shallowStrictEqual(
+					[info_a.type, info_b.type],
+					repeat(TYPE.ANYTHING, 2),
+				);
+				fn.parameters.forEach((param) => param.typeCheck());
+				return assert_shallowStrictEqual(
+					[info_a.type, info_b.type],
+					[TYPE.FLOAT, TYPE.STR],
+				);
+			});
+		});
+	});
+
+
+
 	test.suite('Index', () => {
 		test.suite('#index', () => {
 			test.test('returns the cooked value of the integer token.', () => {

@@ -4,7 +4,7 @@ import {Terminator} from './Terminator.ts';
 
 
 
-/** Transfer control to the given label, conditionally if specified. */
+/** End the program. */
 export class EndProgram extends Terminator {
 	public constructor() {
 		super(OpCode.ENDPROGRAM);

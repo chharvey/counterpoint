@@ -94,6 +94,18 @@
 		(field $id i64)
 
 		;; --- own ---
+		;; the potentially held value
 		(field $value (ref null $Value))
+	)))
+
+	;; precursor to the `Function` class
+	(type $Function (sub final $Object (struct
+		;; --- inherited ---
+		;; unique id for hashing
+		(field $id i64)
+
+		;; --- own ---
+		;; number of functional parameters
+		(field $arity (mut i32))
 	)))
 )

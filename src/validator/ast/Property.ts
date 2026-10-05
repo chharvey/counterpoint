@@ -7,7 +7,7 @@ import type {Key} from './Key.ts';
 
 export class Property extends AstNode {
 	public constructor(
-		start_node: SyntaxNodeFamily<'property', ['break']>,
+		start_node: SyntaxNodeFamily<'property', ['break', 'return']>,
 		public readonly key: Key,
 		public readonly val: EXPR.Expression,
 	) {

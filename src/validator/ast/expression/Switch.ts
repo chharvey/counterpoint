@@ -25,7 +25,7 @@ export class Switch extends Expression {
 	}
 
 	public constructor(
-		start_node: SyntaxNodeFamily<'expression_switch', ['break']>,
+		start_node: SyntaxNodeFamily<'expression_switch', ['break', 'return']>,
 		private readonly value:    Expression,
 		private readonly cases:    readonly Case[],
 		private readonly default_: Expression,

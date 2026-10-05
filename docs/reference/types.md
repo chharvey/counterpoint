@@ -1176,3 +1176,20 @@ Some[bool](false) || "hello"; %== Some[bool](false)
 ```
 
 The [maybe access operator](./expressions-operators.md#maybe-access) works very well with the Maybe type.
+
+
+
+## Callable Types
+
+
+### Functions
+Functions are callable objects, which codify algorithms to be dynamically executed and can be reused many times.
+
+Some functions have parameters, and these functions take arguments when called.
+When a function is called, it obtains control of execution within a new scope.
+Upon completing execution, functions return control back to their caller,
+and some of these functions return a value along with control.
+Some functions do not even complete execution, either because their author specified so,
+or because something broke internally.
+
+Functions are explored in-depth in the [Functions](./functions.md) chapter.

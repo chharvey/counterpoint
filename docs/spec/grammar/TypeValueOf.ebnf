@@ -150,3 +150,27 @@ Type! TypeValueOf(SemanticTypeOperation[operator: OR] oper) :=
 	3. *Let* `t1` be *Unwrap:* `TypeValueOf(oper.children.1)`.
 	4. *Return:* `Union(t0, t1)`.
 ;
+
+Type! TypeValueOf(SemanticTypeFunction fn) :=
+	1. *Let* `itemtypes` be a filtering of `fn.children` for each `child` such that `child` is a SemanticItemType.
+	2. *Let* `positional_params` be a new Sequence.
+	3. *For each* `itemtype` in `itemtypes`:
+		1. *Assert:* `itemtype.children.count` is 1.
+		2. *Let* `typedatum` be a new EntryTypeSchema [
+			type=     *Unwrap:* `TypeValueOf(itemtype.children.0)`,
+			optional= `itemtype.optional`,
+		].
+		3. Push `typedatum` to `positional_params`.
+	4. *Let* `proptypes` be a filtering of `fn.children` for each `child` such that `child` is a SemanticPropertyType.
+	5. *Let* `named_params` be a new Schema.
+	6. *For each* `propertytype` in `proptypes`:
+		1. *Assert:* `propertytype.children.count` is 2.
+		2. *Let* `typedatum` be a new EntryTypeSchema [
+			type=     *Unwrap:* `TypeValueOf(propertytype.children.1)`,
+			optional= `propertytype.optional`,
+		].
+		3. Set the property `propertytype.children.0.id` on `named_params` to the value `typedatum`.
+	7. *Return:* a new Function type whose positional parameter types are `positional_params`,
+		whose named parameter types are `named_params`,
+		and who does not contain a return type.
+;

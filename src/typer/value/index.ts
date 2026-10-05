@@ -22,4 +22,6 @@ export * from './Set.ts';
 export * from './Map.ts';
 export * from './Maybe.ts';
 
+export * from './Function.ts';
+
 export * from './exports.ts';

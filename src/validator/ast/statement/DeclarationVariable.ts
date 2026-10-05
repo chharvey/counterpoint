@@ -88,11 +88,11 @@ export class DeclarationVariable extends Statement {
 
 
 	public constructor(
-		start_node: SyntaxNodeFamily<'declaration_variable', ['break']>,
-		public  readonly writable: boolean,
-		public  readonly assignee: Serializable | null,
-		public  readonly typenode: AST_TYPE.Type | null,
-		public  readonly assigned: EXPR.Expression | null,
+		start_node: SyntaxNodeFamily<'declaration_variable', ['break', 'return']>,
+		public readonly writable: boolean,
+		public readonly assignee: Serializable | null,
+		public readonly typenode: AST_TYPE.Type | null,
+		public readonly assigned: EXPR.Expression | null,
 	) {
 		super(
 			start_node,
@@ -139,8 +139,7 @@ export class DeclarationVariable extends Statement {
 		this.assigned && typecheck_assign(this.assigned, assignee_type, this);
 		if (this.assignee) {
 			assert.ok(this.validator.hasSymbol(this.id!), `The validator symbol table should include ${this.id}.`);
-			const symbol = this.validator.getSymbol(this.id!) as SymbolSchemaVar;
-			symbol.type = assignee_type;
+			(this.validator.getSymbol(this.id!) as SymbolSchemaVar).type = assignee_type;
 		}
 	}
 
@@ -150,9 +149,9 @@ export class DeclarationVariable extends Statement {
 		const value:  OP.Value                    = this.assigned?.build(builder) ?? new OP.MaybeNew(symbol!.type);
 		if (this.assignee) {
 			symbol!.irType = value.type;
-			builder.pushInstruction(new OP.Decl(symbol!, symbol!.irType, value));
+			return builder.pushInstruction(new OP.Decl(symbol!, symbol!.irType, value));
 		} else {
-			builder.pushInstruction(new OP.Drop(value));
+			return builder.pushInstruction(new OP.Drop(value));
 		}
 	}
 }

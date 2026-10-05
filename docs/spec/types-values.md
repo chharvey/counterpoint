@@ -160,6 +160,14 @@ Property            | Read-Only? | Description
 \`isUninitialized\` | yes        | a Boolean, whether the variable was declared without an initial value
 \`type\`            | no         | the Counterpoint Language Type of the variable
 
+##### SymbolSchemaFunc
+A **SymbolSchemaFunc** represents the symbol a function declaration.
+
+Property  | Read-Only? | Description
+--------- | ---------- | -----------
+\`id\`    | yes        | the unique identifier of the declared function
+\`types\` | yes        | a mutable Sequence of Counterpoint Language Types for the function’s overloads
+
 
 ### Nodes
 
@@ -408,6 +416,19 @@ The objects that any given Maybe type describes are `Maybe` objects whose
 value, if it exists, is assignable to the type argument of the Maybe type.
 The **Maybe** class is abstract and enumerated by two concrete subclasses:
 **Some**, which holds a value, and **None**, which does not.
+
+
+### Callable Types
+
+- [Function Types](#function-types)
+
+#### Function Types
+A **Function** type describes instances of [`Function`](./intrinsics.md#function) and is parameterized by a triple containing
+a [Sequence](#sequence) of [EntryTypeSchema](#entrytypeschema) items representing positional function parameters, followed by
+a [Schema](#schema) with [EntryTypeSchema](#entrytypeschema) values representing named function parameters, followed optionally by
+a type representing a return type.
+The objects that any given Function type describes are `Function` objects whose
+parameters and return type are respectively assignable to the types parameterizing the Function Type.
 
 
 ### Nominal Types
@@ -718,11 +739,41 @@ Boolean Subtype(Type a, Type b) :=
 		6. *Else:*
 			1. *If* *UnwrapAffirm:* `Subtype(ak, bk)` is `true` *and* *UnwrapAffirm:* `Subtype(av, bv)` is `true`:
 				1. *Return:* `true`.
-	15. *If* `IsReference(a)` is `true` *and* `Equal(b, Object)` is `true`:
+	15. *If* `a` is a Function type *and* `b` is a Function type:
+		1. *Let* `app` be the positional parameter type arguments over `a`.
+		2. *Let* `apn` be the named parameter type arguments over `a`.
+		3. *Let* `ar` be the return type argument over `a`, if it exists.
+		4. *Let* `bpp` be the positional parameter type arguments over `b`.
+		5. *Let* `bpn` be the named parameter type arguments over `b`.
+		6. *Let* `br` be the return type argument over `b`, if it exists.
+		7. *Let* `ta` be a new Tuple type containing the items in `app`.
+		8. *Let* `tb` be a new Tuple type containing the items in `bpp`.
+		9. *If* *UnwrapAffirm:* `Subtype(tb, ta)` is `false`:
+			1. *Return:* `false`.
+		10. *Else:*
+			1. Fall through.
+		11. *Let* `ra` be a new Record type containing the properties in `apn`.
+		12. *Let* `rb` be a new Record type containing the properties in `bpn`.
+		13. *If* *UnwrapAffirm:* `Subtype(rb, ra)` is `false`:
+			1. *Return:* `false`.
+		14. *Else:*
+			1. Fall through.
+		15. *If* `ar` is not set *and* `br` is not set:
+			1. *Return:* `true`.
+		16. *Else:*
+			1. Fall through.
+		17. *If* `ar` is set *and* `br` is set:
+			1. *If* *UnwrapAffirm:* `Subtype(ar, br)` is `true`:
+				1. *Return:* `true`.
+			2. *Else:*
+				1. Fall through.
+		18. *Else:*
+			1. Fall through.
+	16. *If* `IsReference(a)` is `true` *and* `Equal(b, Object)` is `true`:
 		1. *Return:* `true`.
-	16. *If* every value that is assignable to `a` is also assignable to `b`:
+	17. *If* every value that is assignable to `a` is also assignable to `b`:
 		1. *Return:* `true`.
-	17. *Return:* `false`.
+	18. *Return:* `false`.
 ;
 ```
 

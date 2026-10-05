@@ -99,6 +99,8 @@ GE([Number Number]) -> Boolean;
 ID([Value Value]) -> Boolean;
 EQ([Value Value]) -> Boolean;
 
+LAMBDA(native-string native-bigint native-string);
+
 DROP([Value]);
 
 DECL(SymbolSchemaVar|native-string Type [Value?]);
@@ -129,6 +131,15 @@ Build(String  s) := (STR.CONST   s);
 
 Build(SemanticProperty prop) := Sequence [`Symbol(prop.0)`, `Build(prop.1)`];
 Build(SemanticCase     case) := Sequence [`Build(case.0)`, `Build(case.1)`];
+
+Build(SemanticBlock block) := block.children.map(Build);
+
+Build(SemanticGoal goal) := [
+	"start":
+	`Build(goal.0)`
+];
+
+
 
 Build(SemanticExpressionConstant[value: VALUE.Null]    const) := `Build(const.value)`;
 Build(SemanticExpressionConstant[value: VALUE.Boolean] const) := `Build(const.value)`;
@@ -298,7 +309,6 @@ Build(SemanticExpressionOperation[operator=GE][0: Number][1: Number] op) := (GE 
 Build(SemanticExpressionOperation[operator=ID] op) := (ID  [`Build(op.0)` `Build(op.1)`]);
 Build(SemanticExpressionOperation[operator=EQ] op) := (EQ  [`Build(op.0)` `Build(op.1)`]);
 
-
 Build(SemanticExpressionOperation[operator=AND] op) := [
 	(DECL ‹type› $left `Build(op.0)`)
 	(DECL ‹type› $result)
@@ -369,17 +379,27 @@ Build(SemanticExpressionSwitch ::= SemanticExpression__0 SemanticExpression__1) 
 	return `Build(SemanticExpression__1)`.
 ];
 
+Build(SemanticExpressionFunction) := (LAMBDA ‹temp_name› ‹arity› `SemanticExpressionFunction.source`);
+
+
+
 Build(SemanticDeclarationType decl) := [];
 
-Build(SemanticDeclarationVariable[id: RealNumber][writable: Boolean] ::= SemanticType? SemanticExpression) := [
+Build(SemanticDeclarationVariable[writable: Boolean][id: RealNumber] ::= SemanticType? SemanticExpression) := [
 	(DECL ‹type› `GetSymbolSchema(id)` `Build(SemanticExpression)`)
 ];
 Build(SemanticDeclarationVariable[writable=false] ::= SemanticType? SemanticExpression) := [
 	(DROP `Build(SemanticExpression)`)
 ];
-Build(SemanticDeclarationVariable[id: RealNumber][writable=true] ::= SemanticType) := [
+Build(SemanticDeclarationVariable[writable=true][id: RealNumber] ::= SemanticType) := [
 	(DECL ‹type› `GetSymbolSchema(id)` (MAYBE.NEW))
 ];
+
+Build(SemanticDeclarationFunction[id=*none*]) := [];
+Build(SemanticDeclarationFunction[id: RealNumber] ::= SemanticParameterFunction* SemanticBlock) := [(FUNC
+	`GetSymbolSchema(id)`
+	`SemanticParameterFunction*.length`
+)];
 
 Build(SemanticStatementExpression:has(SemanticExpression) stmt) := [
 	(DROP `Build(stmt.0)`)
@@ -506,12 +526,7 @@ Build(SemanticStatementIteration ::= SemanticType SemanticExpression SemanticBlo
 Build(SemanticStatementBreak[skip=false] stmt) := [ (GOTO "endwhile") ];
 Build(SemanticStatementBreak[skip=true]  stmt) := [ (GOTO "while") ];
 
-Build(SemanticBlock block) := block.children.map(Build);
-
-Build(SemanticGoal goal) := [
-	"start":
-	`Build(goal.0)`
-];
+Build(SemanticStatementReturn stmt); // TODO
 
 
 

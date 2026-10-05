@@ -25,7 +25,7 @@ export class Template extends Expression {
 	}
 
 	public constructor(
-		start_node: SyntaxNodeFamily<'string_template', ['break']>,
+		start_node: SyntaxNodeFamily<'string_template', ['break', 'return']>,
 		public override readonly children: // FIXME spread types
 			| readonly [Constant]
 			| readonly [Constant,                                             Constant]

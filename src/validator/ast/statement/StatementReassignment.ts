@@ -35,8 +35,8 @@ export class StatementReassignment extends Statement {
 
 	public constructor(
 		start_node: (
-			| SyntaxNodeFamily<'statement_set',    ['break']>
-			| SyntaxNodeFamily<'statement_delete', ['break']>
+			| SyntaxNodeFamily<'statement_set',    ['break', 'return']>
+			| SyntaxNodeFamily<'statement_delete', ['break', 'return']>
 		),
 		public readonly assignee:  EXPR.Variable | EXPR.Access,
 		public readonly assigned?: EXPR.Expression,

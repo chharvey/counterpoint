@@ -32,6 +32,23 @@ import {
 
 
 test.suite('Expression', () => {
+	test.suite('#varCheck', () => {
+		test.suite('ExpressionFunction (and DeclarationFunction)', () => {
+			test.test('disallows duplicate param keys.', () => {
+				const {stmts} = setupScript(`{
+					\\(a= b: int, a= c: float): void { return; };
+					\\($a: int, a= c: float): void { return; };
+				}`, {varCheck: false});
+				const fn0 = (stmts[0] as AST.STMT.StatementExpression).expr as AST.EXPR.Function;
+				const fn1 = (stmts[1] as AST.STMT.StatementExpression).expr as AST.EXPR.Function;
+				assert.throws(() => fn0.varCheck(), AssignmentErrorDuplicateKey);
+				return assert.throws(() => fn1.varCheck(), AssignmentErrorDuplicateKey);
+			});
+		});
+	});
+
+
+
 	test.suite('#type', () => {
 		test.suite('Variable', () => {
 			test.test('wraps in `Maybe` when accessed variable is uninitialized.', () => {
@@ -138,6 +155,25 @@ test.suite('Expression', () => {
 						default 43;
 				}`, {typeCheck: false});
 				assert.throws(() => (stmts[0] as AST.STMT.StatementExpression).expr!.typeCheck(), TypeErrorInvalidOperation);
+			});
+		});
+
+
+		test.suite('ExpressionFunction', () => {
+			test.test('returns a function type.', () => {
+				const {stmts} = setupScript(`{
+					\\(a: int, mut b: float | null, mut $c: bool, delta= d: nat): void { return; };
+				}`, {build: false});
+				return assert.deepStrictEqual(
+					(stmts[0] as AST.STMT.StatementExpression).expr!.type(),
+					new TYPE.Function(TYPE.Tuple.fromTypes([
+						TYPE.INT,
+						TYPE.FLOAT.union(TYPE.NULL),
+					]), TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>([
+						[Validator.cookTokenIdentifier('c'),     TYPE.BOOL],
+						[Validator.cookTokenIdentifier('delta'), TYPE.NAT],
+					]))),
+				);
 			});
 		});
 	});
@@ -358,7 +394,7 @@ test.suite('Expression', () => {
 					(DROP (GET $1))
 					(ENDPROGRAM)
 			`.trim());
-			assert.strictEqual(setupScript(`{
+			return assert.strictEqual(setupScript(`{
 				switch 4.2
 					case 1.1       -> 10
 					case 2.0 + 0.2 -> 20
@@ -404,6 +440,23 @@ test.suite('Expression', () => {
 					(GOTO "block-3")
 				"block-3":
 					(DROP (GET $0))
+					(ENDPROGRAM)
+			`.trim());
+		});
+		test.test('ExpressionFunction', () => {
+			assert.strictEqual(setupScript(`{
+				\\(x: int): void {
+					x;
+					return;
+				};
+				\\(x: float, y: float): void {
+					x + y;
+					return;
+				};
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
+				"block-0":
+					(DROP (LAMBDA $0 \\(x: int): void { x; return; }))
+					(DROP (LAMBDA $1 \\(x: float, y: float): void { x + y; return; }))
 					(ENDPROGRAM)
 			`.trim());
 		});
@@ -628,7 +681,7 @@ test.suite('Expression', () => {
 							cons:   AggregateError,
 							errors: dupes.map((k) => ({
 								cons:    AssignmentErrorDuplicateKey,
-								message: `Duplicate record/dict key \`${k}\`.`,
+								message: `Duplicate record/dict/parameter key \`${k}\`.`,
 							})),
 						});
 						return true;

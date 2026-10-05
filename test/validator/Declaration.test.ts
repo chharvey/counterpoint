@@ -8,6 +8,7 @@ import {
 	type SymbolSchema,
 	SymbolSchemaType,
 	SymbolSchemaVar,
+	SymbolSchemaFunc,
 	TYPE,
 	AssignmentErrorDuplicateDeclaration,
 	AssignmentErrorMissingType,
@@ -171,6 +172,57 @@ test.suite('Declaration', () => {
 					val _: int = 42;
 					val _: str = "the answer";
 				}`, {typeCheck: false}); // assert does not throw
+			});
+		});
+
+		test.suite('DeclarationFunction', () => {
+			test.test('allows duplicate blank identifier.', () => {
+				setupScript(`{
+					func _(): void { return; };
+					func _(a: int): void { return; };
+				}`, {typeCheck: false}); // assert does not throw
+			});
+			test.test('does not var-check function names.', () => {
+				const {stmts} = setupScript(`{
+					func f(): void { return; };
+					func f(a: int): void { return; };
+					type T = \\(int) => void;
+					func T(a: int): void { return; };
+					val x = \\(): void { return; };
+					func x(a: int): void { return; };
+				}`, {varCheck: false});
+				xjs.Array.forEachAggregated(stmts, (stmt) => stmt.varCheck()); // assert does not throw
+			});
+			test.test('allows self-reference, but not self-shadowing.', () => {
+				setupScript(`{
+					func f(): void {
+						f;
+						return;
+					};
+				}`, {typeCheck: false}); // assert does not throw
+				assert.throws(() => setupScript(`{
+					func f(): void { % no error
+						val f: int = 42; %> AssignmentErrorDuplicateDeclaration
+						return;
+					};
+				}`, {typeCheck: false}), AssignmentErrorDuplicateDeclaration);
+				return assert.throws(() => setupScript(`{
+					func f( % no error
+						f: int, %> AssignmentErrorDuplicateDeclaration
+					): void {
+						return;
+					};
+				}`, {typeCheck: false}), AssignmentErrorDuplicateDeclaration);
+			});
+			test.test('hoists function name.', () => {
+				setupScript(`{
+					f;
+					func f(): void { return; };
+				}`, {typeCheck: false});
+				setupScript(`{
+					func f(): void { g; return; };
+					func g(): void { f; return; };
+				}`, {typeCheck: false});
 			});
 		});
 	});
@@ -564,6 +616,70 @@ test.suite('Declaration', () => {
 				});
 			});
 		});
+
+		test.suite('DeclarationFunction', () => {
+			test.test('sets the SymbolSchemaFunc `type`.', () => {
+				const {stmts} = setupScript(`{
+					func f(a: float, mut b: str): void { return; };
+				}`, {typeCheck: false});
+				const id_f: bigint = Validator.cookTokenIdentifier('f');
+				const id_a: bigint = Validator.cookTokenIdentifier('a');
+				const id_b: bigint = Validator.cookTokenIdentifier('b');
+				const fn = stmts[0] as AST.STMT.DeclarationFunction;
+				assert.ok(fn.validator.hasSymbol(id_f));
+				assert.ok(fn.block.validator.hasSymbol(id_a));
+				assert.ok(fn.block.validator.hasSymbol(id_b));
+				const info_f: SymbolSchema | undefined = fn.validator.getSymbol(id_f);
+				const info_a: SymbolSchema | undefined = fn.block.validator.getSymbol(id_a);
+				const info_b: SymbolSchema | undefined = fn.block.validator.getSymbol(id_b);
+				assert_instanceof(info_f, SymbolSchemaFunc);
+				assert_instanceof(info_a, SymbolSchemaVar);
+				assert_instanceof(info_b, SymbolSchemaVar);
+				assert.strictEqual(info_f.types.length, 0);
+				assert_shallowStrictEqual(
+					[info_a.type, info_b.type],
+					repeat(TYPE.ANYTHING, 2),
+				);
+				fn.typeCheck();
+				assert.strictEqual(info_f.types.length, 1);
+				assertEqualTypes(info_f.types[0], new TYPE.Function(TYPE.Tuple.fromTypes([
+					TYPE.FLOAT,
+					TYPE.STR,
+				])));
+				return assert_shallowStrictEqual(
+					[info_a.type, info_b.type],
+					[TYPE.FLOAT, TYPE.STR],
+				);
+			});
+			test.test('pushes to array of overload signatures.', () => {
+				const {stmts, goal} = setupScript(`{
+					func f(a: int): void { "1"; return; }
+					func f($b: nat): void { "2"; return; }
+				}`, {typeCheck: false});
+				const {validator} = goal.block!;
+				const id_f: bigint = Validator.cookTokenIdentifier('f');
+				assert.ok(validator.hasSymbol(id_f));
+				const info_f: SymbolSchema | undefined = validator.getSymbol(id_f);
+				assert_instanceof(info_f, SymbolSchemaFunc);
+				assert.strictEqual(info_f.types.length, 0);
+				stmts[0].typeCheck();
+				stmts[1].typeCheck();
+				return assertEqualTypes(info_f.types, [
+					new TYPE.Function(TYPE.Tuple.fromTypes([TYPE.INT])),
+					new TYPE.Function(new TYPE.Tuple(), TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>([
+						[Validator.cookTokenIdentifier('b'), TYPE.NAT],
+					]))),
+				]);
+			});
+			test.test('throws when overloads have identical signatures.', () => {
+				const {stmts} = setupScript(`{
+					func f(a: int): void { "1"; return; }
+					func f(b: int): void { "2"; return; }
+				}`, {typeCheck: false});
+				stmts[0].typeCheck(); // assert does not throw
+				return assert.throws(() => stmts[1].typeCheck(), /Identical function overload type/);
+			});
+		});
 	});
 
 
@@ -606,6 +722,96 @@ test.suite('Declaration', () => {
 					(DECL <int> assignee_e (GET assignee_c))
 					(ENDPROGRAM)
 			`.trim());
+		});
+		test.suite('DeclarationFunction', () => {
+			test.test('function declared with blank identifier builds nothing.', () => {
+				assert.strictEqual(setupScript(`{
+					42;
+					func _(foo: int): void {
+						foo;
+						return;
+					}
+					43;
+				}`, {codegen: false}).builder.print(), xjs.String.dedent`
+					"block-0":
+						(DROP (INT.CONST 42))
+						(DROP (INT.CONST 43))
+						(ENDPROGRAM)
+				`.trim());
+			});
+			test.test('single parameter and return statement.', () => {
+				assert.strictEqual(setupScript(`{
+					func f(foo: int): void {
+						foo;
+						return;
+						42;
+					}
+				}`, {codegen: false}).builder.print(), xjs.String.dedent`
+					"block-0":
+						(GOTO "block-2")
+					"block-1":
+						(DECL <int> foo)
+						(DROP (GET foo))
+						(GOTO "caller")
+					"unreachable-3":
+						(DROP (INT.CONST 42))
+						(DROP (TRAP))
+						(ENDPROGRAM)
+					"block-2":
+						(ENDPROGRAM)
+				`.trim());
+			});
+			test.test('conditional return statements.', () => {
+				assert.strictEqual(setupScript(`{
+					func f(): void {
+						if 42 < 43 then {
+							44;
+							return;
+						} else {
+							45;
+							return;
+						};
+						46;
+					}
+				}`, {codegen: false}).builder.print(), xjs.String.dedent`
+					"block-0":
+						(GOTO "block-2")
+					"block-1":
+						(GOTO.IF (LT (INT.CONST 42) (INT.CONST 43)) "block-3" "block-4")
+					"block-3":
+						(DROP (INT.CONST 44))
+						(GOTO "caller")
+					"unreachable-6":
+						(GOTO "block-5")
+					"block-4":
+						(DROP (INT.CONST 45))
+						(GOTO "caller")
+					"unreachable-7":
+						(GOTO "block-5")
+					"block-5":
+						(DROP (INT.CONST 46))
+						(DROP (TRAP))
+						(ENDPROGRAM)
+					"block-2":
+						(ENDPROGRAM)
+				`.trim());
+			});
+			test.test('no return statement (should be invalid).', () => {
+				assert.strictEqual(setupScript(`{
+					func f(): void {
+						42;
+					}
+				}`, {codegen: false}).builder.print(), xjs.String.dedent`
+					"block-0":
+						(GOTO "block-2")
+					"block-1":
+						(DROP (INT.CONST 42))
+						(DROP (TRAP))
+						(ENDPROGRAM)
+					"block-2":
+						(ENDPROGRAM)
+				`.trim());
+			});
 		});
 	});
 });

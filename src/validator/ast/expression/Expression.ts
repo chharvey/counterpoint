@@ -105,6 +105,7 @@ export class ExprVisitor<T> {
  * - Claim
  * - Operation
  * - Switch
+ * - ExpressionFunction
  *
  * Known subinterfaces:
  * - Reassignable

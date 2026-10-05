@@ -17,7 +17,7 @@ import type {Value} from './Value.ts';
 
 
 
-/** Transfer control to the given label, conditionally if specified. */
+/** Conditionally transfer control to the given labels. */
 export class GotoConditional extends Terminator {
 	/**
 	 * Construct a new Goto object.
@@ -61,7 +61,7 @@ export class GotoConditional extends Terminator {
 			cg.getBlockRef(this.labelIfTrue),
 			cg.vm.Value.boolToI32(this.condition.codegen(cg)),
 		);
-		relooper.addBranch(
+		return relooper.addBranch(
 			cg.getBlockRef(this._containerLabel!),
 			cg.getBlockRef(this.labelIfFalse),
 		); // else (default)

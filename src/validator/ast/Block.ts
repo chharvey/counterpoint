@@ -1,4 +1,5 @@
 import * as assert from 'node:assert';
+import * as xjs from 'extrajs';
 import type {Builder} from '../../index.ts';
 import {
 	type NonemptyArray,
@@ -9,11 +10,15 @@ import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
+import {
+	SymbolSchemaType,
+	SymbolSchemaFunc,
+} from '../index.ts';
 import {Validator} from '../Validator.ts';
 import type {SyntaxNodeFamily} from '../utils-private.ts';
 import {
 	Goal,
-	type STMT,
+	STMT,
 } from './index.ts';
 import {AstNode} from './AstNode.ts';
 import type {Buildable} from './Buildable.ts';
@@ -35,24 +40,37 @@ export class Block extends AstNode implements Buildable {
 	}
 
 
-	#validator?: Validator;
-
 	public constructor(
-		start_node: SyntaxNodeFamily<'block', ['break']>,
+		start_node: SyntaxNodeFamily<'block', ['break', 'return']>,
 		public override readonly children: Readonly<NonemptyArray<STMT.Statement>>,
 		private readonly config:           CplConfig,
+		private readonly isFuncBlock:      boolean,
 	) {
 		super(start_node, {}, children);
 	}
 
+	@memoizeGetter
 	public override get validator(): Validator {
-		this.#validator ??= new Validator(this.config, this.parent?.validator);
-		return this.#validator;
+		const v = new Validator(this.config, this.isFuncBlock ? undefined : this.parent?.validator);
+		if (this.isFuncBlock) {
+			this.parent?.validator.getAllSymbols().forEach((symb) => {
+				// add all implicitly-captured symbols to the function block
+				if (symb instanceof SymbolSchemaType || symb instanceof SymbolSchemaFunc) { // TODO: add a property of SymbolSchema
+					v.addSymbol(symb);
+				}
+			});
+		}
+		return v;
 	}
 
 	@memoizeGetter
 	public get hasBottomType(): boolean {
 		return this.children.some((c) => c.hasBottomType);
+	}
+
+	public override varCheck(): void {
+		xjs.Array.forEachAggregated(this.children.filter((stmt) => stmt instanceof STMT.DeclarationFunction), (fn) => fn.hoist());
+		return super.varCheck();
 	}
 
 	/**

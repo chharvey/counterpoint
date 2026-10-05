@@ -73,6 +73,7 @@ export class TypeVisitor<T> {
  * - Access
  * - Call
  * - Operation
+ * - TypeFunction
  */
 export abstract class Type extends AstNode {
 	/**

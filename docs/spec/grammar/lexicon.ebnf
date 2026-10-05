@@ -39,6 +39,9 @@ Punctuator :::=
 		| "&" | "|"
 	// statement
 		| ";" | ":" | "="
+	// storage
+		| "\"
+		| "=>"
 ;
 
 
@@ -77,10 +80,12 @@ KeywordOther :::=
 	// storage
 		| "type"
 		| "val"
+		| "func"
 		| "claim"
 		| "set"
 		| "delete"
 		| "_"
+		| "$"
 		| "void"
 	// modifier
 		| "nominal"
@@ -93,6 +98,7 @@ KeywordOther :::=
 		| "do"
 		| "break"
 		| "skip"
+		| "return"
 ;
 
 

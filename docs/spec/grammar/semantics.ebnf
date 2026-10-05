@@ -22,6 +22,25 @@ SemanticCase
 
 
 
+SemanticParameterFunction[named: true][writable: Boolean][id: Nil]
+	::= SemanticKey SemanticType;
+SemanticParameterFunction[named: true][writable: Boolean][id: RealNumber]
+	::= SemanticKey? SemanticType;
+SemanticParameterFunction[named: false][writable: Boolean][id?: RealNumber]
+	::= SemanticType;
+
+
+
+SemanticBlock
+	::= SemanticStatement+;
+
+
+
+SemanticGoal
+	::= SemanticBlock?;
+
+
+
 SemanticType =:=
 	| SemanticTypeConstant
 	| SemanticTypeAlias
@@ -29,6 +48,7 @@ SemanticType =:=
 	| SemanticTypeAccess
 	| SemanticTypeCall
 	| SemanticTypeOperation
+	| SemanticTypeFunction
 ;
 
 
@@ -66,6 +86,9 @@ SemanticTypeOperation[operator: MAYBE | RESULT | MUTABLE]
 SemanticTypeOperation[operator: AND | OR]
 	::= SemanticType SemanticType;
 
+SemanticTypeFunction
+	::= SemanticItemType* SemanticPropertyType*;
+
 
 
 SemanticExpression =:=
@@ -79,6 +102,7 @@ SemanticExpression =:=
 	| SemanticExpressionClaim
 	| SemanticExpressionOperation
 	| SemanticExpressionSwitch
+	| SemanticExpressionFunction
 ;
 
 
@@ -139,6 +163,9 @@ SemanticExpressionOperation[operator: COND]
 SemanticExpressionSwitch
 	::= SemanticExpression SemanticCase* SemanticExpression;
 
+SemanticExpressionFunction
+	::= SemanticParameterFunction* SemanticBlock;
+
 
 
 SemanticStatement =:=
@@ -150,6 +177,7 @@ SemanticStatement =:=
 	| SemanticStatementLoop
 	| SemanticStatementIteration
 	| SemanticStatementBreak
+	| SemanticStatementReturn
 ;
 
 
@@ -157,17 +185,21 @@ SemanticStatement =:=
 SemanticDeclaration =:=
 	| SemanticDeclarationType
 	| SemanticDeclarationVariable
+	| SemanticDeclarationFunction
 ;
 
 SemanticDeclarationType[id: RealNumber]
 	::= SemanticType;
 
-SemanticDeclarationVariable[id: RealNumber][writable: Boolean]
+SemanticDeclarationVariable[writable: Boolean][id: RealNumber]
 	::= SemanticType? SemanticExpression;
 SemanticDeclarationVariable[writable=false]
 	::= SemanticType? SemanticExpression;
-SemanticDeclarationVariable[id: RealNumber][writable=true]
+SemanticDeclarationVariable[writable=true][id: RealNumber]
 	::= SemanticType;
+
+SemanticDeclarationFunction[id?: RealNumber]
+	::= SemanticParameterFunction* SemanticBlock;
 
 
 
@@ -192,12 +224,5 @@ SemanticStatementIteration[id?: RealNumber]
 SemanticStatementBreak[skip: Boolean]
 	::= ();
 
-
-
-SemanticBlock
-	::= SemanticStatement+;
-
-
-
-SemanticGoal
-	::= SemanticBlock?;
+SemanticStatementReturn
+	::= ();

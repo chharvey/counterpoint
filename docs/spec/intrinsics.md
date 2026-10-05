@@ -104,3 +104,8 @@ The values in Maps are Counterpoint Language Values.
 `Maybe` objects either hold a value or do not,
 instantiated respectively by the subclasses `Some` and `None`.
 The values in Somes are Counterpoint Language Values.
+
+
+### `Function`
+`Function` objects encapsulate parameterized Counterpoint code closed over a lexical environment
+and support the dynamic execution of that code.

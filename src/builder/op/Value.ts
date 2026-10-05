@@ -103,6 +103,7 @@ export class ValueVisitor<T> {
  * - Instance
  * - Binop
  * - Phi
+ * - OpFunction
  */
 export abstract class Value extends Opcode {
 	/**

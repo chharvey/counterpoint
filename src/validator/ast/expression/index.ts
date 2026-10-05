@@ -23,3 +23,4 @@ export * from './OperationBinaryEquality.ts';
 export * from './OperationBinaryLogical.ts';
 export * from './OperationTernary.ts';
 export * from './Switch.ts';
+export * from './Function.ts';

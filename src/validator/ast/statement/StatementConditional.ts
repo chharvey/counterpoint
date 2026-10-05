@@ -28,7 +28,7 @@ export class StatementConditional extends Statement {
 	}
 
 	public constructor(
-		start_node: SyntaxNodeFamily<'statement_conditional', ['unless', 'break']>,
+		start_node: SyntaxNodeFamily<'statement_conditional', ['unless', 'break', 'return']>,
 		private readonly unless:       boolean,
 		public  readonly condition:    EXPR.Expression,
 		public  readonly consequent:   Block,

@@ -30,6 +30,7 @@ export function isObjectType(
  * - TypeSet
  * - TypeMap
  * - Maybe
+ * - TypeFunction
  */
 export abstract class ReferenceType extends Type {
 	public abstract mutableOf(): Type;

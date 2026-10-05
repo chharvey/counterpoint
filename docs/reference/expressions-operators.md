@@ -217,18 +217,23 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… !| …</code></td>
 		</tr>
 		<tr>
-			<th>13</th>
+			<th rowspan="3">13</th>
 			<td>Conditional</td>
 			<td>ternary infix</td>
 			<td>n/a</td>
 			<td><code>if … then … else …</code></td>
 		</tr>
 		<tr>
-			<th>14</th>
 			<td>Switch</td>
 			<td>n-ary infix</td>
 			<td>n/a</td>
 			<td><code>switch …</code> (<code>case</code> (<code>… |</code>)* <code>… -> …</code>)* <code>default …</code></td>
+		</tr>
+		<tr>
+			<td>Lambdas</td>
+			<td>n/a</td>
+			<td>n/a</td>
+			<td><code>\(…)… => …</code></td>
 		</tr>
 	</tbody>
 </table>
@@ -975,6 +980,15 @@ result_d;
 All values in a switch expression may be any expression, including other expressions with operators,
 and they don't need to be the same type.
 The result type of the switch expression is the union of the types of all the consequents and the type of the default value.
+
+
+### Lambdas
+```
+\(‹parameters?›) ‹return-type› => { ‹statements› }
+\(‹parameters?›) ‹return-type› => <anything>
+```
+Lambdas, a.k.a. anonymous functions, a.k.a. function expressions, are expressions that have function values.
+Functions are covered in the [Functions](./functions.md) chapter.
 
 
 

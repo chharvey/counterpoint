@@ -273,6 +273,9 @@ function sourceExpressions(...expressions: readonly string[]): string {
 		// PropertiesType
 		// tested in #TypeRecordLiteral
 
+		// ParametersType
+		// tested in #TypeFunction
+
 		// PropertyAccessorType
 		// tested in #TypeCompound
 
@@ -612,8 +615,30 @@ function sourceExpressions(...expressions: readonly string[]): string {
 			)),
 		],
 
+		TypeFunction: [
+			xjs.String.dedent`
+				{
+					type T = \\() => void;
+					type T = \\(A, b: B) => void;
+					type T = \\(\\() => void) => void;
+				}
+			`,
+			sourceTypes(
+				s('type_function'),
+				s(
+					'type_function',
+					s('entry_type',        f('type_0', 'identifier')),
+					s('entry_type__named', f('word_0', 'word', s('identifier')), f('type_0', 'identifier')),
+				),
+				s(
+					'type_function',
+					s('entry_type', f('type_0', 'type_function')),
+				),
+			),
+		],
+
 		// Type
-		// consists of #TypeUnion
+		// consists of #Type{Union,Function}
 
 
 		/* ## Expressions */
@@ -673,6 +698,12 @@ function sourceExpressions(...expressions: readonly string[]): string {
 
 		// CaseSwitch
 		// tested in #ExpressionSwitch
+
+		// ParameterFunction
+		// tested in #ParametersFunction
+
+		// ParametersFunction
+		// tested in #{Expression,Declaration}Function
 
 		// PropertyAccessor
 		// tested in #{ExpressionCompound,Assignee}
@@ -1389,8 +1420,43 @@ function sourceExpressions(...expressions: readonly string[]): string {
 			),
 		],
 
+		ExpressionFunction: [
+			xjs.String.dedent`
+				{
+					\\(): void {;};
+					\\(a: A, $b: B, c= charlie: C): void { return; };
+				}
+			`,
+			sourceExpressions(
+				s(
+					'expression_function',
+					f('block_0', 'block__return', s('statement_expression__return')),
+				),
+				s(
+					'expression_function',
+					s(
+						'parameter_function',
+						f('identifier_0', 'identifier'),
+						f('type_0',       'identifier'),
+					),
+					s(
+						'parameter_function__named',
+						f('identifier_0', 'identifier'),
+						f('type_0',       'identifier'),
+					),
+					s(
+						'parameter_function__named',
+						f('word_0',       'word', s('identifier')),
+						f('identifier_0', 'identifier'),
+						f('type_0',       'identifier'),
+					),
+					f('block_0', 'block__return', s('statement_return')),
+				),
+			),
+		],
+
 		// Expression
-		// consists of #Expression{Disjunctive,Conditional,Switch}
+		// consists of #Expression{Disjunctive,Conditional,Switch,Function}
 
 
 		/* ## Statements */
@@ -1769,8 +1835,11 @@ function sourceExpressions(...expressions: readonly string[]): string {
 			))),
 		],
 
+		// StatementReturn
+		// tested in #{Expression,Declaration}Function
+
 		// Statement
-		// consists of #{Declaration,Statement{Expression,Claim,Set,Delete,Conditional,Loop,Iteration,Break}}
+		// consists of #{Declaration,Statement{Expression,Claim,Set,Delete,Conditional,Loop,Iteration,Break,Return}}
 
 		Block: [
 			xjs.String.dedent`
@@ -1952,8 +2021,45 @@ function sourceExpressions(...expressions: readonly string[]): string {
 			),
 		],
 
+		DeclarationFunction: [
+			xjs.String.dedent`
+				{
+					func foo(): void {;}
+					func foo(a: A, $b: B, c= charlie: C): void { return; }
+				}
+			`,
+			sourceStatements(
+				s(
+					'declaration_function',
+					f('identifier_0', 'identifier'),
+					f('block_0', 'block__return', s('statement_expression__return')),
+				),
+				s(
+					'declaration_function',
+					f('identifier_0', 'identifier'),
+					s(
+						'parameter_function',
+						f('identifier_0', 'identifier'),
+						f('type_0',       'identifier'),
+					),
+					s(
+						'parameter_function__named',
+						f('identifier_0', 'identifier'),
+						f('type_0',       'identifier'),
+					),
+					s(
+						'parameter_function__named',
+						f('word_0',       'word', s('identifier')),
+						f('identifier_0', 'identifier'),
+						f('type_0',       'identifier'),
+					),
+					f('block_0', 'block__return', s('statement_return')),
+				),
+			),
+		],
+
 		// Declaration
-		// consists of #Declaration{Type,Variable}
+		// consists of #Declaration{Type,Variable,Function}
 	}).map(([title, [source, expected]]) => xjs.String.dedent`
 		${'='.repeat(title.length)}
 		${title}

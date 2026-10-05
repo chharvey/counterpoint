@@ -25,7 +25,7 @@ export class Decl extends Instruction {
 	private readonly targetType: TYPE.Type;
 	private readonly value?:     Value;
 
-	public constructor(target: SymbolSchemaVar, typ: TYPE.Type, value: Value);
+	public constructor(target: SymbolSchemaVar, typ: TYPE.Type, value?: Value);
 	public constructor(target: Temp);
 	public constructor(
 		private readonly target: SymbolSchemaVar | Temp,
@@ -35,7 +35,9 @@ export class Decl extends Instruction {
 		super(OpCode.DECL);
 		this.targetType = this.target instanceof SymbolSchemaVar ? typ! : this.target.type;
 		if (this.target instanceof SymbolSchemaVar) {
-			this.value = value!;
+			if (value) {
+				this.value = value;
+			}
 		} else if (this.target.value) {
 			this.value = this.target.value;
 		}
@@ -60,7 +62,8 @@ export class Decl extends Instruction {
 
 	public override interpret(interp: Interpreter): void {
 		if (this.target instanceof SymbolSchemaVar) {
-			interp.setLocalValue(this.target, this.value!.interpret(interp));
+			// @ts-expect-error --- FIXME: function params do not have an initial value
+			interp.setLocalValue(this.target, this.value?.interpret(interp));
 		} else if (this.target.value) {
 			interp.setLocalValue(this.target, this.target.value.interpret(interp));
 		}
