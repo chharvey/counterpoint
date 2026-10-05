@@ -76,16 +76,16 @@ function each_item(
 	return wasm.block(null, [
 		destobj.set(),
 		srcref.set(),
-		wasm.block(`exit-${ block_n }`, [
+		wasm.block(`exit-${block_n}`, [
 			i.set(),
-			wasm.loop(`repeat-${ block_n }`, wasm.block(null, [
-				wasm.br_if(`exit-${ block_n }`, wasm.i32.ge_u(i.get(), wasm.array.len(srcref.get()))),
+			wasm.loop(`repeat-${block_n}`, wasm.block(null, [
+				wasm.br_if(`exit-${block_n}`, wasm.i32.ge_u(i.get(), wasm.array.len(srcref.get()))),
 				item.set(),
 				check_null
 					? wasm.if(wasm.i32.eqz(wasm.ref.is_null(item.get())), non_null_item)
 					: non_null_item,
 				i.inc(),
-				wasm.br(`repeat-${ block_n }`),
+				wasm.br(`repeat-${block_n}`),
 			])),
 		]),
 	]);
@@ -250,7 +250,7 @@ export class CollectionDynamicCopy extends Instruction {
 						return src.elements.forEach((el, i) => dest.set(BigInt(i), el));
 					}
 					default: {
-						throw new TypeError(`Expected \`${ src }\` to be of type \`Tuple | List | Set\`.`);
+						throw new TypeError(`Expected \`${src}\` to be of type \`Tuple | List | Set\`.`);
 					}
 				}
 			}
@@ -287,7 +287,7 @@ export class CollectionDynamicCopy extends Instruction {
 						return src.cases.forEach((val, key) => dest.set((key as VALUE.Symbol).id, val));
 					}
 					default: {
-						throw new TypeError(`Expected \`${ src }\` to be of type \`Tuple | Record | List | Dict | Set | Map\`.`);
+						throw new TypeError(`Expected \`${src}\` to be of type \`Tuple | Record | List | Dict | Set | Map\`.`);
 					}
 				}
 			}
@@ -307,7 +307,7 @@ export class CollectionDynamicCopy extends Instruction {
 						return src.elements.forEach((el) => dest.put(el));
 					}
 					default: {
-						throw new TypeError(`Expected \`${ src }\` to be of type \`Tuple | List | Set\`.`);
+						throw new TypeError(`Expected \`${src}\` to be of type \`Tuple | List | Set\`.`);
 					}
 				}
 			}
@@ -338,7 +338,7 @@ export class CollectionDynamicCopy extends Instruction {
 						return src.cases.forEach((val, key) => dest.set(key, val));
 					}
 					default: {
-						throw new TypeError(`Expected \`${ src }\` to be of type \`Tuple | List | Set | Map\`.`);
+						throw new TypeError(`Expected \`${src}\` to be of type \`Tuple | List | Set | Map\`.`);
 					}
 				}
 			}
@@ -399,7 +399,7 @@ export class CollectionDynamicCopy extends Instruction {
 						]);
 					}
 					default: {
-						return assert.fail(`Expected \`${ this.source }\` to pass validation.`);
+						return assert.fail(`Expected \`${this.source}\` to pass validation.`);
 					}
 				}
 			}
@@ -465,7 +465,7 @@ export class CollectionDynamicCopy extends Instruction {
 						});
 					}
 					default: {
-						return assert.fail(`Expected \`${ this.source }\` to pass validation.`);
+						return assert.fail(`Expected \`${this.source}\` to pass validation.`);
 					}
 				}
 			}
@@ -504,7 +504,7 @@ export class CollectionDynamicCopy extends Instruction {
 						);
 					}
 					default: {
-						return assert.fail(`Expected \`${ this.source }\` to pass validation.`);
+						return assert.fail(`Expected \`${this.source}\` to pass validation.`);
 					}
 				}
 			}
@@ -550,7 +550,7 @@ export class CollectionDynamicCopy extends Instruction {
 						);
 					}
 					default: {
-						return assert.fail(`Expected \`${ this.source }\` to pass validation.`);
+						return assert.fail(`Expected \`${this.source}\` to pass validation.`);
 					}
 				}
 			}

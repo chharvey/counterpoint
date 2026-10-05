@@ -25,12 +25,12 @@ export function isSyntaxNodeType<T extends string>(node: SyntaxNode | null, type
 
 
 type Join<Strings extends Readonly<NonemptyArray<string>>> = Strings extends [infer S0, ...infer SRest]
-	? `${ S0 extends string ? '' | `__${ S0 }` : '' }${ SRest extends Readonly<NonemptyArray<string>> ? Join<SRest> : '' }`
+	? `${S0 extends string ? '' | `__${S0}` : ''}${SRest extends Readonly<NonemptyArray<string>> ? Join<SRest> : ''}`
 	: '';
 
 
 
-export type SyntaxNodeFamily<Name extends string, Suffices extends Readonly<NonemptyArray<string>>> = SyntaxNodeType<`${ Name }${ Join<Suffices> }`>;
+export type SyntaxNodeFamily<Name extends string, Suffices extends Readonly<NonemptyArray<string>>> = SyntaxNodeType<`${Name}${Join<Suffices>}`>;
 
 
 
@@ -43,7 +43,7 @@ function argsArr(nth: number, params: readonly string[]): string[] {
 		.map(([param, _to_include]) => param);                   // `['static', 'method']`
 }
 function familyName<RuleName extends string>(family_name: string, suffices: readonly string[]): RuleName {
-	return family_name.concat((suffices.length) ? `__${ suffices.join('__') }` : '') as RuleName;
+	return family_name.concat(suffices.length ? `__${suffices.join('__')}` : '') as RuleName;
 }
 function familyNameAll<RuleName extends string>(family_name: string, params: readonly string[]): RuleName[] {
 	return [...new Array<undefined>(2 ** params.length)].map((_, nth) => familyName(family_name, argsArr(nth, params)));
@@ -128,6 +128,7 @@ export type SyntaxNodeSupertype<C extends Category> = C extends 'type' ? (
 ) : C extends 'declaration' ? (
 	| SyntaxNodeType<'declaration_type'>
 	| SyntaxNodeFamily<'declaration_variable', ['break', 'return']>
+	| SyntaxNodeType<'declaration_function'>
 ) : never;
 
 
@@ -140,6 +141,6 @@ export function isSyntaxNodeSupertype<C extends Category>(syntaxnode: SyntaxNode
 		['type',        (node) => isSyntaxNodeType(node, /^identifier|keyword_type|primitive_literal|type_grouped|type_(tuple|record|list|dict|set|map)_literal|type_(compound|unary_(symbol|keyword)|intersection|union)$/)],
 		['expression',  (node) => isSyntaxNodeType(node, /^identifier|primitive_literal|string_template(__break)?(__return)?|expression_(grouped|(tuple|record|list|dict|set|map)_literal)(__break)?(__return)?|expression_block|expression_(compound|unary_symbol|cast|exponential|multiplicative|additive|comparative|equality|conjunctive|disjunctive|conditional(__break)?(__return)?|switch(__break)?(__return)?)$/)],
 		['statement',   (node) => isSyntaxNodeType(node, /^statement_((expression|claim|set|delete)(__break)?(__return)?|conditional(__unless)?(__break)?(__return)?|(loop|iteration)(__return)?|break|return(__break)?)$/) || isSyntaxNodeSupertype(node, 'declaration')],
-		['declaration', (node) => isSyntaxNodeType(node, /^declaration_(type|variable(__break)?(__return)?)$/)],
+		['declaration', (node) => isSyntaxNodeType(node, /^declaration_(type|variable(__break)?(__return)?|function)$/)],
 	]).get(category)!(syntaxnode);
 }

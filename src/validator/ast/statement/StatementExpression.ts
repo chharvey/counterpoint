@@ -4,7 +4,6 @@ import {
 } from '../../../index.ts';
 import {
 	assert_instanceof,
-	memoizeGetter,
 	runOnceMethod,
 } from '../../../lib/index.ts';
 import {
@@ -28,13 +27,9 @@ export class StatementExpression extends Statement {
 		start_node: SyntaxNodeFamily<'statement_expression', ['break', 'return']>,
 		public readonly expr?: EXPR.Expression,
 	) {
-		super(start_node, {}, (expr) ? [expr] : void 0);
+		super(start_node, {}, expr ? [expr] : undefined);
 	}
 
-	@memoizeGetter
-	public override get hasBottomType(): boolean {
-		return this.expr?.type().isBottomType ?? false;
-	}
 
 	@runOnceMethod
 	public override build(builder: Builder): void {

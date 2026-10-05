@@ -153,7 +153,7 @@ export class CodeGenerator {
 	 */
 	public getBlockRef(label: string): binaryen.RelooperBlockRef {
 		if (!this.#blockRefs.has(label)) {
-			throw new Error(`BlockRef with label \`${ label }\` not found in CodeGenerator.`);
+			throw new Error(`BlockRef with label \`${label}\` not found in CodeGenerator.`);
 		}
 		return this.#blockRefs.get(label)!;
 	}
@@ -176,24 +176,24 @@ export class CodeGenerator {
 	): binaryen.ExpressionRef /* v128 */ {
 		const {Vect} = this.vm;
 		switch (binaryen.getExpressionType(arg)) {
-			case binaryen.v128: {
+			case binaryen.Type.v128: {
 				return arg;
 			}
-			case binaryen.unreachable: {
+			case binaryen.Type.unreachable: {
 				return arg;
 			}
-			case binaryen.i64: {
+			case binaryen.Type.i64: {
 				return opts.unsigned ? Vect.newNat(arg) : Vect.newInt(arg);
 			}
-			case binaryen.f64: {
+			case binaryen.Type.f64: {
 				return Vect.newFloat(arg);
 			}
 			default: {
-				throw new TypeError(`Expected argument \`${ binaryen.emitText(arg) }\` to be one of the following types:\n\t${ [
+				throw new TypeError(`Expected argument \`${binaryen.emitText(arg)}\` to be one of the following types:\n\t${[
 					'`unreachable`',
 					'`i64`',
 					'`f64`',
-				].join('\n\t') }.`);
+				].join('\n\t')}.`);
 			}
 		}
 	}
@@ -210,11 +210,11 @@ export class CodeGenerator {
 	public newProperty(key: bigint, arg: binaryen.ExpressionRef /* unreachable | (ref $Value) | (ref null $Value) */): binaryen.ExpressionRef /* (ref $Property) */ {
 		const {vm: {heaptype, reftype, reftypeNull}, mod: {wasm}} = this;
 		switch (binaryen.getExpressionType(arg)) {
-			case binaryen.unreachable: {
+			case binaryen.Type.unreachable: {
 				return arg;
 			}
 			// WARNING: leaky abstraction! bitwise-ORing with 4 provides the “exact” type, i.e. `(ref (exact $Value))` --- see WebAssembly/binaryen/src/wasm-type.h
-			case binaryen.nullref: // `(ref null none)` // BUG: Binaryen treats all nullish values the same. See NOTE below.
+			case binaryen.Type.nullref: // `(ref null none)` // BUG: Binaryen treats all nullish values the same. See NOTE below.
 			case reftypeNull.Value | 4:
 			case reftype.Value     | 4:
 			case reftypeNull.Value:
@@ -268,14 +268,14 @@ export class CodeGenerator {
 	 * @return      `(struct.new $List <count> (array.new_fixed $ListInternal <...items>))`
 	 */
 	public codegenList(items: readonly (binaryen.ExpressionRef /* (ref $Value) */)[] = []): binaryen.ExpressionRef /* (ref $List) */ {
-		const {vm: {heaptype, reftypeNull, Object: VmObject}, mod: {wasm}} = this;
+		const {vm: {heaptype, Object: VmObject}, mod: {wasm}} = this;
 		let capacity: number = 8;
 		while (items.length > capacity * CodeGenerator.#LOAD_FACTOR) {
 			capacity *= 2;
 		}
 		const entries: binaryen.ExpressionRef[] = Array.from(
 			new Array(capacity),
-			(_, i) => items[i] ?? wasm.ref.null(reftypeNull.Value),
+			(_, i) => items[i] ?? wasm.ref.null(heaptype.Value),
 		);
 		return wasm.struct.new([
 			VmObject.ctrPlusPlus(),
@@ -292,7 +292,7 @@ export class CodeGenerator {
 	 * @return      `(struct.new $Dict <count> (array.new_fixed $DictInternal <...props>))`
 	 */
 	public codegenDict(props: ReadonlyMap<bigint, binaryen.ExpressionRef /* (ref $Property) */> = new Map()): binaryen.ExpressionRef /* (ref $Dict) */ {
-		const {vm: {heaptype, reftypeNull, Object: VmObject}, mod: {wasm}} = this;
+		const {vm: {heaptype, Object: VmObject}, mod: {wasm}} = this;
 		let capacity: number = 8;
 		while (props.size > capacity * CodeGenerator.#LOAD_FACTOR) {
 			capacity *= 2;
@@ -304,7 +304,7 @@ export class CodeGenerator {
 			wasm.i32.const(props.size),
 			wasm.array.new_fixed(
 				heaptype.DictInternal,
-				entries.map((entry) => entry ?? wasm.ref.null(reftypeNull.Property)),
+				entries.map((entry) => entry ?? wasm.ref.null(heaptype.Property)),
 			),
 		], heaptype.Dict);
 	}
@@ -355,10 +355,10 @@ export class CodeGenerator {
 	 * @return      `(struct.new $Maybe <value?>)`
 	 */
 	public codegenMaybe(value?: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Maybe) */ {
-		const {vm: {heaptype, reftypeNull, Object: VmObject}, mod: {wasm}} = this;
+		const {vm: {heaptype, Object: VmObject}, mod: {wasm}} = this;
 		return wasm.struct.new([
 			VmObject.ctrPlusPlus(),
-			value ?? wasm.ref.null(reftypeNull.Value),
+			value ?? wasm.ref.null(heaptype.Value),
 		], heaptype.Maybe);
 	}
 
@@ -407,8 +407,8 @@ export class CodeGenerator {
 		const fn_name: string = 'main';
 		mod.functions.add(
 			fn_name,
-			binaryen.none,
-			binaryen.none,
+			binaryen.Type.none,
+			binaryen.Type.none,
 			this.getAllLocals().map((local) => local.type),
 			body,
 		);

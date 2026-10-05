@@ -2,12 +2,10 @@ import * as assert from 'node:assert';
 import {
 	type Builder,
 	OP,
-	AssignmentErrorDuplicateDeclaration,
 } from '../../../index.ts';
 import {
 	assert_instanceof,
 	runOnceMethod,
-	memoizeGetter,
 } from '../../../lib/index.ts';
 import {
 	type CplConfig,
@@ -57,15 +55,10 @@ export class DeclarationFunction extends Statement implements Functionlike {
 	}
 
 
-	@memoizeGetter
-	public override get hasBottomType(): boolean {
-		return false; // evaluation of a function declaration will never throw
-	}
-
 	public hoist(): void {
 		if (this.identifier) {
 			if (this.validator.hasSymbol(this.id!)) {
-				throw new AssignmentErrorDuplicateDeclaration(this.identifier);
+				assert.ok(this.validator.getSymbol(this.id!) instanceof SymbolSchemaFunc, 'Only function names should be hoisted.');
 			}
 			this.validator.addSymbol(new SymbolSchemaFunc(this.id!, this.identifier));
 		}
@@ -80,7 +73,13 @@ export class DeclarationFunction extends Statement implements Functionlike {
 		const fn_type: TYPE.Type = EXPR.Function.prototype.type.call(this);
 		if (this.identifier) {
 			assert.ok(this.validator.hasSymbol(this.id!), `The validator symbol table should include ${ this.id }.`);
-			(this.validator.getSymbol(this.id!) as SymbolSchemaFunc).type = fn_type;
+			const schema = this.validator.getSymbol(this.id!) as SymbolSchemaFunc;
+			if (schema.types.find((t) => t.equals(fn_type))) {
+				// if there exists an identically-typed overload, as static dispatch won’t know which one to choose
+				throw new TypeError(`Identical function overload type: \`${ fn_type }\`.`); // TODO: new error type
+			} else {
+				schema.types.push(fn_type);
+			}
 		}
 	}
 

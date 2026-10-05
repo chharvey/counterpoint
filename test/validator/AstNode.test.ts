@@ -14,6 +14,7 @@ import {
 	AssignmentErrorReassignment,
 	TypeErrorInvalidOperation,
 	TypeErrorNotAssignable,
+	TypeErrorFunctionExit,
 } from '../../src/index.ts';
 import {
 	repeat,
@@ -133,6 +134,28 @@ test.suite('AstNode', () => {
 
 
 		test.suite('Block', () => {
+			test.suite('hoisting.', () => {
+				test.test('allows function declaration overloads.', () => {
+					const {stmts} = setupScript(`{
+						{
+							func f(): void { return; };
+							func f(a: int): void { return; };
+						};
+						{
+							type f = \\(int) => void;
+							func f(a: int): void { return; };
+						};
+						{
+							val f = \\(): void { return; };
+							func f(a: int): void { return; };
+						};
+					}`, {varCheck: false});
+					const blocks: readonly AST.Block[] = stmts.map((stmt) => ((stmt as AST.STMT.StatementExpression).expr as AST.EXPR.ExpressionBlock).block);
+					blocks[0].varCheck(); // assert does not throw
+					assert.throws(() => blocks[1].varCheck(), AssignmentErrorDuplicateDeclaration);
+					return assert.throws(() => blocks[2].varCheck(), AssignmentErrorDuplicateDeclaration);
+				});
+			});
 			test.suite('function blocks.', () => {
 				test.test('allows implicit captures for type aliases and function names.', () => {
 					setupScript(`{
@@ -288,7 +311,7 @@ test.suite('AstNode', () => {
 		});
 
 		test.suite('Block', () => {
-			test.test('throws for lack of return statement in non-void function.', {expectFailure: true}, () => {
+			test.test('throws for lack of return statement in every code path.', () => {
 				const {stmts} = setupScript(`{
 					func foo0(): float { "hello"; }
 					func foo2(b: bool): float {
@@ -299,11 +322,67 @@ test.suite('AstNode', () => {
 				const block0:  AST.Block = (stmts[0] as AST.STMT.DeclarationFunction).block;
 				const block1a: AST.Block = (fn1.block.children[0] as AST.STMT.StatementConditional).consequent;
 				const block1b: AST.Block = (fn1.block.children[0] as AST.STMT.StatementConditional).alternative as AST.Block;
-				const expected: RegExp = /does not return a value/;
-				assert.throws(() => block0.typeCheck(), expected);
+				assert.throws(() => block0.typeCheck(), TypeErrorFunctionExit);
 				xjs.Array.forEachAggregated(fn1.parameters, (p) => p.typeCheck());
 				block1a.typeCheck(); // assert does not throw
-				return assert.throws(() => block1b.typeCheck(), expected);
+				block1b.typeCheck(); // assert does not throw
+				return assert.throws(() => fn1.block.typeCheck(), TypeErrorFunctionExit);
+			});
+			test.test('throws when not all code paths return.', () => {
+				const {stmts} = setupScript(`{
+					\\(): void {
+						42;
+					};
+					\\(b: bool): void {
+						if b then {
+							return;
+						};
+					};
+					\\(b: bool): void {
+						if b then ({
+							return;
+						}) else 42;
+					};
+					\\(mut b: bool): void {
+						while b do {
+							break;
+						};
+					};
+					\\(): int {
+						switch 1
+							case 2 -> 3
+							case 4 | 5 -> { return 6; }
+						default { return 7; };
+					};
+					func f1(): void {
+						42;
+					}
+					func f2(b: bool): void {
+						if b then {
+							return;
+						};
+					}
+					func f3(b: bool): void {
+						if b then ({
+							return;
+						}) else 42;
+					}
+					func f4(mut b: bool): void {
+						while b do {
+							break;
+						};
+					}
+					func f5(): int {
+						switch 1
+							case 2 -> 3
+							case 4 | 5 -> { return 6; }
+						default { return 7; };
+					}
+				}`, {typeCheck: false});
+				return xjs.Array.forEachAggregated([
+					...stmts.slice(0, 5).map((stmt) => (stmt as AST.STMT.StatementExpression).expr as AST.EXPR.Function),
+					...stmts.slice(5).map((stmt) => stmt as AST.STMT.DeclarationFunction),
+				], (fn) => assert.throws(() => fn.typeCheck(), TypeErrorFunctionExit));
 			});
 		});
 	});
@@ -314,11 +393,11 @@ test.suite('AstNode', () => {
 		test.suite('#index', () => {
 			test.test('returns the cooked value of the integer token.', () => {
 				[0n, 1n, 2n, 4n, 8n, 16n].forEach((index) => {
-					const type_accessor: AST.Index | AST.Key = AST.TYPE.Access.fromSource(`MyTuple.${ index }`).accessor;
+					const type_accessor: AST.Index | AST.Key = AST.TYPE.Access.fromSource(`MyTuple.${index}`).accessor;
 					assert_instanceof(type_accessor, AST.Index);
 					assert.strictEqual(type_accessor.index, index);
 
-					const expr_accessor: AST.Index | AST.Key | AST.EXPR.Expression = AST.EXPR.Access.fromSource(`my_tuple.${ index }`).accessor;
+					const expr_accessor: AST.Index | AST.Key | AST.EXPR.Expression = AST.EXPR.Access.fromSource(`my_tuple.${index}`).accessor;
 					assert_instanceof(expr_accessor, AST.Index);
 					assert.strictEqual(expr_accessor.index, index);
 				});

@@ -1,6 +1,9 @@
 import * as assert from 'node:assert';
 import * as xjs from 'extrajs';
-import type {Builder} from '../../index.ts';
+import {
+	type Builder,
+	TypeErrorFunctionExit,
+} from '../../index.ts';
 import {
 	type NonemptyArray,
 	memoizeGetter,
@@ -21,9 +24,11 @@ import {
 	STMT,
 	EXPR,
 } from './index.ts';
+import {CompletionKind} from './CompletionKind.ts';
 import {AstNode} from './AstNode.ts';
 import {is_Functionlike} from './Functionlike.ts';
 import type {Buildable} from './Buildable.ts';
+import {VisitorCompletion} from './visitors/VisitorCompletion.ts';
 
 
 
@@ -67,7 +72,7 @@ export class Block extends AstNode implements Buildable {
 		const is_func_block: boolean = !!this.parent && is_Functionlike(this.parent);
 		const v = new Validator(this.config, is_func_block ? undefined : this.parent?.validator);
 		if (is_func_block) {
-			this.parent?.validator.getAllSymbols().forEach((symb) => {
+			this.parent!.validator.getAllSymbols().forEach((symb) => {
 				// add all implicitly-captured symbols to the function block
 				if (symb instanceof SymbolSchemaType || symb instanceof SymbolSchemaFunc) { // TODO: add a property of SymbolSchema
 					v.addSymbol(symb);
@@ -77,14 +82,22 @@ export class Block extends AstNode implements Buildable {
 		return v;
 	}
 
+	/** The kind of completion of evaluation of this block. */
 	@memoizeGetter
-	public get hasBottomType(): boolean {
-		return this.children.some((c) => c.hasBottomType);
+	public get completion(): CompletionKind {
+		return new VisitorCompletion().visit(this);
 	}
 
 	public override varCheck(): void {
 		xjs.Array.forEachAggregated(this.children.filter((stmt) => stmt instanceof STMT.DeclarationFunction), (fn) => fn.hoist());
 		return super.varCheck();
+	}
+
+	public override typeCheck(): void {
+		super.typeCheck();
+		if (!!this.parent && is_Functionlike(this.parent) && this.completion !== CompletionKind.RETURN_OR_THROW) {
+			throw new TypeErrorFunctionExit(this.parent);
+		}
 	}
 
 	/**

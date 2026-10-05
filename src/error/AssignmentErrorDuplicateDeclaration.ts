@@ -19,7 +19,7 @@ export class AssignmentErrorDuplicateDeclaration extends AssignmentError {
 	 */
 	public constructor(symbol: Serializable) {
 		super(
-			`Duplicate declaration of \`${ symbol.source }\`.`,
+			`Duplicate declaration of \`${symbol.source}\`.`,
 			AssignmentError.CODES.get(AssignmentErrorDuplicateDeclaration),
 			symbol.line_index,
 			symbol.col_index,

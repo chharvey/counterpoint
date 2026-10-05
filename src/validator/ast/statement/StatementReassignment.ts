@@ -9,7 +9,6 @@ import {
 } from '../../../index.ts';
 import {
 	assert_instanceof,
-	memoizeGetter,
 	runOnceMethod,
 } from '../../../lib/index.ts';
 import {
@@ -44,10 +43,6 @@ export class StatementReassignment extends Statement {
 		super(start_node, {}, [assignee, ...(assigned ? [assigned] : [])]);
 	}
 
-	@memoizeGetter
-	public override get hasBottomType(): boolean {
-		return this.assignee.type().isBottomType || (this.assigned?.type().isBottomType ?? false);
-	}
 
 	public override varCheck(): void {
 		super.varCheck(); // runtime asserts the var is in the symbol table and is a SymbolSchemaVar
@@ -96,7 +91,7 @@ export class StatementReassignment extends Statement {
 			assert_instanceof(this.assignee.accessor, EXPR.Expression);
 			const base_value:    OP.ValueTac = this.assignee.base.build(builder).asTac(builder);
 			const base_typename: OP.TypeName = OP.ast_type_name(base_value.type);
-			assert.ok([OP.TypeName.LIST, OP.TypeName.DICT, OP.TypeName.SET, OP.TypeName.MAP].includes(base_typename), `Expected ${ OP.TypeName[base_typename] } to be a dynamic collection.`);
+			assert.ok([OP.TypeName.LIST, OP.TypeName.DICT, OP.TypeName.SET, OP.TypeName.MAP].includes(base_typename), `Expected ${OP.TypeName[base_typename]} to be a dynamic collection.`);
 			return builder.pushInstruction(new OP.CollectionDynamicSet(
 				base_typename as OP.CollectionDynamicName,
 				base_value,

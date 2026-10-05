@@ -41,7 +41,7 @@ export class Maybe<T extends Value = Value> extends Value {
 
 
 	public override toString(): string {
-		return `<Maybe instance ${ (0x00).toString(16) }>`; // TODO: interpreter object ids
+		return `<Maybe instance ${(0x00).toString(16)}>`; // TODO: interpreter object ids
 	}
 
 	@strictEqual

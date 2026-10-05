@@ -50,7 +50,7 @@ export class Access extends Expression implements Reassignable {
 	) {
 		super(start_node, {kind}, [base, accessor]);
 		if (this.kind === Operator.DOT_RESULT) {
-			throw new TypeError(`Operator ${ this.kind } not yet supported.`);
+			throw new TypeError(`Operator ${this.kind} not yet supported.`);
 		}
 	}
 

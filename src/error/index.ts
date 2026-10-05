@@ -22,6 +22,7 @@ export * from './TypeErrorNotAssignable.ts';
 export * from './TypeErrorNoEntry.ts';
 export * from './TypeErrorNotCallable.ts';
 export * from './TypeErrorArgCount.ts';
+export * from './TypeErrorFunctionExit.ts';
 export * from './MutabilityError01.ts';
 export * from './VoidError.ts';
 export * from './VoidErrorOutOfBounds.ts';

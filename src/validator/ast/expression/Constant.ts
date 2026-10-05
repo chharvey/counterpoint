@@ -37,7 +37,7 @@ export class Constant extends Expression {
 			[Keyword.NULL,  VALUE.NULL],
 			[Keyword.FALSE, VALUE.FALSE],
 			[Keyword.TRUE,  VALUE.TRUE],
-		]).get(source) ?? assert.fail(`Constant.keywordValue did not expect the keyword \`${ source }\`.`);
+		]).get(source) ?? assert.fail(`Constant.keywordValue did not expect the keyword \`${source}\`.`);
 	}
 
 
@@ -56,7 +56,7 @@ export class Constant extends Expression {
 		if (isSyntaxNodeType(this.start_node, /^template_(full|head|middle|tail)$/)) {
 			return new VALUE.String(Validator.cookTokenTemplate(this.start_node.text));
 		}
-		assert.ok(isSyntaxNodeType(this.start_node, 'primitive_literal'), `Expected ${ this.start_node } to be a primitive.`);
+		assert.ok(isSyntaxNodeType(this.start_node, 'primitive_literal'), `Expected ${this.start_node} to be a primitive.`);
 		const node: SyntaxNode = this.start_node.namedChild(0)!;
 		switch (true) {
 			case isSyntaxNodeType(node, /^(integer|natural|float)$/): {
@@ -69,7 +69,7 @@ export class Constant extends Expression {
 				return Constant.keywordValue(node.children[0].text);
 			}
 			default: {
-				assert.strictEqual(this.start_node.children.length, 2, `Expected ${ this.start_node } to be a symbol.`);
+				assert.strictEqual(this.start_node.children.length, 2, `Expected ${this.start_node} to be a symbol.`);
 				assert.ok(isSyntaxNodeType(node, 'word'));
 				return new VALUE.Symbol(Validator.wordNodeId(node), node.text);
 			}

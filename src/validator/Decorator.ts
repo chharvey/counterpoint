@@ -59,9 +59,8 @@ export class Decorator {
 	]);
 
 	private static readonly OPERATORS_CAST: ReadonlyMap<Keyword, ValidOperatorCast> = new Map<Keyword, ValidOperatorCast>([
-		[Keyword.AS,     Operator.CAST],
-		[Keyword.AS_MAY, Operator.CAST_MAYBE],
-		[Keyword.AS_RES, Operator.CAST_RESULT],
+		[Keyword.AS,      Operator.CAST],
+		[Keyword.AS_QUST, Operator.CAST_MAYBE],
 	]);
 
 	private static readonly OPERATORS_ARITHMETIC: ReadonlyMap<Punctuator, ValidOperatorArithmetic> = new Map<Punctuator, ValidOperatorArithmetic>([
@@ -292,7 +291,7 @@ export class Decorator {
 			[/^string_template(__break)?(__return)?$/, (node) => new AST.EXPR.Template(
 				node as SyntaxNodeFamily<'string_template', ['break', 'return']>,
 				node.namedChildren.map((c) => ((isSyntaxNodeType(c, /^template_(full|head|middle|tail)$/))
-					? new AST.EXPR.Constant(c as SyntaxNodeType<`template_${ 'full' | 'head' | 'middle' | 'tail' }`>)
+					? new AST.EXPR.Constant(c as SyntaxNodeType<`template_${'full' | 'head' | 'middle' | 'tail'}`>)
 					: this.decorateExprNode(c as SyntaxNodeSupertype<'expression'>)
 				)),
 			)],
@@ -421,6 +420,7 @@ export class Decorator {
 					)
 					: new AST.EXPR.Claim(
 						node as SyntaxNodeType<'expression_cast'>,
+						node.children[1].type === Keyword.AS_BANG,
 						this.decorateExprNode(expression_0),
 						this.decorateTypeNode(node.childForFieldName('type_0') as SyntaxNodeSupertype<'type'>),
 					);
@@ -737,23 +737,23 @@ export class Decorator {
 			decorators.get(syntaxnode.type) ??
 			[...decorators].find(([key]) => key instanceof RegExp && isSyntaxNodeType(syntaxnode, key))?.[1] ??
 			((node) => {
-				throw new TypeError(`Could not find type of parse node \`${ node.type }\`.`);
+				throw new TypeError(`Could not find type of parse node \`${node.type}\`.`);
 			})
 		)(syntaxnode);
 	}
 
 	public decorateTypeNode(typenode: SyntaxNodeSupertype<'type'>): AST.TYPE.Type {
 		return (
-			(isSyntaxNodeType(typenode, 'identifier'))        ? new AST.TYPE.TypeAlias (typenode) :
-			(isSyntaxNodeType(typenode, 'primitive_literal')) ? new AST.TYPE.Constant  (typenode) :
+			isSyntaxNodeType(typenode, 'identifier')        ? new AST.TYPE.TypeAlias (typenode) :
+			isSyntaxNodeType(typenode, 'primitive_literal') ? new AST.TYPE.Constant  (typenode) :
 			this.decorate(typenode)
 		);
 	}
 
 	public decorateExprNode(exprnode: SyntaxNodeSupertype<'expression'>): AST.EXPR.Expression {
 		return (
-			(isSyntaxNodeType(exprnode, 'identifier'))        ? new AST.EXPR.Variable(exprnode) :
-			(isSyntaxNodeType(exprnode, 'primitive_literal')) ? new AST.EXPR.Constant(exprnode) :
+			isSyntaxNodeType(exprnode, 'identifier')        ? new AST.EXPR.Variable(exprnode) :
+			isSyntaxNodeType(exprnode, 'primitive_literal') ? new AST.EXPR.Constant(exprnode) :
 			this.decorate(exprnode)
 		);
 	}

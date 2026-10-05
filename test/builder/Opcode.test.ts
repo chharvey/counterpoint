@@ -87,8 +87,8 @@ test.suite('Opcode', () => {
 					val mut x: int = 85;
 
 					"""42😀""";
-					"""the answer is {{ 7 * 3 * 2 }} but what is the question?""";
-					"""the answer is {{ x / 2 }} but what is the question?""";
+					"""the answer is {{7 * 3 * 2}} but what is the question?""";
+					"""the answer is {{x / 2}} but what is the question?""";
 				}`), [
 					new VALUE.String('42😀'),
 					new VALUE.String('the answer is 42 but what is the question?'),
@@ -250,12 +250,12 @@ test.suite('Opcode', () => {
 				`;
 				function interpret_unops(op: string, tested: readonly string[] = operands): VALUE.Value[] {
 					return interpret_extracted_drops(`{
-						${ tested.map((operand) => `${ op } ${ operand };`).join('\n') }
+						${tested.map((operand) => `${op} ${operand};`).join('\n')}
 					}`);
 				}
 				function interpret_calls(ctor: string, tested: readonly string[] = operands): VALUE.Value[] {
 					return interpret_extracted_drops(`{
-						${ tested.map((operand) => `${ ctor }.(${ operand });`).join('\n') }
+						${tested.map((operand) => `${ctor}.(${operand});`).join('\n')}
 					}`);
 				}
 				test.test('[operator=BOOL_FROM]', () => {
@@ -539,7 +539,7 @@ test.suite('Opcode', () => {
 								try {
 									instr.interpret(interp);
 								} catch (err) {
-									return assert.deepStrictEqual(err, new Error(`Invalid cast to ${ name }.`));
+									return assert.deepStrictEqual(err, new Error(`Invalid cast to ${name}.`));
 								}
 								if (instr instanceof OP.Drop) {
 									return assert_equal_values(interp.drops.at(-1)!, expecteds[i]);
@@ -553,7 +553,7 @@ test.suite('Opcode', () => {
 			test.suite('Binop', () => {
 				function interpret_binops(tested: readonly string[]): VALUE.Value[] {
 					return interpret_extracted_drops(`{
-						${ tested.map((expr) => `${ expr };`).join('\n') }
+						${tested.map((expr) => `${expr};`).join('\n')}
 					}`);
 				}
 				test.test('integer operations.', () => {
@@ -1030,7 +1030,7 @@ test.suite('Opcode', () => {
 			test.test('Template returns (block) containing static repetition of (array.copy).', () => {
 				const {builder, cg, wasm} = setupScript(`{
 					val user: (name: str) = (name= "Alan");
-					"""Hello, {{ user.name }}, you have {{ 2 * 3 }} new messages.""";
+					"""Hello, {{user.name}}, you have {{2 * 3}} new messages.""";
 				}`);
 				const {reftype, Value} = cg.vm;
 
@@ -1058,7 +1058,7 @@ test.suite('Opcode', () => {
 				const string_4_len: binaryen.ExpressionRef = wasm.array.len(string_4_get);
 
 				const result_get: binaryen.ExpressionRef = wasm.local.get(RESULT_IDX, reftype.String);
-				const offset_get: binaryen.ExpressionRef = wasm.local.get(OFFSET_IDX, binaryen.i32);
+				const offset_get: binaryen.ExpressionRef = wasm.local.get(OFFSET_IDX, binaryen.Type.i32);
 				return assertEqualBins(
 					builder.instructions.at(-1)!.codegen(cg),
 					wasm.drop(Value.newComposite(wasm.block(null, [
@@ -1697,7 +1697,7 @@ test.suite('Opcode', () => {
 			test.suite('Instance', () => {
 				test.test('INSTANCEOF', () => {
 					const {builder, cg, wasm} = setupScript(`{
-						${ INTRINSICS.slice(2).map((classname) => `null is ${ classname };`).join('\n') };
+						${INTRINSICS.slice(2).map((classname) => `null is ${classname};`).join('\n')};
 					}`);
 					const operand: binaryen.ExpressionRef = genConst(cg);
 					return assertEqualBins(builder.instructions.map((instr) => instr.codegen(cg)), [
@@ -1719,7 +1719,7 @@ test.suite('Opcode', () => {
 				});
 				test.test('CAST', () => {
 					const {builder, cg, wasm} = setupScript(`{
-						${ INTRINSICS.map((classname) => `null as <anything> as ${ classname };`).join('\n') };
+						${INTRINSICS.map((classname) => `null as <anything> as ${classname};`).join('\n')};
 					}`);
 					const operand: binaryen.ExpressionRef = genConst(cg);
 					return assertEqualBins(builder.instructions.filter((instr) => instr instanceof OP.Drop).map((instr) => instr.codegen(cg)), [
@@ -2061,8 +2061,8 @@ test.suite('Opcode', () => {
 						}`, {codegen: false});
 						const {Value, Case, List, Map: VmMap} = cg.vm;
 						const cases_get: binaryen.ExpressionRef = wasm.local.get(4, cg.vm.reftype.MapInternal);
-						const j_get:     binaryen.ExpressionRef = wasm.local.get(5, binaryen.i32);
-						const i_get:     binaryen.ExpressionRef = wasm.local.get(6, binaryen.i32);
+						const j_get:     binaryen.ExpressionRef = wasm.local.get(5, binaryen.Type.i32);
+						const i_get:     binaryen.ExpressionRef = wasm.local.get(6, binaryen.Type.i32);
 						const case_get:  binaryen.ExpressionRef = wasm.local.get(7, cg.vm.reftypeNull.Case);
 						builder.instructions.slice(0, 2).forEach((instr) => instr.codegen(cg));
 						return assertEqualBins(
@@ -2104,7 +2104,7 @@ test.suite('Opcode', () => {
 						}`, {codegen: false});
 						const {Vect, Value, Dict} = cg.vm;
 						const pairs_get: binaryen.ExpressionRef = wasm.local.get(6, cg.vm.reftype.Tuple);
-						const i_get:     binaryen.ExpressionRef = wasm.local.get(7, binaryen.i32);
+						const i_get:     binaryen.ExpressionRef = wasm.local.get(7, binaryen.Type.i32);
 						builder.instructions.slice(0, 5).forEach((instr) => instr.codegen(cg));
 						return assertEqualBins(
 							builder.instructions[5].codegen(cg),
@@ -2165,7 +2165,7 @@ test.suite('Opcode', () => {
 						}`, {codegen: false});
 						const {Vect, Value, List, Dict} = cg.vm;
 						const pairs_get: binaryen.ExpressionRef = wasm.local.get(6, cg.vm.reftype.ListInternal);
-						const i_get:     binaryen.ExpressionRef = wasm.local.get(7, binaryen.i32);
+						const i_get:     binaryen.ExpressionRef = wasm.local.get(7, binaryen.Type.i32);
 						const item_get:  binaryen.ExpressionRef = wasm.local.get(8, cg.vm.reftypeNull.Value);
 						builder.instructions.slice(0, 5).forEach((instr) => instr.codegen(cg));
 						return assertEqualBins(
@@ -2230,7 +2230,7 @@ test.suite('Opcode', () => {
 						}`, {codegen: false});
 						const {Vect, Value, Case, Dict, Map: VmMap} = cg.vm;
 						const cases_get: binaryen.ExpressionRef = wasm.local.get(7, cg.vm.reftype.MapInternal);
-						const i_get:     binaryen.ExpressionRef = wasm.local.get(8, binaryen.i32);
+						const i_get:     binaryen.ExpressionRef = wasm.local.get(8, binaryen.Type.i32);
 						const case_get:  binaryen.ExpressionRef = wasm.local.get(9, cg.vm.reftypeNull.Case);
 						builder.instructions.slice(0, 5).forEach((instr) => instr.codegen(cg));
 						return assertEqualBins(
@@ -2268,7 +2268,7 @@ test.suite('Opcode', () => {
 						}`, {codegen: false});
 						const {Vect, Value, Case, Dict, Map: VmMap} = cg.vm;
 						const cases_get: binaryen.ExpressionRef = wasm.local.get(4, cg.vm.reftype.MapInternal);
-						const i_get:     binaryen.ExpressionRef = wasm.local.get(5, binaryen.i32);
+						const i_get:     binaryen.ExpressionRef = wasm.local.get(5, binaryen.Type.i32);
 						const case_get:  binaryen.ExpressionRef = wasm.local.get(6, cg.vm.reftypeNull.Case);
 						builder.instructions.slice(0, 2).forEach((instr) => instr.codegen(cg));
 						return assertEqualBins(
@@ -2306,7 +2306,7 @@ test.suite('Opcode', () => {
 						}`, {codegen: false});
 						const {Value, Map: VmMap} = cg.vm;
 						const items_get: binaryen.ExpressionRef = wasm.local.get(3, cg.vm.reftype.Tuple);
-						const i_get:     binaryen.ExpressionRef = wasm.local.get(4, binaryen.i32);
+						const i_get:     binaryen.ExpressionRef = wasm.local.get(4, binaryen.Type.i32);
 						const item_get:  binaryen.ExpressionRef = wasm.local.get(5, cg.vm.reftype.Value);
 						builder.instructions.slice(0, 2).forEach((instr) => instr.codegen(cg));
 						return assertEqualBins(
@@ -2337,7 +2337,7 @@ test.suite('Opcode', () => {
 						}`, {codegen: false});
 						const {Value, List, Map: VmMap} = cg.vm;
 						const items_get: binaryen.ExpressionRef = wasm.local.get(3, cg.vm.reftype.ListInternal);
-						const i_get:     binaryen.ExpressionRef = wasm.local.get(4, binaryen.i32);
+						const i_get:     binaryen.ExpressionRef = wasm.local.get(4, binaryen.Type.i32);
 						const item_get:  binaryen.ExpressionRef = wasm.local.get(5, cg.vm.reftype.Value);
 						builder.instructions.slice(0, 2).forEach((instr) => instr.codegen(cg));
 						return assertEqualBins(
@@ -2400,7 +2400,7 @@ test.suite('Opcode', () => {
 						}`, {codegen: false});
 						const {Value, Map: VmMap} = cg.vm;
 						const pairs_get: binaryen.ExpressionRef = wasm.local.get(6, cg.vm.reftype.Tuple);
-						const i_get:     binaryen.ExpressionRef = wasm.local.get(7, binaryen.i32);
+						const i_get:     binaryen.ExpressionRef = wasm.local.get(7, binaryen.Type.i32);
 						builder.instructions.slice(0, 5).forEach((instr) => instr.codegen(cg));
 						return assertEqualBins(
 							builder.instructions[5].codegen(cg),
@@ -2430,7 +2430,7 @@ test.suite('Opcode', () => {
 						}`, {codegen: false});
 						const {Value, List, Map: VmMap} = cg.vm;
 						const pairs_get: binaryen.ExpressionRef = wasm.local.get(6, cg.vm.reftype.ListInternal);
-						const i_get:     binaryen.ExpressionRef = wasm.local.get(7, binaryen.i32);
+						const i_get:     binaryen.ExpressionRef = wasm.local.get(7, binaryen.Type.i32);
 						const item_get:  binaryen.ExpressionRef = wasm.local.get(8, cg.vm.reftypeNull.Value);
 						builder.instructions.slice(0, 5).forEach((instr) => instr.codegen(cg));
 						return assertEqualBins(
@@ -2464,7 +2464,7 @@ test.suite('Opcode', () => {
 						}`, {codegen: false});
 						const {Value, Case, Map: VmMap} = cg.vm;
 						const cases_get: binaryen.ExpressionRef = wasm.local.get(7, cg.vm.reftype.MapInternal);
-						const i_get:     binaryen.ExpressionRef = wasm.local.get(8, binaryen.i32);
+						const i_get:     binaryen.ExpressionRef = wasm.local.get(8, binaryen.Type.i32);
 						const case_get:  binaryen.ExpressionRef = wasm.local.get(9, cg.vm.reftypeNull.Case);
 						builder.instructions.slice(0, 5).forEach((instr) => instr.codegen(cg));
 						return assertEqualBins(

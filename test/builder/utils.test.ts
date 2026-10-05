@@ -31,7 +31,7 @@ test.suite('drop_then', () => {
 			wasm.drop(genConst(cg, 2n)),
 			wasm.drop(genConst(cg, 3n)),
 		]); // result of building Block
-		assert.strictEqual(binaryen.getExpressionType(block), binaryen.none);
+		assert.strictEqual(binaryen.getExpressionType(block), binaryen.Type.none);
 		return assertEqualBins(
 			drop_then(cg, [expr1], block),
 			wasm.block(null, [wasm.drop(expr1), block]), // defaults to `binaryen.none`

@@ -563,7 +563,7 @@ export class TypeInterface extends Type {
 	}
 
 	public override toString(): string {
-		return `[${ [...this.properties].map((prop) => prop.join(': ')).join(', ') }]`;
+		return `[${[...this.properties].map((prop) => prop.join(': ')).join(', ')}]`;
 	}
 
 	public override includes(v: VALUE.Value): boolean {
@@ -581,7 +581,7 @@ export class TypeInterface extends Type {
 		if (t instanceof TypeInterface) {
 			const props = new Map<string, Type>([...this.properties]);
 			[...t.properties].forEach(([name, type_]) => {
-				props.set(name, (props.has(name)) ? props.get(name)!.intersect(type_) : type_);
+				props.set(name, props.get(name)?.intersect(type_) ?? type_);
 			});
 			return new TypeInterface(props);
 		} else {

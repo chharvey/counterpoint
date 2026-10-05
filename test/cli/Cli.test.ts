@@ -52,7 +52,7 @@ test.suite('Cli', () => {
 			test.test('same as `i`; interprets given file.', () => {
 				['interpret', 'i'].forEach((command) => {
 					const cli = new Cli(`
-						npx cplc ${ command } ./sample/test-v0.1.cpls
+						npx cplc ${command} ./sample/test-v0.1.cpls
 					`.trim().split(' '));
 					assert.strictEqual(cli.argv._[1], './sample/test-v0.1.cpls');
 					assert.strictEqual(cli.command, Command.INTERPRET);
@@ -63,7 +63,7 @@ test.suite('Cli', () => {
 			test.test('same as `c`; compiles given file.', () => {
 				['compile', 'c'].forEach((command) => {
 					const cli = new Cli(`
-						npx cplc ${ command } ./sample/test-v0.1.cpls
+						npx cplc ${command} ./sample/test-v0.1.cpls
 					`.trim().split(' '));
 					assert.strictEqual(cli.argv._[1], './sample/test-v0.1.cpls');
 					assert.strictEqual(cli.command, Command.COMPILE);
@@ -110,7 +110,7 @@ test.suite('Cli', () => {
 			test.test('same as `d`; debugs given file.', () => {
 				['dev', 'd'].forEach((command) => {
 					const cli = new Cli(`
-						npx cplc ${ command } ./sample/test-v0.1.cpls
+						npx cplc ${command} ./sample/test-v0.1.cpls
 					`.trim().split(' '));
 					assert.strictEqual(cli.argv._[1], './sample/test-v0.1.cpls');
 					assert.strictEqual(cli.command, Command.DEV);
@@ -157,7 +157,7 @@ test.suite('Cli', () => {
 			test.test('same as `r`; runs given file.', () => {
 				['run', 'r'].forEach((command) => {
 					const cli = new Cli(`
-						npx cplc ${ command } ./sample/test-v0.1.wasm
+						npx cplc ${command} ./sample/test-v0.1.wasm
 					`.trim().split(' '));
 					assert.strictEqual(cli.argv._[1], './sample/test-v0.1.wasm');
 					assert.strictEqual(cli.command, Command.RUN);

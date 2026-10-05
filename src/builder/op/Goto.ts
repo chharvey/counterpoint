@@ -14,7 +14,7 @@ export class Goto extends Terminator {
 	}
 
 	public override toString(): string {
-		return super.toString(`"${ this.label }"`);
+		return super.toString(`"${this.label}"`);
 	}
 
 	public override interpret(interp: Interpreter): void {

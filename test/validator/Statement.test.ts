@@ -221,7 +221,7 @@ test.suite('Statement', () => {
 					`, (stmt) => {
 						setupScript(`{
 							val mut x: int | float = 4.2;
-							${ stmt }
+							${stmt}
 						}`, {build: false}); // assert does not throw
 					});
 				});
@@ -524,7 +524,7 @@ test.suite('Statement', () => {
 						Set.<int>((42,)).[43]
 						Map.<bool, int>(((true, 42),)).[true]
 					`, (src) => {
-						const {goal} = setupScript(`{ delete ${ src }; }`, {typeCheck: false});
+						const {goal} = setupScript(`{ delete ${src}; }`, {typeCheck: false});
 						assert.throws(() => goal.typeCheck(), /only applicable to interface types/);
 					});
 				});
@@ -578,16 +578,16 @@ test.suite('Statement', () => {
 			test.test('passes when condition is subtype of Boolean.', () => {
 				xjs.Array.forEachAggregated([BOOLS, NON_BOOLS], (decl_set) => xjs.Array.forEachAggregated(decl_set, (decl) => {
 					setupScript(`{
-						${ decl }
-						if     ${ decl_set === NON_BOOLS ? '!!' : '' }cond then { "consequent"; } else { "alternative"; };
-						unless ${ decl_set === NON_BOOLS ? '!!' : '' }cond then { "consequent"; };
+						${decl}
+						if     ${decl_set === NON_BOOLS ? '!!' : ''}cond then { "consequent"; } else { "alternative"; };
+						unless ${decl_set === NON_BOOLS ? '!!' : ''}cond then { "consequent"; };
 					}`, {build: false}); // assert does not throw
 				}));
 			});
 			test.test('throws when condition is not subtype of Boolean.', () => {
 				xjs.Array.forEachAggregated(NON_BOOLS, (decl) => {
 					const {stmts} = setupScript(`{
-						${ decl }
+						${decl}
 						if     cond then { "consequent"; } else { "alternative"; };
 						unless cond then { "consequent"; };
 					}`, {typeCheck: false});
@@ -612,16 +612,16 @@ test.suite('Statement', () => {
 			test.test('passes when condition is subtype of Boolean.', () => {
 				xjs.Array.forEachAggregated([BOOLS, NON_BOOLS], (decl_set) => xjs.Array.forEachAggregated(decl_set, (decl) => {
 					setupScript(`{
-						${ decl }
-						while ${ decl_set === NON_BOOLS ? '!!' : '' }cond do { "consequent"; };
-						until ${ decl_set === NON_BOOLS ? '!!' : '' }cond do { "consequent"; };
+						${decl}
+						while ${decl_set === NON_BOOLS ? '!!' : ''}cond do { "consequent"; };
+						until ${decl_set === NON_BOOLS ? '!!' : ''}cond do { "consequent"; };
 					}`, {build: false}); // assert does not throw
 				}));
 			});
 			test.test('throws when condition is not subtype of Boolean.', () => {
 				xjs.Array.forEachAggregated(NON_BOOLS, (decl) => {
 					const {stmts} = setupScript(`{
-						${ decl }
+						${decl}
 						while cond do { "consequent"; };
 						until cond do { "consequent"; };
 					}`, {typeCheck: false});
@@ -639,8 +639,8 @@ test.suite('Statement', () => {
 					anything
 				`, (vartype) => {
 					setupScript(`{
-						for it: ${ vartype } in ["hello", "world"] do {
-							val greeting: ${ vartype } = it;
+						for it: ${vartype} in ["hello", "world"] do {
+							val greeting: ${vartype} = it;
 						};
 					}`, {build: false}); // assert does not throw
 				});
@@ -655,7 +655,7 @@ test.suite('Statement', () => {
 					{"a" -> "hello", "b" -> "world"}
 				`, (collection) => {
 					const {stmts} = setupScript(`{
-						for it: str in ${ collection } do {
+						for it: str in ${collection} do {
 							;
 						};
 					}`, {typeCheck: false});
@@ -673,7 +673,7 @@ test.suite('Statement', () => {
 					nothing
 				`, (vartype) => {
 					const {stmts} = setupScript(`{
-						for it: ${ vartype } in ["hello", "world"] do {
+						for it: ${vartype} in ["hello", "world"] do {
 							;
 						};
 					}`, {typeCheck: false});
@@ -823,7 +823,7 @@ test.suite('Statement', () => {
 				stmts.slice(1).forEach((stmt) => (stmt as AST.STMT.StatementReassignment).build(builder));
 				return assert.strictEqual(builder.print(), xjs.String.dedent`
 					"block-0":
-						(SET x ${ op_maybe_string('(INT.CONST 42)') })
+						(SET x ${op_maybe_string('(INT.CONST 42)')})
 				`.trim());
 			});
 			test.test('deletion: pushes (SET) with an empty (MAYBE.NEW).', () => {
@@ -834,7 +834,7 @@ test.suite('Statement', () => {
 				stmts.slice(1).forEach((stmt) => (stmt as AST.STMT.StatementReassignment).build(builder));
 				return assert.strictEqual(builder.print(), xjs.String.dedent`
 					"block-0":
-						(SET x ${ op_maybe_string() })
+						(SET x ${op_maybe_string()})
 				`.trim());
 			});
 			test.test('for collections: pushes OP.CollectionDynamicSet.', () => {
@@ -977,8 +977,8 @@ test.suite('Statement', () => {
 					};
 				}`, {codegen: false}).builder.print(), xjs.String.dedent`
 					"block-0":
-						(DECL <Maybe> cond ${ op_maybe_string() })
-						(SET cond ${ op_maybe_string('(BOOL.CONST true)') })
+						(DECL <Maybe> cond ${op_maybe_string()})
+						(SET cond ${op_maybe_string('(BOOL.CONST true)')})
 						(GOTO.IF (EQ (GET cond) (BOOL.CONST true)) "block-1" "block-2")
 					"block-1":
 						(DROP (INT.CONST 10))

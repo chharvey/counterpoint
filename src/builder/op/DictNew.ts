@@ -28,7 +28,7 @@ export class DictNew extends Value {
 	}
 
 	public override toString(): string {
-		return super.toString(...[...this.props].map(([sym, value]) => `${ sym }->${ value }`));
+		return super.toString(...[...this.props].map(([sym, value]) => `${sym}->${value}`));
 	}
 
 	@runOnceMethod

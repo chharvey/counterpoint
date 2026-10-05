@@ -19,7 +19,7 @@ export class AssignmentErrorDuplicateKey extends AssignmentError {
 	 */
 	public constructor(key: Serializable) {
 		super(
-			`Duplicate record/dict/parameter key \`${ key.source }\`.`,
+			`Duplicate record/dict/parameter key \`${key.source}\`.`,
 			AssignmentError.CODES.get(AssignmentErrorDuplicateKey),
 			key.line_index,
 			key.col_index,

@@ -192,7 +192,7 @@ test.suite('Validator', () => {
 			]],
 			/* eslint-enable @stylistic/array-element-newline */
 		]).forEach(([source, values], description) => {
-			test.test(`numerical value: ${ description }.`, () => {
+			test.test(`numerical value: ${description}.`, () => {
 				assert.deepStrictEqual(
 					source.trim().split(/\s+/).map((nsrc) => Validator.cookTokenNumber(nsrc).value),
 					values,
@@ -306,7 +306,7 @@ test.suite('Validator', () => {
 			});
 			test.test('`String.fromCodePoint` throws when UTF-8 encoding input is out of range.', () => {
 				const out_of_range = 'a00061'; // NOTE: the valid range of input may change as Unicode evolves
-				assert.throws(() => Validator.cookTokenString(`'a string literal with a unicode \\u{${ out_of_range }} escape sequence out of range'`), RangeError);
+				assert.throws(() => Validator.cookTokenString(`'a string literal with a unicode \\u{${out_of_range}} escape sequence out of range'`), RangeError);
 			});
 		});
 	});

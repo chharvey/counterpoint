@@ -8,7 +8,6 @@ import {
 import {
 	assert_instanceof,
 	runOnceMethod,
-	memoizeGetter,
 } from '../../../lib/index.ts';
 import {
 	type CplConfig,
@@ -35,7 +34,7 @@ function is_inferrable(node?: EXPR.Expression): boolean {
 			EXPR.Constant,
 			EXPR.Template,
 			EXPR.Call, // TODO: distinguish between constructor calls and function calls
-		].some((klass) => (node instanceof klass)) ? true :
+		].some((klass) => node instanceof klass) ? true :
 		node instanceof EXPR.Tuple  ? node.children.every((expr) => is_inferrable(expr)) :
 		node instanceof EXPR.Record ? node.children.every((prop) => is_inferrable(prop.val)) :
 		false
@@ -56,7 +55,7 @@ function writable_inferred_type(node: EXPR.Expression): TYPE.Type {
 				value instanceof VALUE.Natural ? TYPE.NAT :
 				value instanceof VALUE.Float   ? TYPE.FLOAT :
 				value instanceof VALUE.String  ? TYPE.STR :
-				assert.fail(`Expected ${ value } to be a primitive value.`)
+				assert.fail(`Expected ${value} to be a primitive value.`)
 			);
 		}
 		case node instanceof EXPR.Tuple: {
@@ -69,7 +68,7 @@ function writable_inferred_type(node: EXPR.Expression): TYPE.Type {
 			return node.type();
 		}
 		default: {
-			assert.fail(`${ node.source } should be an instance of ${ EXPR.Constant.name }, ${ EXPR.Tuple.name }, ${ EXPR.Record.name }, or ${ EXPR.Call.name }.`);
+			assert.fail(`${node.source} should be an instance of ${EXPR.Constant.name}, ${EXPR.Tuple.name}, ${EXPR.Record.name}, or ${EXPR.Call.name}.`);
 		}
 	}
 }
@@ -107,10 +106,6 @@ export class DeclarationVariable extends Statement {
 		}
 	}
 
-	@memoizeGetter
-	public override get hasBottomType(): boolean {
-		return this.assigned?.type().isBottomType ?? false;
-	}
 
 	public override varCheck(): void {
 		super.varCheck();
@@ -132,13 +127,13 @@ export class DeclarationVariable extends Statement {
 				EXPR.Constant,
 				EXPR.Tuple,
 				EXPR.Record,
-			].some((klass) => (this.assigned instanceof klass))) ? writable_inferred_type(this.assigned!) :
+			].some((klass) => this.assigned instanceof klass)) ? writable_inferred_type(this.assigned!) :
 			this.assigned instanceof EXPR.Template ? TYPE.STR :
 			this.assigned!.type()
 		);
 		this.assigned && typecheck_assign(this.assigned, assignee_type, this);
 		if (this.assignee) {
-			assert.ok(this.validator.hasSymbol(this.id!), `The validator symbol table should include ${ this.id }.`);
+			assert.ok(this.validator.hasSymbol(this.id!), `The validator symbol table should include ${this.id}.`);
 			(this.validator.getSymbol(this.id!) as SymbolSchemaVar).type = assignee_type;
 		}
 	}

@@ -5,8 +5,6 @@ import {
 } from '../../../index.ts';
 import {
 	assert_instanceof,
-	noopGetter,
-	memoizeGetter,
 	runOnceMethod,
 } from '../../../lib/index.ts';
 import {
@@ -35,10 +33,6 @@ export class StatementBreak extends Statement {
 		super(start_node);
 	}
 
-	@noopGetter(memoizeGetter)
-	public override get hasBottomType(): boolean {
-		return false;
-	}
 
 	@runOnceMethod
 	public override build(builder: Builder): void {

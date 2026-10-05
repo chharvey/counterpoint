@@ -16,7 +16,7 @@ export class LexError03 extends LexError {
 	 */
 	public constructor(span: string, line: number, col: number) {
 		super(
-			`Invalid escape sequence: \`${ span }\` at line ${ line + 1 } col ${ col + 1 }.`,
+			`Invalid escape sequence: \`${span}\` at line ${line + 1} col ${col + 1}.`,
 			LexError.CODES.get(LexError03),
 			line,
 			col,

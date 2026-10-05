@@ -8,14 +8,14 @@ import * as xjs from 'extrajs';
 
 function s(name: string, ...operands: readonly string[]): string {
 	return xjs.String.dedent`
-		(${ name }
-			${ operands.join('') }
+		(${name}
+			${operands.join('')}
 		)
 	`;
 }
 
 function f(fieldname: string, name: string, ...operands: readonly string[]): string {
-	return `${ fieldname }: ${ s(name, ...operands) }`;
+	return `${fieldname}: ${s(name, ...operands)}`;
 }
 
 function sourceStatements(...statements: readonly string[]): string {
@@ -29,7 +29,7 @@ function sourceStatements(...statements: readonly string[]): string {
 }
 
 function sourceTypes(...types: readonly string[]): string {
-	return sourceStatements(...types.map((typ) => s('declaration_type', f('identifier_0', 'identifier'), `type_0: ${ typ }`)));
+	return sourceStatements(...types.map((typ) => s('declaration_type', f('identifier_0', 'identifier'), `type_0: ${typ}`)));
 }
 
 function sourceExpressions(...expressions: readonly string[]): string {
@@ -256,7 +256,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					s('string'),
 				].map((term) => s('primitive_literal', term));
 				return sourceStatements(
-					...primitive_literals.map((pl) => s('declaration_type', f('identifier_0', 'identifier'), `type_0: ${ pl }`)),
+					...primitive_literals.map((pl) => s('declaration_type', f('identifier_0', 'identifier'), `type_0: ${pl}`)),
 					...primitive_literals.map((pl) => s('statement_expression', pl)),
 				);
 			})(),
@@ -647,13 +647,13 @@ function sourceExpressions(...expressions: readonly string[]): string {
 		StringTemplate: [
 			xjs.String.dedent`
 				{
-					"""hello {{ to }} the
-					the {{ big }} world""";
+					"""hello {{to}} the
+					the {{big}} world""";
 
-					"""hello {{ to }} the {{ whole }} great {{ big }} world""";
+					"""hello {{to}} the {{whole}} great {{big}} world""";
 
-					"""hello {{ """to {{ """the
-					the""" }} big""" }} world""";
+					"""hello {{"""to {{"""the
+					the"""}} big"""}} world""";
 				}
 			`,
 			sourceExpressions(
@@ -1113,8 +1113,8 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				{
 					value as  Klass;
 					value as? Klass;
-					value as! Klass;
 					value as  <T>;
+					value as! <T>;
 				}
 			`,
 			sourceExpressions(
@@ -1131,7 +1131,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				s(
 					'expression_cast',
 					f('expression_0', 'identifier'),
-					f('expression_1', 'identifier'),
+					f('type_0',       'identifier'),
 				),
 				s(
 					'expression_cast',
@@ -2125,15 +2125,15 @@ function sourceExpressions(...expressions: readonly string[]): string {
 		// Declaration
 		// consists of #Declaration{Type,Variable,Function}
 	}).map(([title, [source, expected]]) => xjs.String.dedent`
-		${ '='.repeat(title.length) }
-		${ title }
-		${ '='.repeat(title.length) }
+		${'='.repeat(title.length)}
+		${title}
+		${'='.repeat(title.length)}
 
-		${ source }
+		${source}
 
 		---
 
-		${ expected }
+		${expected}
 	`).filter((test) => !!test).join(''));
 })().catch((err) => {
 	console.error(err);

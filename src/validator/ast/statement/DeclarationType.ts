@@ -3,8 +3,6 @@ import {AssignmentErrorDuplicateDeclaration} from '../../../index.ts';
 import {
 	assert_instanceof,
 	noopMethod,
-	noopGetter,
-	memoizeGetter,
 	runOnceMethod,
 } from '../../../lib/index.ts';
 import {
@@ -43,10 +41,6 @@ export class DeclarationType extends Statement {
 		}
 	}
 
-	@noopGetter(memoizeGetter)
-	public override get hasBottomType(): boolean {
-		return false;
-	}
 
 	public override varCheck(): void {
 		super.varCheck();
@@ -61,7 +55,7 @@ export class DeclarationType extends Statement {
 	public override typeCheck(): void {
 		const typevalue: TYPE.Type = this.assigned.eval(); // evaluate first before checking, to rethrow any errors
 		if (this.assignee) {
-			assert.ok(this.validator.hasSymbol(this.id!), `The validator symbol table should include ${ this.id }.`);
+			assert.ok(this.validator.hasSymbol(this.id!), `The validator symbol table should include ${this.id}.`);
 			const symbol = this.validator.getSymbol(this.id!) as SymbolSchemaType;
 			symbol.typevalue = typevalue;
 		}

@@ -1,4 +1,33 @@
 import type {Builder} from '../Builder.ts';
+import {
+	Value,
+	Trap,
+	Const,
+	Get,
+	Template,
+	CollectionLinearNew,
+	RecordNew,
+	DictNew,
+	MapNew,
+	MaybeNew,
+	TupleGet,
+	RecordGet,
+	CollectionDynamicGet,
+	Call,
+	Unop,
+	Instance,
+	Binop,
+	Instruction,
+	Drop,
+	Decl,
+	Set as OpSet,
+	CollectionDynamicSet,
+	CollectionDynamicCopy,
+	Terminator,
+	Goto,
+	GotoConditional,
+	EndProgram,
+} from './index.ts';
 
 
 
@@ -109,6 +138,78 @@ export enum OpCode {
 
 
 
+export abstract class OpcodeVisitor<T> {
+	/* eslint-disable @stylistic/space-before-function-paren */
+	public visitTrap                 (val: Trap):                 T { return this.defaultVisit(val); }
+	public visitConst                (val: Const):                T { return this.defaultVisit(val); }
+	public visitGet                  (val: Get):                  T { return this.defaultVisit(val); }
+	public visitTemplate             (val: Template):             T { return this.defaultVisit(val); }
+	public visitCollectionLinearNew  (val: CollectionLinearNew):  T { return this.defaultVisit(val); }
+	public visitRecordNew            (val: RecordNew):            T { return this.defaultVisit(val); }
+	public visitDictNew              (val: DictNew):              T { return this.defaultVisit(val); }
+	public visitMapNew               (val: MapNew):               T { return this.defaultVisit(val); }
+	public visitMaybeNew             (val: MaybeNew):             T { return this.defaultVisit(val); }
+	public visitTupleGet             (val: TupleGet):             T { return this.defaultVisit(val); }
+	public visitRecordGet            (val: RecordGet):            T { return this.defaultVisit(val); }
+	public visitCollectionDynamicGet (val: CollectionDynamicGet): T { return this.defaultVisit(val); }
+	public visitCall                 (val: Call):                 T { return this.defaultVisit(val); }
+	public visitUnop                 (val: Unop):                 T { return this.defaultVisit(val); }
+	public visitInstance             (val: Instance):             T { return this.defaultVisit(val); }
+	public visitBinop                (val: Binop):                T { return this.defaultVisit(val); }
+	public visitValue                (val: Value):                T { return this.defaultVisit(val); }
+
+	public visitDrop                  (instr: Drop):                  T { return this.defaultVisit(instr); }
+	public visitDecl                  (instr: Decl):                  T { return this.defaultVisit(instr); }
+	public visitSet                   (instr: OpSet):                 T { return this.defaultVisit(instr); }
+	public visitCollectionDynamicSet  (instr: CollectionDynamicSet):  T { return this.defaultVisit(instr); }
+	public visitCollectionDynamicCopy (instr: CollectionDynamicCopy): T { return this.defaultVisit(instr); }
+	public visitInstruction           (instr: Instruction):           T { return this.defaultVisit(instr); }
+
+	public visitGoto            (term: Goto):            T { return this.defaultVisit(term); }
+	public visitGotoConditional (term: GotoConditional): T { return this.defaultVisit(term); }
+	public visitEndProgram      (term: EndProgram):      T { return this.defaultVisit(term); }
+	public visitTerminator      (term: Terminator):      T { return this.defaultVisit(term); }
+	/* eslint-enable @stylistic/space-before-function-paren */
+
+	public abstract defaultVisit(op: Opcode): T;
+
+	/** @final */
+	public visit(op: Opcode): T {
+		switch (op.constructor) {
+			case Trap:                  { return this.visitTrap                 (op as Trap); }
+			case Const:                 { return this.visitConst                (op as Const); }
+			case Get:                   { return this.visitGet                  (op as Get); }
+			case Template:              { return this.visitTemplate             (op as Template); }
+			case CollectionLinearNew:   { return this.visitCollectionLinearNew  (op as CollectionLinearNew); }
+			case RecordNew:             { return this.visitRecordNew            (op as RecordNew); }
+			case DictNew:               { return this.visitDictNew              (op as DictNew); }
+			case MapNew:                { return this.visitMapNew               (op as MapNew); }
+			case MaybeNew:              { return this.visitMaybeNew             (op as MaybeNew); }
+			case TupleGet:              { return this.visitTupleGet             (op as TupleGet); }
+			case RecordGet:             { return this.visitRecordGet            (op as RecordGet); }
+			case CollectionDynamicGet:  { return this.visitCollectionDynamicGet (op as CollectionDynamicGet); }
+			case Call:                  { return this.visitCall                 (op as Call); }
+			case Unop:                  { return this.visitUnop                 (op as Unop); }
+			case Instance:              { return this.visitInstance             (op as Instance); }
+			case Binop:                 { return this.visitBinop                (op as Binop); }
+			case Value:                 { return this.visitValue                (op as Value); }
+
+			case Drop:                  { return this.visitDrop                  (op as Drop); }
+			case Decl:                  { return this.visitDecl                  (op as Decl); }
+			case OpSet:                 { return this.visitSet                   (op as OpSet); }
+			case CollectionDynamicSet:  { return this.visitCollectionDynamicSet  (op as CollectionDynamicSet); }
+			case CollectionDynamicCopy: { return this.visitCollectionDynamicCopy (op as CollectionDynamicCopy); }
+			case Instruction:           { return this.visitInstruction           (op as Instruction); }
+
+			case Goto:                  { return this.visitGoto            (op as Goto); }
+			case GotoConditional:       { return this.visitGotoConditional (op as GotoConditional); }
+			case EndProgram:            { return this.visitEndProgram      (op as EndProgram); }
+			case Terminator:            { return this.visitTerminator      (op as Terminator); }
+
+			default: { return this.defaultVisit(op); }
+		}
+	}
+}
 /**
  * An Opcode is an operation of the virtual machine.
  *
@@ -123,7 +224,7 @@ export abstract class Opcode {
 
 	/** Represent this Opcode as a string for inspection. */
 	public toString(...args: readonly {toString(): string}[]): string {
-		return `(${ [OpCode[this.opCode].replace(/_/, '.'), ...args].join(' ') })`;
+		return `(${[OpCode[this.opCode].replace(/_/, '.'), ...args].join(' ')})`;
 	}
 
 	/** Type-validate this Opcode. Throws if invalid. */

@@ -10,7 +10,6 @@ import {
 } from '../../../index.ts';
 import {
 	assert_instanceof,
-	memoizeGetter,
 	runOnceMethod,
 } from '../../../lib/index.ts';
 import {
@@ -56,10 +55,6 @@ export class StatementIteration extends StatementBreakable {
 		}
 	}
 
-	@memoizeGetter
-	public override get hasBottomType(): boolean {
-		return this.iterable.type().isBottomType || this.block.hasBottomType;
-	}
 
 	public override varCheck(): void {
 		// Do not call `super.varCheck()` as we want to VarCheck `this.block` at the end.
@@ -89,7 +84,7 @@ export class StatementIteration extends StatementBreakable {
 			throw new TypeErrorNotNarrow(item_type, assignee_type, this.line_index, this.col_index);
 		}
 		if (this.assignee) {
-			assert.ok(this.block.validator.hasSymbol(this.id!), `The validator symbol table should include ${ this.id }.`);
+			assert.ok(this.block.validator.hasSymbol(this.id!), `The validator symbol table should include ${this.id}.`);
 			(this.block.validator.getSymbol(this.id!) as SymbolSchemaVar).type = assignee_type;
 		}
 		this.block.typeCheck();

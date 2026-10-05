@@ -34,7 +34,7 @@ class TypeSet extends ReferenceType {
 	}
 
 	public override toString(): string {
-		return `${ this.isMutable ? `${ Keyword.MUTABLE } ` : '' }Set.<${ this.typearg }>`;
+		return `${this.isMutable ? `${Keyword.MUTABLE} ` : ''}Set.<${this.typearg}>`;
 	}
 
 	@instanceOf(() => VALUE.Set)

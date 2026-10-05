@@ -97,8 +97,8 @@ A name–value pair of a Schema is called a **property**.
 
 #### CompletionSchema
 A **CompletionSchema** is a specific subtype of [Schema](#schema) with
-a mandatory property \`type\` and an optional property \`value\`.
-The value of the \`type\` property must be one of the [enumerated](#enumerated-words) specification values
+a mandatory property \`kind\` and an optional property \`value\`.
+The value of the \`kind\` property must be one of the [enumerated](#enumerated-words) specification values
 *normal*, *break*, *skip*, *return*, or *throw*, which are described below.
 The value of the \`value\` property must be
 a [Counterpoint Specification Value](#counterpoint-specification-types) or
@@ -166,7 +166,7 @@ A **SymbolSchemaFunc** represents the symbol a function declaration.
 Property  | Read-Only? | Description
 --------- | ---------- | -----------
 \`id\`    | yes        | the unique identifier of the declared function
-\`type\`  | no         | the Counterpoint Language Type of the function
+\`types\` | yes        | a mutable Sequence of Counterpoint Language Types for the function’s overloads
 
 
 ### Nodes

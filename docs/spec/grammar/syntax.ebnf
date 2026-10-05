@@ -218,8 +218,8 @@ ExpressionUnarySymbol<Block, Break, Return> ::=
 ;
 
 ExpressionCast<Block, Break, Return> ::=
-	| (ExpressionCast<?Block><?Break><?Return> ("as" | "as?" | "as!"))? ExpressionUnarySymbol<?Block><?Break><?Return>
-	|  ExpressionCast<?Block><?Break><?Return>  "as"                    "<" Type ">"
+	| (ExpressionCast<?Block><?Break><?Return> ("as" | "as?"))? ExpressionUnarySymbol<?Block><?Break><?Return>
+	|  ExpressionCast<?Block><?Break><?Return> ("as" | "as!")   "<" Type ">"
 ;
 
 ExpressionExponential<Block, Break, Return>

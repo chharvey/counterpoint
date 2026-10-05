@@ -106,7 +106,7 @@ test.suite('Operation', () => {
 				assert_shallowStrictEqual(
 					setupScript(`{
 						val n: null = null;
-						${ INTRINSICS.map((t) => `n is ${ t };`).join('\n') }
+						${INTRINSICS.map((t) => `n is ${t};`).join('\n')}
 					}`, {build: false}).stmts.slice(1).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()),
 					repeat(TYPE.BOOL, 16),
 				);
@@ -117,7 +117,7 @@ test.suite('Operation', () => {
 					assertEqualTypes(
 						setupScript(`{
 							val n: anything = null;
-							${ INTRINSICS.map((t) => `n as ${ t };`).join('\n') }
+							${INTRINSICS.map((t) => `n as ${t};`).join('\n')}
 						}`, {build: false}).stmts.slice(1).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()),
 						[
 							TYPE.NULL,
@@ -154,7 +154,7 @@ test.suite('Operation', () => {
 					assertEqualTypes(
 						setupScript(`{
 							val n: anything = null;
-							${ INTRINSICS.map((t) => `n as? ${ t };`).join('\n') }
+							${INTRINSICS.map((t) => `n as? ${t};`).join('\n')}
 						}`, {build: false}).stmts.slice(1).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()),
 						[
 							new TYPE.Maybe(TYPE.NULL),
@@ -225,7 +225,7 @@ test.suite('Operation', () => {
 						val mut f1: float = 7.1;
 						val mut f2: float = 3.1;
 
-						${ ['i1', 'n1', 'f1'].flatMap((left) => ['i2', 'n2', 'f2'].flatMap((right) => ['<', '>', '<=', '>=', '!<', '!>'].map((op) => `${ left } ${ op } ${ right };`))).join('\n') }
+						${['i1', 'n1', 'f1'].flatMap((left) => ['i2', 'n2', 'f2'].flatMap((right) => ['<', '>', '<=', '>=', '!<', '!>'].map((op) => `${left} ${op} ${right};`))).join('\n')}
 					}`).stmts.slice(6).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()),
 					repeat(TYPE.BOOL, 3 * 3 * 6),
 				);
@@ -439,11 +439,11 @@ test.suite('Operation', () => {
 				test.test('if not "Null" nor "Boolean", returns INSTANCEOF.', () => {
 					assert.strictEqual(setupScript(`{
 						val n: null = null;
-						${ INTRINSICS.slice(2).map((t) => `n is ${ t };`).join('\n') }
+						${INTRINSICS.slice(2).map((t) => `n is ${t};`).join('\n')}
 					}`, {codegen: false}).builder.print(), xjs.String.dedent`
 						"block-0":
 							(DECL <null> n (NULL.CONST null))
-							${ INTRINSICS.slice(2).map((t) => `(DROP (INSTANCEOF ${ t } (GET n)))`).join('\n\t') }
+							${INTRINSICS.slice(2).map((t) => `(DROP (INSTANCEOF ${t} (GET n)))`).join('\n\t')}
 							(ENDPROGRAM)
 					`.trim());
 				});
@@ -452,11 +452,11 @@ test.suite('Operation', () => {
 			test.test('[operator=CAST]', () => {
 				assert.strictEqual(setupScript(`{
 					val n: anything = null;
-					${ INTRINSICS.map((t) => `n as ${ t };`).join('\n') }
+					${INTRINSICS.map((t) => `n as ${t};`).join('\n')}
 				}`, {codegen: false}).builder.print(), xjs.String.dedent`
 					"block-0":
 						(DECL <null> n (NULL.CONST null))
-						${ INTRINSICS.map((t) => `(DROP (CAST ${ t } (GET n)))`).join('\n\t') }
+						${INTRINSICS.map((t) => `(DROP (CAST ${t} (GET n)))`).join('\n\t')}
 						(ENDPROGRAM)
 				`.trim());
 			});
@@ -475,20 +475,20 @@ test.suite('Operation', () => {
 							(DECL <Maybe> $0)
 							(GOTO.IF (ID (GET n) (NULL.CONST null)) "block-1" "block-2")
 						"block-1":
-							(SET $0 ${ op_maybe_string('(CAST Null (GET n))') })
+							(SET $0 ${op_maybe_string('(CAST Null (GET n))')})
 							(GOTO "block-3")
 						"block-2":
-							(SET $0 ${ op_maybe_string() })
+							(SET $0 ${op_maybe_string()})
 							(GOTO "block-3")
 						"block-3":
 							(DROP (GET $0))
 							(DECL <Maybe> $1)
 							(GOTO.IF (ID (GET i) (NULL.CONST null)) "block-4" "block-5")
 						"block-4":
-							(SET $1 ${ op_maybe_string('(CAST Null (GET i))') })
+							(SET $1 ${op_maybe_string('(CAST Null (GET i))')})
 							(GOTO "block-6")
 						"block-5":
-							(SET $1 ${ op_maybe_string() })
+							(SET $1 ${op_maybe_string()})
 							(GOTO "block-6")
 						"block-6":
 							(DROP (GET $1))
@@ -518,10 +518,10 @@ test.suite('Operation', () => {
 						"block-6":
 							(GOTO.IF (GET $2) "block-1" "block-2")
 						"block-1":
-							(SET $0 ${ op_maybe_string('(CAST Boolean (GET n))') })
+							(SET $0 ${op_maybe_string('(CAST Boolean (GET n))')})
 							(GOTO "block-3")
 						"block-2":
-							(SET $0 ${ op_maybe_string() })
+							(SET $0 ${op_maybe_string()})
 							(GOTO "block-3")
 						"block-3":
 							(DROP (GET $0))
@@ -538,10 +538,10 @@ test.suite('Operation', () => {
 						"block-12":
 							(GOTO.IF (GET $5) "block-7" "block-8")
 						"block-7":
-							(SET $3 ${ op_maybe_string('(CAST Boolean (GET i))') })
+							(SET $3 ${op_maybe_string('(CAST Boolean (GET i))')})
 							(GOTO "block-9")
 						"block-8":
-							(SET $3 ${ op_maybe_string() })
+							(SET $3 ${op_maybe_string()})
 							(GOTO "block-9")
 						"block-9":
 							(DROP (GET $3))
@@ -551,28 +551,28 @@ test.suite('Operation', () => {
 				test.test('not "Null" nor "Boolean".', () => {
 					assert.strictEqual(setupScript(`{
 						val n: anything = null;
-						${ INTRINSICS.slice(2).map((t) => `n as? ${ t };`).join('\n') }
+						${INTRINSICS.slice(2).map((t) => `n as? ${t};`).join('\n')}
 					}`, {codegen: false}).builder.print(), xjs.String.dedent`
 						"block-0":
 							(DECL <null> n (NULL.CONST null))
-							${ INTRINSICS.slice(2).map((t, i) => {
-								const block_then:  string = `block-${ 3 * i + 1 }`;
-								const block_else:  string = `block-${ 3 * i + 2 }`;
-								const block_endif: string = `block-${ 3 * i + 3 }`;
-								const result_name: string = `$${ i }`;
+							${INTRINSICS.slice(2).map((t, i) => {
+								const block_then:  string = `block-${3 * i + 1}`;
+								const block_else:  string = `block-${3 * i + 2}`;
+								const block_endif: string = `block-${3 * i + 3}`;
+								const result_name: string = `$${i}`;
 								return xjs.String.dedent`
-									${ '\t' }(DECL <Maybe> ${ result_name })
-									${ '\t' }(GOTO.IF (INSTANCEOF ${ t } (GET n)) "${ block_then }" "${ block_else }")
-									"${ block_then }":
-										(SET ${ result_name } ${ op_maybe_string(`(CAST ${ t } (GET n))`) })
-										(GOTO "${ block_endif }")
-									"${ block_else }":
-										(SET ${ result_name } ${ op_maybe_string() })
-										(GOTO "${ block_endif }")
-									"${ block_endif }":
-										(DROP (GET ${ result_name }))
+									${'\t'}(DECL <Maybe> ${result_name})
+									${'\t'}(GOTO.IF (INSTANCEOF ${t} (GET n)) "${block_then}" "${block_else}")
+									"${block_then}":
+										(SET ${result_name} ${op_maybe_string(`(CAST ${t} (GET n))`)})
+										(GOTO "${block_endif}")
+									"${block_else}":
+										(SET ${result_name} ${op_maybe_string()})
+										(GOTO "${block_endif}")
+									"${block_endif}":
+										(DROP (GET ${result_name}))
 								`.trim();
-							}).join('\n\t').trimStart() }
+							}).join('\n\t').trimStart()}
 							(ENDPROGRAM)
 					`.trim());
 				});
