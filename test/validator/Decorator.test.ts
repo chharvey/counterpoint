@@ -295,10 +295,21 @@ test.suite('Decorator', () => {
 				}
 				% (type_function)
 			`]],
-
+			['Decorate(TypeFunction ::= "\\" "(" ")" "=>" Type) -> SemanticType', [AST.TYPE.Function, `
+				{
+					type T = \\() => int | float;
+				}
+				% (type_function)
+			`]],
 			['Decorate(TypeFunction ::= "\\" "(" ParametersType ")" "=>" "void") -> SemanticType', [AST.TYPE.Function, `
 				{
 					type T = \\(A, b: B, c: \\() => void) => void;
+				}
+				% (type_function)
+			`]],
+			['Decorate(TypeFunction ::= "\\" "(" ParametersType ")" "=>" Type) -> SemanticType', [AST.TYPE.Function, `
+				{
+					type T = \\(A, b: B, c: \\() => void) => int | float;
 				}
 				% (type_function)
 			`]],
@@ -710,9 +721,45 @@ test.suite('Decorator', () => {
 				}
 				% (expression_function)
 			`]],
+			['Decorate(ExpressionFunction ::= "\\" "(" ")" ":" "void" "=>" Expression<+Block><-Break><+Return>) -> SemanticExpressionFunction', [AST.EXPR.Function, `
+				{
+					\\(): void => "done";
+				}
+				% (expression_function)
+			`]],
+			['Decorate(ExpressionFunction ::= "\\" "(" ")" ":" Type Block<-Break><+Return>) -> SemanticExpressionFunction', [AST.EXPR.Function, `
+				{
+					\\(): int | float {;};
+				}
+				% (expression_function)
+			`]],
+			['Decorate(ExpressionFunction ::= "\\" "(" ")" ":" Type "=>" Expression<+Block><-Break><+Return>) -> SemanticExpressionFunction', [AST.EXPR.Function, `
+				{
+					\\(): int | float => "done";
+				}
+				% (expression_function)
+			`]],
 			['Decorate(ExpressionFunction ::= "\\" "(" ParametersFunction ")" ":" "void" Block<-Break><+Return>) -> SemanticExpressionFunction', [AST.EXPR.Function, `
 				{
 					\\(a: A, $b: B, c= charlie: C): void { return; };
+				}
+				% (expression_function)
+			`]],
+			['Decorate(ExpressionFunction ::= "\\" "(" ParametersFunction ")" ":" "void" "=>" Expression<+Block><-Break><+Return>) -> SemanticExpressionFunction', [AST.EXPR.Function, `
+				{
+					\\(a: A, $b: B, c= charlie: C): void => "done";
+				}
+				% (expression_function)
+			`]],
+			['Decorate(ExpressionFunction ::= "\\" "(" ParametersFunction ")" ":" Type Block<-Break><+Return>) -> SemanticExpressionFunction', [AST.EXPR.Function, `
+				{
+					\\(a: A, $b: B, c= charlie: C): int | float { return; };
+				}
+				% (expression_function)
+			`]],
+			['Decorate(ExpressionFunction ::= "\\" "(" ParametersFunction ")" ":" Type "=>" Expression<+Block><-Break><+Return>) -> SemanticExpressionFunction', [AST.EXPR.Function, `
+				{
+					\\(a: A, $b: B, c= charlie: C): int | float => "done";
 				}
 				% (expression_function)
 			`]],
@@ -859,9 +906,15 @@ test.suite('Decorator', () => {
 				% (statement_break)
 			`]],
 
-			['Decorate(StatementReturn ::= "return" ";") ->', [AST.STMT.StatementReturn, `
+			['Decorate(StatementReturn<Break> ::= "return" ";") -> SemanticStatementReturn', [AST.STMT.StatementReturn, `
 				{
 					func foo(): void { return; }
+				}
+				% (statement_return)
+			`]],
+			['Decorate(StatementReturn<Break> ::= "return" Expression<+Block><?Break><+Return> ";") -> SemanticStatementReturn', [AST.STMT.StatementReturn, `
+				{
+					func foo(): void { return bar; }
 				}
 				% (statement_return)
 			`]],
@@ -946,9 +999,45 @@ test.suite('Decorator', () => {
 				}
 				% (declaration_function)
 			`]],
+			['Decorate(DeclarationFunction ::= "func" "_" "(" ")" ":" "void" "=>" Expression<+Block><-Break><+Return> ";") -> SemanticDeclarationFunction', [AST.STMT.DeclarationFunction, `
+				{
+					func _(): void => bar;
+				}
+				% (declaration_function)
+			`]],
+			['Decorate(DeclarationFunction ::= "func" "_" "(" ")" ":" Type Block<-Break><+Return>) -> SemanticDeclarationFunction', [AST.STMT.DeclarationFunction, `
+				{
+					func _(): int | float {;}
+				}
+				% (declaration_function)
+			`]],
+			['Decorate(DeclarationFunction ::= "func" "_" "(" ")" ":" Type "=>" Expression<+Block><-Break><+Return> ";") -> SemanticDeclarationFunction', [AST.STMT.DeclarationFunction, `
+				{
+					func _(): int | float => bar;
+				}
+				% (declaration_function)
+			`]],
 			['Decorate(DeclarationFunction ::= "func" "_" "(" ParametersFunction ")" ":" "void" Block<-Break><+Return>) -> SemanticDeclarationFunction', [AST.STMT.DeclarationFunction, `
 				{
 					func _(a: A, $b: B, c= charlie: C): void {;}
+				}
+				% (declaration_function)
+			`]],
+			['Decorate(DeclarationFunction ::= "func" "_" "(" ParametersFunction ")" ":" "void" "=>" Expression<+Block><-Break><+Return> ";") -> SemanticDeclarationFunction', [AST.STMT.DeclarationFunction, `
+				{
+					func _(a: A, $b: B, c= charlie: C): void => bar;
+				}
+				% (declaration_function)
+			`]],
+			['Decorate(DeclarationFunction ::= "func" "_" "(" ParametersFunction ")" ":" Type Block<-Break><+Return>) -> SemanticDeclarationFunction', [AST.STMT.DeclarationFunction, `
+				{
+					func _(a: A, $b: B, c= charlie: C): int | float {;}
+				}
+				% (declaration_function)
+			`]],
+			['Decorate(DeclarationFunction ::= "func" "_" "(" ParametersFunction ")" ":" Type "=>" Expression<+Block><-Break><+Return> ";") -> SemanticDeclarationFunction', [AST.STMT.DeclarationFunction, `
+				{
+					func _(a: A, $b: B, c= charlie: C): int | float => bar;
 				}
 				% (declaration_function)
 			`]],
@@ -958,9 +1047,45 @@ test.suite('Decorator', () => {
 				}
 				% (declaration_function)
 			`]],
+			['Decorate(DeclarationFunction ::= "func" IDENTIFIER "(" ")" ":" "void" "=>" Expression<+Block><-Break><+Return> ";") -> SemanticDeclarationFunction', [AST.STMT.DeclarationFunction, `
+				{
+					func foo(): void => bar;
+				}
+				% (declaration_function)
+			`]],
+			['Decorate(DeclarationFunction ::= "func" IDENTIFIER "(" ")" ":" Type Block<-Break><+Return>) -> SemanticDeclarationFunction', [AST.STMT.DeclarationFunction, `
+				{
+					func foo(): int | float { return; }
+				}
+				% (declaration_function)
+			`]],
+			['Decorate(DeclarationFunction ::= "func" IDENTIFIER "(" ")" ":" Type "=>" Expression<+Block><-Break><+Return> ";") -> SemanticDeclarationFunction', [AST.STMT.DeclarationFunction, `
+				{
+					func foo(): int | float => bar;
+				}
+				% (declaration_function)
+			`]],
 			['Decorate(DeclarationFunction ::= "func" IDENTIFIER "(" ParametersFunction ")" ":" "void" Block<-Break><+Return>) -> SemanticDeclarationFunction', [AST.STMT.DeclarationFunction, `
 				{
 					func foo(a: A, $b: B, c= charlie: C): void { return; }
+				}
+				% (declaration_function)
+			`]],
+			['Decorate(DeclarationFunction ::= "func" IDENTIFIER "(" ParametersFunction ")" ":" "void" "=>" Expression<+Block><-Break><+Return> ";") -> SemanticDeclarationFunction', [AST.STMT.DeclarationFunction, `
+				{
+					func foo(a: A, $b: B, c= charlie: C): void => bar;
+				}
+				% (declaration_function)
+			`]],
+			['Decorate(DeclarationFunction ::= "func" IDENTIFIER "(" ParametersFunction ")" ":" Type Block<-Break><+Return>) -> SemanticDeclarationFunction', [AST.STMT.DeclarationFunction, `
+				{
+					func foo(a: A, $b: B, c= charlie: C): int | float { return; }
+				}
+				% (declaration_function)
+			`]],
+			['Decorate(DeclarationFunction ::= "func" IDENTIFIER "(" ParametersFunction ")" ":" Type "=>" Expression<+Block><-Break><+Return> ";") -> SemanticDeclarationFunction', [AST.STMT.DeclarationFunction, `
+				{
+					func foo(a: A, $b: B, c= charlie: C): int | float => bar;
 				}
 				% (declaration_function)
 			`]],

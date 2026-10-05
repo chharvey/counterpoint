@@ -147,7 +147,7 @@ export class Decorator {
 	public decorate(syntaxnode: SyntaxNodeFamily<'statement_loop',        [                   'return']>): AST.STMT.StatementLoop;
 	public decorate(syntaxnode: SyntaxNodeFamily<'statement_iteration',   [                   'return']>): AST.STMT.StatementIteration;
 	public decorate(syntaxnode: SyntaxNodeType<'statement_break'>):                                        AST.STMT.StatementBreak;
-	public decorate(syntaxnode: SyntaxNodeType<'statement_return'>):                                       AST.STMT.StatementReturn;
+	public decorate(syntaxnode: SyntaxNodeFamily<'statement_return', ['break']>):                          AST.STMT.StatementReturn;
 	public decorate(syntaxnode: SyntaxNodeSupertype<'statement'>):                                         AST.STMT.Statement;
 	public decorate(syntaxnode: SyntaxNodeFamily<'block', ['break', 'return']>):                           AST.Block;
 	public decorate(syntaxnode: SyntaxNodeType<'declaration_type'>):                                       AST.STMT.DeclarationType;
@@ -283,6 +283,7 @@ export class Decorator {
 				node as SyntaxNodeType<'type_function'>,
 				node.namedChildren.filter((c) => isSyntaxNodeType(c, 'entry_type'))        .map((c) => this.decorate(c)),
 				node.namedChildren.filter((c) => isSyntaxNodeType(c, 'entry_type__named')) .map((c) => this.decorate(c)),
+				node.childForFieldName('type_0') && this.decorateTypeNode(node.childForFieldName('type_0') as SyntaxNodeSupertype<'type'>),
 			)],
 
 			/* ## Expressions */
@@ -573,11 +574,18 @@ export class Decorator {
 				this.decorateExprNode(node.childForFieldName('expression_1') as SyntaxNodeSupertype<'expression'>),
 			)],
 
-			['expression_function', (node) => new AST.EXPR.Function(
-				node as SyntaxNodeType<'expression_function'>,
-				node.namedChildren.filter((c) => isSyntaxNodeFamily(c, 'parameter_function', ['named'])).map((c) => this.decorate(c)),
-				this.decorateBlockNode(node.childForFieldName('block_0') as SyntaxNodeFamily<'block', ['return']>, true),
-			)],
+			['expression_function', (node) => {
+				const type_0       = node.childForFieldName('type_0')       as SyntaxNodeSupertype<'type'>       | null;
+				const expression_0 = node.childForFieldName('expression_0') as SyntaxNodeSupertype<'expression'> | null;
+				return new AST.EXPR.Function(
+					node as SyntaxNodeType<'expression_function'>,
+					node.namedChildren.filter((c) => isSyntaxNodeFamily(c, 'parameter_function', ['named'])).map((c) => this.decorate(c)),
+					type_0 && this.decorateTypeNode(type_0),
+					expression_0
+						? AST.Block.fromFunctionSource(`{ return ${ expression_0.text }; }`)
+						: this.decorateBlockNode(node.childForFieldName('block_0') as SyntaxNodeFamily<'block', ['return']>),
+				);
+			}],
 
 			/* ## Statements */
 			[/^assignee(__break)?(__return)?$/, (node) => {
@@ -657,7 +665,10 @@ export class Decorator {
 				node.children[0].type === Keyword.SKIP,
 			)],
 
-			['statement_return', (node) => new AST.STMT.StatementReturn(node as SyntaxNodeType<'statement_return'>)],
+			[/^statement_return(__break)?$/, (node) => new AST.STMT.StatementReturn(
+				node as SyntaxNodeType<'statement_return'>,
+				node.childForFieldName('expression_0') && this.decorateExprNode(node.childForFieldName('expression_0') as SyntaxNodeSupertype<'expression'>),
+			)],
 
 			[/^block(__break)?(__return)?$/, (node) => this.decorateBlockNode(node as SyntaxNodeFamily<'block', ['break', 'return']>)],
 
@@ -699,12 +710,17 @@ export class Decorator {
 			}],
 
 			['declaration_function', (node) => {
-				const identifier_0 = node.childForFieldName('identifier_0') as SyntaxNodeType<'identifier'> | null;
+				const identifier_0 = node.childForFieldName('identifier_0') as SyntaxNodeType<'identifier'>      | null;
+				const type_0       = node.childForFieldName('type_0')       as SyntaxNodeSupertype<'type'>       | null;
+				const expression_0 = node.childForFieldName('expression_0') as SyntaxNodeSupertype<'expression'> | null;
 				return new AST.STMT.DeclarationFunction(
 					node as SyntaxNodeType<'declaration_function'>,
 					identifier_0 && to_serializable(identifier_0),
 					node.namedChildren.filter((c) => isSyntaxNodeFamily(c, 'parameter_function', ['named'])).map((c) => this.decorate(c)),
-					this.decorateBlockNode(node.childForFieldName('block_0') as SyntaxNodeFamily<'block', ['return']>, true),
+					type_0 && this.decorateTypeNode(type_0),
+					expression_0
+						? AST.Block.fromFunctionSource(`{ return ${ expression_0.text }; }`)
+						: this.decorateBlockNode(node.childForFieldName('block_0') as SyntaxNodeFamily<'block', ['return']>),
 				);
 			}],
 		]);
@@ -733,12 +749,11 @@ export class Decorator {
 		);
 	}
 
-	private decorateBlockNode(blocknode: SyntaxNodeFamily<'block', ['break', 'return']>, is_func_block: boolean = false): AST.Block {
+	private decorateBlockNode(blocknode: SyntaxNodeFamily<'block', ['break', 'return']>): AST.Block {
 		return new AST.Block(
 			blocknode,
 			blocknode.namedChildren.map((c) => this.decorate(c as SyntaxNodeSupertype<'statement'>)) as NonemptyArray<AST.STMT.Statement>,
 			this.config,
-			is_func_block,
 		);
 	}
 }

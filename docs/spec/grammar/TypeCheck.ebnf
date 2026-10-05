@@ -5,7 +5,6 @@ Nil! TypeCheck(Or<
 	SemanticPropertyType
 	SemanticProperty,
 	SemanticCase,
-	SemanticBlock,
 	SemanticGoal,
 	SemanticStatementExpression,
 	SemanticStatementBreak,
@@ -32,6 +31,17 @@ Nil! TypeCheck(SemanticParameterFunction param) :=
 		7. *Assert:* `symbol` is an instance of `SymbolSchemaVar`.
 		8. *Set* `symbol.type` to `param_type`.
 	5. *Else:*
+		1. *Return.*
+;
+
+
+
+Nil! TypeCheck(SemanticBlock block) :=
+	1. *For each* `stmt` in `block.children`:
+		1. *Perform:* *Unwrap:* `TypeCheck(stmt)`.
+	2. *If* `block` is a function body *and* *UnwrapAffirm:* `CompletionOf(block)` is not *RETURN_OR_THROW*:
+		1. *Throw:* a new TypeErrorFunctionExit.
+	3. *Else:*
 		1. *Return.*
 ;
 
@@ -256,6 +266,36 @@ Nil! TypeCheck(SemanticStatementIteration stmt) :=
 		3. *Assert:* `symbol` is an instance of `SymbolSchemaVar`.
 		4. *Set* `symbol.type` to `assignee_type`.
 	13. *Perform:* *Unwrap:* `TypeCheck(block)`.
+;
+
+
+
+Nil! TypeCheck(SemanticStatementReturn ::= ()) :=
+	1. *Let* `parent` be the result of walking up the AST and finding a node
+		that is either a SemanticExpressionFunction or a SemanticDeclarationFunction.
+	2. *If* `parent` is set:
+		1. *Let* `return_node` be an item `node` in `parent` such that `item` is a SemanticType.
+		2. *If* `return_node` is set:
+			1. *Let* `return_type` be *Unwrap:* `TypeValueOf(return_node)`.
+			2. *Throw:* a new Error """A function with return type \`{{ return_type.value }}\` does not return a value."""
+		3. *Else:*
+			1. *Note:* The function is a void function and the return statement has no expression.
+			2. *Return.*
+	3. *Else:*
+		1. *Return.*
+;
+Nil! TypeCheck(SemanticStatementReturn ::= SemanticExpression) :=
+	1. *Let* `parent` be the result of walking up the AST and finding a node
+		that is either a SemanticExpressionFunction or a SemanticDeclarationFunction.
+	2. *If* `parent` is set:
+		1. *Let* `return_node` be an item `node` in `parent` such that `item` is a SemanticType.
+		2. *If* `return_node` is set:
+			1. *Let* `return_type` be *Unwrap:* `TypeValueOf(return_node)`.
+			2. *Return:* `TypeCheckAssign(SemanticExpression, return_type.value)`.
+		3. *Else:*
+			1. *Throw:* a new Error """Expression \`{{ SemanticExpression }}\` is returned from a void function."""
+	3. *Else:*
+		1. *Return.*
 ;
 
 

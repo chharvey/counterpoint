@@ -29,8 +29,9 @@ class TypeFunction extends Type {
 		start_node: SyntaxNodeType<'type_function'>,
 		private readonly paramPositTypes: readonly ItemType[],
 		private readonly paramNamedTypes: readonly PropertyType[],
+		private readonly returnType:      Type | null,
 	) {
-		super(start_node, {}, [...paramPositTypes, ...paramNamedTypes]);
+		super(start_node, {}, [...paramPositTypes, ...paramNamedTypes, ...(returnType ? [returnType] : [])]);
 	}
 
 
@@ -44,6 +45,7 @@ class TypeFunction extends Type {
 		return new TYPE.Function(
 			Tuple .prototype.eval.call({children: this.paramPositTypes}) as TYPE.Tuple,
 			Record.prototype.eval.call({children: this.paramNamedTypes}) as TYPE.Record,
+			this.returnType?.eval(),
 		);
 	}
 }

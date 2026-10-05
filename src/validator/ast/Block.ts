@@ -1,6 +1,9 @@
 import * as assert from 'node:assert';
 import * as xjs from 'extrajs';
-import type {Builder} from '../../index.ts';
+import {
+	type Builder,
+	TypeErrorFunctionExit,
+} from '../../index.ts';
 import {
 	type NonemptyArray,
 	memoizeGetter,
@@ -19,9 +22,13 @@ import type {SyntaxNodeFamily} from '../utils-private.ts';
 import {
 	Goal,
 	STMT,
+	EXPR,
 } from './index.ts';
+import {CompletionKind} from './CompletionKind.ts';
 import {AstNode} from './AstNode.ts';
+import {is_Functionlike} from './Functionlike.ts';
 import type {Buildable} from './Buildable.ts';
+import {VisitorCompletion} from './visitors/VisitorCompletion.ts';
 
 
 
@@ -39,21 +46,33 @@ export class Block extends AstNode implements Buildable {
 		return goal.block;
 	}
 
+	/**
+	 * Construct a new function Block from a source text and optionally a configuration.
+	 * The source text must parse successfully.
+	 * Useful when needing to parse `Block<?Break><+Return>`.
+	 * @param src    the source text
+	 * @param config the configuration
+	 * @returns      a new Block representing the given source
+	 */
+	public static fromFunctionSource(src: string, config: CplConfig = CONFIG_DEFAULT): Block {
+		return EXPR.Function.fromSource(`\\(): anything ${ src }`, config).block;
+	}
+
 
 	public constructor(
 		start_node: SyntaxNodeFamily<'block', ['break', 'return']>,
 		public override readonly children: Readonly<NonemptyArray<STMT.Statement>>,
 		private readonly config:           CplConfig,
-		private readonly isFuncBlock:      boolean,
 	) {
 		super(start_node, {}, children);
 	}
 
 	@memoizeGetter
 	public override get validator(): Validator {
-		const v = new Validator(this.config, this.isFuncBlock ? undefined : this.parent?.validator);
-		if (this.isFuncBlock) {
-			this.parent?.validator.getAllSymbols().forEach((symb) => {
+		const is_func_block: boolean = !!this.parent && is_Functionlike(this.parent);
+		const v = new Validator(this.config, is_func_block ? undefined : this.parent?.validator);
+		if (is_func_block) {
+			this.parent!.validator.getAllSymbols().forEach((symb) => {
 				// add all implicitly-captured symbols to the function block
 				if (symb instanceof SymbolSchemaType || symb instanceof SymbolSchemaFunc) { // TODO: add a property of SymbolSchema
 					v.addSymbol(symb);
@@ -63,14 +82,22 @@ export class Block extends AstNode implements Buildable {
 		return v;
 	}
 
+	/** The kind of completion of evaluation of this block. */
 	@memoizeGetter
-	public get hasBottomType(): boolean {
-		return this.children.some((c) => c.hasBottomType);
+	public get completion(): CompletionKind {
+		return new VisitorCompletion().visit(this);
 	}
 
 	public override varCheck(): void {
 		xjs.Array.forEachAggregated(this.children.filter((stmt) => stmt instanceof STMT.DeclarationFunction), (fn) => fn.hoist());
 		return super.varCheck();
+	}
+
+	public override typeCheck(): void {
+		super.typeCheck();
+		if (!!this.parent && is_Functionlike(this.parent) && this.completion !== CompletionKind.RETURN_OR_THROW) {
+			throw new TypeErrorFunctionExit(this.parent);
+		}
 	}
 
 	/**

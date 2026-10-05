@@ -1,5 +1,4 @@
 import * as assert from 'node:assert';
-import * as xjs from 'extrajs';
 import {
 	type Builder,
 	OP,
@@ -7,7 +6,6 @@ import {
 import {
 	assert_instanceof,
 	runOnceMethod,
-	memoizeGetter,
 } from '../../../lib/index.ts';
 import {
 	type CplConfig,
@@ -18,15 +16,19 @@ import type {Serializable} from '../../../parser/index.ts';
 import {SymbolSchemaFunc} from '../../index.ts';
 import type {SyntaxNodeType} from '../../utils-private.ts';
 import {Validator} from '../../Validator.ts';
-import {check_unique_param_keys} from '../utils-private.ts';
+import {
+	type Functionlike,
+	Functionlike_varCheck,
+} from '../Functionlike.ts';
 import type {ParameterFunction} from '../ParameterFunction.ts';
 import type {Block} from '../Block.ts';
+import type * as AST_TYPE from '../type/index.ts';
 import * as EXPR from '../expression/index.ts';
 import {Statement} from './Statement.ts';
 
 
 
-export class DeclarationFunction extends Statement {
+export class DeclarationFunction extends Statement implements Functionlike {
 	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): DeclarationFunction {
 		const statement: Statement = Statement.fromSource(src, config);
 		assert_instanceof(statement, DeclarationFunction);
@@ -41,19 +43,15 @@ export class DeclarationFunction extends Statement {
 		start_node: SyntaxNodeType<'declaration_function'>,
 		private readonly identifier: Serializable | null,
 		public  readonly parameters: readonly ParameterFunction[],
+		public  readonly returnType: AST_TYPE.Type | null,
 		public  readonly block:      Block,
 	) {
-		super(start_node, {}, [...parameters, block]);
+		super(start_node, {}, [...parameters, ...(returnType ? [returnType] : []), block]);
 		if (this.identifier) {
 			this.id = Validator.cookTokenIdentifier(this.identifier.source);
 		}
 	}
 
-
-	@memoizeGetter
-	public override get hasBottomType(): boolean {
-		throw new Error('`DeclarationFunction#hasBottomType` not yet supported.');
-	}
 
 	public hoist(): void {
 		if (this.identifier) {
@@ -65,9 +63,7 @@ export class DeclarationFunction extends Statement {
 	}
 
 	public override varCheck(): void {
-		xjs.Array.forEachAggregated(this.parameters, (param) => param.varCheck());
-		check_unique_param_keys(this.parameters);
-		return this.block.varCheck();
+		return Functionlike_varCheck.call(this);
 	}
 
 	public override typeCheck(): void {

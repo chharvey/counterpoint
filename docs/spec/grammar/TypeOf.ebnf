@@ -100,18 +100,20 @@ Type! TypeOf(SemanticExpressionMap map) :=
 
 
 
-Type! TypeOf(SemanticExpressionBlock block) :=
-	1. *If* `block.children` contains any statement that contains any expression `expr` for which *UnwrapAffirm:* `IsBottomType(expr)` is `true`:
+Type! TypeOf(SemanticExpressionBlock ::= SemanticBlock) :=
+	1. *If* *UnwrapAffirm:* `CompletionOf(SemanticBlock)` is not *NORMAL*:
 		1. *Return:* `Nothing`.
-	2. *Assert:* `block.children.count` is greater than 0.
-	3. *Let* `last_stmt` be `block.children.-1`.
-	4. *If* `last_stmt` is not a SemanticStatementExpression:
+	2. *Else:*
+		1. Fall through.
+	3. *Assert:* `SemanticBlock.children.count` is greater than 0.
+	4. *Let* `last_stmt` be `SemanticBlock.children.-1`.
+	5. *If* `last_stmt` is not a SemanticStatementExpression:
 		1. *Throw:* a new Error.
-	5. *If* `last_stmt.children.count` is less than 1:
+	6. *If* `last_stmt.children.count` is less than 1:
 		1. *Throw:* a new Error.
-	6. *Let* `expr` be `last_stmt.children.0`.
-	7. *Assert:* `expr` is a SemanticExpression.
-	8. *Return:* `TypeOf(expr)`.
+	7. *Let* `expr` be `last_stmt.children.0`.
+	8. *Assert:* `expr` is a SemanticExpression.
+	9. *Return:* `TypeOf(expr)`.
 ;
 
 
@@ -516,9 +518,11 @@ Type! TypeOf(SemanticExpressionFunction fn) :=
 			optional= `false`, // TODO: with optional paramers: `param.optional`
 		].
 		4. Set the property `key_id` on `named_param_types` to the value `typedatum`.
-	8. *Return:* a new Function type whose positional parameter types are `positional_param_types`,
+	8. *Let* `return_type` be an item `child` in `fn.children` such that `child` is a SemanticType.
+	9. *Return:* a new Function type whose positional parameter types are `positional_param_types`,
 		whose named parameter types are `named_param_types`,
-		and who does not contain a return type.
+		and, if `return_type` is set, whose return type is `return_type`,
+		otherwise, who does not contain a return type.
 ;
 
 

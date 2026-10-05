@@ -163,9 +163,10 @@ test.suite('Expression', () => {
 			test.test('returns a function type.', () => {
 				const {stmts} = setupScript(`{
 					\\(a: int, mut b: float | null, mut $c: bool, delta= d: nat): void { return; };
+					% TODO: test optional parameters (steal from 'test/validator/Type.test.ts')
+					\\(): int | float => 4.2;
 				}`, {build: false});
-				return assert.deepStrictEqual(
-					(stmts[0] as AST.STMT.StatementExpression).expr!.type(),
+				return assertEqualTypes(stmts.map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()), [
 					new TYPE.Function(TYPE.Tuple.fromTypes([
 						TYPE.INT,
 						TYPE.FLOAT.union(TYPE.NULL),
@@ -173,7 +174,8 @@ test.suite('Expression', () => {
 						[Validator.cookTokenIdentifier('c'),     TYPE.BOOL],
 						[Validator.cookTokenIdentifier('delta'), TYPE.NAT],
 					]))),
-				);
+					new TYPE.Function(undefined, undefined, TYPE.INT.union(TYPE.FLOAT)),
+				]);
 			});
 		});
 	});

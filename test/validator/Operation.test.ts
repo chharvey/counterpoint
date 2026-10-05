@@ -135,7 +135,7 @@ test.suite('Operation', () => {
 							new TYPE.Maybe(TYPE.ANYTHING),
 							new TYPE.None(TYPE.ANYTHING),
 							new TYPE.Some(TYPE.ANYTHING),
-							new TYPE.Function(new TYPE.Tuple(), new TYPE.Record(), TYPE.ANYTHING),
+							new TYPE.Function(undefined, undefined, TYPE.ANYTHING),
 						],
 					);
 				});
@@ -172,7 +172,7 @@ test.suite('Operation', () => {
 							new TYPE.Maybe(new TYPE.Maybe(TYPE.ANYTHING)),
 							new TYPE.Maybe(new TYPE.None(TYPE.ANYTHING)),
 							new TYPE.Maybe(new TYPE.Some(TYPE.ANYTHING)),
-							new TYPE.Maybe(new TYPE.Function(new TYPE.Tuple(), new TYPE.Record(), TYPE.ANYTHING)),
+							new TYPE.Maybe(new TYPE.Function(undefined, undefined, TYPE.ANYTHING)),
 						],
 					);
 				});

@@ -253,8 +253,15 @@ Decorate(TypeUnion ::= TypeUnion "|" TypeIntersection) -> SemanticTypeOperation
 
 Decorate(TypeFunction ::= "\" "(" ")" "=>" "void") -> SemanticTypeFunction
 	:= (SemanticTypeFunction);
+Decorate(TypeFunction ::= "\" "(" ")" "=>" Type) -> SemanticTypeFunction
+	:= (SemanticTypeFunction Decorate(Type));
 Decorate(TypeFunction ::= "\" "(" ParametersType ")" "=>" "void") -> SemanticTypeFunction
 	:= (SemanticTypeFunction ...Decorate(ParametersType));
+Decorate(TypeFunction ::= "\" "(" ParametersType ")" "=>" Type) -> SemanticTypeFunction
+	:= (SemanticTypeFunction
+		...Decorate(ParametersType)
+		Decorate(Type)
+	);
 
 
 
@@ -742,10 +749,41 @@ Decorate(ExpressionFunction ::= "\" "(" ")" ":" "void" Block<-Break><+Return>) -
 	:= (SemanticExpressionFunction
 		Decorate(Block<-Break><+Return>)
 	);
+Decorate(ExpressionFunction ::= "\" "(" ")" ":" "void" "=>" Expression<+Block><-Break><+Return>) -> SemanticExpressionFunction
+	:= (SemanticExpressionFunction
+		Decorate(Parse("{" "return" Expression<+Block><-Break><+Return> ";" "}"))
+	);
+Decorate(ExpressionFunction ::= "\" "(" ")" ":" Type Block<-Break><+Return>) -> SemanticExpressionFunction
+	:= (SemanticExpressionFunction
+		Decorate(Type)
+		Decorate(Block<-Break><+Return>)
+	);
+Decorate(ExpressionFunction ::= "\" "(" ")" ":" Type "=>" Expression<+Block><-Break><+Return>) -> SemanticExpressionFunction
+	:= (SemanticExpressionFunction
+		Decorate(Type)
+		Decorate(Parse("{" "return" Expression<+Block><-Break><+Return> ";" "}"))
+	);
 Decorate(ExpressionFunction ::= "\" "(" ParametersFunction ")" ":" "void" Block<-Break><+Return>) -> SemanticExpressionFunction
 	:= (SemanticExpressionFunction
 		...Decorate(ParametersFunction)
 		Decorate(Block<-Break><+Return>)
+	);
+Decorate(ExpressionFunction ::= "\" "(" ParametersFunction ")" ":" "void" "=>" Expression<+Block><-Break><+Return>) -> SemanticExpressionFunction
+	:= (SemanticExpressionFunction
+		...Decorate(ParametersFunction)
+		Decorate(Parse("{" "return" Expression<+Block><-Break><+Return> ";" "}"))
+	);
+Decorate(ExpressionFunction ::= "\" "(" ParametersFunction ")" ":" Type Block<-Break><+Return>) -> SemanticExpressionFunction
+	:= (SemanticExpressionFunction
+		...Decorate(ParametersFunction)
+		Decorate(Type)
+		Decorate(Block<-Break><+Return>)
+	);
+Decorate(ExpressionFunction ::= "\" "(" ParametersFunction ")" ":" Type "=>" Expression<+Block><-Break><+Return>) -> SemanticExpressionFunction
+	:= (SemanticExpressionFunction
+		...Decorate(ParametersFunction)
+		Decorate(Type)
+		Decorate(Parse("{" "return" Expression<+Block><-Break><+Return> ";" "}"))
 	);
 
 
@@ -869,8 +907,10 @@ Decorate(StatementBreak ::= "break" ";") -> SemanticStatementBreak
 Decorate(StatementBreak ::= "skip" ";") -> SemanticStatementBreak
 	:= (SemanticStatementBreak[skip=true]);
 
-Decorate(StatementReturn ::= "return" ";") -> SemanticStatementReturn
+Decorate(StatementReturn<Break> ::= "return" ";") -> SemanticStatementReturn
 	:= (SemanticStatementReturn);
+Decorate(StatementReturn<Break> ::= "return" Expression<+Block><?Break><+Return> ";") -> SemanticStatementReturn
+	:= (SemanticStatementReturn Decorate(Expression<+Block><?Break><+Return>));
 
 
 
@@ -892,8 +932,8 @@ Decorate(Statement<Break, Return> ::= StatementIteration<?Return>) -> SemanticSt
 	:= Decorate(StatementIteration<?Return>);
 Decorate(Statement<Break, Return> ::= StatementBreak) -> SemanticStatementBreak
 	:= Decorate(StatementBreak);
-Decorate(Statement<Break, Return> ::= StatementReturn) -> SemanticStatementReturn
-	:= Decorate(StatementReturn);
+Decorate(Statement<Break, Return> ::= StatementReturn<?Break>) -> SemanticStatementReturn
+	:= Decorate(StatementReturn<?Break>);
 
 
 
@@ -953,19 +993,81 @@ Decorate(DeclarationFunction ::= "func" "_" "(" ")" ":" "void" Block<-Break><+Re
 	:= (SemanticDeclarationFunction[id=*nil*]
 		Decorate(Block<-Break><+Return>)
 	);
+Decorate(DeclarationFunction ::= "func" "_" "(" ")" ":" "void" "=>" Expression<+Block><-Break><+Return> ";") -> SemanticDeclarationFunction
+	:= (SemanticDeclarationFunction[id=*nil*]
+		Decorate(Parse("{" "return" Expression<+Block><-Break><+Return> ";" "}"))
+	);
+Decorate(DeclarationFunction ::= "func" "_" "(" ")" ":" Type Block<-Break><+Return>) -> SemanticDeclarationFunction
+	:= (SemanticDeclarationFunction[id=*nil*]
+		Decorate(Type)
+		Decorate(Block<-Break><+Return>)
+	);
+Decorate(DeclarationFunction ::= "func" "_" "(" ")" ":" Type "=>" Expression<+Block><-Break><+Return> ";") -> SemanticDeclarationFunction
+	:= (SemanticDeclarationFunction[id=*nil*]
+		Decorate(Type)
+		Decorate(Parse("{" "return" Expression<+Block><-Break><+Return> ";" "}"))
+	);
 Decorate(DeclarationFunction ::= "func" "_" "(" ParametersFunction ")" ":" "void" Block<-Break><+Return>) -> SemanticDeclarationFunction
 	:= (SemanticDeclarationFunction[id=*nil*]
 		...Decorate(ParametersFunction)
 		Decorate(Block<-Break><+Return>)
 	);
+Decorate(DeclarationFunction ::= "func" "_" "(" ParametersFunction ")" ":" "void" "=>" Expression<+Block><-Break><+Return> ";") -> SemanticDeclarationFunction
+	:= (SemanticDeclarationFunction[id=*nil*]
+		...Decorate(ParametersFunction)
+		Decorate(Parse("{" "return" Expression<+Block><-Break><+Return> ";" "}"))
+	);
+Decorate(DeclarationFunction ::= "func" "_" "(" ParametersFunction ")" ":" Type Block<-Break><+Return>) -> SemanticDeclarationFunction
+	:= (SemanticDeclarationFunction[id=*nil*]
+		...Decorate(ParametersFunction)
+		Decorate(Type)
+		Decorate(Block<-Break><+Return>)
+	);
+Decorate(DeclarationFunction ::= "func" "_" "(" ParametersFunction ")" ":" Type "=>" Expression<+Block><-Break><+Return> ";") -> SemanticDeclarationFunction
+	:= (SemanticDeclarationFunction[id=*nil*]
+		...Decorate(ParametersFunction)
+		Decorate(Type)
+		Decorate(Parse("{" "return" Expression<+Block><-Break><+Return> ";" "}"))
+	);
 Decorate(DeclarationFunction ::= "func" IDENTIFIER "(" ")" ":" "void" Block<-Break><+Return>) -> SemanticDeclarationFunction
 	:= (SemanticDeclarationFunction[id=TokenWorth(IDENTIFIER)]
 		Decorate(Block<-Break><+Return>)
+	);
+Decorate(DeclarationFunction ::= "func" IDENTIFIER "(" ")" ":" "void" "=>" Expression<+Block><-Break><+Return> ";") -> SemanticDeclarationFunction
+	:= (SemanticDeclarationFunction[id=TokenWorth(IDENTIFIER)]
+		Decorate(Parse("{" "return" Expression<+Block><-Break><+Return> ";" "}"))
+	);
+Decorate(DeclarationFunction ::= "func" IDENTIFIER "(" ")" ":" Type Block<-Break><+Return>) -> SemanticDeclarationFunction
+	:= (SemanticDeclarationFunction[id=TokenWorth(IDENTIFIER)]
+		Decorate(Type)
+		Decorate(Block<-Break><+Return>)
+	);
+Decorate(DeclarationFunction ::= "func" IDENTIFIER "(" ")" ":" Type "=>" Expression<+Block><-Break><+Return> ";") -> SemanticDeclarationFunction
+	:= (SemanticDeclarationFunction[id=TokenWorth(IDENTIFIER)]
+		Decorate(Type)
+		Decorate(Parse("{" "return" Expression<+Block><-Break><+Return> ";" "}"))
 	);
 Decorate(DeclarationFunction ::= "func" IDENTIFIER "(" ParametersFunction ")" ":" "void" Block<-Break><+Return>) -> SemanticDeclarationFunction
 	:= (SemanticDeclarationFunction[id=TokenWorth(IDENTIFIER)]
 		...Decorate(ParametersFunction)
 		Decorate(Block<-Break><+Return>)
+	);
+Decorate(DeclarationFunction ::= "func" IDENTIFIER "(" ParametersFunction ")" ":" "void" "=>" Expression<+Block><-Break><+Return> ";") -> SemanticDeclarationFunction
+	:= (SemanticDeclarationFunction[id=TokenWorth(IDENTIFIER)]
+		...Decorate(ParametersFunction)
+		Decorate(Parse("{" "return" Expression<+Block><-Break><+Return> ";" "}"))
+	);
+Decorate(DeclarationFunction ::= "func" IDENTIFIER "(" ParametersFunction ")" ":" Type Block<-Break><+Return>) -> SemanticDeclarationFunction
+	:= (SemanticDeclarationFunction[id=TokenWorth(IDENTIFIER)]
+		...Decorate(ParametersFunction)
+		Decorate(Type)
+		Decorate(Block<-Break><+Return>)
+	);
+Decorate(DeclarationFunction ::= "func" IDENTIFIER "(" ParametersFunction ")" ":" Type "=>" Expression<+Block><-Break><+Return> ";") -> SemanticDeclarationFunction
+	:= (SemanticDeclarationFunction[id=TokenWorth(IDENTIFIER)]
+		...Decorate(ParametersFunction)
+		Decorate(Type)
+		Decorate(Parse("{" "return" Expression<+Block><-Break><+Return> ";" "}"))
 	);
 
 

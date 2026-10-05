@@ -690,6 +690,78 @@ test.suite('Statement', () => {
 				return assert.throws(() => stmts[0].typeCheck(), TypeErrorInvalidOperation);
 			});
 		});
+
+		test.suite('StatementReturn', () => {
+			test.test('throws when returned expression is not assignable to declared return type.', () => {
+				const {stmts} = setupScript(`{
+					func foo0(): float { return 40; }
+					func foo1(): float => 41;
+					func foo2(b: bool): float {
+						if b then { return 4.2; } else { return 42; };
+					}
+					func foo3(b: bool): float => if b then 4.2 else 43;
+				}`, {typeCheck: false});
+				const fn2 = stmts[2] as AST.STMT.DeclarationFunction;
+				const fn3 = stmts[3] as AST.STMT.DeclarationFunction;
+				const ret0:  AST.STMT.Statement = (stmts[0] as AST.STMT.DeclarationFunction).block.children[0];
+				const ret1:  AST.STMT.Statement = (stmts[1] as AST.STMT.DeclarationFunction).block.children[0];
+				const ret2a: AST.STMT.Statement = (fn2.block.children[0] as AST.STMT.StatementConditional).consequent.children[0];
+				const ret2b: AST.STMT.Statement = ((fn2.block.children[0] as AST.STMT.StatementConditional).alternative as AST.Block).children[0];
+				const ret3:  AST.STMT.Statement = fn3.block.children[0];
+				xjs.Array.forEachAggregated([ret0, ret1, ret2a, ret2b, ret3], (ret) => assert_instanceof(ret, AST.STMT.StatementReturn));
+				assert.throws(() => ret0.typeCheck(), TypeErrorNotAssignable);
+				assert.throws(() => ret1.typeCheck(), TypeErrorNotAssignable);
+				xjs.Array.forEachAggregated(fn2.parameters, (p) => p.typeCheck());
+				ret2a.typeCheck(); // assert does not throw
+				assert.throws(() => ret2b.typeCheck(), TypeErrorNotAssignable);
+				xjs.Array.forEachAggregated(fn3.parameters, (p) => p.typeCheck());
+				return assert.throws(() => ret3.typeCheck(), TypeErrorNotAssignable);
+			});
+			test.test('throws when returned expression is present in void function.', () => {
+				const {stmts} = setupScript(`{
+					func foo0(): void { return 40; }
+					func foo1(): void => 41;
+					func foo2(b: bool): void {
+						if b then { return; } else { return 42; };
+					}
+					func foo3(b: bool): void => if b then 4.2 else 43;
+				}`, {typeCheck: false});
+				const fn2 = stmts[2] as AST.STMT.DeclarationFunction;
+				const fn3 = stmts[3] as AST.STMT.DeclarationFunction;
+				const ret0:  AST.STMT.Statement = (stmts[0] as AST.STMT.DeclarationFunction).block.children[0];
+				const ret1:  AST.STMT.Statement = (stmts[1] as AST.STMT.DeclarationFunction).block.children[0];
+				const ret2a: AST.STMT.Statement = (fn2.block.children[0] as AST.STMT.StatementConditional).consequent.children[0];
+				const ret2b: AST.STMT.Statement = ((fn2.block.children[0] as AST.STMT.StatementConditional).alternative as AST.Block).children[0];
+				const ret3:  AST.STMT.Statement = fn3.block.children[0];
+				xjs.Array.forEachAggregated([ret0, ret1, ret2a, ret2b, ret3], (ret) => assert_instanceof(ret, AST.STMT.StatementReturn));
+				const expected: RegExp = /is returned from a void function/;
+				assert.throws(() => ret0.typeCheck(), expected);
+				assert.throws(() => ret1.typeCheck(), expected);
+				xjs.Array.forEachAggregated(fn2.parameters, (p) => p.typeCheck());
+				ret2a.typeCheck(); // assert does not throw
+				assert.throws(() => ret2b.typeCheck(), expected);
+				xjs.Array.forEachAggregated(fn3.parameters, (p) => p.typeCheck());
+				return assert.throws(() => ret3.typeCheck(), expected);
+			});
+			test.test('throws for empty return statement in non-void function.', () => {
+				const {stmts} = setupScript(`{
+					func foo0(): float { return; }
+					func foo2(b: bool): float {
+						if b then { return 4.2; } else { return; };
+					}
+				}`, {typeCheck: false});
+				const fn1 = stmts[1] as AST.STMT.DeclarationFunction;
+				const ret0:  AST.STMT.Statement = (stmts[0] as AST.STMT.DeclarationFunction).block.children[0];
+				const ret1a: AST.STMT.Statement = (fn1.block.children[0] as AST.STMT.StatementConditional).consequent.children[0];
+				const ret1b: AST.STMT.Statement = ((fn1.block.children[0] as AST.STMT.StatementConditional).alternative as AST.Block).children[0];
+				xjs.Array.forEachAggregated([ret0, ret1a, ret1b], (ret) => assert_instanceof(ret, AST.STMT.StatementReturn));
+				const expected: RegExp = /does not return a value/;
+				assert.throws(() => ret0.typeCheck(), expected);
+				xjs.Array.forEachAggregated(fn1.parameters, (p) => p.typeCheck());
+				ret1a.typeCheck(); // assert does not throw
+				return assert.throws(() => ret1b.typeCheck(), expected);
+			});
+		});
 	});
 
 

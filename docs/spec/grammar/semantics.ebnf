@@ -87,7 +87,7 @@ SemanticTypeOperation[operator: AND | OR]
 	::= SemanticType SemanticType;
 
 SemanticTypeFunction
-	::= SemanticItemType* SemanticPropertyType*;
+	::= SemanticItemType* SemanticPropertyType* SemanticType?;
 
 
 
@@ -164,7 +164,7 @@ SemanticExpressionSwitch
 	::= SemanticExpression SemanticCase* SemanticExpression;
 
 SemanticExpressionFunction
-	::= SemanticParameterFunction* SemanticBlock;
+	::= SemanticParameterFunction* SemanticType? SemanticBlock;
 
 
 
@@ -199,7 +199,7 @@ SemanticDeclarationVariable[writable=true][id: RealNumber]
 	::= SemanticType;
 
 SemanticDeclarationFunction[id?: RealNumber]
-	::= SemanticParameterFunction* SemanticBlock;
+	::= SemanticParameterFunction* SemanticType? SemanticBlock;
 
 
 
@@ -225,4 +225,4 @@ SemanticStatementBreak[skip: Boolean]
 	::= ();
 
 SemanticStatementReturn
-	::= ();
+	::= SemanticExpression?;

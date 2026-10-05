@@ -421,7 +421,7 @@ module.exports = grammar({
 		type_intersection: $ => prec.left(2, seq($._type, '&', $._type)),
 		type_union:        $ => prec.left(1, seq($._type, '|', $._type)),
 
-		type_function: $ => seq('\\', '(', optional($._parameters_type), ')', '=>', 'void'),
+		type_function: $ => seq('\\', '(', optional($._parameters_type), ')', '=>', choice('void', field('type_0', $._type))),
 
 		_type: $ => choice(
 			$._type_unit,
@@ -529,7 +529,16 @@ module.exports = grammar({
 			field('expression_1', call($, '_expression', 'block', {break: brk}, {return: rtn})),
 		), 'break', 'return'),
 
-		expression_function: $ => seq('\\', '(', optional($._parameters_function), ')', ':', 'void', field('block_0', call($, 'block', 'return'))),
+		/* eslint-disable @stylistic/function-call-argument-newline */
+		expression_function: $ => seq(
+			'\\', '(', optional($._parameters_function), ')',
+			':', choice('void', field('type_0', $._type)),
+			choice(
+				field('block_0', call($, 'block', {break: false}, 'return')),
+				seq('=>', field('expression_0', call($, '_expression', 'block', {break: false}, 'return'))),
+			),
+		),
+		/* eslint-enable @stylistic/function-call-argument-newline */
 
 		...parameterize('_expression', ({block, break: brk, return: rtn}) => $ => choice(
 			call($, '_expression_unit', {block}, {break: brk}, {return: rtn}),
@@ -593,8 +602,9 @@ module.exports = grammar({
 			';',
 		), 'return'),
 
-		statement_break:  _$ => seq(choice('break', 'skip'), ';'),
-		statement_return: _$ => seq('return',                ';'),
+		statement_break: _$ => seq(choice('break', 'skip'), ';'),
+
+		...parameterize('statement_return', ({break: brk}) => $ => seq('return', optional(field('expression_0', call($, '_expression', 'block', {break: brk}, 'return'))), ';'), 'break'),
 
 		...parameterize('_statement', ({break: brk, return: rtn}) => $ => choice(
 			call($, '_declaration',                          {break: brk}, {return: rtn}),
@@ -606,7 +616,7 @@ module.exports = grammar({
 			call($, 'statement_loop',                                      {return: rtn}),
 			call($, 'statement_iteration',                                 {return: rtn}),
 			...iff(brk, $.statement_break),
-			...iff(rtn, $.statement_return),
+			...iff(rtn, call($, 'statement_return', {break: brk})),
 		), 'break', 'return'),
 
 		...parameterize('block', ({break: brk, return: rtn}) => $ => seq('{', repeat1(call($, '_statement', {break: brk}, {return: rtn})), '}'), 'break', 'return'),
@@ -618,7 +628,17 @@ module.exports = grammar({
 			seq('val',                          field('mut_0', 'mut'),  field('identifier_0', $.identifier),   '?',              ':', field('type_0', $._type),                                                                                             ';'),
 		), 'break', 'return'),
 
-		declaration_function: $ => seq('func', choice('_', field('identifier_0', $.identifier)), '(', optional($._parameters_function), ')', ':', 'void', field('block_0', call($, 'block', 'return'))),
+		/* eslint-disable @stylistic/function-call-argument-newline */
+		declaration_function: $ => seq(
+			'func', choice('_', field('identifier_0', $.identifier)),
+			'(', optional($._parameters_function), ')',
+			':', choice('void', field('type_0', $._type)),
+			choice(
+				field('block_0', call($, 'block', {break: false}, 'return')),
+				seq('=>', field('expression_0', call($, '_expression', 'block', {break: false}, 'return')), ';'),
+			),
+		),
+		/* eslint-enable @stylistic/function-call-argument-newline */
 
 		...parameterize('_declaration', ({break: brk, return: rtn}) => $ => choice(
 			$.declaration_type,

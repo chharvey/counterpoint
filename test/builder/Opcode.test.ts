@@ -953,7 +953,7 @@ test.suite('Opcode', () => {
 				});
 			});
 
-			test.suite('OpFunction', () => {
+			test.test('OpFunction', () => {
 				const {stmts, builder} = setupScript(`{
 					\\(x: int): void {
 						x;

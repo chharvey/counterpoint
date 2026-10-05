@@ -6,7 +6,6 @@ import {
 } from '../../../index.ts';
 import {
 	assert_instanceof,
-	memoizeGetter,
 	runOnceMethod,
 } from '../../../lib/index.ts';
 import {
@@ -40,11 +39,6 @@ export class StatementLoop extends StatementBreakable {
 		super(start_node, {doFirst, until}, [condition, block]);
 	}
 
-
-	@memoizeGetter
-	public override get hasBottomType(): boolean {
-		return this.condition.type().isBottomType || this.block.hasBottomType;
-	}
 
 	public override varCheck(): void {
 		// Do not call `super.varCheck()` as we VarCheck children in a different order.

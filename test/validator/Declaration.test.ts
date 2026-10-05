@@ -796,22 +796,6 @@ test.suite('Declaration', () => {
 						(ENDPROGRAM)
 				`.trim());
 			});
-			test.test('no return statement (should be invalid).', () => {
-				assert.strictEqual(setupScript(`{
-					func f(): void {
-						42;
-					}
-				}`, {codegen: false}).builder.print(), xjs.String.dedent`
-					"block-0":
-						(GOTO "block-2")
-					"block-1":
-						(DROP (INT.CONST 42))
-						(DROP (TRAP))
-						(ENDPROGRAM)
-					"block-2":
-						(ENDPROGRAM)
-				`.trim());
-			});
 		});
 	});
 });
