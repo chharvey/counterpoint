@@ -9,6 +9,7 @@ import {
 } from '../AstNode.ts';
 import type {Property} from '../Property.ts';
 import type {Case} from '../Case.ts';
+import type {Capture} from '../Capture.ts';
 import type {Block} from '../Block.ts';
 import type {Goal} from '../Goal.ts';
 import type * as EXPR from '../expression/index.ts';
@@ -27,6 +28,10 @@ export class VisitorCompletion extends AstNodeVisitor<CompletionKind> {
 			...node.antecedents.map((ant) => this.visit(ant)),
 			this.visit(node.consequent),
 		]);
+	}
+
+	public override visitCapture(node: Capture): CompletionKind {
+		return this.visit(node.variable);
 	}
 
 	public override visitBlock(node: Block): CompletionKind {

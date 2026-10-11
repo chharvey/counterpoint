@@ -51,7 +51,7 @@ class TypeFunction extends ReferenceType {
 		const named_params: string = this.typeargParamsNamed.typeargs.size
 			? this.typeargParamsNamed.toString().slice(1, -1)
 			: '';
-		return `\\(${ [posit_params, named_params].filter((p) => !!p).join(', ') }) => ${ this.typearg_return ?? 'void' }`;
+		return `\\(${[posit_params, named_params].filter((p) => !!p).join(', ')}) => ${this.typearg_return ?? 'void'}`;
 	}
 
 	@instanceOf(() => VALUE.Value) // TODO: VALUE.Function

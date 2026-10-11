@@ -16,6 +16,8 @@ import {
 	PropertyType,
 	Property,
 	Case,
+	ParameterFunction,
+	Capture,
 	Block,
 	Goal,
 	TYPE as AST_TYPE,
@@ -70,14 +72,16 @@ export function typecheck_assign(
 
 export abstract class AstNodeVisitor<T> {
 	/* eslint-disable @stylistic/space-before-function-paren */
-	public visitIndex        (node: Index):        T { return this.defaultVisit(node); }
-	public visitKey          (node: Key):          T { return this.defaultVisit(node); }
-	public visitItemType     (node: ItemType):     T { return this.defaultVisit(node); }
-	public visitPropertyType (node: PropertyType): T { return this.defaultVisit(node); }
-	public visitProperty     (node: Property):     T { return this.defaultVisit(node); }
-	public visitCase         (node: Case):         T { return this.defaultVisit(node); }
-	public visitBlock        (node: Block):        T { return this.defaultVisit(node); }
-	public visitGoal         (node: Goal):         T { return this.defaultVisit(node); }
+	public visitIndex             (node: Index):             T { return this.defaultVisit(node); }
+	public visitKey               (node: Key):               T { return this.defaultVisit(node); }
+	public visitItemType          (node: ItemType):          T { return this.defaultVisit(node); }
+	public visitPropertyType      (node: PropertyType):      T { return this.defaultVisit(node); }
+	public visitProperty          (node: Property):          T { return this.defaultVisit(node); }
+	public visitCase              (node: Case):              T { return this.defaultVisit(node); }
+	public visitParameterFunction (node: ParameterFunction): T { return this.defaultVisit(node); }
+	public visitCapture           (node: Capture):           T { return this.defaultVisit(node); }
+	public visitBlock             (node: Block):             T { return this.defaultVisit(node); }
+	public visitGoal              (node: Goal):              T { return this.defaultVisit(node); }
 
 	public visitTypeConstant        (typenode: AST_TYPE.Constant):        T { return this.defaultVisit(typenode); }
 	public visitTypeAlias           (typenode: AST_TYPE.TypeAlias):       T { return this.defaultVisit(typenode); }
@@ -137,14 +141,16 @@ export abstract class AstNodeVisitor<T> {
 	/** @final */
 	public visit(node: AstNode): T {
 		switch (node.constructor) {
-			case Index:        { return this.visitIndex        (node as Index); }
-			case Key:          { return this.visitKey          (node as Key); }
-			case ItemType:     { return this.visitItemType     (node as ItemType); }
-			case PropertyType: { return this.visitPropertyType (node as PropertyType); }
-			case Property:     { return this.visitProperty     (node as Property); }
-			case Case:         { return this.visitCase         (node as Case); }
-			case Block:        { return this.visitBlock        (node as Block); }
-			case Goal:         { return this.visitGoal         (node as Goal); }
+			case Index:             { return this.visitIndex             (node as Index); }
+			case Key:               { return this.visitKey               (node as Key); }
+			case ItemType:          { return this.visitItemType          (node as ItemType); }
+			case PropertyType:      { return this.visitPropertyType      (node as PropertyType); }
+			case Property:          { return this.visitProperty          (node as Property); }
+			case Case:              { return this.visitCase              (node as Case); }
+			case ParameterFunction: { return this.visitParameterFunction (node as ParameterFunction); }
+			case Capture:           { return this.visitCapture           (node as Capture); }
+			case Block:             { return this.visitBlock             (node as Block); }
+			case Goal:              { return this.visitGoal              (node as Goal); }
 
 			case AST_TYPE.Constant:        { return this.visitTypeConstant        (node as AST_TYPE.Constant); }
 			case AST_TYPE.TypeAlias:       { return this.visitTypeAlias           (node as AST_TYPE.TypeAlias); }
@@ -229,6 +235,7 @@ export abstract class AstNodeVisitor<T> {
  * - Property
  * - Case
  * - ParameterFunction
+ * - Capture
  * - Block
  * - Goal
  * - Type

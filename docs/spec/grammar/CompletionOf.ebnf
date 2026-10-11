@@ -36,6 +36,9 @@ CompletionKind CompletionOf(SemanticProperty ::= SemanticKey SemanticExpression)
 CompletionKind CompletionOf(SemanticCase ::= SemanticExpression+ SemanticExpression)
 	:= CompletionOf([...SemanticExpression+, SemanticExpression]);
 
+CompletionKind CompletionOf(SemanticCapture ::= SemanticExpressionVariable)
+	:= CompletionOf(SemanticExpressionVariable);
+
 CompletionKind CompletionOf(SemanticBlock ::= SemanticStatement+) :=
 	1. *Let* `completions` be a mapping of `SemanticStatement+` for each `SemanticStatement` to *UnwrapAffirm:* `CompletionOf(SemanticStatement)`.
 	2. *Return:* `MaximumCompletion(completions)`.

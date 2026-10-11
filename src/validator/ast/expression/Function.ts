@@ -21,6 +21,7 @@ import {
 	Functionlike_varCheck,
 } from '../Functionlike.ts';
 import type {ParameterFunction} from '../ParameterFunction.ts';
+import type {Capture} from '../Capture.ts';
 import type {Block} from '../Block.ts';
 import type * as AST_TYPE from '../type/index.ts';
 import {Expression} from './Expression.ts';
@@ -38,10 +39,11 @@ class ExpressionFunction extends Expression implements Functionlike {
 	public constructor(
 		start_node: SyntaxNodeType<'expression_function'>,
 		public readonly parameters: readonly ParameterFunction[],
+		public readonly captures: readonly Capture[],
 		public readonly returnType: AST_TYPE.Type | null,
 		public readonly block:      Block,
 	) {
-		super(start_node, {}, [...parameters, ...(returnType ? [returnType] : []), block]);
+		super(start_node, {}, [...parameters, ...captures, ...(returnType ? [returnType] : []), block]);
 	}
 
 
@@ -72,6 +74,7 @@ class ExpressionFunction extends Expression implements Functionlike {
 	public override build(builder: Builder): OP.Function {
 		const temp: Temp = builder.newTemp(this.type());
 		return new OP.Function(temp.type as TYPE.Function, temp.name, this.source.replaceAll(/\s+/g, ' '), () => {
+			this.captures.forEach((capt) => capt.build(builder));
 			this.parameters.forEach((param) => param.build(builder));
 			this.block.build(builder);
 		});

@@ -60,7 +60,7 @@ export class ParameterFunction extends AstNode {
 		const param_type: TYPE.Type = this.typenode.eval();
 		if (this.identifier) {
 			const block: Block = (this.parent as Functionlike).block;
-			assert.ok(block.validator.hasSymbol(this.id!), `The validator symbol table should include ${ this.id }.`);
+			assert.ok(block.validator.hasSymbol(this.id!), `The validator symbol table should include ${this.id}.`);
 			(block.validator.getSymbol(this.id!) as SymbolSchemaVar).type = param_type;
 		}
 	}

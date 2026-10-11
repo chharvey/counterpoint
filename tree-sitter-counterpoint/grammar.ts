@@ -334,6 +334,8 @@ module.exports = grammar({
 			'set',
 			'delete',
 			'_',
+			'with',
+			'ref',
 			'void',
 			// modifier
 			'nominal',
@@ -465,6 +467,10 @@ module.exports = grammar({
 			);
 		},
 
+		...parameterize('capture', ({ref}) => $ => seq(...iff(ref, optional(field('ref_0', 'ref'))), field('identifier_0', $.identifier)), 'ref'),
+
+		...parameterize('_capture_clause', ({ref}) => $ => seq('with', '(', OPT_COM, repCom1(call($, 'capture', {ref})), OPT_COM, ')'), 'ref'),
+
 		...parameterize('property_accessor', ({break: brk, return: rtn}) => $ => choice($.integer, $.natural, $.word, seq('[', call($, '_expression', 'block', {break: brk}, {return: rtn}), ']')), 'break', 'return'),
 
 		...parameterize('expression_grouped',        ({break: brk, return: rtn}) => $ => seq('(',                               call($, '_expression', 'block', {break: brk}, {return: rtn}),             ')'), 'break', 'return'),
@@ -532,6 +538,7 @@ module.exports = grammar({
 		/* eslint-disable @stylistic/function-call-argument-newline */
 		expression_function: $ => seq(
 			'\\', '(', optional($._parameters_function), ')',
+			optional(call($, '_capture_clause')),
 			':', choice('void', field('type_0', $._type)),
 			choice(
 				field('block_0', call($, 'block', {break: false}, 'return')),
@@ -632,6 +639,7 @@ module.exports = grammar({
 		declaration_function: $ => seq(
 			'func', choice('_', field('identifier_0', $.identifier)),
 			'(', optional($._parameters_function), ')',
+			optional(call($, '_capture_clause', 'ref')),
 			':', choice('void', field('type_0', $._type)),
 			choice(
 				field('block_0', call($, 'block', {break: false}, 'return')),
@@ -700,6 +708,8 @@ module.exports = grammar({
 			'set',
 			'delete',
 			'_',
+			'with',
+			'ref',
 			'void',
 			// modifier
 			'nominal',

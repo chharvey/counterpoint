@@ -36,6 +36,21 @@ Nil! TypeCheck(SemanticParameterFunction param) :=
 
 
 
+Nil! TypeCheck(SemanticCapture[ref: true] ::= SemanticExpressionVariable) := TypeCheck(SemanticExpressionVariable);
+Nil! TypeCheck(SemanticCapture[ref: false] ::= SemanticExpressionVariable[id: RealNumber]) :=
+	1. *Perform:* *Unwrap:* `TypeCheck(SemanticExpressionVariable)`.
+	2. *Let* `parent` be the parent node of `SemanticCapture`.
+	3. *Assert:* `parent` is a SemanticExpressionFunction or a SemanticDeclarationFunction.
+	4. *Let* `block` be `parent.children.-1`.
+	5. *Assert:* `block` is a SemanticBlock.
+	6. *Let* `validator` be the validator of `block`.
+	7. *Assert:* `validator`’s symbol table contains a SymbolSchema `symbol` whose `id` is `SemanticExpressionVariable.id`.
+	8. *Assert:* `symbol` is an instance of `SymbolSchemaVar`.
+	9. *Set* `symbol.type` to *Unwrap:* `TypeOf(SemanticExpressionVariable)`.
+;
+
+
+
 Nil! TypeCheck(SemanticBlock block) :=
 	1. *For each* `stmt` in `block.children`:
 		1. *Perform:* *Unwrap:* `TypeCheck(stmt)`.
@@ -129,7 +144,7 @@ None! TypeCheck(SemanticDeclarationFunction fn) :=
 	9. *Let* `fn_type` be a new Function type whose positional parameter types are `positional_param_types`,
 		whose named parameter types are `named_param_types`,
 		and who does not contain a return type.
-	10. *If* `fn.id` is not *none*:
+	10. *If* `fn.id` is not *nil*:
 		1. *Assert:* The validator’s symbol table contains a SymbolSchema `symbol` whose `id` is `fn.id`.
 		2. *Assert:* `symbol` is an instance of `SymbolSchemaFunc`.
 		3. *If* there exists an item `t` in `symbol.types` such that *UnwrapAffirm:* `Equal(t, fn_type)` is `true`:

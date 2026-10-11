@@ -707,6 +707,9 @@ function sourceExpressions(...expressions: readonly string[]): string {
 		// ParametersFunction
 		// tested in #{Expression,Declaration}Function
 
+		// CaptureClause
+		// tested in #{Expression,Declaration}Function
+
 		// PropertyAccessor
 		// tested in #{ExpressionCompound,Assignee}
 
@@ -1430,6 +1433,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					\\(): bool { return true; };
 					\\(): bool => false;
 					\\(): bool => { false; };
+					\\() with (x, y): void { return; };
 				}
 			`,
 			sourceExpressions(
@@ -1471,6 +1475,12 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					'expression_function',
 					f('type_0', 'keyword_type'),
 					f('expression_0', 'expression_block', s('statement_expression__return', s('primitive_literal', s('keyword_value')))),
+				),
+				s(
+					'expression_function',
+					s('capture', f('identifier_0', 'identifier')),
+					s('capture', f('identifier_0', 'identifier')),
+					f('block_0', 'block__return', s('statement_return')),
 				),
 			),
 		],
@@ -2050,6 +2060,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					func foo(): bool { return true; }
 					func foo(): bool => false;
 					func foo(): bool => { false; };
+					func foo() with (x, ref y): void { return; }
 				}
 			`,
 			sourceStatements(
@@ -2100,6 +2111,13 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					f('identifier_0', 'identifier'),
 					f('type_0', 'keyword_type'),
 					f('expression_0', 'expression_block', s('statement_expression__return', s('primitive_literal', s('keyword_value')))),
+				),
+				s(
+					'declaration_function',
+					f('identifier_0', 'identifier'),
+					s('capture__ref', f('identifier_0', 'identifier')),
+					s('capture__ref', f('identifier_0', 'identifier')),
+					f('block_0', 'block__return', s('statement_return')),
 				),
 			),
 		],

@@ -21,6 +21,7 @@ import {
 	Functionlike_varCheck,
 } from '../Functionlike.ts';
 import type {ParameterFunction} from '../ParameterFunction.ts';
+import type {Capture} from '../Capture.ts';
 import type {Block} from '../Block.ts';
 import type * as AST_TYPE from '../type/index.ts';
 import * as EXPR from '../expression/index.ts';
@@ -43,10 +44,11 @@ export class DeclarationFunction extends Statement implements Functionlike {
 		start_node: SyntaxNodeType<'declaration_function'>,
 		private readonly identifier: Serializable | null,
 		public  readonly parameters: readonly ParameterFunction[],
+		public  readonly captures:   readonly Capture[],
 		public  readonly returnType: AST_TYPE.Type | null,
 		public  readonly block:      Block,
 	) {
-		super(start_node, {}, [...parameters, ...(returnType ? [returnType] : []), block]);
+		super(start_node, {}, [...parameters, ...captures, ...(returnType ? [returnType] : []), block]);
 		if (this.identifier) {
 			this.id = Validator.cookTokenIdentifier(this.identifier.source);
 		}
@@ -70,11 +72,11 @@ export class DeclarationFunction extends Statement implements Functionlike {
 		super.typeCheck();
 		const fn_type: TYPE.Type = EXPR.Function.prototype.type.call(this);
 		if (this.identifier) {
-			assert.ok(this.validator.hasSymbol(this.id!), `The validator symbol table should include ${ this.id }.`);
+			assert.ok(this.validator.hasSymbol(this.id!), `The validator symbol table should include ${this.id}.`);
 			const schema = this.validator.getSymbol(this.id!) as SymbolSchemaFunc;
 			if (schema.types.find((t) => t.equals(fn_type))) {
 				// if there exists an identically-typed overload, as static dispatch won’t know which one to choose
-				throw new TypeError(`Identical function overload type: \`${ fn_type }\`.`); // TODO: new error type
+				throw new TypeError(`Identical function overload type: \`${fn_type}\`.`); // TODO: new error type
 			} else {
 				schema.types.push(fn_type);
 			}
@@ -89,9 +91,10 @@ export class DeclarationFunction extends Statement implements Functionlike {
 
 			builder.terminateBlock(new OP.Goto(label_endfunc));
 			builder.initiateBlock(label_func);
+			this.captures.forEach((capt) => capt.build(builder));
 			this.parameters.forEach((param) => param.build(builder));
 			this.block.build(builder);
-			builder.pushInstruction(new OP.Drop(new OP.Trap())); // traps because this part should be unreachable (a return/throw statement should have been encountered in the function body by now)
+			builder.pushInstruction(new OP.Drop(new OP.Trap()));
 			builder.terminateBlock(new OP.EndProgram());
 			builder.initiateBlock(label_endfunc);
 		}

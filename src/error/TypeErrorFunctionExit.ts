@@ -20,7 +20,7 @@ export class TypeErrorFunctionExit extends CplTypeError {
 	 */
 	public constructor(fn: Functionlike) {
 		super(
-			`Function \`${ fn.source }\` does not exit in every control route.`,
+			`Function \`${fn.source}\` does not exit in every control route.`,
 			CplTypeError.CODES.get(TypeErrorFunctionExit),
 			fn.line_index,
 			fn.col_index,
