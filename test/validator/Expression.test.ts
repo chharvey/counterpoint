@@ -463,18 +463,21 @@ test.suite('Expression', () => {
 		});
 		test.test('ExpressionFunction', () => {
 			assert.strictEqual(setupScript(`{
+				val mut z: int = 42;
 				\\(x: int): void {
 					x;
 					return;
 				};
-				\\(x: float, y: float): void {
+				\\(x: float, y: float) with (z): void {
 					x + y;
+					z + 10;
 					return;
 				};
 			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
+					(DECL <int> z (INT.CONST 42))
 					(DROP (LAMBDA $0 \\(x: int): void { x; return; }))
-					(DROP (LAMBDA $1 \\(x: float, y: float): void { x + y; return; }))
+					(DROP (LAMBDA $1 \\(x: float, y: float) with (z): void { x + y; z + 10; return; }))
 					(ENDPROGRAM)
 			`.trim());
 		});

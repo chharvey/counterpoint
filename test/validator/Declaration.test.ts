@@ -739,6 +739,32 @@ test.suite('Declaration', () => {
 						(ENDPROGRAM)
 				`.trim());
 			});
+			test.test('captures.', () => {
+				assert.strictEqual(setupScript(`{
+					val x: int = 42;
+					val mut y: float = 4.2;
+					func f() with (x, ref y): void {
+						x + 10;
+						set y = 5.2;
+						return;
+					}
+				}`, {codegen: false}).builder.print(), xjs.String.dedent`
+					"block-0":
+						(DECL <int> x (INT.CONST 42))
+						(DECL <float> y (FLOAT.CONST 4.2))
+						(GOTO "block-2")
+					"block-1":
+						(DECL <int> x (GET x))
+						(DROP (INT.ADD (GET x) (INT.CONST 10)))
+						(SET y (FLOAT.CONST 5.2))
+						(GOTO "caller")
+					"unreachable-3":
+						(DROP (TRAP))
+						(ENDPROGRAM)
+					"block-2":
+						(ENDPROGRAM)
+				`.trim());
+			});
 			test.test('single parameter and return statement.', () => {
 				assert.strictEqual(setupScript(`{
 					func f(foo: int): void {
