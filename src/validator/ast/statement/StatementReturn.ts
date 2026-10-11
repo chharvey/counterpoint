@@ -52,10 +52,10 @@ export class StatementReturn extends Statement {
 			if (return_type) {
 				return typecheck_assign(this.expression, return_type, this);
 			} else {
-				throw new Error(`Expression \`${ this.expression.source }\` is returned from a void function.`); // TODO: create new TypeError subclass
+				throw new Error(`Expression \`${this.expression.source}\` is returned from a void function.`); // TODO: create new TypeError subclass
 			}
 		} else if (return_type) {
-			throw new Error(`A function with return type \`${ return_type }\` does not return a value.`); // TODO: create new TypeError subclass
+			throw new Error(`A function with return type \`${return_type}\` does not return a value.`); // TODO: create new TypeError subclass
 		}
 	}
 

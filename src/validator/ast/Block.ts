@@ -55,7 +55,7 @@ export class Block extends AstNode implements Buildable {
 	 * @returns      a new Block representing the given source
 	 */
 	public static fromFunctionSource(src: string, config: CplConfig = CONFIG_DEFAULT): Block {
-		return EXPR.Function.fromSource(`\\(): anything ${ src }`, config).block;
+		return EXPR.Function.fromSource(`\\(): anything ${src}`, config).block;
 	}
 
 

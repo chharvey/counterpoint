@@ -590,7 +590,7 @@ export class Decorator {
 					node.namedChildren.filter((c) => isSyntaxNodeFamily(c, 'capture', ['ref'])).map((c) => this.decorate(c)),
 					type_0 && this.decorateTypeNode(type_0),
 					expression_0
-						? AST.Block.fromFunctionSource(`{ return ${ expression_0.text }; }`)
+						? AST.Block.fromFunctionSource(`{ return ${expression_0.text}; }`)
 						: this.decorateBlockNode(node.childForFieldName('block_0') as SyntaxNodeFamily<'block', ['return']>),
 				);
 			}],
@@ -728,7 +728,7 @@ export class Decorator {
 					node.namedChildren.filter((c) => isSyntaxNodeFamily(c, 'capture', ['ref'])).map((c) => this.decorate(c)),
 					type_0 && this.decorateTypeNode(type_0),
 					expression_0
-						? AST.Block.fromFunctionSource(`{ return ${ expression_0.text }; }`)
+						? AST.Block.fromFunctionSource(`{ return ${expression_0.text}; }`)
 						: this.decorateBlockNode(node.childForFieldName('block_0') as SyntaxNodeFamily<'block', ['return']>),
 				);
 			}],
