@@ -17,6 +17,7 @@ import {
 	Unop,
 	Instance,
 	Binop,
+	Function as OpFunction,
 	Instruction,
 	Drop,
 	Decl,
@@ -156,6 +157,7 @@ export abstract class OpcodeVisitor<T> {
 	public visitUnop                 (val: Unop):                 T { return this.defaultVisit(val); }
 	public visitInstance             (val: Instance):             T { return this.defaultVisit(val); }
 	public visitBinop                (val: Binop):                T { return this.defaultVisit(val); }
+	public visitFunction             (val: OpFunction):           T { return this.defaultVisit(val); }
 	public visitValue                (val: Value):                T { return this.defaultVisit(val); }
 
 	public visitDrop                  (instr: Drop):                  T { return this.defaultVisit(instr); }
@@ -192,6 +194,7 @@ export abstract class OpcodeVisitor<T> {
 			case Unop:                  { return this.visitUnop                 (op as Unop); }
 			case Instance:              { return this.visitInstance             (op as Instance); }
 			case Binop:                 { return this.visitBinop                (op as Binop); }
+			case OpFunction:            { return this.visitFunction             (op as OpFunction); }
 			case Value:                 { return this.visitValue                (op as Value); }
 
 			case Drop:                  { return this.visitDrop                  (op as Drop); }

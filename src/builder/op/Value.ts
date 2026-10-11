@@ -27,6 +27,7 @@ import {
 	Unop,
 	Instance,
 	Binop,
+	Function as OpFunction,
 	Decl,
 } from './index.ts';
 import {
@@ -54,6 +55,7 @@ export abstract class ValueVisitor<T> {
 	public visitUnop                 (val: Unop):                 T { return this.defaultVisit(val); }
 	public visitInstance             (val: Instance):             T { return this.defaultVisit(val); }
 	public visitBinop                (val: Binop):                T { return this.defaultVisit(val); }
+	public visitFunction             (val: OpFunction):           T { return this.defaultVisit(val); }
 	/* eslint-enable @stylistic/space-before-function-paren */
 
 	public abstract defaultVisit(val: Value): T;
@@ -77,6 +79,7 @@ export abstract class ValueVisitor<T> {
 			case Unop:                 { return this.visitUnop                 (val as Unop); }
 			case Instance:             { return this.visitInstance             (val as Instance); }
 			case Binop:                { return this.visitBinop                (val as Binop); }
+			case OpFunction:           { return this.visitFunction             (val as OpFunction); }
 
 			default: { return this.defaultVisit(val); }
 		}
