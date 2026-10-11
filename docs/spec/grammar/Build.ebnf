@@ -395,7 +395,7 @@ Build(SemanticDeclarationVariable[writable=true][id: RealNumber] ::= SemanticTyp
 	(DECL ‹type› `GetSymbolSchema(id)` (MAYBE.NEW))
 ];
 
-Build(SemanticDeclarationFunction[id=*none*]) := [];
+Build(SemanticDeclarationFunction[id=*nil*]) := [];
 Build(SemanticDeclarationFunction[id: RealNumber] ::= SemanticParameterFunction* SemanticBlock) := [(FUNC
 	`GetSymbolSchema(id)`
 	`SemanticParameterFunction*.length`
