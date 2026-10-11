@@ -91,9 +91,10 @@ export class DeclarationFunction extends Statement implements Functionlike {
 
 			builder.terminateBlock(new OP.Goto(label_endfunc));
 			builder.initiateBlock(label_func);
+			this.captures.forEach((capt) => capt.build(builder));
 			this.parameters.forEach((param) => param.build(builder));
 			this.block.build(builder);
-			builder.pushInstruction(new OP.Drop(new OP.Trap())); // traps because this part should be unreachable (a return/throw statement should have been encountered in the function body by now)
+			builder.pushInstruction(new OP.Drop(new OP.Trap()));
 			builder.terminateBlock(new OP.EndProgram());
 			builder.initiateBlock(label_endfunc);
 		}

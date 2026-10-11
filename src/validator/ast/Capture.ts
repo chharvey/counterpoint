@@ -1,3 +1,5 @@
+import type {Builder} from '../../index.ts';
+import {runOnceMethod} from '../../lib/index.ts';
 import {SymbolSchemaVar} from '../index.ts';
 import type {SyntaxNodeFamily} from '../utils-private.ts';
 import {AstNode} from './AstNode.ts';
@@ -25,5 +27,10 @@ export class Capture extends AstNode {
 			schema.isWritable && this.ref,
 			schema.isUninitialized,
 		));
+	}
+
+	@runOnceMethod
+	public build(builder: Builder): void {
+		builder;
 	}
 }

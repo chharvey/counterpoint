@@ -396,10 +396,14 @@ Build(SemanticDeclarationVariable[writable=true][id: RealNumber] ::= SemanticTyp
 ];
 
 Build(SemanticDeclarationFunction[id=*nil*]) := [];
-Build(SemanticDeclarationFunction[id: RealNumber] ::= SemanticParameterFunction* SemanticBlock) := [(FUNC
-	`GetSymbolSchema(id)`
-	`SemanticParameterFunction*.length`
-)];
+Build(SemanticDeclarationFunction[id: RealNumber] ::= SemanticParameterFunction* SemanticCapture* SemanticType? SemanticBlock) := [
+	"func":
+	`SemanticCapture*.map(Build)`
+	`SemanticParameterFunction*.map(Build)`
+	`Build(SemanticBlock)`
+	(DROP (TRAP)) // traps because this part should be unreachable (a return/throw statement should have been encountered in the function body by now)
+	"endfunc":
+];
 
 Build(SemanticStatementExpression:has(SemanticExpression) stmt) := [
 	(DROP `Build(stmt.0)`)

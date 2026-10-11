@@ -74,6 +74,7 @@ class ExpressionFunction extends Expression implements Functionlike {
 	public override build(builder: Builder): OP.Function {
 		const temp: Temp = builder.newTemp(this.type());
 		return new OP.Function(temp.type as TYPE.Function, temp.name, this.source.replaceAll(/\s+/g, ' '), () => {
+			this.captures.forEach((capt) => capt.build(builder));
 			this.parameters.forEach((param) => param.build(builder));
 			this.block.build(builder);
 		});
