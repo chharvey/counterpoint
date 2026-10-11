@@ -104,7 +104,7 @@ LAMBDA(native-string native-bigint native-string);
 DROP([Value]);
 
 DECL(SymbolSchemaVar|native-string Type [Value?]);
-SET (SymbolSchemaVar|native-string      [Value?]);
+SET (SymbolSchemaVar|native-string      [Value]);
 
 LIST.SET([Value Value Value]);
 DICT.SET([Value Value Value]);
@@ -131,6 +131,14 @@ Build(String  s) := (STR.CONST   s);
 
 Build(SemanticProperty prop) := Sequence [`Symbol(prop.0)`, `Build(prop.1)`];
 Build(SemanticCase     case) := Sequence [`Build(case.0)`, `Build(case.1)`];
+
+Build(SemanticParameterFunction[id: Nil]) := ();
+Build(SemanticParameterFunction[id: RealNumber])
+	:= (DECL ‹type› `GetSymbolSchema(id)`);
+
+Build(SemanticCapture[ref: true]) := ();
+Build(SemanticCapture[ref: false] ::= SemanticExpressionVariable[id: RealNumber])
+	:= (DECL ‹type› `GetSymbolSchema(id)` `Build(SemanticExpressionVariable)`);
 
 Build(SemanticBlock block) := block.children.map(Build);
 

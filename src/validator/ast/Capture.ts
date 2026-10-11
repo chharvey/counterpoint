@@ -1,4 +1,7 @@
-import type {Builder} from '../../index.ts';
+import {
+	type Builder,
+	OP,
+} from '../../index.ts';
 import {runOnceMethod} from '../../lib/index.ts';
 import {SymbolSchemaVar} from '../index.ts';
 import type {SyntaxNodeFamily} from '../utils-private.ts';
@@ -31,6 +34,10 @@ export class Capture extends AstNode {
 
 	@runOnceMethod
 	public build(builder: Builder): void {
-		builder;
+		if (!this.ref) {
+			const schema = (this.parent as Functionlike).block.validator.getSymbol(this.variable.id) as SymbolSchemaVar;
+			schema.irType = schema.type;
+			return builder.pushInstruction(new OP.Decl(schema, schema.irType, this.variable.build()));
+		}
 	}
 }
