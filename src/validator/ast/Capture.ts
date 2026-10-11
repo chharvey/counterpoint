@@ -24,12 +24,19 @@ export class Capture extends AstNode {
 	public override varCheck(): void {
 		super.varCheck();
 		const schema = this.validator.getSymbol(this.variable.id) as SymbolSchemaVar;
-		(this.parent as Functionlike).block.validator.addSymbol(new SymbolSchemaVar(
+		(this.parent as Functionlike).block.validator.addSymbol(this.ref ? schema : new SymbolSchemaVar(
 			schema.id,
 			this.variable,
 			schema.isWritable && this.ref,
 			schema.isUninitialized,
 		));
+	}
+
+	public override typeCheck(): void {
+		super.typeCheck();
+		if (!this.ref) {
+			((this.parent as Functionlike).block.validator.getSymbol(this.variable.id) as SymbolSchemaVar).type = this.variable.type();
+		}
 	}
 
 	@runOnceMethod

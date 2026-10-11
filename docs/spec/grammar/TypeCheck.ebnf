@@ -36,6 +36,21 @@ Nil! TypeCheck(SemanticParameterFunction param) :=
 
 
 
+Nil! TypeCheck(SemanticCapture[ref: true] ::= SemanticExpressionVariable) := TypeCheck(SemanticExpressionVariable);
+Nil! TypeCheck(SemanticCapture[ref: false] ::= SemanticExpressionVariable[id: RealNumber]) :=
+	1. *Perform:* *Unwrap:* `TypeCheck(SemanticExpressionVariable)`.
+	2. *Let* `parent` be the parent node of `SemanticCapture`.
+	3. *Assert:* `parent` is a SemanticExpressionFunction or a SemanticDeclarationFunction.
+	4. *Let* `block` be `parent.children.-1`.
+	5. *Assert:* `block` is a SemanticBlock.
+	6. *Let* `validator` be the validator of `block`.
+	7. *Assert:* `validator`’s symbol table contains a SymbolSchema `symbol` whose `id` is `SemanticExpressionVariable.id`.
+	8. *Assert:* `symbol` is an instance of `SymbolSchemaVar`.
+	9. *Set* `symbol.type` to *Unwrap:* `TypeOf(SemanticExpressionVariable)`.
+;
+
+
+
 Nil! TypeCheck(SemanticBlock block) :=
 	1. *For each* `stmt` in `block.children`:
 		1. *Perform:* *Unwrap:* `TypeCheck(stmt)`.

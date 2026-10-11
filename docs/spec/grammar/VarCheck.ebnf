@@ -68,7 +68,10 @@ Nil! VarCheck(SemanticCapture capture) :=
 		isUninitialized= `false`,
 		type=            `Anything`,
 	].
-	15. Add `schema` as a record for `symbol.id` to `validator`.
+	15. *If* `capture.ref` is `true`:
+		1. Add `symbol` as a record for `symbol.id` to `validator`.
+	16. *Else:*
+		1. Add `schema` as a record for `symbol.id` to `validator`.
 ;
 
 
