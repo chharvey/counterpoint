@@ -175,31 +175,21 @@ export class Decorator {
 
 
 			/* ## Types */
-			['entry_type', (node) => new AST.ItemType(
-				node as SyntaxNodeType<'entry_type'>,
-				false,
-				this.decorateTypeNode(node.childForFieldName('type_0') as SyntaxNodeSupertype<'type'>),
-			)],
-
-			['entry_type__optional', (node) => new AST.ItemType(
-				node as SyntaxNodeType<'entry_type__optional'>,
-				true,
-				this.decorateTypeNode(node.childForFieldName('type_0') as SyntaxNodeSupertype<'type'>),
-			)],
-
-			['entry_type__named', (node) => new AST.PropertyType(
-				node as SyntaxNodeType<'entry_type__named'>,
-				false,
-				this.decorate(node.childForFieldName('word_0') as SyntaxNodeType<'word'>),
-				this.decorateTypeNode(node.childForFieldName('type_0') as SyntaxNodeSupertype<'type'>),
-			)],
-
-			['entry_type__named__optional', (node) => new AST.PropertyType(
-				node as SyntaxNodeType<'entry_type__named__optional'>,
-				true,
-				this.decorate(node.childForFieldName('word_0') as SyntaxNodeType<'word'>),
-				this.decorateTypeNode(node.childForFieldName('type_0') as SyntaxNodeSupertype<'type'>),
-			)],
+			[/entry_type(__named)?(__optional)?/, (node) => {
+				const optional: boolean = !!node.childForFieldName('opt_0');
+				const word_0 = node.childForFieldName('word_0') as SyntaxNodeType<'word'> | null;
+				const type_0 = node.childForFieldName('type_0') as SyntaxNodeSupertype<'type'>;
+				return word_0 ? new AST.PropertyType(
+					node as SyntaxNodeFamily<'entry_type__named', ['optional']>,
+					optional,
+					this.decorate(word_0),
+					this.decorateTypeNode(type_0),
+				) : new AST.ItemType(
+					node as SyntaxNodeFamily<'entry_type', ['optional']>,
+					optional,
+					this.decorateTypeNode(type_0),
+				);
+			}],
 
 			['property_accessor_type', (node) => (
 				isSyntaxNodeType(node.firstNamedChild, /integer|natural/) ? new AST.Index(node.firstNamedChild as SyntaxNodeType<'integer' | 'natural'>) :
