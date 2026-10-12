@@ -303,13 +303,13 @@ test.suite('Decorator', () => {
 			`]],
 			['Decorate(TypeFunction ::= "\\" "(" ParametersType ")" "=>" "void") -> SemanticType', [AST.TYPE.Function, `
 				{
-					type T = \\(A, b: B, c: \\() => void) => void;
+					type T = \\(A, ?: C, b: B, d?: D, e: \\() => void) => void;
 				}
 				% (type_function)
 			`]],
 			['Decorate(TypeFunction ::= "\\" "(" ParametersType ")" "=>" Type) -> SemanticType', [AST.TYPE.Function, `
 				{
-					type T = \\(A, b: B, c: \\() => void) => int | float;
+					type T = \\(A, ?: C, b: B, d?: D, e: \\() => void) => int | float;
 				}
 				% (type_function)
 			`]],
@@ -360,15 +360,12 @@ test.suite('Decorator', () => {
 				}
 				% (case_switch)
 			`]],
-
 			['Decorate(CaseSwitch<Break> ::= "case" (Expression__0<+Block><?Break> "|")+ Expression__1<+Block><?Break> "->" Expression__2<+Block><?Break>) -> SemanticCase', [AST.Case, `
 				{
 					switch a case b | c | d -> g default z;
 				}
 				% (case_switch)
 			`]],
-
-			// TODO: Decorate(ParameterFunction<Named>)
 
 			['Decorate(Capture<Ref> ::= IDENTIFIER) -> SemanticCapture', [AST.Capture, `
 				{
@@ -780,49 +777,49 @@ test.suite('Decorator', () => {
 			`]],
 			['Decorate(ExpressionFunction ::= "\\" "(" ParametersFunction ")" ":" "void" Block<-Break><+Return>) -> SemanticExpressionFunction', [AST.EXPR.Function, `
 				{
-					\\(a: A, $b: B, c= charlie: C): void { return; };
+					\\(a: A, d?: D, $e?: E, $b: B, f= foxtrot?: F, c= charlie: C): void { return; };
 				}
 				% (expression_function)
 			`]],
 			['Decorate(ExpressionFunction ::= "\\" "(" ParametersFunction ")" ":" "void" "=>" Expression<+Block><-Break><+Return>) -> SemanticExpressionFunction', [AST.EXPR.Function, `
 				{
-					\\(a: A, $b: B, c= charlie: C): void => "done";
+					\\(a: A, d?: D, $e?: E, $b: B, f= foxtrot?: F, c= charlie: C): void => "done";
 				}
 				% (expression_function)
 			`]],
 			['Decorate(ExpressionFunction ::= "\\" "(" ParametersFunction ")" ":" Type Block<-Break><+Return>) -> SemanticExpressionFunction', [AST.EXPR.Function, `
 				{
-					\\(a: A, $b: B, c= charlie: C): int | float { return; };
+					\\(a: A, d?: D, $e?: E, $b: B, f= foxtrot?: F, c= charlie: C): int | float { return; };
 				}
 				% (expression_function)
 			`]],
 			['Decorate(ExpressionFunction ::= "\\" "(" ParametersFunction ")" ":" Type "=>" Expression<+Block><-Break><+Return>) -> SemanticExpressionFunction', [AST.EXPR.Function, `
 				{
-					\\(a: A, $b: B, c= charlie: C): int | float => "done";
+					\\(a: A, d?: D, $e?: E, $b: B, f= foxtrot?: F, c= charlie: C): int | float => "done";
 				}
 				% (expression_function)
 			`]],
 			['Decorate(ExpressionFunction ::= "\\" "(" ParametersFunction ")" CaptureClause<-Ref> ":" "void" Block<-Break><+Return>) -> SemanticExpressionFunction', [AST.EXPR.Function, `
 				{
-					\\(a: A, $b: B, c= charlie: C) with (x, y): void { return; };
+					\\(a: A, d?: D, $e?: E, $b: B, f= foxtrot?: F, c= charlie: C) with (x, y): void { return; };
 				}
 				% (expression_function)
 			`]],
 			['Decorate(ExpressionFunction ::= "\\" "(" ParametersFunction ")" CaptureClause<-Ref> ":" "void" "=>" Expression<+Block><-Break><+Return>) -> SemanticExpressionFunction', [AST.EXPR.Function, `
 				{
-					\\(a: A, $b: B, c= charlie: C) with (x, y): void => "done";
+					\\(a: A, d?: D, $e?: E, $b: B, f= foxtrot?: F, c= charlie: C) with (x, y): void => "done";
 				}
 				% (expression_function)
 			`]],
 			['Decorate(ExpressionFunction ::= "\\" "(" ParametersFunction ")" CaptureClause<-Ref> ":" Type Block<-Break><+Return>) -> SemanticExpressionFunction', [AST.EXPR.Function, `
 				{
-					\\(a: A, $b: B, c= charlie: C) with (x, y): int | float { return; };
+					\\(a: A, d?: D, $e?: E, $b: B, f= foxtrot?: F, c= charlie: C) with (x, y): int | float { return; };
 				}
 				% (expression_function)
 			`]],
 			['Decorate(ExpressionFunction ::= "\\" "(" ParametersFunction ")" CaptureClause<-Ref> ":" Type "=>" Expression<+Block><-Break><+Return>) -> SemanticExpressionFunction', [AST.EXPR.Function, `
 				{
-					\\(a: A, $b: B, c= charlie: C) with (x, y): int | float => "done";
+					\\(a: A, d?: D, $e?: E, $b: B, f= foxtrot?: F, c= charlie: C) with (x, y): int | float => "done";
 				}
 				% (expression_function)
 			`]],

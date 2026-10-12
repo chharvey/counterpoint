@@ -113,7 +113,7 @@ export class Decorator {
 	public decorate(syntaxnode: SyntaxNodeFamily<'property',        ['break', 'return']>):                 AST.Property;
 	public decorate(syntaxnode: SyntaxNodeFamily<'case_map',        ['break', 'return']>):                 AST.Case;
 	public decorate(syntaxnode: SyntaxNodeFamily<'case_switch',     ['break', 'return']>):                 AST.Case;
-	public decorate(syntaxnode: SyntaxNodeFamily<'parameter_function', ['named']>):                        AST.ParameterFunction;
+	public decorate(syntaxnode: SyntaxNodeFamily<'parameter_function', ['named', 'optional']>):            AST.ParameterFunction;
 	public decorate(syntaxnode: SyntaxNodeFamily<'capture', ['ref']>):                                     AST.Capture;
 	public decorate(syntaxnode: SyntaxNodeFamily<'property_accessor',         ['break', 'return']>):       AST.Index | AST.Key | AST.EXPR.Expression;
 	public decorate(syntaxnode: SyntaxNodeFamily<'expression_grouped',        ['break', 'return']>):       AST.EXPR.Expression;
@@ -175,31 +175,21 @@ export class Decorator {
 
 
 			/* ## Types */
-			['entry_type', (node) => new AST.ItemType(
-				node as SyntaxNodeType<'entry_type'>,
-				false,
-				this.decorateTypeNode(node.childForFieldName('type_0') as SyntaxNodeSupertype<'type'>),
-			)],
-
-			['entry_type__optional', (node) => new AST.ItemType(
-				node as SyntaxNodeType<'entry_type__optional'>,
-				true,
-				this.decorateTypeNode(node.childForFieldName('type_0') as SyntaxNodeSupertype<'type'>),
-			)],
-
-			['entry_type__named', (node) => new AST.PropertyType(
-				node as SyntaxNodeType<'entry_type__named'>,
-				false,
-				this.decorate(node.childForFieldName('word_0') as SyntaxNodeType<'word'>),
-				this.decorateTypeNode(node.childForFieldName('type_0') as SyntaxNodeSupertype<'type'>),
-			)],
-
-			['entry_type__named__optional', (node) => new AST.PropertyType(
-				node as SyntaxNodeType<'entry_type__named__optional'>,
-				true,
-				this.decorate(node.childForFieldName('word_0') as SyntaxNodeType<'word'>),
-				this.decorateTypeNode(node.childForFieldName('type_0') as SyntaxNodeSupertype<'type'>),
-			)],
+			[/entry_type(__named)?(__optional)?/, (node) => {
+				const optional: boolean = !!node.childForFieldName('opt_0');
+				const word_0 = node.childForFieldName('word_0') as SyntaxNodeType<'word'> | null;
+				const type_0 = node.childForFieldName('type_0') as SyntaxNodeSupertype<'type'>;
+				return word_0 ? new AST.PropertyType(
+					node as SyntaxNodeFamily<'entry_type__named', ['optional']>,
+					optional,
+					this.decorate(word_0),
+					this.decorateTypeNode(type_0),
+				) : new AST.ItemType(
+					node as SyntaxNodeFamily<'entry_type', ['optional']>,
+					optional,
+					this.decorateTypeNode(type_0),
+				);
+			}],
 
 			['property_accessor_type', (node) => (
 				isSyntaxNodeType(node.firstNamedChild, /integer|natural/) ? new AST.Index(node.firstNamedChild as SyntaxNodeType<'integer' | 'natural'>) :
@@ -282,8 +272,8 @@ export class Decorator {
 
 			['type_function', (node) => new AST.TYPE.Function(
 				node as SyntaxNodeType<'type_function'>,
-				node.namedChildren.filter((c) => isSyntaxNodeType(c, 'entry_type'))        .map((c) => this.decorate(c)),
-				node.namedChildren.filter((c) => isSyntaxNodeType(c, 'entry_type__named')) .map((c) => this.decorate(c)),
+				node.namedChildren.filter((c) => isSyntaxNodeFamily(c, 'entry_type',        ['optional'])).map((c) => this.decorate(c)),
+				node.namedChildren.filter((c) => isSyntaxNodeFamily(c, 'entry_type__named', ['optional'])).map((c) => this.decorate(c)),
 				node.childForFieldName('type_0') && this.decorateTypeNode(node.childForFieldName('type_0') as SyntaxNodeSupertype<'type'>),
 			)],
 
@@ -314,16 +304,19 @@ export class Decorator {
 				this.decorateExprNode(node.namedChildren.at(-1) as SyntaxNodeSupertype<'expression'>),
 			)],
 
-			[/^parameter_function(__named)?$/, (node) => {
-				const identifier_0 = node.childForFieldName('identifier_0') as SyntaxNodeType<'identifier'> | null;
-				const word_0       = node.childForFieldName('word_0')       as SyntaxNodeType<'word'>       | null;
+			[/^parameter_function(__named)?(__optional)?$/, (node) => {
+				const identifier_0 = node.childForFieldName('identifier_0') as SyntaxNodeType<'identifier'>      | null;
+				const word_0       = node.childForFieldName('word_0')       as SyntaxNodeType<'word'>            | null;
+				const expression_0 = node.childForFieldName('expression_0') as SyntaxNodeSupertype<'expression'> | null;
 				return new AST.ParameterFunction(
-					node as SyntaxNodeFamily<'parameter_function', ['named']>,
+					node as SyntaxNodeFamily<'parameter_function', ['named', 'optional']>,
+					identifier_0 && to_serializable(identifier_0),
 					!!(word_0 ?? node.childForFieldName('pun_0')),
 					!!node.childForFieldName('mut_0'),
-					identifier_0 && to_serializable(identifier_0),
+					!!node.childForFieldName('opt_0'),
 					word_0 && this.decorate(word_0),
 					this.decorateTypeNode(node.childForFieldName('type_0') as SyntaxNodeSupertype<'type'>),
+					expression_0 && this.decorateExprNode(expression_0),
 				);
 			}],
 
@@ -586,8 +579,8 @@ export class Decorator {
 				const expression_0 = node.childForFieldName('expression_0') as SyntaxNodeSupertype<'expression'> | null;
 				return new AST.EXPR.Function(
 					node as SyntaxNodeType<'expression_function'>,
-					node.namedChildren.filter((c) => isSyntaxNodeFamily(c, 'parameter_function', ['named'])).map((c) => this.decorate(c)),
-					node.namedChildren.filter((c) => isSyntaxNodeFamily(c, 'capture', ['ref'])).map((c) => this.decorate(c)),
+					node.namedChildren.filter((c) => isSyntaxNodeFamily(c, 'parameter_function', ['named', 'optional'])) .map((c) => this.decorate(c)),
+					node.namedChildren.filter((c) => isSyntaxNodeFamily(c, 'capture',            ['ref']))               .map((c) => this.decorate(c)),
 					type_0 && this.decorateTypeNode(type_0),
 					expression_0
 						? AST.Block.fromFunctionSource(`{ return ${expression_0.text}; }`)
@@ -724,8 +717,8 @@ export class Decorator {
 				return new AST.STMT.DeclarationFunction(
 					node as SyntaxNodeType<'declaration_function'>,
 					identifier_0 && to_serializable(identifier_0),
-					node.namedChildren.filter((c) => isSyntaxNodeFamily(c, 'parameter_function', ['named'])).map((c) => this.decorate(c)),
-					node.namedChildren.filter((c) => isSyntaxNodeFamily(c, 'capture', ['ref'])).map((c) => this.decorate(c)),
+					node.namedChildren.filter((c) => isSyntaxNodeFamily(c, 'parameter_function', ['named', 'optional'])) .map((c) => this.decorate(c)),
+					node.namedChildren.filter((c) => isSyntaxNodeFamily(c, 'capture',            ['ref']))               .map((c) => this.decorate(c)),
 					type_0 && this.decorateTypeNode(type_0),
 					expression_0
 						? AST.Block.fromFunctionSource(`{ return ${expression_0.text}; }`)

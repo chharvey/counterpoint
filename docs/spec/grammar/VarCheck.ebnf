@@ -32,10 +32,14 @@ Nil! VarCheck(SemanticParameterFunction param) :=
 		6. *If* `validator`’s symbol table contains a SymbolSchema whose `id` is `param.id`:
 			1. *Throw:* a new AssignmentErrorDuplicateDeclaration.
 		7. *Else:*
-			1. *Let* `symbol` be a new SymbolSchemaVar [
+			1. *If* `param.optional` is `true` *and* `param` does not contain a `SemanticExpression`:
+				1. *Let* `isUninitialized` be `true`.
+			2. *Else:*
+				1. *Let* `isUninitialized` be `false`.
+			3. *Let* `symbol` be a new SymbolSchemaVar [
 				id=              `param.id`,
 				isWritable=      `param.writable`,
-				isUninitialized= `false`, // TODO: with optional paramers: `param.uninitialized`
+				isUninitialized= `isUninitialized`,
 				type=            `Anything`,
 			].
 			2. Add `symbol` as a record for `param.id` to `validator`.
@@ -55,22 +59,19 @@ Nil! VarCheck(SemanticCapture capture) :=
 	7. *Let* `block` be `parent.children.-1`.
 	8. *Assert:* `block` is a SemanticBlock.
 	9. *Let* `validator` be the validator of `block`.
-	10. *Let* `isWritable` be `true`.
-	11. *If* `symbol.writable` is `false`:
-		1. *Set* `isWritable` to `false`.
-	12. *Else If* `capture.ref` is `false`:
-		1. *Set* `isWritable` to `false`.
-	13. *Else:*
-		1. Fall through.
-	14. *Let* `schema` be a new SymbolSchemaVar [
+	10. *If* `symbol.writable` is `true` *and* `capture.ref` is `true`:
+		1. *Let* `isWritable` be `true`.
+	11. *Else:*
+		1. *Let* `isWritable` be `false`.
+	12. *Let* `schema` be a new SymbolSchemaVar [
 		id=              `symbol.id`,
 		isWritable=      `isWritable`,
 		isUninitialized= `false`,
 		type=            `Anything`,
 	].
-	15. *If* `capture.ref` is `true`:
+	13. *If* `capture.ref` is `true`:
 		1. Add `symbol` as a record for `symbol.id` to `validator`.
-	16. *Else:*
+	14. *Else:*
 		1. Add `schema` as a record for `symbol.id` to `validator`.
 ;
 

@@ -30,33 +30,38 @@ test.suite('AstNode', () => {
 		test.suite('ParameterFunction', () => {
 			test.test('adds a SymbolSchema to the symbol table with a preset `type` value of `anything`.', () => {
 				const {stmts} = setupScript(`{
-					\\(a: int, mut b: int, mut $c: int, delta= d: int): void { return; };
+					\\(a: int, mut b: int, mut $c: int, delta= d: int, $e?: int): void { return; };
 				}`, {varCheck: false});
 				const id_a:     bigint = Validator.cookTokenIdentifier('a');
 				const id_b:     bigint = Validator.cookTokenIdentifier('b');
 				const id_c:     bigint = Validator.cookTokenIdentifier('c');
 				const id_delta: bigint = Validator.cookTokenIdentifier('delta');
 				const id_d:     bigint = Validator.cookTokenIdentifier('d');
+				const id_e:     bigint = Validator.cookTokenIdentifier('e');
 				const fn = (stmts[0] as AST.STMT.StatementExpression).expr as AST.EXPR.Function;
 				assert.ok(!fn.block.validator.hasSymbol(id_a));
 				assert.ok(!fn.block.validator.hasSymbol(id_b));
 				assert.ok(!fn.block.validator.hasSymbol(id_c));
 				assert.ok(!fn.block.validator.hasSymbol(id_delta));
 				assert.ok(!fn.block.validator.hasSymbol(id_d));
+				assert.ok(!fn.block.validator.hasSymbol(id_e));
 				fn.varCheck();
 				assert.ok(fn.block.validator.hasSymbol(id_a));
 				assert.ok(fn.block.validator.hasSymbol(id_b));
 				assert.ok(fn.block.validator.hasSymbol(id_c));
 				assert.ok(!fn.block.validator.hasSymbol(id_delta)); // param key `delta` is not in symbol table
 				assert.ok(fn.block.validator.hasSymbol(id_d));
+				assert.ok(fn.block.validator.hasSymbol(id_e));
 				const info_a: SymbolSchema | undefined = fn.block.validator.getSymbol(id_a);
 				const info_b: SymbolSchema | undefined = fn.block.validator.getSymbol(id_b);
 				const info_c: SymbolSchema | undefined = fn.block.validator.getSymbol(id_c);
 				const info_d: SymbolSchema | undefined = fn.block.validator.getSymbol(id_d);
+				const info_e: SymbolSchema | undefined = fn.block.validator.getSymbol(id_e);
 				assert_instanceof(info_a, SymbolSchemaVar);
 				assert_instanceof(info_b, SymbolSchemaVar);
 				assert_instanceof(info_c, SymbolSchemaVar);
 				assert_instanceof(info_d, SymbolSchemaVar);
+				assert_instanceof(info_e, SymbolSchemaVar);
 				assert.partialDeepStrictEqual(info_a, {
 					isWritable:      false,
 					isUninitialized: false,
@@ -72,9 +77,14 @@ test.suite('AstNode', () => {
 					isUninitialized: false,
 					type:            TYPE.ANYTHING,
 				});
-				return assert.partialDeepStrictEqual(info_d, {
+				assert.partialDeepStrictEqual(info_d, {
 					isWritable:      false,
 					isUninitialized: false,
+					type:            TYPE.ANYTHING,
+				});
+				return assert.partialDeepStrictEqual(info_e, {
+					isWritable:      false,
+					isUninitialized: true,
 					type:            TYPE.ANYTHING,
 				});
 			});
@@ -307,6 +317,10 @@ test.suite('AstNode', () => {
 					[info_a.type, info_b.type],
 					[TYPE.FLOAT, TYPE.STR],
 				);
+			});
+			test.test('throws when param default value is not assignable to declared type.', () => {
+				const param: AST.ParameterFunction = AST.EXPR.Function.fromSource('\\(a?: float = 42): void { return; }').parameters[0];
+				return assert.throws(() => param.typeCheck(), TypeErrorNotAssignable);
 			});
 		});
 

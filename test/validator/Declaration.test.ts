@@ -765,9 +765,9 @@ test.suite('Declaration', () => {
 						(ENDPROGRAM)
 				`.trim());
 			});
-			test.test('single parameter and return statement.', () => {
+			test.test('parameters and return statement.', () => {
 				assert.strictEqual(setupScript(`{
-					func f(foo: int): void {
+					func f(foo: int, bar?: int = 41, qux?: int): void {
 						foo;
 						return;
 						42;
@@ -777,6 +777,8 @@ test.suite('Declaration', () => {
 						(GOTO "block-2")
 					"block-1":
 						(DECL <int> foo)
+						(DECL <int> bar (INT.CONST 41))
+						(DECL <Maybe> qux ${op_maybe_string()})
 						(DROP (GET foo))
 						(GOTO "caller")
 					"unreachable-3":

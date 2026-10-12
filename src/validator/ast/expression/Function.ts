@@ -39,7 +39,7 @@ class ExpressionFunction extends Expression implements Functionlike {
 	public constructor(
 		start_node: SyntaxNodeType<'expression_function'>,
 		public readonly parameters: readonly ParameterFunction[],
-		public readonly captures: readonly Capture[],
+		public readonly captures:   readonly Capture[],
 		public readonly returnType: AST_TYPE.Type | null,
 		public readonly block:      Block,
 	) {
@@ -56,13 +56,13 @@ class ExpressionFunction extends Expression implements Functionlike {
 		return new TYPE.Function(
 			new TYPE.Tuple(this.parameters.filter((param) => !param.named).map((param) => ({
 				type:     param.typenode.eval(),
-				optional: false, // TODO: with optional paramers: `parameter.optional`
+				optional: param.optional,
 			}))),
 			new TYPE.Record(new Map<bigint, EntryType>(this.parameters.filter((param) => param.named).map((param) => [
 				param.labelId!,
 				{
 					type:     param.typenode.eval(),
-					optional: false, // TODO: with optional paramers: `parameter.optional`
+					optional: param.optional,
 				},
 			]))),
 			this.returnType?.eval(),
