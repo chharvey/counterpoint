@@ -107,15 +107,15 @@ test.suite('Type', () => {
 					]))),
 				);
 			});
-			test.test('with optional parameters.', {expectFailure: true}, () => {
+			test.test('with optional parameters.', () => {
 				assertEqualTypes(
 					AST.TYPE.Function.fromSource('\\(bool, ?: int | null, alpha?: str, bravo: float) => void').eval(),
 					new TYPE.Function(new TYPE.Tuple([
 						{type: TYPE.BOOL,                 optional: false},
 						{type: TYPE.INT.union(TYPE.NULL), optional: true},
 					]), new TYPE.Record(new Map<bigint, EntryType>([
-						[0x100n, {type: TYPE.STR,   optional: true}],
-						[0x101n, {type: TYPE.FLOAT, optional: false}],
+						[Validator.cookTokenIdentifier('alpha'), {type: TYPE.STR,   optional: true}],
+						[Validator.cookTokenIdentifier('bravo'), {type: TYPE.FLOAT, optional: false}],
 					]))),
 				);
 			});

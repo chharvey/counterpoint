@@ -54,7 +54,7 @@ class TypeFunction extends ReferenceType {
 		return `\\(${[posit_params, named_params].filter((p) => !!p).join(', ')}) => ${this.typearg_return ?? 'void'}`;
 	}
 
-	@instanceOf(() => VALUE.Value) // TODO: VALUE.Function
+	@instanceOf(() => VALUE.Function)
 	public override includes(v: VALUE.Value): boolean {
 		return v.toType().isSubtypeOf(this);
 	}

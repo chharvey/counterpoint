@@ -30,7 +30,7 @@ export class ParameterFunction extends AstNode {
 		public  readonly identifier: Serializable | null,
 		public  readonly named:      boolean,
 		private readonly writable:   boolean,
-		private readonly optional:   boolean,
+		public  readonly optional:   boolean,
 		public  readonly key:        Key | null,
 		public  readonly typenode:   AST_TYPE.Type,
 		private readonly expr:       EXPR.Expression | null,
