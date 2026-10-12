@@ -13,6 +13,7 @@ import {Validator} from '../Validator.ts';
 import type {
 	Block,
 	TYPE as AST_TYPE,
+	EXPR,
 } from './index.ts';
 import {AstNode} from './AstNode.ts';
 import type {Functionlike} from './Functionlike.ts';
@@ -25,14 +26,20 @@ export class ParameterFunction extends AstNode {
 
 
 	public constructor(
-		start_node: SyntaxNodeFamily<'parameter_function', ['named']>,
+		start_node: SyntaxNodeFamily<'parameter_function', ['named', 'optional']>,
+		public  readonly identifier: Serializable | null,
 		public  readonly named:      boolean,
 		private readonly writable:   boolean,
-		public  readonly identifier: Serializable | null,
+		private readonly optional:   boolean,
 		public  readonly key:        Key | null,
 		public  readonly typenode:   AST_TYPE.Type,
+		private readonly expr:       EXPR.Expression | null,
 	) {
-		super(start_node, {}, [...(key ? [key] : []), typenode]);
+		super(start_node, {named, writable, optional}, [
+			...(key ? [key] : []),
+			typenode,
+			...(expr ? [expr] : []),
+		]);
 		if (this.identifier) {
 			this.id = Validator.cookTokenIdentifier(this.identifier.source);
 		}
