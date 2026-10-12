@@ -318,6 +318,10 @@ test.suite('AstNode', () => {
 					[TYPE.FLOAT, TYPE.STR],
 				);
 			});
+			test.test('throws when param default value is not assignable to declared type.', () => {
+				const param: AST.ParameterFunction = AST.EXPR.Function.fromSource('\\(a?: float = 42): void { return; }').parameters[0];
+				return assert.throws(() => param.typeCheck(), TypeErrorNotAssignable);
+			});
 		});
 
 		test.suite('Block', () => {
