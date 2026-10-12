@@ -94,8 +94,9 @@ PropertiesType
 	::= ","? EntryType<+Named><∓Optional># ","?;
 
 ParametersType ::=
-	| ","? EntryType<-Named><-Optional># ("," EntryType<+Named><-Optional>#)? ","?
-	| ","?                                    EntryType<+Named><-Optional>#   ","?
+	| ","? EntryType<-Named><-Optional># ("," EntryType<-Named><+Optional>#)? ("," EntryType<+Named><∓Optional>#)? ","?
+	| ","?                                    EntryType<-Named><+Optional>#   ("," EntryType<+Named><∓Optional>#)? ","?
+	| ","?                                                                         EntryType<+Named><∓Optional>#   ","?
 ;
 
 PropertyAccessorType
@@ -161,14 +162,15 @@ Property   <Break, Return> ::=                                                  
 CaseMap    <Break, Return> ::=                                                   Expression<+Block><?Break><?Return> "->" Expression<+Block><?Break><?Return>;
 CaseSwitch <Break, Return> ::= "case" (Expression<+Block><?Break><?Return> "|")* Expression<+Block><?Break><?Return> "->" Expression<+Block><?Break><?Return>;
 
-ParameterFunction<Named> ::= (
+ParameterFunction<Named, Optional> ::= (
 	| <Named+>(Word "=") ("_" | "mut"? IDENTIFIER)
 	| <Named+>("mut"? "$" IDENTIFIER)
-) ":" Type;
+) <Optional+>"?" ":" Type & <Optional+>("=" Expression<+Block><-Break><-Return>)?;
 
 ParametersFunction ::=
-	| ","? ParameterFunction<-Named># ("," ParameterFunction<+Named>#)? ","?
-	| ","?                                 ParameterFunction<+Named>#   ","?
+	| ","? ParameterFunction<-Named><-Optional># ("," ParameterFunction<-Named><+Optional>#)? ("," ParameterFunction<+Named><∓Optional>#)? ","?
+	| ","?                                            ParameterFunction<-Named><+Optional>#   ("," ParameterFunction<+Named><∓Optional>#)? ","?
+	| ","?                                                                                         ParameterFunction<+Named><∓Optional>#   ","?
 ;
 
 Capture<Ref>

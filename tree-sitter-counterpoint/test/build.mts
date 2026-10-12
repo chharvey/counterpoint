@@ -619,7 +619,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 			xjs.String.dedent`
 				{
 					type T = \\() => void;
-					type T = \\(A, b: B) => void;
+					type T = \\(A, ?: C, b: B, d?: D) => void;
 					type T = \\(\\() => void) => void;
 					type T = \\() => bool;
 				}
@@ -628,8 +628,10 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				s('type_function'),
 				s(
 					'type_function',
-					s('entry_type',        f('type_0', 'identifier')),
-					s('entry_type__named', f('word_0', 'word', s('identifier')), f('type_0', 'identifier')),
+					s('entry_type',                  f('type_0', 'identifier')),
+					s('entry_type__optional',        f('type_0', 'identifier')),
+					s('entry_type__named',           f('word_0', 'word', s('identifier')), f('type_0', 'identifier')),
+					s('entry_type__named__optional', f('word_0', 'word', s('identifier')), f('type_0', 'identifier')),
 				),
 				s(
 					'type_function',
@@ -1429,7 +1431,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 			xjs.String.dedent`
 				{
 					\\(): void {;};
-					\\(a: A, $b: B, c= charlie: C): void { return; };
+					\\(a: A, d?: D, $b: B, c= charlie: C, $e?: E, f= foxtrot?: F): void { return; };
 					\\(): bool { return true; };
 					\\(): bool => false;
 					\\(): bool => { false; };
@@ -1449,12 +1451,28 @@ function sourceExpressions(...expressions: readonly string[]): string {
 						f('type_0',       'identifier'),
 					),
 					s(
+						'parameter_function__optional',
+						f('identifier_0', 'identifier'),
+						f('type_0',       'identifier'),
+					),
+					s(
 						'parameter_function__named',
 						f('identifier_0', 'identifier'),
 						f('type_0',       'identifier'),
 					),
 					s(
 						'parameter_function__named',
+						f('word_0',       'word', s('identifier')),
+						f('identifier_0', 'identifier'),
+						f('type_0',       'identifier'),
+					),
+					s(
+						'parameter_function__named__optional',
+						f('identifier_0', 'identifier'),
+						f('type_0',       'identifier'),
+					),
+					s(
+						'parameter_function__named__optional',
 						f('word_0',       'word', s('identifier')),
 						f('identifier_0', 'identifier'),
 						f('type_0',       'identifier'),
