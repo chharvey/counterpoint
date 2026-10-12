@@ -58,7 +58,7 @@ export class ParameterFunction extends AstNode {
 			if (block.validator.hasSymbol(this.id!)) {
 				throw new AssignmentErrorDuplicateDeclaration(this.identifier);
 			}
-			block.validator.addSymbol(new SymbolSchemaVar(this.id!, this.identifier, this.writable, false));
+			block.validator.addSymbol(new SymbolSchemaVar(this.id!, this.identifier, this.writable, this.optional && !this.expr));
 		}
 	}
 
