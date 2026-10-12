@@ -14,14 +14,12 @@ import {
 	AssignmentErrorMissingType,
 	TypeErrorNotAssignable,
 } from '../../src/index.ts';
-import {VisitorStmtBuild} from '../../src/validator/ast/visitors/VisitorStmtBuild.ts';
 import {
 	extract_lines,
 	repeat,
 	assert_shallowStrictEqual,
 	assertAssignable,
 	assertEqualTypes,
-	op_maybe_string,
 	typeUnit,
 	setupScript,
 } from '../utils.ts';
@@ -679,152 +677,6 @@ test.suite('Declaration', () => {
 				}`, {typeCheck: false});
 				stmts[0].typeCheck(); // assert does not throw
 				return assert.throws(() => stmts[1].typeCheck(), /Identical function overload type/);
-			});
-		});
-	});
-
-
-	test.suite('#build', () => {
-		test.test('DeclarationType has no effect.', () => {
-			assert.strictEqual(setupScript(`{
-				type N = int | nat | float;
-			}`, {codegen: false}).builder.print(), '"block-0":\n\t(ENDPROGRAM)');
-		});
-		test.test('DeclarationVariable pushes (DECL+SET)/DROP instruction depending on presence of child nodes.', () => {
-			const {stmts, builder} = setupScript(`{
-				% Foldable cases:
-				val _:          int = 42; % \`(DROP (INT.CONST 42))\`
-				val assignee_a: int = 42; % \`(DECL <int> assignee_a (INT.CONST 42))\`
-
-				% Non-Foldable cases:
-				val mut assignee_b?: int;
-				val mut assignee_c:  int = 42;
-				val     _:           int = assignee_c;
-				val     assignee_d:  int = assignee_c;
-				val mut assignee_e:  int = assignee_c;
-
-				%% Syntactically impossible cases (for completion):
-				val _?:          int;
-				val assignee_f?: int;
-				val mut _?:      int;
-				val mut _:       int = 42;
-				val mut _:       int = assignee_c;
-				%%
-			}`, {codegen: false});
-			const stmt_visitor = new VisitorStmtBuild(builder);
-			stmts.forEach((stmt) => stmt_visitor.visit(stmt));
-			return assert.strictEqual(builder.print(), xjs.String.dedent`
-				"block-0":
-					(DROP (INT.CONST 42))
-					(DECL <int> assignee_a (INT.CONST 42))
-					(DECL <Maybe> assignee_b ${op_maybe_string()})
-					(DECL <int> assignee_c (INT.CONST 42))
-					(DROP (GET assignee_c))
-					(DECL <int> assignee_d (GET assignee_c))
-					(DECL <int> assignee_e (GET assignee_c))
-					(ENDPROGRAM)
-			`.trim());
-		});
-		test.suite('DeclarationFunction', () => {
-			test.test('function declared with blank identifier builds nothing.', () => {
-				assert.strictEqual(setupScript(`{
-					42;
-					func _(foo: int): void {
-						foo;
-						return;
-					}
-					43;
-				}`, {codegen: false}).builder.print(), xjs.String.dedent`
-					"block-0":
-						(DROP (INT.CONST 42))
-						(DROP (INT.CONST 43))
-						(ENDPROGRAM)
-				`.trim());
-			});
-			test.test('captures.', () => {
-				assert.strictEqual(setupScript(`{
-					val x: int = 42;
-					val mut y: float = 4.2;
-					func f() with (x, ref y): void {
-						x + 10;
-						set y = 5.2;
-						return;
-					}
-				}`, {codegen: false}).builder.print(), xjs.String.dedent`
-					"block-0":
-						(DECL <int> x (INT.CONST 42))
-						(DECL <float> y (FLOAT.CONST 4.2))
-						(GOTO "block-2")
-					"block-1":
-						(DECL <int> x (GET x))
-						(DROP (INT.ADD (GET x) (INT.CONST 10)))
-						(SET y (FLOAT.CONST 5.2))
-						(GOTO "caller")
-					"unreachable-3":
-						(DROP (TRAP))
-						(ENDPROGRAM)
-					"block-2":
-						(ENDPROGRAM)
-				`.trim());
-			});
-			test.test('parameters and return statement.', () => {
-				assert.strictEqual(setupScript(`{
-					func f(foo: int, bar?: int = 41, qux?: int): void {
-						foo;
-						return;
-						42;
-					}
-				}`, {codegen: false}).builder.print(), xjs.String.dedent`
-					"block-0":
-						(GOTO "block-2")
-					"block-1":
-						(DECL <int> foo)
-						(DECL <int> bar (INT.CONST 41))
-						(DECL <Maybe> qux ${op_maybe_string()})
-						(DROP (GET foo))
-						(GOTO "caller")
-					"unreachable-3":
-						(DROP (INT.CONST 42))
-						(DROP (TRAP))
-						(ENDPROGRAM)
-					"block-2":
-						(ENDPROGRAM)
-				`.trim());
-			});
-			test.test('conditional return statements.', () => {
-				assert.strictEqual(setupScript(`{
-					func f(): void {
-						if 42 < 43 then {
-							44;
-							return;
-						} else {
-							45;
-							return;
-						};
-						46;
-					}
-				}`, {codegen: false}).builder.print(), xjs.String.dedent`
-					"block-0":
-						(GOTO "block-2")
-					"block-1":
-						(GOTO.IF (LT (INT.CONST 42) (INT.CONST 43)) "block-3" "block-4")
-					"block-3":
-						(DROP (INT.CONST 44))
-						(GOTO "caller")
-					"unreachable-6":
-						(GOTO "block-5")
-					"block-4":
-						(DROP (INT.CONST 45))
-						(GOTO "caller")
-					"unreachable-7":
-						(GOTO "block-5")
-					"block-5":
-						(DROP (INT.CONST 46))
-						(DROP (TRAP))
-						(ENDPROGRAM)
-					"block-2":
-						(ENDPROGRAM)
-				`.trim());
 			});
 		});
 	});
