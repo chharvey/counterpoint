@@ -132,9 +132,13 @@ Build(String  s) := (STR.CONST   s);
 Build(SemanticProperty prop) := Sequence [`Symbol(prop.0)`, `Build(prop.1)`];
 Build(SemanticCase     case) := Sequence [`Build(case.0)`, `Build(case.1)`];
 
-Build(SemanticParameterFunction[id: Nil]) := ();
-Build(SemanticParameterFunction[id: RealNumber])
+Build(SemanticParameterFunction[id=nil]) := ();
+Build(SemanticParameterFunction[id: RealNumber][optional=false] ::= SemanticKey? SemanticType)
 	:= (DECL ‹type› `GetSymbolSchema(id)`);
+Build(SemanticParameterFunction[id: RealNumber][optional=true] ::= SemanticKey? SemanticType)
+	:= (DECL <Maybe> `GetSymbolSchema(id)` (MAYBE.NEW));
+Build(SemanticParameterFunction[id: RealNumber][optional=true] ::= SemanticKey? SemanticType SemanticExpression)
+	:= (DECL ‹type› `GetSymbolSchema(id)` `Build(SemanticExpression)`);
 
 Build(SemanticCapture[ref: true]) := ();
 Build(SemanticCapture[ref: false] ::= SemanticExpressionVariable[id: RealNumber])

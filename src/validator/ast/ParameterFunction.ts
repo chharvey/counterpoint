@@ -79,10 +79,11 @@ export class ParameterFunction extends AstNode {
 	@runOnceMethod
 	public build(builder: Builder): void {
 		if (this.identifier) {
-			const block: Block = (this.parent as Functionlike).block;
-			const symbol = block.validator.getSymbol(this.id!) as SymbolSchemaVar;
-			symbol.irType = symbol.type;
-			return builder.pushInstruction(new OP.Decl(symbol, symbol.irType));
+			const block: Block                        = (this.parent as Functionlike).block;
+			const symbol                              = block.validator.getSymbol(this.id!) as SymbolSchemaVar;
+			const default_value: OP.Value | undefined = this.expr?.build(builder) ?? (this.optional ? new OP.MaybeNew(symbol.type) : undefined);
+			symbol.irType = default_value?.type ?? symbol.type;
+			return builder.pushInstruction(new OP.Decl(symbol, symbol.irType, default_value));
 		}
 	}
 }
