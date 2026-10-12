@@ -41,7 +41,6 @@ export class VisitorStmtBuild extends STMT.StmtVisitor<void> {
 
 	@runOncePerStmtNode
 	public override visitDeclVariable(stmt: STMT.DeclarationVariable): void {
-		// @ts-expect-error --- FIXME: make public
 		const symbol: SymbolSchemaVar | undefined = stmt.assignee ? stmt.validator.getSymbol(stmt.id!) as SymbolSchemaVar : undefined;
 		const value:  OP.Value                    = stmt.assigned?.build(this.builder) ?? new OP.MaybeNew(symbol!.type);
 		if (stmt.assignee) {
@@ -54,7 +53,6 @@ export class VisitorStmtBuild extends STMT.StmtVisitor<void> {
 
 	@runOncePerStmtNode
 	public override visitDeclFunction(stmt: STMT.DeclarationFunction): void {
-		// @ts-expect-error --- FIXME: make public
 		if (stmt.identifier) {
 			const label_func:    string = this.builder.newLabel();
 			const label_endfunc: string = this.builder.newLabel();
@@ -115,7 +113,6 @@ export class VisitorStmtBuild extends STMT.StmtVisitor<void> {
 	@runOncePerStmtNode
 	public override visitStmtConditional(stmt: STMT.StatementConditional): void {
 		let condition: () => OP.Value = () => stmt.condition.build(this.builder);
-		// @ts-expect-error --- FIXME: make public
 		if (stmt.unless) {
 			condition = () => new OP.Unop(OP.OpCode.NOT, stmt.condition.build(this.builder).asTac(this.builder), TYPE.BOOL);
 		}
@@ -146,19 +143,14 @@ export class VisitorStmtBuild extends STMT.StmtVisitor<void> {
 	@runOncePerStmtNode
 	public override visitStatementLoop(stmt: STMT.StatementLoop): void {
 		let condition: () => OP.Value = () => stmt.condition.build(this.builder);
-		// @ts-expect-error --- FIXME: make public
 		if (stmt.until) {
 			condition = () => new OP.Unop(OP.OpCode.NOT, stmt.condition.build(this.builder).asTac(this.builder), TYPE.BOOL);
 		}
 
-		// @ts-expect-error --- FIXME: make public
 		stmt.labelWhile    = this.builder.newLabel();
-		// @ts-expect-error --- FIXME: make public
 		stmt.labelDo       = stmt.doFirst ? stmt.labels.while! : this.builder.newLabel();
-		// @ts-expect-error --- FIXME: make public
 		stmt.labelEndwhile = this.builder.newLabel();
 
-		// @ts-expect-error --- FIXME: make public
 		if (stmt.doFirst) {
 			this.builder.terminateBlock(new OP.Goto(stmt.labels.do!));
 
@@ -186,11 +178,8 @@ export class VisitorStmtBuild extends STMT.StmtVisitor<void> {
 		const get_index             = new OP.Get(index);
 		assert_instanceof(iterable.type, TYPE.List);
 
-		// @ts-expect-error --- FIXME: make public
 		stmt.labelWhile    = this.builder.newLabel();
-		// @ts-expect-error --- FIXME: make public
 		stmt.labelDo       = this.builder.newLabel();
-		// @ts-expect-error --- FIXME: make public
 		stmt.labelEndwhile = this.builder.newLabel();
 
 		this.builder.pushInstruction(new OP.Decl(index));
@@ -205,9 +194,7 @@ export class VisitorStmtBuild extends STMT.StmtVisitor<void> {
 		), stmt.labels.do!, stmt.labels.endwhile!));
 
 		this.builder.initiateBlock(stmt.labels.do!);
-		// @ts-expect-error --- FIXME: make public
 		if (stmt.assignee) {
-			// @ts-expect-error --- FIXME: make public
 			const symbol = stmt.block.validator.getSymbol(stmt.id!) as SymbolSchemaVar;
 			symbol.irType = iterable.type.typearg;
 			this.builder.pushInstruction(new OP.Decl(
@@ -236,7 +223,6 @@ export class VisitorStmtBuild extends STMT.StmtVisitor<void> {
 		// we should already have labels by the time we reach the root node
 		assert.ok(labels, 'Expected StatementBreak to be nested inside (directly or indirectly) a StatementBreakable.');
 		assert.ok(labels.while && labels.endwhile, 'Expected containing StatementBreakable to have its labels already created.');
-		// @ts-expect-error --- FIXME: make public
 		this.builder.terminateBlock(new OP.Goto(stmt.skip ? labels.while : labels.endwhile));
 		this.builder.initiateBlock(this.builder.newLabel(true));
 	}

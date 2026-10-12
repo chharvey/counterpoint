@@ -35,11 +35,11 @@ export class DeclarationFunction extends Statement implements Functionlike {
 
 	public constructor(
 		start_node: SyntaxNodeType<'declaration_function'>,
-		private readonly identifier: Serializable | null,
-		public  readonly parameters: readonly ParameterFunction[],
-		public  readonly captures:   readonly Capture[],
-		public  readonly returnType: AST_TYPE.Type | null,
-		public  readonly block:      Block,
+		public readonly identifier: Serializable | null,
+		public readonly parameters: readonly ParameterFunction[],
+		public readonly captures:   readonly Capture[],
+		public readonly returnType: AST_TYPE.Type | null,
+		public readonly block:      Block,
 	) {
 		super(start_node, {}, [...parameters, ...captures, ...(returnType ? [returnType] : []), block]);
 		if (this.identifier) {

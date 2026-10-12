@@ -28,17 +28,17 @@ export abstract class StatementBreakable extends Statement {
 	}
 
 	/** @final */
-	protected set labelWhile(label: string) {
+	public set labelWhile(label: string) {
 		this.#labelWhile = label;
 	}
 
 	/** @final */
-	protected set labelDo(label: string) {
+	public set labelDo(label: string) {
 		this.#labelDo = label;
 	}
 
 	/** @final */
-	protected set labelEndwhile(label: string) {
+	public set labelEndwhile(label: string) {
 		this.#labelEndwhile = label;
 	}
 }

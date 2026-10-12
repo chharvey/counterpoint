@@ -30,12 +30,12 @@ export class StatementIteration extends StatementBreakable {
 		return statement;
 	}
 
-	private readonly id?: bigint;
+	public readonly id?: bigint;
 
 
 	public constructor(
 		start_node: SyntaxNodeFamily<'statement_iteration', ['return']>,
-		private readonly assignee: Serializable | null,
+		public  readonly assignee: Serializable | null,
 		private readonly typenode: AST_TYPE.Type,
 		public  readonly iterable: EXPR.Expression,
 		public  readonly block:    Block,

@@ -20,6 +20,6 @@ export class StatementExpression extends Statement {
 		start_node: SyntaxNodeFamily<'statement_expression', ['break', 'return']>,
 		public readonly expr?: EXPR.Expression,
 	) {
-		super(start_node, {}, expr ? [expr] : undefined);
+		super(start_node, {}, [...(expr ? [expr] : [])]);
 	}
 }

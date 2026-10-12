@@ -78,7 +78,7 @@ export class DeclarationVariable extends Statement {
 	}
 
 
-	private readonly id?: bigint;
+	public readonly id?: bigint;
 
 
 	public constructor(

@@ -24,10 +24,10 @@ export class StatementLoop extends StatementBreakable {
 
 	public constructor(
 		start_node: SyntaxNodeFamily<'statement_loop', ['return']>,
-		private readonly doFirst:   boolean,
-		private readonly until:     boolean,
-		public  readonly condition: EXPR.Expression,
-		public  readonly block:     Block,
+		public readonly doFirst:   boolean,
+		public readonly until:     boolean,
+		public readonly condition: EXPR.Expression,
+		public readonly block:     Block,
 	) {
 		super(start_node, {doFirst, until}, [condition, block]);
 	}
