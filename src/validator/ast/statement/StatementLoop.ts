@@ -1,13 +1,6 @@
 import * as xjs from 'extrajs';
-import {
-	type Builder,
-	OP,
-	TypeErrorNotAssignable,
-} from '../../../index.ts';
-import {
-	assert_instanceof,
-	runOnceMethod,
-} from '../../../lib/index.ts';
+import {TypeErrorNotAssignable} from '../../../index.ts';
+import {assert_instanceof} from '../../../lib/index.ts';
 import {
 	type CplConfig,
 	CONFIG_DEFAULT,
@@ -50,36 +43,5 @@ export class StatementLoop extends StatementBreakable {
 		if (!this.condition.type().isSubtypeOf(TYPE.BOOL)) {
 			throw new TypeErrorNotAssignable(this.condition, TYPE.BOOL);
 		}
-	}
-
-	@runOnceMethod
-	public override build(builder: Builder): void {
-		let condition: () => OP.Value = () => this.condition.build(builder);
-		if (this.until) {
-			condition = () => new OP.Unop(OP.OpCode.NOT, this.condition.build(builder).asTac(builder), TYPE.BOOL);
-		}
-
-		this.labelWhile    = builder.newLabel();
-		this.labelDo       = this.doFirst ? this.labels.while! : builder.newLabel();
-		this.labelEndwhile = builder.newLabel();
-
-		if (this.doFirst) {
-			builder.terminateBlock(new OP.Goto(this.labels.do!));
-
-			builder.initiateBlock(this.labels.do!);
-			this.block.build(builder);
-			builder.terminateBlock(new OP.GotoConditional(condition(), this.labels.do!, this.labels.endwhile!));
-		} else {
-			builder.terminateBlock(new OP.Goto(this.labels.while!));
-
-			builder.initiateBlock(this.labels.while!);
-			builder.terminateBlock(new OP.GotoConditional(condition(), this.labels.do!, this.labels.endwhile!));
-
-			builder.initiateBlock(this.labels.do!);
-			this.block.build(builder);
-			builder.terminateBlock(new OP.Goto(this.labels.while!));
-		}
-
-		builder.initiateBlock(this.labels.endwhile!);
 	}
 }

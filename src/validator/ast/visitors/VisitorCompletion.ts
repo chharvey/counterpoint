@@ -131,7 +131,7 @@ export class VisitorCompletion extends AstNodeVisitor<CompletionKind> {
 	}
 	/* eslint-enable @stylistic/space-before-function-paren */
 
-	public override defaultVisit(): CompletionKind {
+	public override defaultVisit(_node: AstNode): CompletionKind {
 		return CompletionKind.NORMAL;
 	}
 

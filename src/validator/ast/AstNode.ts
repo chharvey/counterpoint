@@ -194,7 +194,7 @@ export abstract class AstNodeVisitor<T> {
 			case STMT.DeclarationType:       { return this.visitDeclType           (node as STMT.DeclarationType); }
 			case STMT.DeclarationVariable:   { return this.visitDeclVariable       (node as STMT.DeclarationVariable); }
 			case STMT.DeclarationFunction:   { return this.visitDeclFunction       (node as STMT.DeclarationFunction); }
-			case STMT.StatementExpression:   { return this.visitStmtExpr           (node as STMT.StatementExpression); }
+			case STMT.StatementExpression:   { return this.visitStmtExpr           (node as STMT.StatementExpression); } // eslint-disable-line @typescript-eslint/no-unnecessary-type-assertion
 			case STMT.StatementClaim:        { return this.visitStmtClaim          (node as STMT.StatementClaim); }
 			case STMT.StatementReassignment: { return this.visitStmtReassignment   (node as STMT.StatementReassignment); }
 			case STMT.StatementConditional:  { return this.visitStmtConditional    (node as STMT.StatementConditional); }
@@ -202,7 +202,7 @@ export abstract class AstNodeVisitor<T> {
 			case STMT.StatementIteration:    { return this.visitStatementIteration (node as STMT.StatementIteration); }
 			case STMT.StatementBreak:        { return this.visitStatementBreak     (node as STMT.StatementBreak); }
 			case STMT.StatementReturn:       { return this.visitStatementReturn    (node as STMT.StatementReturn); }
-			case STMT.Statement:             { return this.visitStatement          (node as STMT.Statement); }
+			case STMT.Statement:             { return this.visitStatement          (node as STMT.Statement); } // eslint-disable-line @typescript-eslint/no-unnecessary-type-assertion
 
 			default: { return this.defaultVisit(node); }
 		}

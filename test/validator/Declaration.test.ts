@@ -14,6 +14,7 @@ import {
 	AssignmentErrorMissingType,
 	TypeErrorNotAssignable,
 } from '../../src/index.ts';
+import {VisitorStmtBuild} from '../../src/validator/ast/visitors/VisitorStmtBuild.ts';
 import {
 	extract_lines,
 	repeat,
@@ -710,7 +711,8 @@ test.suite('Declaration', () => {
 				val mut _:       int = assignee_c;
 				%%
 			}`, {codegen: false});
-			stmts.forEach((stmt) => (stmt as AST.STMT.DeclarationVariable).build(builder));
+			const stmt_visitor = new VisitorStmtBuild(builder);
+			stmts.forEach((stmt) => stmt_visitor.visit(stmt));
 			return assert.strictEqual(builder.print(), xjs.String.dedent`
 				"block-0":
 					(DROP (INT.CONST 42))

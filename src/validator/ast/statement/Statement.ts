@@ -1,11 +1,9 @@
 import * as assert from 'node:assert';
-import type {Builder} from '../../../index.ts';
 import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../../core/index.ts';
 import {AstNode} from '../AstNode.ts';
-import type {Buildable} from '../Buildable.ts';
 import {Block} from '../Block.ts';
 import {
 	DeclarationType,
@@ -75,7 +73,7 @@ export abstract class StmtVisitor<T> {
  * - StatementBreak
  * - StatementReturn
  */
-export abstract class Statement extends AstNode implements Buildable {
+export abstract class Statement extends AstNode {
 	/**
 	 * Construct a new Statement from a source text and optionally a configuration.
 	 * The source text must parse successfully.
@@ -88,11 +86,4 @@ export abstract class Statement extends AstNode implements Buildable {
 		assert.strictEqual(block.children.length, 1, 'semantic block should have 1 child');
 		return block.children[0];
 	}
-
-
-	/**
-	 * @inheritdoc
-	 * @implements Buildable
-	 */
-	public abstract build(builder: Builder): void;
 }

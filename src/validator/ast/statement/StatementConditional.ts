@@ -1,12 +1,5 @@
-import {
-	type Builder,
-	OP,
-	TypeErrorNotAssignable,
-} from '../../../index.ts';
-import {
-	assert_instanceof,
-	runOnceMethod,
-} from '../../../lib/index.ts';
+import {TypeErrorNotAssignable} from '../../../index.ts';
+import {assert_instanceof} from '../../../lib/index.ts';
 import {
 	type CplConfig,
 	CONFIG_DEFAULT,
@@ -42,31 +35,5 @@ export class StatementConditional extends Statement {
 		if (!this.condition.type().isSubtypeOf(TYPE.BOOL)) {
 			throw new TypeErrorNotAssignable(this.condition, TYPE.BOOL);
 		}
-	}
-
-	@runOnceMethod
-	public override build(builder: Builder): void {
-		let condition: () => OP.Value = () => this.condition.build(builder);
-		if (this.unless) {
-			condition = () => new OP.Unop(OP.OpCode.NOT, this.condition.build(builder).asTac(builder), TYPE.BOOL);
-		}
-
-		const label_then:  string = builder.newLabel();
-		const label_else:  string = builder.newLabel();
-		const label_endif: string = this.alternative ? builder.newLabel() : label_else;
-
-		builder.terminateBlock(new OP.GotoConditional(condition(), label_then, this.alternative ? label_else : label_endif));
-
-		builder.initiateBlock(label_then);
-		this.consequent.build(builder);
-		builder.terminateBlock(new OP.Goto(label_endif));
-
-		if (this.alternative) {
-			builder.initiateBlock(label_else);
-			this.alternative.build(builder);
-			builder.terminateBlock(new OP.Goto(label_endif));
-		}
-
-		builder.initiateBlock(label_endif);
 	}
 }

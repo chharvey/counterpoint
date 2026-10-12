@@ -17,6 +17,7 @@ import {
 	TypeErrorNotAssignable,
 	MutabilityError01,
 } from '../../src/index.ts';
+import {VisitorStmtBuild} from '../../src/validator/ast/visitors/VisitorStmtBuild.ts';
 import {
 	extract_lines,
 	assertAssignable,
@@ -773,12 +774,13 @@ test.suite('Statement', () => {
 				42;
 				;
 			}`, {build: false});
+			const stmt_visitor = new VisitorStmtBuild(builder);
 			assert.strictEqual(builder.instructions.length, 0);
-			(stmts[1] as AST.STMT.StatementExpression).build(builder);
+			stmt_visitor.visit(stmts[1]);
 			assert.strictEqual(builder.instructions.length, 1);
-			(stmts[2] as AST.STMT.StatementExpression).build(builder);
+			stmt_visitor.visit(stmts[2]);
 			assert.strictEqual(builder.instructions.length, 2);
-			(stmts[3] as AST.STMT.StatementExpression).build(builder);
+			stmt_visitor.visit(stmts[3]);
 			assert.strictEqual(builder.instructions.length, 2);
 			return assert.strictEqual(builder.print(), xjs.String.dedent`
 				"block-0":
@@ -792,7 +794,8 @@ test.suite('Statement', () => {
 				val mut x: int | float = 42;
 				claim x: int;
 			}`, {build: false});
-			(stmts[1] as AST.STMT.StatementClaim).build(builder);
+			const stmt_visitor = new VisitorStmtBuild(builder);
+			stmt_visitor.visit(stmts[1]);
 			return assert.strictEqual(builder.print(), xjs.String.dedent`
 				"block-0":
 					(DROP (GET x))
@@ -807,7 +810,8 @@ test.suite('Statement', () => {
 					set x = 44;
 					set x = -42;
 				}`, {build: false});
-				stmts.slice(1).forEach((stmt) => (stmt as AST.STMT.StatementReassignment).build(builder));
+				const stmt_visitor = new VisitorStmtBuild(builder);
+				stmts.slice(1).forEach((stmt) => stmt_visitor.visit(stmt));
 				return assert.strictEqual(builder.print(), xjs.String.dedent`
 					"block-0":
 						(SET x (INT.CONST 43))
@@ -820,7 +824,8 @@ test.suite('Statement', () => {
 					val mut x?: int;
 					set x = 42;
 				}`, {build: false});
-				stmts.slice(1).forEach((stmt) => (stmt as AST.STMT.StatementReassignment).build(builder));
+				const stmt_visitor = new VisitorStmtBuild(builder);
+				stmts.slice(1).forEach((stmt) => stmt_visitor.visit(stmt));
 				return assert.strictEqual(builder.print(), xjs.String.dedent`
 					"block-0":
 						(SET x ${op_maybe_string('(INT.CONST 42)')})
@@ -831,7 +836,8 @@ test.suite('Statement', () => {
 					val mut x?: int;
 					delete x;
 				}`, {build: false});
-				stmts.slice(1).forEach((stmt) => (stmt as AST.STMT.StatementReassignment).build(builder));
+				const stmt_visitor = new VisitorStmtBuild(builder);
+				stmts.slice(1).forEach((stmt) => stmt_visitor.visit(stmt));
 				return assert.strictEqual(builder.print(), xjs.String.dedent`
 					"block-0":
 						(SET x ${op_maybe_string()})

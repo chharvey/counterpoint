@@ -29,6 +29,7 @@ import {AstNode} from './AstNode.ts';
 import {is_Functionlike} from './Functionlike.ts';
 import type {Buildable} from './Buildable.ts';
 import {VisitorCompletion} from './visitors/VisitorCompletion.ts';
+import {VisitorStmtBuild} from './visitors/VisitorStmtBuild.ts';
 
 
 
@@ -106,6 +107,7 @@ export class Block extends AstNode implements Buildable {
 	 */
 	@runOnceMethod
 	public build(builder: Builder): void {
-		return this.children.forEach((stmt) => stmt.build(builder));
+		const stmt_visitor = new VisitorStmtBuild(builder);
+		return this.children.forEach((stmt) => stmt_visitor.visit(stmt));
 	}
 }

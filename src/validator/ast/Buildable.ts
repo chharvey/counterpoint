@@ -5,7 +5,6 @@ import type {AstNode} from './AstNode.ts';
 
 /**
  * Known implementers:
- * - Statement
  * - Block
  * - Goal
  */

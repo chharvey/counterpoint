@@ -1,14 +1,9 @@
 import * as assert from 'node:assert';
 import {
-	type Builder,
-	OP,
 	AssignmentErrorDuplicateDeclaration,
 	AssignmentErrorMissingType,
 } from '../../../index.ts';
-import {
-	assert_instanceof,
-	runOnceMethod,
-} from '../../../lib/index.ts';
+import {assert_instanceof} from '../../../lib/index.ts';
 import {
 	type CplConfig,
 	CONFIG_DEFAULT,
@@ -135,18 +130,6 @@ export class DeclarationVariable extends Statement {
 		if (this.assignee) {
 			assert.ok(this.validator.hasSymbol(this.id!), `The validator symbol table should include ${this.id}.`);
 			(this.validator.getSymbol(this.id!) as SymbolSchemaVar).type = assignee_type;
-		}
-	}
-
-	@runOnceMethod
-	public override build(builder: Builder): void {
-		const symbol: SymbolSchemaVar | undefined = this.assignee ? this.validator.getSymbol(this.id!) as SymbolSchemaVar : undefined;
-		const value:  OP.Value                    = this.assigned?.build(builder) ?? new OP.MaybeNew(symbol!.type);
-		if (this.assignee) {
-			symbol!.irType = value.type;
-			return builder.pushInstruction(new OP.Decl(symbol!, symbol!.irType, value));
-		} else {
-			return builder.pushInstruction(new OP.Drop(value));
 		}
 	}
 }

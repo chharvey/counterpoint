@@ -1,16 +1,10 @@
-import * as assert from 'node:assert';
 import {
-	type Builder,
-	OP,
 	AssignmentErrorReassignment,
 	AssignmentErrorDeletion,
 	TypeError as CplTypeError,
 	MutabilityError01,
 } from '../../../index.ts';
-import {
-	assert_instanceof,
-	runOnceMethod,
-} from '../../../lib/index.ts';
+import {assert_instanceof} from '../../../lib/index.ts';
 import {
 	type CplConfig,
 	CONFIG_DEFAULT,
@@ -70,35 +64,5 @@ export class StatementReassignment extends Statement {
 			}
 		}
 		this.assigned && typecheck_assign(this.assigned, this.assignee.writeType(), this);
-	}
-
-	@runOnceMethod
-	public override build(builder: Builder): void {
-		if (this.assignee instanceof EXPR.Variable) {
-			const symbol = this.validator.getSymbol(this.assignee.id) as SymbolSchemaVar;
-			let value: OP.Value;
-			if (this.assigned) {
-				value = this.assigned.build(builder);
-				if (symbol.isUninitialized) {
-					value = new OP.MaybeNew(symbol.type, value.asTac(builder));
-				}
-			} else {
-				value = new OP.MaybeNew(symbol.type);
-			}
-			symbol.irType = value.type;
-			return builder.pushInstruction(new OP.Set(symbol, symbol.irType, value));
-		} else if (this.assigned) {
-			assert_instanceof(this.assignee.accessor, EXPR.Expression);
-			const base_value:    OP.ValueTac = this.assignee.base.build(builder).asTac(builder);
-			const base_typename: OP.TypeName = OP.ast_type_name(base_value.type);
-			assert.ok([OP.TypeName.LIST, OP.TypeName.DICT, OP.TypeName.SET, OP.TypeName.MAP].includes(base_typename), `Expected ${OP.TypeName[base_typename]} to be a dynamic collection.`);
-			return builder.pushInstruction(new OP.CollectionDynamicSet(
-				base_typename as OP.CollectionDynamicName,
-				base_value,
-				this.assignee.accessor.build(builder).asTac(builder),
-				this.assigned.build(builder).asTac(builder),
-			));
-		}
-		assert.fail('Expected `StatementReassignment#typeCheck` to throw by now.');
 	}
 }
