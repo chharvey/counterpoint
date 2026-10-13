@@ -9,11 +9,11 @@ import {
 	Builder,
 	OP,
 	VisitorExprBuild,
-} from '../../src/index.ts';
+} from '../../../src/index.ts';
 import {
 	typeUnit,
 	setupScript,
-} from '../utils.ts';
+} from '../../utils.ts';
 
 
 
