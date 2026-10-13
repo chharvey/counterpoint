@@ -114,19 +114,19 @@ export class VisitorCompletion extends AstNodeVisitor<CompletionKind> {
 		]);
 	}
 
-	public override visitStatementLoop(stmt: STMT.StatementLoop): CompletionKind {
+	public override visitStmtLoop(stmt: STMT.StatementLoop): CompletionKind {
 		return this.#subNodesMax(stmt);
 	}
 
-	public override visitStatementIteration(stmt: STMT.StatementIteration): CompletionKind {
+	public override visitStmtIteration(stmt: STMT.StatementIteration): CompletionKind {
 		return CompletionKind_max([this.visit(stmt.iterable), this.visit(stmt.block)]);
 	}
 
-	public override visitStatementBreak(): CompletionKind {
+	public override visitStmtBreak(): CompletionKind {
 		return CompletionKind.BREAK_OR_SKIP;
 	}
 
-	public override visitStatementReturn(): CompletionKind {
+	public override visitStmtReturn(): CompletionKind {
 		return CompletionKind.RETURN_OR_THROW;
 	}
 	/* eslint-enable @stylistic/space-before-function-paren */

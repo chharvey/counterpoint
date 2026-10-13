@@ -122,18 +122,18 @@ export abstract class AstNodeVisitor<T> {
 	public visitExprFunction                   (expr: EXPR.Function):                   T { return this.defaultVisit(expr); }
 	public visitExpression                     (expr: EXPR.Expression):                 T { return this.defaultVisit(expr); }
 
-	public visitDeclType           (stmt: STMT.DeclarationType):       T { return this.defaultVisit(stmt); }
-	public visitDeclVariable       (stmt: STMT.DeclarationVariable):   T { return this.defaultVisit(stmt); }
-	public visitDeclFunction       (stmt: STMT.DeclarationFunction):   T { return this.defaultVisit(stmt); }
-	public visitStmtExpr           (stmt: STMT.StatementExpression):   T { return this.defaultVisit(stmt); }
-	public visitStmtClaim          (stmt: STMT.StatementClaim):        T { return this.defaultVisit(stmt); }
-	public visitStmtReassignment   (stmt: STMT.StatementReassignment): T { return this.defaultVisit(stmt); }
-	public visitStmtConditional    (stmt: STMT.StatementConditional):  T { return this.defaultVisit(stmt); }
-	public visitStatementLoop      (stmt: STMT.StatementLoop):         T { return this.defaultVisit(stmt); }
-	public visitStatementIteration (stmt: STMT.StatementIteration):    T { return this.defaultVisit(stmt); }
-	public visitStatementBreak     (stmt: STMT.StatementBreak):        T { return this.defaultVisit(stmt); }
-	public visitStatementReturn    (stmt: STMT.StatementReturn):       T { return this.defaultVisit(stmt); }
-	public visitStatement          (stmt: STMT.Statement):             T { return this.defaultVisit(stmt); }
+	public visitDeclType         (stmt: STMT.DeclarationType):       T { return this.defaultVisit(stmt); }
+	public visitDeclVariable     (stmt: STMT.DeclarationVariable):   T { return this.defaultVisit(stmt); }
+	public visitDeclFunction     (stmt: STMT.DeclarationFunction):   T { return this.defaultVisit(stmt); }
+	public visitStmtExpr         (stmt: STMT.StatementExpression):   T { return this.defaultVisit(stmt); }
+	public visitStmtClaim        (stmt: STMT.StatementClaim):        T { return this.defaultVisit(stmt); }
+	public visitStmtReassignment (stmt: STMT.StatementReassignment): T { return this.defaultVisit(stmt); }
+	public visitStmtConditional  (stmt: STMT.StatementConditional):  T { return this.defaultVisit(stmt); }
+	public visitStmtLoop         (stmt: STMT.StatementLoop):         T { return this.defaultVisit(stmt); }
+	public visitStmtIteration    (stmt: STMT.StatementIteration):    T { return this.defaultVisit(stmt); }
+	public visitStmtBreak        (stmt: STMT.StatementBreak):        T { return this.defaultVisit(stmt); }
+	public visitStmtReturn       (stmt: STMT.StatementReturn):       T { return this.defaultVisit(stmt); }
+	public visitStatement        (stmt: STMT.Statement):             T { return this.defaultVisit(stmt); }
 	/* eslint-enable @stylistic/space-before-function-paren */
 
 	public abstract defaultVisit(node: AstNode): T;
@@ -191,18 +191,18 @@ export abstract class AstNodeVisitor<T> {
 			case EXPR.Function:                   { return this.visitExprFunction                   (node as EXPR.Function); }
 			case EXPR.Expression:                 { return this.visitExpression                     (node as EXPR.Expression); }
 
-			case STMT.DeclarationType:       { return this.visitDeclType           (node as STMT.DeclarationType); }
-			case STMT.DeclarationVariable:   { return this.visitDeclVariable       (node as STMT.DeclarationVariable); }
-			case STMT.DeclarationFunction:   { return this.visitDeclFunction       (node as STMT.DeclarationFunction); }
-			case STMT.StatementExpression:   { return this.visitStmtExpr           (node as STMT.StatementExpression); } // eslint-disable-line @typescript-eslint/no-unnecessary-type-assertion
-			case STMT.StatementClaim:        { return this.visitStmtClaim          (node as STMT.StatementClaim); }
-			case STMT.StatementReassignment: { return this.visitStmtReassignment   (node as STMT.StatementReassignment); }
-			case STMT.StatementConditional:  { return this.visitStmtConditional    (node as STMT.StatementConditional); }
-			case STMT.StatementLoop:         { return this.visitStatementLoop      (node as STMT.StatementLoop); }
-			case STMT.StatementIteration:    { return this.visitStatementIteration (node as STMT.StatementIteration); }
-			case STMT.StatementBreak:        { return this.visitStatementBreak     (node as STMT.StatementBreak); }
-			case STMT.StatementReturn:       { return this.visitStatementReturn    (node as STMT.StatementReturn); }
-			case STMT.Statement:             { return this.visitStatement          (node as STMT.Statement); } // eslint-disable-line @typescript-eslint/no-unnecessary-type-assertion
+			case STMT.DeclarationType:       { return this.visitDeclType         (node as STMT.DeclarationType); }
+			case STMT.DeclarationVariable:   { return this.visitDeclVariable     (node as STMT.DeclarationVariable); }
+			case STMT.DeclarationFunction:   { return this.visitDeclFunction     (node as STMT.DeclarationFunction); }
+			case STMT.StatementExpression:   { return this.visitStmtExpr         (node as STMT.StatementExpression); } // eslint-disable-line @typescript-eslint/no-unnecessary-type-assertion
+			case STMT.StatementClaim:        { return this.visitStmtClaim        (node as STMT.StatementClaim); }
+			case STMT.StatementReassignment: { return this.visitStmtReassignment (node as STMT.StatementReassignment); }
+			case STMT.StatementConditional:  { return this.visitStmtConditional  (node as STMT.StatementConditional); }
+			case STMT.StatementLoop:         { return this.visitStmtLoop         (node as STMT.StatementLoop); }
+			case STMT.StatementIteration:    { return this.visitStmtIteration    (node as STMT.StatementIteration); }
+			case STMT.StatementBreak:        { return this.visitStmtBreak        (node as STMT.StatementBreak); }
+			case STMT.StatementReturn:       { return this.visitStmtReturn       (node as STMT.StatementReturn); }
+			case STMT.Statement:             { return this.visitStatement        (node as STMT.Statement); } // eslint-disable-line @typescript-eslint/no-unnecessary-type-assertion
 
 			default: { return this.defaultVisit(node); }
 		}

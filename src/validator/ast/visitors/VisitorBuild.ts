@@ -182,7 +182,7 @@ export class VisitorBuild extends AstNodeVisitor<void> {
 	}
 
 	@runOncePerNode
-	public override visitStatementLoop(stmt: STMT.StatementLoop): void {
+	public override visitStmtLoop(stmt: STMT.StatementLoop): void {
 		let condition: () => OP.Value = () => this.exprVisitor.visit(stmt.condition);
 		if (stmt.until) {
 			condition = () => new OP.Unop(OP.OpCode.NOT, this.exprVisitor.visit(stmt.condition).asTac(this.builder), TYPE.BOOL);
@@ -213,7 +213,7 @@ export class VisitorBuild extends AstNodeVisitor<void> {
 	}
 
 	@runOncePerNode
-	public override visitStatementIteration(stmt: STMT.StatementIteration): void {
+	public override visitStmtIteration(stmt: STMT.StatementIteration): void {
 		const iterable: OP.ValueTac = this.exprVisitor.visit(stmt.iterable).asTac(this.builder);
 		const index:    Temp        = this.builder.newTemp(new OP.Const(VALUE.NAT_0));
 		const get_index             = new OP.Get(index);
@@ -252,7 +252,7 @@ export class VisitorBuild extends AstNodeVisitor<void> {
 	}
 
 	@runOncePerNode
-	public override visitStatementBreak(stmt: STMT.StatementBreak): void {
+	public override visitStmtBreak(stmt: STMT.StatementBreak): void {
 		let labels: StatementBreakable['labels'] | undefined = undefined;
 		let node:   AstNode | undefined                      = stmt.parent;
 		while (node && labels === undefined) {
@@ -269,7 +269,7 @@ export class VisitorBuild extends AstNodeVisitor<void> {
 	}
 
 	@runOncePerNode
-	public override visitStatementReturn(_stmt: STMT.StatementReturn): void {
+	public override visitStmtReturn(_stmt: STMT.StatementReturn): void {
 		this.builder.terminateBlock(new OP.Goto('caller'));
 		return this.builder.initiateBlock(this.builder.newLabel(true));
 	}
