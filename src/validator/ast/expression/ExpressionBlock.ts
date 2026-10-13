@@ -1,8 +1,4 @@
 import * as assert from 'node:assert';
-import type {
-	Builder,
-	OP,
-} from '../../../index.ts';
 import {
 	assert_instanceof,
 	memoizeMethod,
@@ -15,7 +11,6 @@ import {TYPE} from '../../../typer/index.ts';
 import type {SyntaxNodeType} from '../../utils-private.ts';
 import {STMT} from '../index.ts';
 import {CompletionKind} from '../CompletionKind.ts';
-import {VisitorStmtBuild} from '../visitors/VisitorStmtBuild.ts';
 import type {Block} from '../Block.ts';
 import {Expression} from './Expression.ts';
 
@@ -54,12 +49,5 @@ export class ExpressionBlock extends Expression {
 			throw new Error('The determining expression-statement of a block-expression must be nonempty.');
 		}
 		return expr.type();
-	}
-
-	@memoizeMethod
-	public override build(builder: Builder): OP.Value {
-		const stmt_visitor = new VisitorStmtBuild(builder);
-		this.block.children.slice(0, -1).forEach((stmt) => stmt_visitor.visit(stmt));
-		return (this.block.children.at(-1) as STMT.StatementExpression).expr!.build(builder);
 	}
 }

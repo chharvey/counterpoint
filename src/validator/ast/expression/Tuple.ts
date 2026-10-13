@@ -1,10 +1,6 @@
 import * as assert from 'node:assert';
 import * as xjs from 'extrajs';
-import {
-	type Builder,
-	OP,
-	TypeErrorNotAssignable,
-} from '../../../index.ts';
+import {TypeErrorNotAssignable} from '../../../index.ts';
 import {
 	assert_instanceof,
 	memoizeMethod,
@@ -45,11 +41,6 @@ class ExpressionTuple extends Collection {
 			return TYPE.NOTHING;
 		}
 		return TYPE.Tuple.fromTypes(this.children.map((c) => c.type()));
-	}
-
-	@memoizeMethod
-	public build(builder: Builder): OP.CollectionLinearNew {
-		return new OP.CollectionLinearNew(OP.TypeName.TUPLE, this.children.map((c) => c.build(builder).asTac(builder)), this.type());
 	}
 
 	@assignToDeco

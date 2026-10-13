@@ -1,9 +1,5 @@
 import * as xjs from 'extrajs';
-import {
-	type Builder,
-	OP,
-	TypeErrorNotAssignable,
-} from '../../../index.ts';
+import {TypeErrorNotAssignable} from '../../../index.ts';
 import {
 	type NonemptyArray,
 	assert_instanceof,
@@ -13,10 +9,7 @@ import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../../core/index.ts';
-import {
-	VALUE,
-	TYPE,
-} from '../../../typer/index.ts';
+import {TYPE} from '../../../typer/index.ts';
 import type {SyntaxNodeFamily} from '../../utils-private.ts';
 import {check_unique_keys} from '../utils-private.ts';
 import {typecheck_assign} from '../AstNode.ts';
@@ -57,14 +50,6 @@ export class Dict extends Collection {
 			TYPE.Union.all(...this.children.map((c) => c.val.type())),
 			true,
 		);
-	}
-
-	@memoizeMethod
-	public override build(builder: Builder): OP.DictNew {
-		return new OP.DictNew(new Map(this.children.map((c) => [
-			new VALUE.Symbol(c.key.id, c.key.source),
-			c.val.build(builder).asTac(builder),
-		])), this.type());
 	}
 
 	@assignToDeco

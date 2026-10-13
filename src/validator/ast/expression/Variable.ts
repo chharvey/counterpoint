@@ -1,6 +1,5 @@
 import * as assert from 'node:assert';
 import {
-	OP,
 	ReferenceErrorUndeclared,
 	ReferenceErrorKind,
 } from '../../../index.ts';
@@ -63,12 +62,6 @@ export class Variable extends Expression implements Reassignable {
 			assert_instanceof(symbol, SymbolSchemaFunc);
 			return TYPE.Intersection.all(...symbol.types);
 		}
-	}
-
-	@memoizeMethod
-	public override build(): OP.Get {
-		const symbol = this.validator.getSymbol(this.id) as SymbolSchemaVar;
-		return new OP.Get(symbol, symbol.irType);
 	}
 
 	/**

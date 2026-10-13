@@ -3,13 +3,14 @@ import * as test from 'node:test';
 import * as xjs from 'extrajs';
 import {
 	assert_instanceof,
+	VALUE,
+	TYPE,
 	Validator,
 	AST,
 	type SymbolSchema,
 	SymbolSchemaType,
 	SymbolSchemaVar,
-	VALUE,
-	TYPE,
+	Builder,
 	OP,
 	ReferenceErrorUndeclared,
 	ReferenceErrorDeadZone,
@@ -19,6 +20,7 @@ import {
 	TypeErrorInvalidOperation,
 	TypeErrorNotAssignable,
 } from '../../src/index.ts';
+import {VisitorExprBuild} from '../../src/validator/ast/visitors/VisitorExprBuild.ts';
 import {
 	extract_tokens,
 	extract_lines,
@@ -201,7 +203,7 @@ test.suite('Expression', () => {
 	test.suite('#build', () => {
 		test.test('Constant returns an OP.Const.', () => {
 			const value: AST.EXPR.Constant = AST.EXPR.Constant.fromSource('42');
-			return assert.deepStrictEqual(value.build(), new OP.Const(value.interpreterValue));
+			return assert.deepStrictEqual(new VisitorExprBuild(new Builder()).visit(value), new OP.Const(value.interpreterValue));
 		});
 		test.test('Variable returns an OP.Get.', () => {
 			const {stmts} = setupScript(`{
@@ -211,7 +213,7 @@ test.suite('Expression', () => {
 			const expr = (stmts[1] as AST.STMT.StatementExpression).expr as AST.EXPR.Variable;
 			const symbol: SymbolSchema | undefined = expr.validator.getSymbol(expr.id);
 			assert_instanceof(symbol, SymbolSchemaVar);
-			return assert.deepStrictEqual(expr.build(), new OP.Get(symbol, typeUnit(42n)));
+			return assert.deepStrictEqual(new VisitorExprBuild(new Builder()).visit(expr), new OP.Get(symbol, typeUnit(42n)));
 		});
 		test.test('Template returns an OP.Template.', () => {
 			assert.strictEqual(setupScript(`{
@@ -369,18 +371,20 @@ test.suite('Expression', () => {
 				const {stmts, builder} = setupScript(`{
 					42 as <int>;
 				}`, {codegen: false});
+				const expr_visitor = new VisitorExprBuild(builder);
 				const expr = (stmts[0] as AST.STMT.StatementExpression).expr as AST.EXPR.Claim;
-				return assert.deepStrictEqual(expr.build(builder), expr.operand.build(builder));
+				return assert.deepStrictEqual(expr_visitor.visit(expr), expr_visitor.visit(expr.operand));
 			});
 			test.test('repeated calls are idempotent.', () => {
 				const {stmts, builder} = setupScript(`{
 					(42 + 42 + 42) as <int | float>;
 				}`, {build: false});
+				const expr_visitor = new VisitorExprBuild(builder);
 				assert.strictEqual(builder.instructions.length, 0);
 				const expr = (stmts[0] as AST.STMT.StatementExpression).expr as AST.EXPR.Claim;
-				expr.operand.build(builder);
+				expr_visitor.visit(expr.operand);
 				assert.strictEqual(builder.instructions.length, 1);
-				expr.build(builder);
+				expr_visitor.visit(expr);
 				assert.strictEqual(builder.instructions.length, 1);
 			});
 		});

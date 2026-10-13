@@ -14,3 +14,7 @@ export * from './Goal.ts';
 export * as TYPE from './type/index.ts';
 export * as EXPR from './expression/index.ts';
 export * as STMT from './statement/index.ts';
+
+
+// HACK: need this until all visitor methods are extracted
+export {VisitorExprBuild} from './visitors/VisitorExprBuild.ts';

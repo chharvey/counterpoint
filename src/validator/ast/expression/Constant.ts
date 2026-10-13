@@ -1,6 +1,5 @@
 import * as assert from 'node:assert';
 import type {SyntaxNode} from 'tree-sitter';
-import {OP} from '../../../index.ts';
 import {
 	assert_instanceof,
 	memoizeMethod,
@@ -79,10 +78,5 @@ export class Constant extends Expression {
 	@memoizeMethod
 	public override type(): TYPE.Type {
 		return this.interpreterValue.toType();
-	}
-
-	@memoizeMethod
-	public override build(): OP.Const {
-		return new OP.Const(this.interpreterValue);
 	}
 }

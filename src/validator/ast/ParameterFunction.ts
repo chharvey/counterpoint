@@ -15,6 +15,7 @@ import type {
 	TYPE as AST_TYPE,
 	EXPR,
 } from './index.ts';
+import {VisitorExprBuild} from './index.ts';
 import {
 	typecheck_assign,
 	AstNode,
@@ -81,7 +82,7 @@ export class ParameterFunction extends AstNode {
 		if (this.identifier) {
 			const block: Block                        = (this.parent as Functionlike).block;
 			const symbol                              = block.validator.getSymbol(this.id!) as SymbolSchemaVar;
-			const default_value: OP.Value | undefined = this.expr?.build(builder) ?? (this.optional ? new OP.MaybeNew(symbol.type) : undefined);
+			const default_value: OP.Value | undefined = this.expr ? new VisitorExprBuild(builder).visit(this.expr) : this.optional ? new OP.MaybeNew(symbol.type) : undefined;
 			symbol.irType = default_value?.type ?? symbol.type;
 			return builder.pushInstruction(new OP.Decl(symbol, symbol.irType, default_value));
 		}

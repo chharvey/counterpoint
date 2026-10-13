@@ -1,9 +1,5 @@
 import * as assert from 'node:assert';
-import {
-	type Builder,
-	OP,
-	TypeErrorInvalidOperation,
-} from '../../../index.ts';
+import {TypeErrorInvalidOperation} from '../../../index.ts';
 import {
 	assert_instanceof,
 	memoizeMethod,
@@ -14,10 +10,7 @@ import {
 } from '../../../core/index.ts';
 import {TYPE} from '../../../typer/index.ts';
 import type {SyntaxNodeSupertype} from '../../utils-private.ts';
-import {
-	Operator,
-	type ValidOperatorArithmetic,
-} from '../../Operator.ts';
+import type {ValidOperatorArithmetic} from '../../Operator.ts';
 import {Expression} from './Expression.ts';
 import {OperationBinary} from './OperationBinary.ts';
 
@@ -64,36 +57,6 @@ export class OperationBinaryArithmetic extends OperationBinary {
 			bothNats  (t0, t1) ? TYPE.NAT :
 			bothFloats(t0, t1) ? TYPE.FLOAT :
 			assert.fail(new TypeErrorInvalidOperation(this))
-		);
-	}
-
-	@memoizeMethod
-	public override build(builder: Builder): OP.Binop {
-		const typ: TYPE.Type = this.type();
-		const [t0, t1] = [this.operand0.type(),                        this.operand1.type()];
-		const [v0, v1] = [this.operand0.build(builder).asTac(builder), this.operand1.build(builder).asTac(builder)];
-		return (
-			bothInts(t0, t1) ? new OP.Binop(new Map<Operator, OP.OpCodeBin>([
-				[Operator.EXP, OP.OpCode.INT_EXP],
-				[Operator.MUL, OP.OpCode.INT_MUL],
-				[Operator.DIV, OP.OpCode.INT_DIV],
-				[Operator.ADD, OP.OpCode.INT_ADD],
-				[Operator.SUB, OP.OpCode.INT_SUB],
-			]).get(this.operator)!, v0, v1, typ) :
-			bothNats(t0, t1) ? new OP.Binop(new Map<Operator, OP.OpCodeBin>([
-				[Operator.EXP, OP.OpCode.NAT_EXP],
-				[Operator.MUL, OP.OpCode.NAT_MUL],
-				[Operator.DIV, OP.OpCode.NAT_DIV],
-				[Operator.ADD, OP.OpCode.NAT_ADD],
-				[Operator.SUB, OP.OpCode.NAT_SUB],
-			]).get(this.operator)!, v0, v1, typ) :
-			(assert.ok(bothFloats(t0, t1)), new OP.Binop(new Map<Operator, OP.OpCodeBin>([
-				[Operator.EXP, OP.OpCode.FLOAT_EXP],
-				[Operator.MUL, OP.OpCode.FLOAT_MUL],
-				[Operator.DIV, OP.OpCode.FLOAT_DIV],
-				[Operator.ADD, OP.OpCode.FLOAT_ADD],
-				[Operator.SUB, OP.OpCode.FLOAT_SUB],
-			]).get(this.operator)!, v0, v1, typ))
 		);
 	}
 }

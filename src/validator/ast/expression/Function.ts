@@ -1,9 +1,4 @@
 import {
-	type Temp,
-	type Builder,
-	OP,
-} from '../../../index.ts';
-import {
 	assert_instanceof,
 	memoizeMethod,
 } from '../../../lib/index.ts';
@@ -67,17 +62,6 @@ class ExpressionFunction extends Expression implements Functionlike {
 			]))),
 			this.returnType?.eval(),
 		);
-	}
-
-
-	@memoizeMethod
-	public override build(builder: Builder): OP.Function {
-		const temp: Temp = builder.newTemp(this.type());
-		return new OP.Function(temp.type as TYPE.Function, temp.name, this.source.replaceAll(/\s+/g, ' '), () => {
-			this.captures.forEach((capt) => capt.build(builder));
-			this.parameters.forEach((param) => param.build(builder));
-			this.block.build(builder);
-		});
 	}
 }
 export {ExpressionFunction as Function};

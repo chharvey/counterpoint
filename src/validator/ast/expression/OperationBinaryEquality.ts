@@ -1,8 +1,4 @@
 import {
-	type Builder,
-	OP,
-} from '../../../index.ts';
-import {
 	assert_instanceof,
 	memoizeMethod,
 } from '../../../lib/index.ts';
@@ -66,13 +62,5 @@ export class OperationBinaryEquality extends OperationBinary {
 				return DISJOINT_TYPES && [t0, t1].some((t) => t.isDisjointWith(TYPE.NUMBER)) ? TYPE.FALSE : TYPE.BOOL;
 			}
 		}
-	}
-
-	@memoizeMethod
-	public override build(builder: Builder): OP.Binop {
-		return new OP.Binop(new Map<Operator, OP.OpCodeBin>([
-			[Operator.ID, OP.OpCode.ID],
-			[Operator.EQ, OP.OpCode.EQ],
-		]).get(this.operator)!, this.operand0.build(builder).asTac(builder), this.operand1.build(builder).asTac(builder), this.type());
 	}
 }

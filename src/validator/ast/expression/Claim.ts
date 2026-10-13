@@ -1,8 +1,4 @@
-import {
-	type Builder,
-	type OP,
-	TypeErrorNotAssignable,
-} from '../../../index.ts';
+import {TypeErrorNotAssignable} from '../../../index.ts';
 import {
 	assert_instanceof,
 	memoizeMethod,
@@ -49,10 +45,5 @@ export class Claim extends Expression {
 			throw new TypeErrorNotAssignable(this.operand, claimed_type, this);
 		}
 		return claimed_type;
-	}
-
-	@memoizeMethod
-	public override build(builder: Builder): OP.Value {
-		return this.operand.build(builder);
 	}
 }
