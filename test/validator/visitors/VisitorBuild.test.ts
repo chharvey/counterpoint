@@ -1,7 +1,7 @@
 import * as assert from 'node:assert';
 import * as test from 'node:test';
 import * as xjs from 'extrajs';
-import {VisitorStmtBuild} from '../../../src/index.ts';
+import {VisitorBuild} from '../../../src/index.ts';
 import {
 	op_maybe_string,
 	setupScript,
@@ -9,7 +9,7 @@ import {
 
 
 
-test.suite('VisitorStmtBuild#visit', () => {
+test.suite('VisitorBuild#visit', () => {
 	test.test('DeclarationType has no effect.', () => {
 		assert.strictEqual(setupScript(`{
 			type N = int | nat | float;
@@ -38,7 +38,7 @@ test.suite('VisitorStmtBuild#visit', () => {
 			val mut _:       int = assignee_c;
 			%%
 		}`, {codegen: false});
-		const stmt_visitor = new VisitorStmtBuild(builder);
+		const stmt_visitor = new VisitorBuild(builder);
 		stmts.forEach((stmt) => stmt_visitor.visit(stmt));
 		return assert.strictEqual(builder.print(), xjs.String.dedent`
 			"block-0":
@@ -165,7 +165,7 @@ test.suite('VisitorStmtBuild#visit', () => {
 			42;
 			;
 		}`, {build: false});
-		const stmt_visitor = new VisitorStmtBuild(builder);
+		const stmt_visitor = new VisitorBuild(builder);
 		assert.strictEqual(builder.instructions.length, 0);
 		stmt_visitor.visit(stmts[1]);
 		assert.strictEqual(builder.instructions.length, 1);
@@ -186,7 +186,7 @@ test.suite('VisitorStmtBuild#visit', () => {
 			val mut x: int | float = 42;
 			claim x: int;
 		}`, {build: false});
-		const stmt_visitor = new VisitorStmtBuild(builder);
+		const stmt_visitor = new VisitorBuild(builder);
 		stmt_visitor.visit(stmts[1]);
 		return assert.strictEqual(builder.print(), xjs.String.dedent`
 			"block-0":
@@ -203,7 +203,7 @@ test.suite('VisitorStmtBuild#visit', () => {
 				set x = 44;
 				set x = -42;
 			}`, {build: false});
-			const stmt_visitor = new VisitorStmtBuild(builder);
+			const stmt_visitor = new VisitorBuild(builder);
 			stmts.slice(1).forEach((stmt) => stmt_visitor.visit(stmt));
 			return assert.strictEqual(builder.print(), xjs.String.dedent`
 				"block-0":
@@ -217,7 +217,7 @@ test.suite('VisitorStmtBuild#visit', () => {
 				val mut x?: int;
 				set x = 42;
 			}`, {build: false});
-			const stmt_visitor = new VisitorStmtBuild(builder);
+			const stmt_visitor = new VisitorBuild(builder);
 			stmts.slice(1).forEach((stmt) => stmt_visitor.visit(stmt));
 			return assert.strictEqual(builder.print(), xjs.String.dedent`
 				"block-0":
@@ -229,7 +229,7 @@ test.suite('VisitorStmtBuild#visit', () => {
 				val mut x?: int;
 				delete x;
 			}`, {build: false});
-			const stmt_visitor = new VisitorStmtBuild(builder);
+			const stmt_visitor = new VisitorBuild(builder);
 			stmts.slice(1).forEach((stmt) => stmt_visitor.visit(stmt));
 			return assert.strictEqual(builder.print(), xjs.String.dedent`
 				"block-0":

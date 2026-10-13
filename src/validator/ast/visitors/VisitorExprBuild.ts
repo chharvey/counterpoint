@@ -17,7 +17,7 @@ import {Index} from '../Index-.ts';
 import {Key} from '../Key.ts';
 import * as EXPR from '../expression/index.ts';
 import type * as STMT from '../statement/index.ts';
-import {VisitorStmtBuild} from './VisitorStmtBuild.ts';
+import {VisitorBuild} from './VisitorBuild.ts';
 
 
 
@@ -103,8 +103,8 @@ export class VisitorExprBuild extends EXPR.ExprVisitor<OP.Value> {
 
 	@memoizePerExprNode
 	public override visitExprBlock(expr: EXPR.ExpressionBlock): OP.Value {
-		const stmt_visitor = new VisitorStmtBuild(this.builder);
-		expr.block.children.slice(0, -1).forEach((stmt) => stmt_visitor.visit(stmt));
+		const node_visitor = new VisitorBuild(this.builder);
+		expr.block.children.slice(0, -1).forEach((stmt) => node_visitor.visit(stmt));
 		return this.visit((expr.block.children.at(-1) as STMT.StatementExpression).expr!);
 	}
 
@@ -436,12 +436,12 @@ export class VisitorExprBuild extends EXPR.ExprVisitor<OP.Value> {
 
 	@memoizePerExprNode
 	public override visitFunction(expr: EXPR.Function): OP.Value {
-		const stmt_visitor = new VisitorStmtBuild(this.builder);
+		const node_visitor = new VisitorBuild(this.builder);
 		const temp: Temp = this.builder.newTemp(expr.type());
 		return new OP.Function(temp.type as TYPE.Function, temp.name, expr.source.replaceAll(/\s+/g, ' '), () => {
-			expr.captures   .forEach((capt)  => stmt_visitor.visit(capt));
-			expr.parameters .forEach((param) => stmt_visitor.visit(param));
-			return stmt_visitor.visit(expr.block);
+			expr.captures   .forEach((capt)  => node_visitor.visit(capt));
+			expr.parameters .forEach((param) => node_visitor.visit(param));
+			return node_visitor.visit(expr.block);
 		});
 	}
 

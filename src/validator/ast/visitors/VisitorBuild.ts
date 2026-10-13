@@ -41,7 +41,7 @@ function runOncePerStmtNode<ProtoThis extends object, Param extends STMT.Stateme
 
 
 
-export class VisitorStmtBuild extends AstNodeVisitor<void> {
+export class VisitorBuild extends AstNodeVisitor<void> {
 	private readonly exprVisitor: VisitorExprBuild;
 
 
