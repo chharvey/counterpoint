@@ -4,7 +4,7 @@ import {
 	CONFIG_DEFAULT,
 } from '../core/index.ts';
 import {AST} from '../validator/index.ts';
-import {VisitorStmtBuild} from '../validator/ast/visitors/VisitorStmtBuild.ts';
+import {VisitorStmtBuild} from '../visitors.ts';
 import {
 	Builder,
 	Interpreter,

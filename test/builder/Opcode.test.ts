@@ -14,8 +14,8 @@ import {
 	Interpreter,
 	OP,
 	CodeGenerator,
+	VisitorExprBuild,
 } from '../../src/index.ts';
-import {VisitorExprBuild} from '../../src/validator/ast/visitors/VisitorExprBuild.ts';
 import {
 	extract_lines,
 	repeat,

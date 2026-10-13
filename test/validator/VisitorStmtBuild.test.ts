@@ -1,7 +1,7 @@
 import * as assert from 'node:assert';
 import * as test from 'node:test';
 import * as xjs from 'extrajs';
-import {VisitorStmtBuild} from '../../src/validator/ast/visitors/VisitorStmtBuild.ts';
+import {VisitorStmtBuild} from '../../src/index.ts';
 import {
 	op_maybe_string,
 	setupScript,

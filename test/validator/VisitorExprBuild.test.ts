@@ -8,8 +8,8 @@ import {
 	SymbolSchemaVar,
 	Builder,
 	OP,
+	VisitorExprBuild,
 } from '../../src/index.ts';
-import {VisitorExprBuild} from '../../src/validator/ast/visitors/VisitorExprBuild.ts';
 import {
 	typeUnit,
 	setupScript,

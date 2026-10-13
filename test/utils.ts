@@ -10,8 +10,8 @@ import {
 	TYPE,
 	Builder,
 	CodeGenerator,
+	VisitorStmtBuild,
 } from '../src/index.ts';
-import {VisitorStmtBuild} from '../src/validator/ast/visitors/VisitorStmtBuild.ts';
 
 
 
