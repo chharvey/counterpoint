@@ -441,7 +441,7 @@ export class VisitorExprBuild extends EXPR.ExprVisitor<OP.Value> {
 		return new OP.Function(temp.type as TYPE.Function, temp.name, expr.source.replaceAll(/\s+/g, ' '), () => {
 			expr.captures   .forEach((capt)  => stmt_visitor.visit(capt));
 			expr.parameters .forEach((param) => stmt_visitor.visit(param));
-			stmt_visitor.visit(expr.block);
+			return stmt_visitor.visit(expr.block);
 		});
 	}
 

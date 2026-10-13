@@ -109,7 +109,7 @@ export class VisitorStmtBuild extends AstNodeVisitor<void> {
 			this.visit(stmt.block);
 			this.builder.pushInstruction(new OP.Drop(new OP.Trap()));
 			this.builder.terminateBlock(new OP.EndProgram());
-			this.builder.initiateBlock(label_endfunc);
+			return this.builder.initiateBlock(label_endfunc);
 		}
 	}
 
@@ -152,7 +152,7 @@ export class VisitorStmtBuild extends AstNodeVisitor<void> {
 				this.exprVisitor.visit(stmt.assigned)          .asTac(this.builder),
 			));
 		}
-		assert.fail('Expected `StatementReassignment#typeCheck` to throw by now.');
+		return assert.fail('Expected `StatementReassignment#typeCheck` to throw by now.');
 	}
 
 	@runOncePerStmtNode
@@ -178,7 +178,7 @@ export class VisitorStmtBuild extends AstNodeVisitor<void> {
 			this.builder.terminateBlock(new OP.Goto(label_endif));
 		}
 
-		this.builder.initiateBlock(label_endif);
+		return this.builder.initiateBlock(label_endif);
 	}
 
 	@runOncePerStmtNode
@@ -209,7 +209,7 @@ export class VisitorStmtBuild extends AstNodeVisitor<void> {
 			this.builder.terminateBlock(new OP.Goto(stmt.labels.while!));
 		}
 
-		this.builder.initiateBlock(stmt.labels.endwhile!);
+		return this.builder.initiateBlock(stmt.labels.endwhile!);
 	}
 
 	@runOncePerStmtNode
@@ -248,7 +248,7 @@ export class VisitorStmtBuild extends AstNodeVisitor<void> {
 		this.builder.pushInstruction(new OP.Set(index, new OP.Binop(OP.OpCode.NAT_ADD, get_index, new OP.Const(VALUE.NAT_1), index.type)));
 		this.builder.terminateBlock(new OP.Goto(stmt.labels.while!));
 
-		this.builder.initiateBlock(stmt.labels.endwhile!);
+		return this.builder.initiateBlock(stmt.labels.endwhile!);
 	}
 
 	@runOncePerStmtNode
@@ -265,13 +265,13 @@ export class VisitorStmtBuild extends AstNodeVisitor<void> {
 		assert.ok(labels, 'Expected StatementBreak to be nested inside (directly or indirectly) a StatementBreakable.');
 		assert.ok(labels.while && labels.endwhile, 'Expected containing StatementBreakable to have its labels already created.');
 		this.builder.terminateBlock(new OP.Goto(stmt.skip ? labels.while : labels.endwhile));
-		this.builder.initiateBlock(this.builder.newLabel(true));
+		return this.builder.initiateBlock(this.builder.newLabel(true));
 	}
 
 	@runOncePerStmtNode
 	public override visitStatementReturn(_stmt: STMT.StatementReturn): void {
 		this.builder.terminateBlock(new OP.Goto('caller'));
-		this.builder.initiateBlock(this.builder.newLabel(true));
+		return this.builder.initiateBlock(this.builder.newLabel(true));
 	}
 
 	public override defaultVisit(_stmt: STMT.Statement): void {
