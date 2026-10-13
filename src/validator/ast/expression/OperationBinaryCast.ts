@@ -29,7 +29,7 @@ export class OperationBinaryCast extends OperationBinary {
 
 	public constructor(
 		start_node: SyntaxNodeSupertype<'expression'>,
-		protected override readonly operator: ValidOperatorCast,
+		public override readonly operator: ValidOperatorCast,
 		operand0: Expression,
 		operand1: Expression,
 	) {

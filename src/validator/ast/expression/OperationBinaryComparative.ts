@@ -30,7 +30,7 @@ export class OperationBinaryComparative extends OperationBinary {
 
 	public constructor(
 		start_node: SyntaxNodeSupertype<'expression'>,
-		protected override readonly operator: ValidOperatorComparative,
+		public override readonly operator: ValidOperatorComparative,
 		operand0: Expression,
 		operand1: Expression,
 	) {

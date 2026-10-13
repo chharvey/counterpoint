@@ -28,9 +28,9 @@ export abstract class OperationBinary extends Operation {
 
 	public constructor(
 		start_node: SyntaxNodeSupertype<'expression'>,
-		protected readonly operator: ValidOperatorBinary,
-		public    readonly operand0: Expression,
-		public    readonly operand1: Expression,
+		public readonly operator: ValidOperatorBinary,
+		public readonly operand0: Expression,
+		public readonly operand1: Expression,
 	) {
 		super(start_node, operator, [operand0, operand1]);
 	}

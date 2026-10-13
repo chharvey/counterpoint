@@ -26,7 +26,7 @@ export class OperationBinaryEquality extends OperationBinary {
 
 	public constructor(
 		start_node: SyntaxNodeSupertype<'expression'>,
-		protected override readonly operator: ValidOperatorEquality,
+		public override readonly operator: ValidOperatorEquality,
 		operand0: Expression,
 		operand1: Expression,
 	) {

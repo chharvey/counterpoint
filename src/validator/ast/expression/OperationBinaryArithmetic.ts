@@ -39,7 +39,7 @@ export class OperationBinaryArithmetic extends OperationBinary {
 
 	public constructor(
 		start_node: SyntaxNodeSupertype<'expression'>,
-		protected override readonly operator: ValidOperatorArithmetic,
+		public override readonly operator: ValidOperatorArithmetic,
 		operand0: Expression,
 		operand1: Expression,
 	) {

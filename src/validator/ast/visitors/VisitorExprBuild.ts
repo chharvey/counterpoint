@@ -201,15 +201,12 @@ export class VisitorExprBuild extends EXPR.ExprVisitor<OP.Value> {
 		 */
 		if (false) { // eslint-disable-line no-constant-condition, @typescript-eslint/no-unnecessary-condition
 			return new OP.Call(
-				// @ts-expect-error --- FIXME: make public
 				this.visit(expr.base).asTac(this.builder),
-				// @ts-expect-error --- FIXME: make public
 				expr.exprargs.map((arg) => this.visit(arg).asTac(this.builder)),
 				expr.type(),
 			);
 		}
 
-		// @ts-expect-error --- FIXME: make public
 		const base_source = expr.base.source as CallableClassName;
 		switch (base_source) {
 			case IntrinsicName.BOOLEAN:
@@ -223,7 +220,6 @@ export class VisitorExprBuild extends EXPR.ExprVisitor<OP.Value> {
 					[IntrinsicName.NATURAL, OP.OpCode.NAT_FROM],
 					[IntrinsicName.FLOAT,   OP.OpCode.FLOAT_FROM],
 					[IntrinsicName.STRING,  OP.OpCode.STR_FROM],
-				// @ts-expect-error --- FIXME: make public
 				]).get(base_source)!, this.visit(expr.exprargs[0]).asTac(this.builder), expr.type());
 			}
 			case IntrinsicName.LIST:
@@ -237,18 +233,15 @@ export class VisitorExprBuild extends EXPR.ExprVisitor<OP.Value> {
 					[IntrinsicName.MAP,  [OP.TypeName.MAP,  () => new OP.MapNew  (new Map(), expr.type())]],
 				]).get(base_source)!;
 				const new_obj: OP.Value = ctor();
-				// @ts-expect-error --- FIXME: make public
 				if (!expr.exprargs.length) {
 					return new_obj;
 				}
 				const dest: OP.ValueTac = new_obj.asTac(this.builder);
-				// @ts-expect-error --- FIXME: make public
 				this.builder.pushInstruction(new OP.CollectionDynamicCopy(name, dest, this.visit(expr.exprargs[0]).asTac(this.builder)));
 				return dest;
 			}
 			case IntrinsicName.NONE:
 			case IntrinsicName.SOME: {
-				// @ts-expect-error --- FIXME: make public
 				return new OP.MaybeNew(expr.typeargs[0].eval(), expr.exprargs[0] ? this.visit(expr.exprargs[0]).asTac(this.builder) : undefined);
 			}
 			default: {
@@ -264,7 +257,6 @@ export class VisitorExprBuild extends EXPR.ExprVisitor<OP.Value> {
 
 	@memoizePerExprNode
 	public override visitOperationUnary(expr: EXPR.OperationUnary): OP.Value {
-		// @ts-expect-error --- FIXME: make public
 		if (expr.operator === Operator.UN_RESULT) {
 			throw new Error('not yet supported.');
 		}
@@ -273,7 +265,6 @@ export class VisitorExprBuild extends EXPR.ExprVisitor<OP.Value> {
 			[Operator.NOT,      OP.OpCode.NOT],
 			[Operator.EMP,      OP.OpCode.EMP],
 			[Operator.NEG,      OP.OpCode.NEG],
-		// @ts-expect-error --- FIXME: make public
 		]).get(expr.operator)!, this.visit(expr.operand).asTac(this.builder), expr.type());
 	}
 
@@ -299,7 +290,6 @@ export class VisitorExprBuild extends EXPR.ExprVisitor<OP.Value> {
 			}
 			return new OP.Instance(OP.OpCode.INSTANCEOF, op1_source, op0);
 		};
-		// @ts-expect-error --- FIXME: make public
 		switch (expr.operator) {
 			case Operator.IS: {
 				return is_instance();
@@ -344,7 +334,6 @@ export class VisitorExprBuild extends EXPR.ExprVisitor<OP.Value> {
 				[Operator.DIV, OP.OpCode.INT_DIV],
 				[Operator.ADD, OP.OpCode.INT_ADD],
 				[Operator.SUB, OP.OpCode.INT_SUB],
-			// @ts-expect-error --- FIXME: make public
 			]).get(expr.operator)!, v0, v1, typ) :
 			bothNats(t0, t1) ? new OP.Binop(new Map<Operator, OP.OpCodeBin>([
 				[Operator.EXP, OP.OpCode.NAT_EXP],
@@ -352,7 +341,6 @@ export class VisitorExprBuild extends EXPR.ExprVisitor<OP.Value> {
 				[Operator.DIV, OP.OpCode.NAT_DIV],
 				[Operator.ADD, OP.OpCode.NAT_ADD],
 				[Operator.SUB, OP.OpCode.NAT_SUB],
-			// @ts-expect-error --- FIXME: make public
 			]).get(expr.operator)!, v0, v1, typ) :
 			(assert.ok(bothFloats(t0, t1)), new OP.Binop(new Map<Operator, OP.OpCodeBin>([
 				[Operator.EXP, OP.OpCode.FLOAT_EXP],
@@ -360,7 +348,6 @@ export class VisitorExprBuild extends EXPR.ExprVisitor<OP.Value> {
 				[Operator.DIV, OP.OpCode.FLOAT_DIV],
 				[Operator.ADD, OP.OpCode.FLOAT_ADD],
 				[Operator.SUB, OP.OpCode.FLOAT_SUB],
-			// @ts-expect-error --- FIXME: make public
 			]).get(expr.operator)!, v0, v1, typ))
 		);
 	}
@@ -372,7 +359,6 @@ export class VisitorExprBuild extends EXPR.ExprVisitor<OP.Value> {
 			[Operator.GT, OP.OpCode.GT],
 			[Operator.LE, OP.OpCode.LE],
 			[Operator.GE, OP.OpCode.GE],
-		// @ts-expect-error --- FIXME: make public
 		]).get(expr.operator)!, this.visit(expr.operand0).asTac(this.builder), this.visit(expr.operand1).asTac(this.builder), expr.type());
 	}
 
@@ -381,7 +367,6 @@ export class VisitorExprBuild extends EXPR.ExprVisitor<OP.Value> {
 		return new OP.Binop(new Map<Operator, OP.OpCodeBin>([
 			[Operator.ID, OP.OpCode.ID],
 			[Operator.EQ, OP.OpCode.EQ],
-		// @ts-expect-error --- FIXME: make public
 		]).get(expr.operator)!, this.visit(expr.operand0).asTac(this.builder), this.visit(expr.operand1).asTac(this.builder), expr.type());
 	}
 
@@ -405,7 +390,6 @@ export class VisitorExprBuild extends EXPR.ExprVisitor<OP.Value> {
 		// Assume `Operator.AND` first, then switch if `Operator.OR`.
 		let conseq = (): OP.Value => this.visit(expr.operand1);
 		let altern = (): OP.Value => left;
-		// @ts-expect-error --- FIXME: make public
 		if (expr.operator === Operator.OR) {
 			[conseq, altern] = [altern, conseq];
 		}

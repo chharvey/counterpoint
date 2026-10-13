@@ -29,8 +29,8 @@ export class OperationUnary extends Operation {
 
 	public constructor(
 		start_node: SyntaxNodeSupertype<'expression'>,
-		private readonly operator: ValidOperatorUnary,
-		private readonly operand:  Expression,
+		public readonly operator: ValidOperatorUnary,
+		public readonly operand:  Expression,
 	) {
 		super(start_node, operator, [operand]);
 	}

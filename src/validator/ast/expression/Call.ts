@@ -40,9 +40,9 @@ export class Call extends Expression {
 
 	public constructor(
 		start_node: SyntaxNodeType<'expression_compound'>,
-		private readonly base:     Expression,
-		private readonly typeargs: readonly AST_TYPE.Type[],
-		private readonly exprargs: readonly Expression[],
+		public readonly base:     Expression,
+		public readonly typeargs: readonly AST_TYPE.Type[],
+		public readonly exprargs: readonly Expression[],
 	) {
 		super(start_node, {}, [base, ...typeargs, ...exprargs]);
 	}

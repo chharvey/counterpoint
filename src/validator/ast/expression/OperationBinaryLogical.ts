@@ -26,7 +26,7 @@ export class OperationBinaryLogical extends OperationBinary {
 
 	public constructor(
 		start_node: SyntaxNodeSupertype<'expression'>,
-		protected override readonly operator: ValidOperatorLogical,
+		public override readonly operator: ValidOperatorLogical,
 		operand0: Expression,
 		operand1: Expression,
 	) {
