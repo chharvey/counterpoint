@@ -26,7 +26,7 @@ import {VisitorExprBuild} from './VisitorExprBuild.ts';
 
 
 
-function runOncePerStmtNode<ProtoThis extends object, Param extends STMT.Statement>(
+function runOncePerNode<ProtoThis extends object, Param extends AstNode>(
 	method:   (this: ProtoThis, arg: Param) => void,
 	_context: ClassMethodDecoratorContext<ProtoThis, typeof method>,
 ): typeof method {
@@ -51,7 +51,7 @@ export class VisitorBuild extends AstNodeVisitor<void> {
 	}
 
 
-	@runOncePerStmtNode
+	@runOncePerNode
 	public override visitParameterFunction(node: ParameterFunction): void {
 		if (node.identifier) {
 			const block: Block                        = (node.parent as Functionlike).block;
@@ -62,7 +62,7 @@ export class VisitorBuild extends AstNodeVisitor<void> {
 		}
 	}
 
-	@runOncePerStmtNode
+	@runOncePerNode
 	public override visitCapture(node: Capture): void {
 		if (!node.ref) {
 			const schema = (node.parent as Functionlike).block.validator.getSymbol(node.variable.id) as SymbolSchemaVar;
@@ -71,12 +71,12 @@ export class VisitorBuild extends AstNodeVisitor<void> {
 		}
 	}
 
-	@runOncePerStmtNode
+	@runOncePerNode
 	public override visitBlock(node: Block): void {
 		return node.children.forEach((stmt) => this.visit(stmt));
 	}
 
-	@runOncePerStmtNode
+	@runOncePerNode
 	public override visitGoal(node: Goal): void {
 		node.block && this.visit(node.block);
 		this.builder.terminateBlock(new OP.EndProgram());
@@ -84,7 +84,7 @@ export class VisitorBuild extends AstNodeVisitor<void> {
 	}
 
 
-	@runOncePerStmtNode
+	@runOncePerNode
 	public override visitDeclVariable(stmt: STMT.DeclarationVariable): void {
 		const symbol: SymbolSchemaVar | undefined = stmt.assignee ? stmt.validator.getSymbol(stmt.id!) as SymbolSchemaVar : undefined;
 		const value:  OP.Value                    = stmt.assigned ? this.exprVisitor.visit(stmt.assigned) : new OP.MaybeNew(symbol!.type);
@@ -96,7 +96,7 @@ export class VisitorBuild extends AstNodeVisitor<void> {
 		}
 	}
 
-	@runOncePerStmtNode
+	@runOncePerNode
 	public override visitDeclFunction(stmt: STMT.DeclarationFunction): void {
 		if (stmt.identifier) {
 			const label_func:    string = this.builder.newLabel();
@@ -113,19 +113,19 @@ export class VisitorBuild extends AstNodeVisitor<void> {
 		}
 	}
 
-	@runOncePerStmtNode
+	@runOncePerNode
 	public override visitStmtExpr(stmt: STMT.StatementExpression): void {
 		if (stmt.expr) {
 			return this.builder.pushInstruction(new OP.Drop(this.exprVisitor.visit(stmt.expr)));
 		}
 	}
 
-	@runOncePerStmtNode
+	@runOncePerNode
 	public override visitStmtClaim(stmt: STMT.StatementClaim): void {
 		return this.builder.pushInstruction(new OP.Drop(this.exprVisitor.visit(stmt.assignee)));
 	}
 
-	@runOncePerStmtNode
+	@runOncePerNode
 	public override visitStmtReassignment(stmt: STMT.StatementReassignment): void {
 		if (stmt.assignee instanceof EXPR.Variable) {
 			const symbol = stmt.validator.getSymbol(stmt.assignee.id) as SymbolSchemaVar;
@@ -155,7 +155,7 @@ export class VisitorBuild extends AstNodeVisitor<void> {
 		return assert.fail('Expected `StatementReassignment#typeCheck` to throw by now.');
 	}
 
-	@runOncePerStmtNode
+	@runOncePerNode
 	public override visitStmtConditional(stmt: STMT.StatementConditional): void {
 		let condition: () => OP.Value = () => this.exprVisitor.visit(stmt.condition);
 		if (stmt.unless) {
@@ -181,7 +181,7 @@ export class VisitorBuild extends AstNodeVisitor<void> {
 		return this.builder.initiateBlock(label_endif);
 	}
 
-	@runOncePerStmtNode
+	@runOncePerNode
 	public override visitStatementLoop(stmt: STMT.StatementLoop): void {
 		let condition: () => OP.Value = () => this.exprVisitor.visit(stmt.condition);
 		if (stmt.until) {
@@ -212,7 +212,7 @@ export class VisitorBuild extends AstNodeVisitor<void> {
 		return this.builder.initiateBlock(stmt.labels.endwhile!);
 	}
 
-	@runOncePerStmtNode
+	@runOncePerNode
 	public override visitStatementIteration(stmt: STMT.StatementIteration): void {
 		const iterable: OP.ValueTac = this.exprVisitor.visit(stmt.iterable).asTac(this.builder);
 		const index:    Temp        = this.builder.newTemp(new OP.Const(VALUE.NAT_0));
@@ -251,7 +251,7 @@ export class VisitorBuild extends AstNodeVisitor<void> {
 		return this.builder.initiateBlock(stmt.labels.endwhile!);
 	}
 
-	@runOncePerStmtNode
+	@runOncePerNode
 	public override visitStatementBreak(stmt: STMT.StatementBreak): void {
 		let labels: StatementBreakable['labels'] | undefined = undefined;
 		let node:   AstNode | undefined                      = stmt.parent;
@@ -268,7 +268,7 @@ export class VisitorBuild extends AstNodeVisitor<void> {
 		return this.builder.initiateBlock(this.builder.newLabel(true));
 	}
 
-	@runOncePerStmtNode
+	@runOncePerNode
 	public override visitStatementReturn(_stmt: STMT.StatementReturn): void {
 		this.builder.terminateBlock(new OP.Goto('caller'));
 		return this.builder.initiateBlock(this.builder.newLabel(true));

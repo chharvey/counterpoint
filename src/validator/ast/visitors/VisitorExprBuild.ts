@@ -21,7 +21,7 @@ import {VisitorBuild} from './VisitorBuild.ts';
 
 
 
-function memoizePerExprNode<ProtoThis extends object, Param extends EXPR.Expression, Return>(
+function memoizePerExpr<ProtoThis extends object, Param extends EXPR.Expression, Return>(
 	method:   (this: ProtoThis, arg: Param) => Return,
 	_context: ClassMethodDecoratorContext<ProtoThis, typeof method>,
 ): typeof method {
@@ -41,12 +41,12 @@ export class VisitorExprBuild extends EXPR.ExprVisitor<OP.Value> {
 	}
 
 
-	@memoizePerExprNode
+	@memoizePerExpr
 	public override visitConstant(expr: EXPR.Constant): OP.Value {
 		return new OP.Const(expr.interpreterValue);
 	}
 
-	@memoizePerExprNode
+	@memoizePerExpr
 	public override visitTemplate(expr: EXPR.Template): OP.Value {
 		return new OP.Template(expr.children.map((c) => {
 			const build: OP.ValueTac = this.visit(c).asTac(this.builder);
@@ -56,18 +56,18 @@ export class VisitorExprBuild extends EXPR.ExprVisitor<OP.Value> {
 		}));
 	}
 
-	@memoizePerExprNode
+	@memoizePerExpr
 	public override visitVariable(expr: EXPR.Variable): OP.Value {
 		const symbol = expr.validator.getSymbol(expr.id) as SymbolSchemaVar;
 		return new OP.Get(symbol, symbol.irType);
 	}
 
-	@memoizePerExprNode
+	@memoizePerExpr
 	public override visitTuple(expr: EXPR.Tuple): OP.Value {
 		return new OP.CollectionLinearNew(OP.TypeName.TUPLE, expr.children.map((c) => this.visit(c).asTac(this.builder)), expr.type());
 	}
 
-	@memoizePerExprNode
+	@memoizePerExpr
 	public override visitRecord(expr: EXPR.Record): OP.Value {
 		return new OP.RecordNew(new Map(expr.children.map((c) => ([
 			c.key.id,
@@ -75,12 +75,12 @@ export class VisitorExprBuild extends EXPR.ExprVisitor<OP.Value> {
 		]))), expr.type());
 	}
 
-	@memoizePerExprNode
+	@memoizePerExpr
 	public override visitList(expr: EXPR.List): OP.Value {
 		return new OP.CollectionLinearNew(OP.TypeName.LIST, expr.children.map((c) => this.visit(c).asTac(this.builder)), expr.type());
 	}
 
-	@memoizePerExprNode
+	@memoizePerExpr
 	public override visitDict(expr: EXPR.Dict): OP.Value {
 		return new OP.DictNew(new Map(expr.children.map((c) => [
 			new VALUE.Symbol(c.key.id, c.key.source),
@@ -88,12 +88,12 @@ export class VisitorExprBuild extends EXPR.ExprVisitor<OP.Value> {
 		])), expr.type());
 	}
 
-	@memoizePerExprNode
+	@memoizePerExpr
 	public override visitSet(expr: EXPR.Set): OP.Value {
 		return new OP.CollectionLinearNew(OP.TypeName.SET, expr.children.map((c) => this.visit(c).asTac(this.builder)), expr.type());
 	}
 
-	@memoizePerExprNode
+	@memoizePerExpr
 	public override visitMap(expr: EXPR.Map): OP.Value {
 		return new OP.MapNew(new Map(expr.children.map((c) => [
 			this.visit(c.antecedents[0]) .asTac(this.builder),
@@ -101,14 +101,14 @@ export class VisitorExprBuild extends EXPR.ExprVisitor<OP.Value> {
 		])), expr.type());
 	}
 
-	@memoizePerExprNode
+	@memoizePerExpr
 	public override visitExprBlock(expr: EXPR.ExpressionBlock): OP.Value {
 		const node_visitor = new VisitorBuild(this.builder);
 		expr.block.children.slice(0, -1).forEach((stmt) => node_visitor.visit(stmt));
 		return this.visit((expr.block.children.at(-1) as STMT.StatementExpression).expr!);
 	}
 
-	@memoizePerExprNode
+	@memoizePerExpr
 	public override visitAccess(expr: EXPR.Access): OP.Value {
 		const build_non_maybe_base = (base_val: OP.ValueTac, return_type: TYPE.Type): OP.Value | undefined => {
 			switch (true) {
@@ -193,7 +193,7 @@ export class VisitorExprBuild extends EXPR.ExprVisitor<OP.Value> {
 		return build_non_maybe_base(base_value, typ)!; // if not Maybe access, asserts it will always return a value
 	}
 
-	@memoizePerExprNode
+	@memoizePerExpr
 	public override visitCall(expr: EXPR.Call): OP.Value {
 		/*
 		 * Note: Eventually, calls will be dynamic; all we’d need to return is a new `OP.Call` object.
@@ -250,12 +250,12 @@ export class VisitorExprBuild extends EXPR.ExprVisitor<OP.Value> {
 		}
 	}
 
-	@memoizePerExprNode
+	@memoizePerExpr
 	public override visitClaim(expr: EXPR.Claim): OP.Value {
 		return this.visit(expr.operand);
 	}
 
-	@memoizePerExprNode
+	@memoizePerExpr
 	public override visitOperationUnary(expr: EXPR.OperationUnary): OP.Value {
 		if (expr.operator === Operator.UN_RESULT) {
 			throw new Error('not yet supported.');
@@ -268,7 +268,7 @@ export class VisitorExprBuild extends EXPR.ExprVisitor<OP.Value> {
 		]).get(expr.operator)!, this.visit(expr.operand).asTac(this.builder), expr.type());
 	}
 
-	@memoizePerExprNode
+	@memoizePerExpr
 	public override visitOperationBinaryCast(expr: EXPR.OperationBinaryCast): OP.Value {
 		const op0: OP.ValueTac = this.visit(expr.operand0).asTac(this.builder);
 		const op1_source = expr.operand1.source as IntrinsicName;
@@ -310,7 +310,7 @@ export class VisitorExprBuild extends EXPR.ExprVisitor<OP.Value> {
 		}
 	}
 
-	@memoizePerExprNode
+	@memoizePerExpr
 	public override visitOperationBinaryArithmetic(expr: EXPR.OperationBinaryArithmetic): OP.Value {
 		// TODO: move these functions to utils
 		function bothInts(t0: TYPE.Type, t1: TYPE.Type): boolean {
@@ -352,7 +352,7 @@ export class VisitorExprBuild extends EXPR.ExprVisitor<OP.Value> {
 		);
 	}
 
-	@memoizePerExprNode
+	@memoizePerExpr
 	public override visitOperationBinaryComparative(expr: EXPR.OperationBinaryComparative): OP.Value {
 		return new OP.Binop(new Map<Operator, OP.OpCodeBin>([
 			[Operator.LT, OP.OpCode.LT],
@@ -362,7 +362,7 @@ export class VisitorExprBuild extends EXPR.ExprVisitor<OP.Value> {
 		]).get(expr.operator)!, this.visit(expr.operand0).asTac(this.builder), this.visit(expr.operand1).asTac(this.builder), expr.type());
 	}
 
-	@memoizePerExprNode
+	@memoizePerExpr
 	public override visitOperationBinaryEquality(expr: EXPR.OperationBinaryEquality): OP.Value {
 		return new OP.Binop(new Map<Operator, OP.OpCodeBin>([
 			[Operator.ID, OP.OpCode.ID],
@@ -370,7 +370,7 @@ export class VisitorExprBuild extends EXPR.ExprVisitor<OP.Value> {
 		]).get(expr.operator)!, this.visit(expr.operand0).asTac(this.builder), this.visit(expr.operand1).asTac(this.builder), expr.type());
 	}
 
-	@memoizePerExprNode
+	@memoizePerExpr
 	public override visitOperationBinaryLogical(expr: EXPR.OperationBinaryLogical): OP.Value {
 		/*
 		 * `‹v0› && ‹v1›` desugars to:
@@ -403,7 +403,7 @@ export class VisitorExprBuild extends EXPR.ExprVisitor<OP.Value> {
 		);
 	}
 
-	@memoizePerExprNode
+	@memoizePerExpr
 	public override visitOperationTernary(expr: EXPR.OperationTernary): OP.Value {
 		return OP.conditional_expression(
 			this.builder,
@@ -414,7 +414,7 @@ export class VisitorExprBuild extends EXPR.ExprVisitor<OP.Value> {
 		);
 	}
 
-	@memoizePerExprNode
+	@memoizePerExpr
 	public override visitSwitch(expr: EXPR.Switch): OP.Value {
 		if (!expr.cases.length) {
 			this.builder.pushInstruction(new OP.Drop(this.visit(expr.value)));
@@ -434,7 +434,7 @@ export class VisitorExprBuild extends EXPR.ExprVisitor<OP.Value> {
 		)();
 	}
 
-	@memoizePerExprNode
+	@memoizePerExpr
 	public override visitFunction(expr: EXPR.Function): OP.Value {
 		const node_visitor = new VisitorBuild(this.builder);
 		const temp: Temp = this.builder.newTemp(expr.type());
