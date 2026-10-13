@@ -436,11 +436,12 @@ export class VisitorExprBuild extends EXPR.ExprVisitor<OP.Value> {
 
 	@memoizePerExprNode
 	public override visitFunction(expr: EXPR.Function): OP.Value {
+		const stmt_visitor = new VisitorStmtBuild(this.builder);
 		const temp: Temp = this.builder.newTemp(expr.type());
 		return new OP.Function(temp.type as TYPE.Function, temp.name, expr.source.replaceAll(/\s+/g, ' '), () => {
-			expr.captures.forEach((capt) => capt.build(this.builder));
-			expr.parameters.forEach((param) => param.build(this.builder));
-			expr.block.build(this.builder);
+			expr.captures   .forEach((capt)  => stmt_visitor.visit(capt));
+			expr.parameters .forEach((param) => stmt_visitor.visit(param));
+			stmt_visitor.visit(expr.block);
 		});
 	}
 

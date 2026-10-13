@@ -11,6 +11,7 @@ import {
 	Builder,
 	CodeGenerator,
 } from '../src/index.ts';
+import {VisitorStmtBuild} from '../src/validator/ast/visitors/VisitorStmtBuild.ts';
 
 
 
@@ -283,7 +284,7 @@ export function setupScript(
 	opts.codegen   ??= true;
 	opts.varCheck &&                                                 goal.varCheck();
 	opts.varCheck && opts.typeCheck &&                               goal.typeCheck();
-	opts.varCheck && opts.typeCheck && opts.build &&                 goal.build(builder);
+	opts.varCheck && opts.typeCheck && opts.build &&                 new VisitorStmtBuild(builder).visit(goal);
 	opts.varCheck && opts.typeCheck && opts.build && opts.codegen && builder.codegen(cg);
 	return {
 		goal,

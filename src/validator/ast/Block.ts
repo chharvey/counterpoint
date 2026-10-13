@@ -1,13 +1,9 @@
 import * as assert from 'node:assert';
 import * as xjs from 'extrajs';
-import {
-	type Builder,
-	TypeErrorFunctionExit,
-} from '../../index.ts';
+import {TypeErrorFunctionExit} from '../../index.ts';
 import {
 	type NonemptyArray,
 	memoizeGetter,
-	runOnceMethod,
 } from '../../lib/index.ts';
 import {
 	type CplConfig,
@@ -27,13 +23,11 @@ import {
 import {CompletionKind} from './CompletionKind.ts';
 import {AstNode} from './AstNode.ts';
 import {is_Functionlike} from './Functionlike.ts';
-import type {Buildable} from './Buildable.ts';
 import {VisitorCompletion} from './visitors/VisitorCompletion.ts';
-import {VisitorStmtBuild} from './visitors/VisitorStmtBuild.ts';
 
 
 
-export class Block extends AstNode implements Buildable {
+export class Block extends AstNode {
 	/**
 	 * Construct a new Block from a source text and optionally a configuration.
 	 * The source text must parse successfully.
@@ -99,15 +93,5 @@ export class Block extends AstNode implements Buildable {
 		if (!!this.parent && is_Functionlike(this.parent) && this.completion !== CompletionKind.RETURN_OR_THROW) {
 			throw new TypeErrorFunctionExit(this.parent);
 		}
-	}
-
-	/**
-	 * @inheritdoc
-	 * @implements Buildable
-	 */
-	@runOnceMethod
-	public build(builder: Builder): void {
-		const stmt_visitor = new VisitorStmtBuild(builder);
-		return this.children.forEach((stmt) => stmt_visitor.visit(stmt));
 	}
 }

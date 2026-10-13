@@ -10,10 +10,17 @@ import {
 	TYPE,
 } from '../../../typer/index.ts';
 import type {SymbolSchemaVar} from '../../index.ts';
-import type {AstNode} from '../AstNode.ts';
-import {Block} from '../Block.ts';
+import {
+	AstNodeVisitor,
+	type AstNode,
+} from '../AstNode.ts';
+import type {Functionlike} from '../Functionlike.ts';
+import type {ParameterFunction} from '../ParameterFunction.ts';
+import type {Capture} from '../Capture.ts';
+import type {Block} from '../Block.ts';
+import type {Goal} from '../Goal.ts';
 import * as EXPR from '../expression/index.ts';
-import * as STMT from '../statement/index.ts';
+import type * as STMT from '../statement/index.ts';
 import {StatementBreakable} from '../statement/StatementBreakable.ts';
 import {VisitorExprBuild} from './VisitorExprBuild.ts';
 
@@ -34,13 +41,46 @@ function runOncePerStmtNode<ProtoThis extends object, Param extends STMT.Stateme
 
 
 
-export class VisitorStmtBuild extends STMT.StmtVisitor<void> {
+export class VisitorStmtBuild extends AstNodeVisitor<void> {
 	private readonly exprVisitor: VisitorExprBuild;
 
 
 	public constructor(private readonly builder: Builder) {
 		super();
 		this.exprVisitor = new VisitorExprBuild(this.builder);
+	}
+
+
+	@runOncePerStmtNode
+	public override visitParameterFunction(node: ParameterFunction): void {
+		if (node.identifier) {
+			const block: Block                        = (node.parent as Functionlike).block;
+			const symbol                              = block.validator.getSymbol(node.id!) as SymbolSchemaVar;
+			const default_value: OP.Value | undefined = node.expr ? this.exprVisitor.visit(node.expr) : node.optional ? new OP.MaybeNew(symbol.type) : undefined;
+			symbol.irType = default_value?.type ?? symbol.type;
+			return this.builder.pushInstruction(new OP.Decl(symbol, symbol.irType, default_value));
+		}
+	}
+
+	@runOncePerStmtNode
+	public override visitCapture(node: Capture): void {
+		if (!node.ref) {
+			const schema = (node.parent as Functionlike).block.validator.getSymbol(node.variable.id) as SymbolSchemaVar;
+			schema.irType = schema.type;
+			return this.builder.pushInstruction(new OP.Decl(schema, schema.irType, this.exprVisitor.visit(node.variable)));
+		}
+	}
+
+	@runOncePerStmtNode
+	public override visitBlock(node: Block): void {
+		return node.children.forEach((stmt) => this.visit(stmt));
+	}
+
+	@runOncePerStmtNode
+	public override visitGoal(node: Goal): void {
+		node.block && this.visit(node.block);
+		this.builder.terminateBlock(new OP.EndProgram());
+		return this.builder.validate();
 	}
 
 
@@ -64,9 +104,9 @@ export class VisitorStmtBuild extends STMT.StmtVisitor<void> {
 
 			this.builder.terminateBlock(new OP.Goto(label_endfunc));
 			this.builder.initiateBlock(label_func);
-			stmt.captures.forEach((capt) => capt.build(this.builder));
-			stmt.parameters.forEach((param) => param.build(this.builder));
-			stmt.block.build(this.builder);
+			stmt.captures   .forEach((capt)  => this.visit(capt));
+			stmt.parameters .forEach((param) => this.visit(param));
+			this.visit(stmt.block);
 			this.builder.pushInstruction(new OP.Drop(new OP.Trap()));
 			this.builder.terminateBlock(new OP.EndProgram());
 			this.builder.initiateBlock(label_endfunc);
@@ -129,16 +169,12 @@ export class VisitorStmtBuild extends STMT.StmtVisitor<void> {
 		this.builder.terminateBlock(new OP.GotoConditional(condition(), label_then, stmt.alternative ? label_else : label_endif));
 
 		this.builder.initiateBlock(label_then);
-		stmt.consequent.build(this.builder);
+		this.visit(stmt.consequent);
 		this.builder.terminateBlock(new OP.Goto(label_endif));
 
 		if (stmt.alternative) {
 			this.builder.initiateBlock(label_else);
-			if (stmt.alternative instanceof Block) {
-				stmt.alternative.build(this.builder);
-			} else {
-				this.visit(stmt.alternative);
-			}
+			this.visit(stmt.alternative);
 			this.builder.terminateBlock(new OP.Goto(label_endif));
 		}
 
@@ -160,7 +196,7 @@ export class VisitorStmtBuild extends STMT.StmtVisitor<void> {
 			this.builder.terminateBlock(new OP.Goto(stmt.labels.do!));
 
 			this.builder.initiateBlock(stmt.labels.do!);
-			stmt.block.build(this.builder);
+			this.visit(stmt.block);
 			this.builder.terminateBlock(new OP.GotoConditional(condition(), stmt.labels.do!, stmt.labels.endwhile!));
 		} else {
 			this.builder.terminateBlock(new OP.Goto(stmt.labels.while!));
@@ -169,7 +205,7 @@ export class VisitorStmtBuild extends STMT.StmtVisitor<void> {
 			this.builder.terminateBlock(new OP.GotoConditional(condition(), stmt.labels.do!, stmt.labels.endwhile!));
 
 			this.builder.initiateBlock(stmt.labels.do!);
-			stmt.block.build(this.builder);
+			this.visit(stmt.block);
 			this.builder.terminateBlock(new OP.Goto(stmt.labels.while!));
 		}
 
@@ -208,7 +244,7 @@ export class VisitorStmtBuild extends STMT.StmtVisitor<void> {
 				new OP.CollectionDynamicGet(OP.TypeName.LIST, iterable, get_index, iterable.type.typearg),
 			));
 		}
-		stmt.block.build(this.builder);
+		this.visit(stmt.block);
 		this.builder.pushInstruction(new OP.Set(index, new OP.Binop(OP.OpCode.NAT_ADD, get_index, new OP.Const(VALUE.NAT_1), index.type)));
 		this.builder.terminateBlock(new OP.Goto(stmt.labels.while!));
 
