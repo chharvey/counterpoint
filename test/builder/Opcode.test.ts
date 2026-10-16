@@ -2532,6 +2532,27 @@ test.suite('Opcode', () => {
 					});
 				});
 			});
+
+			test.test('Return returns (return).', {expectFailure: true}, () => {
+				const {stmts, builder, cg, wasm, visitorBuild: visitor_build} = setupScript(`{
+					\\(): anything => null;
+					\\(): anything => false;
+					\\(): anything => @hello;
+					\\(): anything => 42;
+					\\(): anything => 4.2;
+				}`, {build: false});
+				stmts.forEach((stmt) => visitor_build.visit(((stmt as AST.STMT.StatementExpression).expr as AST.EXPR.Function).block.children[0]));
+				return assertEqualBins(
+					builder.instructions.map((instr) => instr.codegen(cg)),
+					[
+						wasm.return(genConst(cg)),
+						wasm.return(genConst(cg, false)),
+						wasm.return(genConst(cg, 'hello', 'sym')),
+						wasm.return(genConst(cg, 42n)),
+						wasm.return(genConst(cg, 4.2)),
+					],
+				);
+			});
 		});
 	});
 });

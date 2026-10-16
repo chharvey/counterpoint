@@ -626,3 +626,5 @@ Codegen((MAP.COPY `dest` `src:Map`)) := (block
 		(array.len (local.get $srcref))
 	)
 );
+
+Codegen((RETURN `value`)) := (return `Codegen(value)`);

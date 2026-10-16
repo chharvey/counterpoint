@@ -7,6 +7,7 @@ import {
 	Set as OpSet,
 	CollectionDynamicSet,
 	CollectionDynamicCopy,
+	Return,
 } from './index.ts';
 import {Opcode} from './Opcode.ts';
 
@@ -19,6 +20,7 @@ export abstract class InstrVisitor<T> {
 	public visitSet                   (instr: OpSet):                 T { return this.defaultVisit(instr); }
 	public visitCollectionDynamicSet  (instr: CollectionDynamicSet):  T { return this.defaultVisit(instr); }
 	public visitCollectionDynamicCopy (instr: CollectionDynamicCopy): T { return this.defaultVisit(instr); }
+	public visitReturn                (term: Return):                 T { return this.defaultVisit(term); }
 	/* eslint-enable @stylistic/space-before-function-paren */
 
 	public abstract defaultVisit(instr: Instruction): T;
@@ -31,6 +33,7 @@ export abstract class InstrVisitor<T> {
 			case OpSet:                 { return this.visitSet                   (instr as OpSet); }
 			case CollectionDynamicSet:  { return this.visitCollectionDynamicSet  (instr as CollectionDynamicSet); }
 			case CollectionDynamicCopy: { return this.visitCollectionDynamicCopy (instr as CollectionDynamicCopy); }
+			case Return:                { return this.visitReturn                (instr as Return); }
 
 			default: { return this.defaultVisit(instr); }
 		}
@@ -48,6 +51,7 @@ export abstract class InstrVisitor<T> {
  * - OpSet
  * - CollectionDynamicSet
  * - CollectionDynamicCopy
+ * - Return
  */
 export abstract class Instruction extends Opcode {
 	/**

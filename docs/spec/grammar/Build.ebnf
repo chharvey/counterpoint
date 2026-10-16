@@ -116,6 +116,8 @@ DICT.COPY([Value Value]);
 SET.COPY ([Value Value]);
 MAP.COPY ([Value Value]);
 
+RETURN([Value]);
+
 
 
 
