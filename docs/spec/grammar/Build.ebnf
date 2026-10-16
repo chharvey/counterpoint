@@ -544,7 +544,11 @@ Build(SemanticStatementIteration ::= SemanticType SemanticExpression SemanticBlo
 Build(SemanticStatementBreak[skip=false] stmt) := [ (GOTO "endwhile") ];
 Build(SemanticStatementBreak[skip=true]  stmt) := [ (GOTO "while") ];
 
-Build(SemanticStatementReturn stmt); // TODO
+Build(SemanticStatementReturn ::= ()) := [ (GOTO "caller") ];
+Build(SemanticStatementReturn ::= SemanticExpression) := [
+	(RETURN `Build(SemanticExpression)`)
+	(GOTO "caller")
+];
 
 
 

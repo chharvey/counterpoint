@@ -140,13 +140,13 @@ test.suite('VisitorBuild#visit', () => {
 		});
 		test.test('conditional return statements.', () => {
 			assert.strictEqual(setupScript(`{
-				func f(): void {
+				func f(): float {
 					if 42 < 43 then {
 						44;
-						return;
+						return 1.1;
 					} else {
 						45;
-						return;
+						return 2.2;
 					};
 					46;
 				}
@@ -157,11 +157,13 @@ test.suite('VisitorBuild#visit', () => {
 					(GOTO.IF (LT (INT.CONST 42) (INT.CONST 43)) "block-3" "block-4")
 				"block-3":
 					(DROP (INT.CONST 44))
+					(RETURN (FLOAT.CONST 1.1))
 					(GOTO "caller")
 				"unreachable-6":
 					(GOTO "block-5")
 				"block-4":
 					(DROP (INT.CONST 45))
+					(RETURN (FLOAT.CONST 2.2))
 					(GOTO "caller")
 				"unreachable-7":
 					(GOTO "block-5")

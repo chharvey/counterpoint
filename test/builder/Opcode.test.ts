@@ -2533,7 +2533,7 @@ test.suite('Opcode', () => {
 				});
 			});
 
-			test.test('Return returns (return).', {expectFailure: true}, () => {
+			test.test('Return returns (return).', () => {
 				const {stmts, builder, cg, wasm, visitorBuild: visitor_build} = setupScript(`{
 					\\(): anything => null;
 					\\(): anything => false;
