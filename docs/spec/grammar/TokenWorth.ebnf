@@ -86,6 +86,7 @@ TokenWorth(KeywordOther :::= "do")       -> RealNumber := \x68;
 TokenWorth(KeywordOther :::= "break")    -> RealNumber := \x69;
 TokenWorth(KeywordOther :::= "skip")     -> RealNumber := \x6a;
 TokenWorth(KeywordOther :::= "return")   -> RealNumber := \x6b;
+TokenWorth(KeywordOther :::= "panic")    -> RealNumber := \x6c;
 
 
 

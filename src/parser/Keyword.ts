@@ -55,6 +55,7 @@ export enum Keyword {
 	BREAK  = 'break',
 	SKIP   = 'skip',
 	RETURN = 'return',
+	PANIC  = 'panic',
 }
 
 

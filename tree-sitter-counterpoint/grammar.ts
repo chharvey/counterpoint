@@ -349,6 +349,7 @@ module.exports = grammar({
 			'break',
 			'skip',
 			'return',
+			'panic',
 			$.identifier,
 			$.keyword_type,
 			$.keyword_value,
@@ -727,6 +728,7 @@ module.exports = grammar({
 			'break',
 			'skip',
 			'return',
+			'panic',
 			// type keyword
 			'nothing',
 			'bool',

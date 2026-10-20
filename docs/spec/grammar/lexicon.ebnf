@@ -101,6 +101,7 @@ KeywordOther :::=
 		| "break"
 		| "skip"
 		| "return"
+		| "panic"
 ;
 
 

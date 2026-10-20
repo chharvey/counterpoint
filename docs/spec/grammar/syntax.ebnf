@@ -63,6 +63,7 @@ Word ::=
 		| "break"
 		| "skip"
 		| "return"
+		| "panic"
 	| IDENTIFIER
 	| KeywordType
 	| KeywordValue
