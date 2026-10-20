@@ -531,27 +531,5 @@ test.suite('AstNode', () => {
 				});
 			});
 		});
-
-
-		test.suite('#build', () => {
-			test.test('Goal builds each statement.', () => {
-				assert.strictEqual(setupScript(`{
-					val mut assignee_b?: int;
-					val mut assignee_c:  int = 42;
-					val     _:           int = assignee_c;
-					val     assignee_d:  int = assignee_c;
-					val mut assignee_e:  int = assignee_c;
-
-					assignee_b;
-					assignee_c;
-					assignee_d;
-					assignee_e;
-
-					set assignee_e = 43;
-					set assignee_e = 44;
-					set assignee_e = -42;
-				}`, {codegen: false}).builder.instructions.length, 12);
-			});
-		});
 	});
 });

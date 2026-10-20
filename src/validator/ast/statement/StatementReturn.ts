@@ -1,11 +1,4 @@
-import {
-	type Builder,
-	OP,
-} from '../../../index.ts';
-import {
-	assert_instanceof,
-	runOnceMethod,
-} from '../../../lib/index.ts';
+import {assert_instanceof} from '../../../lib/index.ts';
 import {
 	type CplConfig,
 	CONFIG_DEFAULT,
@@ -32,7 +25,7 @@ export class StatementReturn extends Statement {
 
 	public constructor(
 		start_node: SyntaxNodeType<'statement_return'>,
-		private readonly expression: EXPR.Expression | null,
+		public readonly expression: EXPR.Expression | null,
 	) {
 		super(start_node, {}, expression ? [expression] : []);
 	}
@@ -57,11 +50,5 @@ export class StatementReturn extends Statement {
 		} else if (return_type) {
 			throw new Error(`A function with return type \`${return_type}\` does not return a value.`); // TODO: create new TypeError subclass
 		}
-	}
-
-	@runOnceMethod
-	public override build(builder: Builder): void {
-		builder.terminateBlock(new OP.Goto('caller'));
-		builder.initiateBlock(builder.newLabel(true));
 	}
 }

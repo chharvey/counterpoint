@@ -1,11 +1,4 @@
-import {
-	type Builder,
-	OP,
-} from '../../../index.ts';
-import {
-	assert_instanceof,
-	runOnceMethod,
-} from '../../../lib/index.ts';
+import {assert_instanceof} from '../../../lib/index.ts';
 import {
 	type CplConfig,
 	CONFIG_DEFAULT,
@@ -27,14 +20,6 @@ export class StatementExpression extends Statement {
 		start_node: SyntaxNodeFamily<'statement_expression', ['break', 'return']>,
 		public readonly expr?: EXPR.Expression,
 	) {
-		super(start_node, {}, expr ? [expr] : undefined);
-	}
-
-
-	@runOnceMethod
-	public override build(builder: Builder): void {
-		if (this.expr) {
-			return builder.pushInstruction(new OP.Drop(this.expr.build(builder)));
-		}
+		super(start_node, {}, [...(expr ? [expr] : [])]);
 	}
 }

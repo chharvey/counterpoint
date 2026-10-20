@@ -30,6 +30,7 @@ export * from './Decl.ts';
 export * from './Set.ts';
 export * from './CollectionDynamicSet.ts';
 export * from './CollectionDynamicCopy.ts';
+export * from './Return.ts';
 
 export * from './Terminator.ts';
 export * from './Goto.ts';

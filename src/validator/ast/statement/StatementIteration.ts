@@ -1,25 +1,16 @@
 import * as assert from 'node:assert';
 import * as xjs from 'extrajs';
 import {
-	type Temp,
-	type Builder,
-	OP,
 	AssignmentErrorDuplicateDeclaration,
 	TypeErrorNotNarrow,
 	TypeErrorNotAssignable,
 } from '../../../index.ts';
-import {
-	assert_instanceof,
-	runOnceMethod,
-} from '../../../lib/index.ts';
+import {assert_instanceof} from '../../../lib/index.ts';
 import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../../core/index.ts';
-import {
-	VALUE,
-	TYPE,
-} from '../../../typer/index.ts';
+import {TYPE} from '../../../typer/index.ts';
 import type {Serializable} from '../../../parser/index.ts';
 import {SymbolSchemaVar} from '../../index.ts';
 import type {SyntaxNodeFamily} from '../../utils-private.ts';
@@ -39,12 +30,12 @@ export class StatementIteration extends StatementBreakable {
 		return statement;
 	}
 
-	private readonly id?: bigint;
+	public readonly id?: bigint;
 
 
 	public constructor(
 		start_node: SyntaxNodeFamily<'statement_iteration', ['return']>,
-		private readonly assignee: Serializable | null,
+		public  readonly assignee: Serializable | null,
 		private readonly typenode: AST_TYPE.Type,
 		public  readonly iterable: EXPR.Expression,
 		public  readonly block:    Block,
@@ -88,44 +79,5 @@ export class StatementIteration extends StatementBreakable {
 			(this.block.validator.getSymbol(this.id!) as SymbolSchemaVar).type = assignee_type;
 		}
 		this.block.typeCheck();
-	}
-
-	@runOnceMethod
-	public override build(builder: Builder): void {
-		const iterable: OP.ValueTac = this.iterable.build(builder).asTac(builder);
-		const index:    Temp        = builder.newTemp(new OP.Const(VALUE.NAT_0));
-		const get_index             = new OP.Get(index);
-		assert_instanceof(iterable.type, TYPE.List);
-
-		this.labelWhile    = builder.newLabel();
-		this.labelDo       = builder.newLabel();
-		this.labelEndwhile = builder.newLabel();
-
-		builder.pushInstruction(new OP.Decl(index));
-		builder.terminateBlock(new OP.Goto(this.labels.while!));
-
-		builder.initiateBlock(this.labels.while!);
-		builder.terminateBlock(new OP.GotoConditional(new OP.Binop(
-			OP.OpCode.LT,
-			get_index,
-			new OP.Unop(OP.OpCode.LIST_COUNT, iterable, TYPE.NAT).asTac(builder),
-			TYPE.BOOL,
-		), this.labels.do!, this.labels.endwhile!));
-
-		builder.initiateBlock(this.labels.do!);
-		if (this.assignee) {
-			const symbol = this.block.validator.getSymbol(this.id!) as SymbolSchemaVar;
-			symbol.irType = iterable.type.typearg;
-			builder.pushInstruction(new OP.Decl(
-				symbol,
-				symbol.irType,
-				new OP.CollectionDynamicGet(OP.TypeName.LIST, iterable, get_index, iterable.type.typearg),
-			));
-		}
-		this.block.build(builder);
-		builder.pushInstruction(new OP.Set(index, new OP.Binop(OP.OpCode.NAT_ADD, get_index, new OP.Const(VALUE.NAT_1), index.type)));
-		builder.terminateBlock(new OP.Goto(this.labels.while!));
-
-		builder.initiateBlock(this.labels.endwhile!);
 	}
 }

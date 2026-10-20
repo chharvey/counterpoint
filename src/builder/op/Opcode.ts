@@ -24,6 +24,7 @@ import {
 	Set as OpSet,
 	CollectionDynamicSet,
 	CollectionDynamicCopy,
+	Return,
 	Terminator,
 	Goto,
 	GotoConditional,
@@ -131,6 +132,7 @@ export enum OpCode {
 	DICT_COPY,
 	SET_COPY,
 	MAP_COPY,
+	RETURN,
 
 	GOTO,
 	GOTO_IF,
@@ -165,6 +167,7 @@ export abstract class OpcodeVisitor<T> {
 	public visitSet                   (instr: OpSet):                 T { return this.defaultVisit(instr); }
 	public visitCollectionDynamicSet  (instr: CollectionDynamicSet):  T { return this.defaultVisit(instr); }
 	public visitCollectionDynamicCopy (instr: CollectionDynamicCopy): T { return this.defaultVisit(instr); }
+	public visitReturn                (term: Return):                 T { return this.defaultVisit(term); }
 	public visitInstruction           (instr: Instruction):           T { return this.defaultVisit(instr); }
 
 	public visitGoto            (term: Goto):            T { return this.defaultVisit(term); }
@@ -202,6 +205,7 @@ export abstract class OpcodeVisitor<T> {
 			case OpSet:                 { return this.visitSet                   (op as OpSet); }
 			case CollectionDynamicSet:  { return this.visitCollectionDynamicSet  (op as CollectionDynamicSet); }
 			case CollectionDynamicCopy: { return this.visitCollectionDynamicCopy (op as CollectionDynamicCopy); }
+			case Return:                { return this.visitReturn                (op as Return); }
 			case Instruction:           { return this.visitInstruction           (op as Instruction); }
 
 			case Goto:                  { return this.visitGoto            (op as Goto); }

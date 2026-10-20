@@ -1,8 +1,6 @@
 import * as assert from 'node:assert';
 import * as xjs from 'extrajs';
 import {
-	type Builder,
-	OP,
 	TypeErrorNotNarrow,
 	TypeErrorNotCallable,
 	TypeErrorArgCount,
@@ -42,9 +40,9 @@ export class Call extends Expression {
 
 	public constructor(
 		start_node: SyntaxNodeType<'expression_compound'>,
-		private readonly base:     Expression,
-		private readonly typeargs: readonly AST_TYPE.Type[],
-		private readonly exprargs: readonly Expression[],
+		public readonly base:     Expression,
+		public readonly typeargs: readonly AST_TYPE.Type[],
+		public readonly exprargs: readonly Expression[],
 	) {
 		super(start_node, {}, [base, ...typeargs, ...exprargs]);
 	}
@@ -182,63 +180,6 @@ export class Call extends Expression {
 		}
 		const return_type: TYPE.Type = constructor_schema.returnType(resolved_generic_args);
 		return return_type instanceof TYPE.ReferenceType ? return_type.mutableOf() : return_type;
-	}
-
-	@memoizeMethod
-	public override build(builder: Builder): OP.Value {
-		/*
-		 * Note: Eventually, calls will be dynamic; all we’d need to return is a new `OP.Call` object.
-		 * But until we get functions and classes, statically build the function calls.
-		 */
-		if (false) { // eslint-disable-line no-constant-condition, @typescript-eslint/no-unnecessary-condition
-			return new OP.Call(
-				this.base.build(builder).asTac(builder),
-				this.exprargs.map((arg) => arg.build(builder).asTac(builder)),
-				this.type(),
-			);
-		}
-
-		const base_source = this.base.source as CallableClassName;
-		switch (base_source) {
-			case IntrinsicName.BOOLEAN:
-			case IntrinsicName.INTEGER:
-			case IntrinsicName.NATURAL:
-			case IntrinsicName.FLOAT:
-			case IntrinsicName.STRING: {
-				return new OP.Unop(new Map<IntrinsicName, OP.OpCodeUn>([
-					[IntrinsicName.BOOLEAN, OP.OpCode.BOOL_FROM],
-					[IntrinsicName.INTEGER, OP.OpCode.INT_FROM],
-					[IntrinsicName.NATURAL, OP.OpCode.NAT_FROM],
-					[IntrinsicName.FLOAT,   OP.OpCode.FLOAT_FROM],
-					[IntrinsicName.STRING,  OP.OpCode.STR_FROM],
-				]).get(base_source)!, this.exprargs[0].build(builder).asTac(builder), this.type());
-			}
-			case IntrinsicName.LIST:
-			case IntrinsicName.DICT:
-			case IntrinsicName.SET:
-			case IntrinsicName.MAP: {
-				const [name, ctor] = new Map<IntrinsicName, [OP.CollectionDynamicName, () => OP.Value]>([
-					[IntrinsicName.LIST, [OP.TypeName.LIST, () => new OP.CollectionLinearNew(OP.TypeName.LIST, [], this.type())]],
-					[IntrinsicName.SET, [OP.TypeName.SET, () => new OP.CollectionLinearNew(OP.TypeName.SET, [], this.type())]],
-					[IntrinsicName.DICT, [OP.TypeName.DICT, () => new OP.DictNew(new Map(), this.type())]],
-					[IntrinsicName.MAP, [OP.TypeName.MAP, () => new OP.MapNew(new Map(), this.type())]],
-				]).get(base_source)!;
-				const new_obj: OP.Value = ctor();
-				if (!this.exprargs.length) {
-					return new_obj;
-				}
-				const dest: OP.ValueTac = new_obj.asTac(builder);
-				builder.pushInstruction(new OP.CollectionDynamicCopy(name, dest, this.exprargs[0].build(builder).asTac(builder)));
-				return dest;
-			}
-			case IntrinsicName.NONE:
-			case IntrinsicName.SOME: {
-				return new OP.MaybeNew(this.typeargs[0].eval(), this.exprargs[0]?.build(builder).asTac(builder));
-			}
-			default: {
-				assert.fail(`Did not expect base '${base_source}'.`);
-			}
-		}
 	}
 
 	/**

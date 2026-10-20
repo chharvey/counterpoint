@@ -1,8 +1,4 @@
-import {
-	type Builder,
-	OP,
-	TypeErrorInvalidOperation,
-} from '../../../index.ts';
+import {TypeErrorInvalidOperation} from '../../../index.ts';
 import {
 	assert_instanceof,
 	memoizeMethod,
@@ -47,17 +43,6 @@ export class OperationTernary extends Operation {
 			t0.equals(TYPE.FALSE) ? t2 : // If `typeof a` is `false`, then `typeof (if a then b else c)` is `typeof c`.
 			t0.equals(TYPE.TRUE)  ? t1 : // If `typeof a` is `true`,  then `typeof (if a then b else c)` is `typeof b`.
 			t1.union(t2)
-		);
-	}
-
-	@memoizeMethod
-	public override build(builder: Builder): OP.Get {
-		return OP.conditional_expression(
-			builder,
-			this.operand1.type().union(this.operand2.type()), // TODO: turn typeCheck optimization off and just use `this.type()` here
-			() => this.operand0.build(builder),
-			() => this.operand1.build(builder),
-			() => this.operand2.build(builder),
 		);
 	}
 }

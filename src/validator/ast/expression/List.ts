@@ -1,9 +1,5 @@
 import * as xjs from 'extrajs';
-import {
-	type Builder,
-	OP,
-	TypeErrorNotAssignable,
-} from '../../../index.ts';
+import {TypeErrorNotAssignable} from '../../../index.ts';
 import {
 	assert_instanceof,
 	memoizeMethod,
@@ -46,11 +42,6 @@ export class List extends Collection {
 			TYPE.Union.all(...this.children.map((c) => c.type())),
 			true,
 		);
-	}
-
-	@memoizeMethod
-	public override build(builder: Builder): OP.CollectionLinearNew {
-		return new OP.CollectionLinearNew(OP.TypeName.LIST, this.children.map((c) => c.build(builder).asTac(builder)), this.type());
 	}
 
 	@assignToDeco

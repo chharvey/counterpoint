@@ -1,9 +1,5 @@
 import * as xjs from 'extrajs';
-import {
-	type Builder,
-	OP,
-	TypeErrorNotAssignable,
-} from '../../../index.ts';
+import {TypeErrorNotAssignable} from '../../../index.ts';
 import {
 	type NonemptyArray,
 	assert_instanceof,
@@ -57,14 +53,6 @@ class ExpressionRecord extends Collection {
 			c.key.id,
 			c.val.type(),
 		])));
-	}
-
-	@memoizeMethod
-	public override build(builder: Builder): OP.RecordNew {
-		return new OP.RecordNew(new Map(this.children.map((c) => ([
-			c.key.id,
-			{keysrc: c.key.source, value: c.val.build(builder).asTac(builder)},
-		]))), this.type());
 	}
 
 	@assignToDeco

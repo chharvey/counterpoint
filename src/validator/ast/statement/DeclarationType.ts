@@ -1,10 +1,6 @@
 import * as assert from 'node:assert';
 import {AssignmentErrorDuplicateDeclaration} from '../../../index.ts';
-import {
-	assert_instanceof,
-	noopMethod,
-	runOnceMethod,
-} from '../../../lib/index.ts';
+import {assert_instanceof} from '../../../lib/index.ts';
 import {
 	type CplConfig,
 	CONFIG_DEFAULT,
@@ -59,10 +55,5 @@ export class DeclarationType extends Statement {
 			const symbol = this.validator.getSymbol(this.id!) as SymbolSchemaType;
 			symbol.typevalue = typevalue;
 		}
-	}
-
-	@noopMethod(runOnceMethod)
-	public override build(): void {
-		return;
 	}
 }

@@ -1,12 +1,5 @@
-import {
-	type Builder,
-	OP,
-	TypeErrorNotNarrow,
-} from '../../../index.ts';
-import {
-	assert_instanceof,
-	runOnceMethod,
-} from '../../../lib/index.ts';
+import {TypeErrorNotNarrow} from '../../../index.ts';
+import {assert_instanceof} from '../../../lib/index.ts';
 import {
 	type CplConfig,
 	CONFIG_DEFAULT,
@@ -70,10 +63,5 @@ export class StatementClaim extends Statement {
 				}
 			}
 		}
-	}
-
-	@runOnceMethod
-	public override build(builder: Builder): void {
-		return builder.pushInstruction(new OP.Drop(this.assignee.build(builder)));
 	}
 }

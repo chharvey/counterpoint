@@ -607,3 +607,7 @@ Nil! Interpret((MAP.COPY `dest` `src`)) :=
 	7. *Else:*
 		1. *Throw:* a new TypeError.
 ;
+
+Nil! Interpret((RETURN `value`)) :=
+	// TODO:
+;

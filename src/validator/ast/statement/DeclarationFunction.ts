@@ -1,12 +1,5 @@
 import * as assert from 'node:assert';
-import {
-	type Builder,
-	OP,
-} from '../../../index.ts';
-import {
-	assert_instanceof,
-	runOnceMethod,
-} from '../../../lib/index.ts';
+import {assert_instanceof} from '../../../lib/index.ts';
 import {
 	type CplConfig,
 	CONFIG_DEFAULT,
@@ -42,11 +35,11 @@ export class DeclarationFunction extends Statement implements Functionlike {
 
 	public constructor(
 		start_node: SyntaxNodeType<'declaration_function'>,
-		private readonly identifier: Serializable | null,
-		public  readonly parameters: readonly ParameterFunction[],
-		public  readonly captures:   readonly Capture[],
-		public  readonly returnType: AST_TYPE.Type | null,
-		public  readonly block:      Block,
+		public readonly identifier: Serializable | null,
+		public readonly parameters: readonly ParameterFunction[],
+		public readonly captures:   readonly Capture[],
+		public readonly returnType: AST_TYPE.Type | null,
+		public readonly block:      Block,
 	) {
 		super(start_node, {}, [...parameters, ...captures, ...(returnType ? [returnType] : []), block]);
 		if (this.identifier) {
@@ -80,23 +73,6 @@ export class DeclarationFunction extends Statement implements Functionlike {
 			} else {
 				schema.types.push(fn_type);
 			}
-		}
-	}
-
-	@runOnceMethod
-	public override build(builder: Builder): void {
-		if (this.identifier) {
-			const label_func:    string = builder.newLabel();
-			const label_endfunc: string = builder.newLabel();
-
-			builder.terminateBlock(new OP.Goto(label_endfunc));
-			builder.initiateBlock(label_func);
-			this.captures.forEach((capt) => capt.build(builder));
-			this.parameters.forEach((param) => param.build(builder));
-			this.block.build(builder);
-			builder.pushInstruction(new OP.Drop(new OP.Trap()));
-			builder.terminateBlock(new OP.EndProgram());
-			builder.initiateBlock(label_endfunc);
 		}
 	}
 }

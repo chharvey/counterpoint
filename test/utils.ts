@@ -10,6 +10,7 @@ import {
 	TYPE,
 	Builder,
 	CodeGenerator,
+	VisitorBuild,
 } from '../src/index.ts';
 
 
@@ -267,15 +268,17 @@ export function setupScript(
 	source: string,
 	opts:   {varCheck?: boolean, typeCheck?: boolean, build?: boolean, codegen?: boolean} = {},
 ): {
-	readonly goal:    AST.Goal,
-	readonly stmts:   AST.Block['children'],
-	readonly builder: Builder,
-	readonly cg:      CodeGenerator,
-	readonly wasm:    binaryen.ExpressionBuilder,
+	readonly goal:         AST.Goal,
+	readonly stmts:        AST.Block['children'],
+	readonly builder:      Builder,
+	readonly cg:           CodeGenerator,
+	readonly wasm:         binaryen.ExpressionBuilder,
+	readonly visitorBuild: VisitorBuild,
 } {
 	const goal: AST.Goal = AST.Goal.fromSource(source);
-	const builder = new Builder();
-	const cg      = new CodeGenerator();
+	const builder        = new Builder();
+	const cg             = new CodeGenerator();
+	const visitor_build  = new VisitorBuild(builder);
 	assert.ok(goal.block, 'Expected AST.Goal to contain a block.');
 	opts.varCheck  ??= true;
 	opts.typeCheck ??= true;
@@ -283,13 +286,14 @@ export function setupScript(
 	opts.codegen   ??= true;
 	opts.varCheck &&                                                 goal.varCheck();
 	opts.varCheck && opts.typeCheck &&                               goal.typeCheck();
-	opts.varCheck && opts.typeCheck && opts.build &&                 goal.build(builder);
+	opts.varCheck && opts.typeCheck && opts.build &&                 visitor_build.visit(goal);
 	opts.varCheck && opts.typeCheck && opts.build && opts.codegen && builder.codegen(cg);
 	return {
 		goal,
 		builder,
 		cg,
-		stmts: goal.block.children,
-		wasm:  cg.mod.wasm,
+		stmts:        goal.block.children,
+		wasm:         cg.mod.wasm,
+		visitorBuild: visitor_build,
 	};
 }

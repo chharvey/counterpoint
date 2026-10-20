@@ -1,9 +1,5 @@
 import * as xjs from 'extrajs';
-import {
-	type Builder,
-	OP,
-	TypeErrorNotAssignable,
-} from '../../../index.ts';
+import {TypeErrorNotAssignable} from '../../../index.ts';
 import {
 	type NonemptyArray,
 	assert_instanceof,
@@ -49,14 +45,6 @@ class ExpressionMap extends Collection {
 			TYPE.Union.all(...this.children.map((c) => c.consequent.type())),
 			true,
 		);
-	}
-
-	@memoizeMethod
-	public override build(builder: Builder): OP.MapNew {
-		return new OP.MapNew(new Map(this.children.map((c) => [
-			c.antecedents[0].build(builder).asTac(builder),
-			c.consequent.build(builder).asTac(builder),
-		])), this.type());
 	}
 
 	@assignToDeco

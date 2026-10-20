@@ -1,10 +1,5 @@
 import * as assert from 'node:assert';
-import {
-	type Builder,
-	OP,
-	AssignmentErrorDuplicateDeclaration,
-} from '../../index.ts';
-import {runOnceMethod} from '../../lib/index.ts';
+import {AssignmentErrorDuplicateDeclaration} from '../../index.ts';
 import type {Serializable} from '../../parser/index.ts';
 import type {TYPE} from '../../typer/index.ts';
 import {SymbolSchemaVar} from '../index.ts';
@@ -25,7 +20,7 @@ import type {Key} from './Key.ts';
 
 
 export class ParameterFunction extends AstNode {
-	private readonly id?: bigint;
+	public readonly id?: bigint;
 
 
 	public constructor(
@@ -36,7 +31,7 @@ export class ParameterFunction extends AstNode {
 		public  readonly optional:   boolean,
 		public  readonly key:        Key | null,
 		public  readonly typenode:   AST_TYPE.Type,
-		private readonly expr:       EXPR.Expression | null,
+		public  readonly expr:       EXPR.Expression | null,
 	) {
 		super(start_node, {named, writable, optional}, [
 			...(key ? [key] : []),
@@ -73,17 +68,6 @@ export class ParameterFunction extends AstNode {
 			const block: Block = (this.parent as Functionlike).block;
 			assert.ok(block.validator.hasSymbol(this.id!), `The validator symbol table should include ${this.id}.`);
 			(block.validator.getSymbol(this.id!) as SymbolSchemaVar).type = param_type;
-		}
-	}
-
-	@runOnceMethod
-	public build(builder: Builder): void {
-		if (this.identifier) {
-			const block: Block                        = (this.parent as Functionlike).block;
-			const symbol                              = block.validator.getSymbol(this.id!) as SymbolSchemaVar;
-			const default_value: OP.Value | undefined = this.expr?.build(builder) ?? (this.optional ? new OP.MaybeNew(symbol.type) : undefined);
-			symbol.irType = default_value?.type ?? symbol.type;
-			return builder.pushInstruction(new OP.Decl(symbol, symbol.irType, default_value));
 		}
 	}
 }

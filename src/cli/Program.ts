@@ -4,6 +4,7 @@ import {
 	CONFIG_DEFAULT,
 } from '../core/index.ts';
 import {AST} from '../validator/index.ts';
+import {VisitorBuild} from '../visitors.ts';
 import {
 	Builder,
 	Interpreter,
@@ -31,7 +32,7 @@ export class Program {
 		const builder = new Builder();
 		this.#astGoal.varCheck();
 		this.#astGoal.typeCheck();
-		this.#astGoal.build(builder);
+		new VisitorBuild(builder).visit(this.#astGoal);
 		return builder;
 	}
 
