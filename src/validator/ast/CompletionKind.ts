@@ -1,7 +1,7 @@
 export enum CompletionKind {
 	NORMAL,
 	BREAK_OR_SKIP,
-	RETURN_OR_THROW,
+	RETURN_OR_PANIC,
 }
 
 
