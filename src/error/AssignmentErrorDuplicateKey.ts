@@ -4,7 +4,7 @@ import {AssignmentError} from './AssignmentError.ts';
 
 
 /**
- * An AssignmentErrorDuplicateKey is thrown when the validator encounters a duplicate key in a record type, function type, record literal, or dict literal.
+ * An AssignmentErrorDuplicateKey is raised when the validator encounters a duplicate key in a record type, function type, record literal, or dict literal.
  * @example
  * type MyType = (bar: int, bar: str);           % AssignmentErrorDuplicateKey: Duplicate record/dict/parameter key `bar`.
  * type MyType = \(bar: int, bar: str) => float; % AssignmentErrorDuplicateKey: Duplicate record/dict/parameter key `bar`.

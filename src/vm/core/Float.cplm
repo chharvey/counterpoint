@@ -13,6 +13,6 @@ public class Float {
 		if radix < +2 || +36 < radix then {
 			return Fail[str, RangeException](RangeException("""Invalid radix: {{radix}}. Must be between 2 and 36 (inclusive)."""));
 		};
-		throw "TODO: not yet supported";
+		panic "TODO: not yet supported";
 	}
 }

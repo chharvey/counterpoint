@@ -4,7 +4,7 @@ import {TypeError as CplTypeError} from './TypeError.ts';
 
 
 /**
- * A TypeErrorInvalidOperation is thrown when the validator encounters an invalid operation.
+ * A TypeErrorInvalidOperation is raised when the validator encounters an invalid operation.
  * @example
  * true + false; % TypeErrorInvalidOperation: Invalid operation.
  */

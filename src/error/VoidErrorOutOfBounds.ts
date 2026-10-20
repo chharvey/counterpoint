@@ -4,7 +4,7 @@ import {VoidError} from './VoidError.ts';
 
 
 /**
- * A VoidErrorOutOfBounds is thrown when accessing a List/Dict/Map with an index/key out of its bounds or range.
+ * A VoidErrorOutOfBounds is raised when accessing a List/Dict/Map with an index/key out of its bounds or range.
  * @example
  * ["earth", "wind", "fire"].[4]; % VoidErrorOutOfBounds: Index `4` is out of bounds on…
  *

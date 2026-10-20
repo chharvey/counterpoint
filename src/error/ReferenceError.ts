@@ -9,7 +9,7 @@ import {ErrorCode} from './ErrorCode.ts';
 
 
 /**
- * A CplReferenceError is thrown when the validator fails to dereference an identifier.
+ * A CplReferenceError is raised when the validator fails to dereference an identifier.
  *
  * Known subclasses:
  * - ReferenceErrorUndeclared

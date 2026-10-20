@@ -3,6 +3,6 @@ public class Symbol {
 	private new (private readonly data: sym) {;}
 
 	internal toString(): str {
-		throw "TODO: not yet supported";
+		panic "TODO: not yet supported";
 	}
 }

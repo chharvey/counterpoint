@@ -415,7 +415,7 @@ Build(SemanticDeclarationFunction[id: RealNumber] ::= SemanticParameterFunction*
 	`SemanticCapture*.map(Build)`
 	`SemanticParameterFunction*.map(Build)`
 	`Build(SemanticBlock)`
-	(DROP (TRAP)) // traps because this part should be unreachable (a return/throw statement should have been encountered in the function body by now)
+	(DROP (TRAP)) // traps because this part should be unreachable (a return/panic statement should have been encountered in the function body by now)
 	"endfunc":
 ];
 

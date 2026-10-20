@@ -5,7 +5,7 @@ import {TypeError as CplTypeError} from './TypeError.ts';
 
 
 /**
- * A TypeErrorNoEntry is thrown when an attempt is made to access a non-existent index or key,
+ * A TypeErrorNoEntry is raised when an attempt is made to access a non-existent index or key,
  * or when a named argument does not match a known parameter name.
  * @example
  * (42, 420).2;                      % TypeErrorNoEntry: Index `2` does not exist on type `(42, 420)`.
