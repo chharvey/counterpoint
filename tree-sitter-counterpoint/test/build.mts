@@ -1886,8 +1886,17 @@ function sourceExpressions(...expressions: readonly string[]): string {
 		// StatementReturn
 		// tested in #{Expression,Declaration}Function
 
+		StatementPanic: [
+			xjs.String.dedent`
+				{
+					panic my_exception;
+				}
+			`,
+			sourceStatements(s('statement_panic', f('expression_0', 'identifier'))),
+		],
+
 		// Statement
-		// consists of #{Declaration,Statement{Expression,Claim,Set,Delete,Conditional,Loop,Iteration,Break,Return}}
+		// consists of #{Declaration,Statement{Expression,Claim,Set,Delete,Conditional,Loop,Iteration,Break,Return,Panic}}
 
 		Block: [
 			xjs.String.dedent`
