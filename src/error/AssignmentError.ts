@@ -11,7 +11,7 @@ import {ErrorCode} from './ErrorCode.ts';
 
 
 /**
- * An AssignmentError is thrown when the validator detects an illegal declaration or assignment.
+ * An AssignmentError is raised when the validator detects an illegal declaration or assignment.
  *
  * Known subclasses:
  * - AssignmentErrorDuplicateDeclaration

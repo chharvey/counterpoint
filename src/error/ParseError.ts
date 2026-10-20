@@ -4,7 +4,7 @@ import {ErrorCode} from './ErrorCode.ts';
 
 
 /**
- * A ParseError is thrown when the parser fails to parse a span of source code
+ * A ParseError is raised when the parser fails to parse a span of source code
  * per the rules of the defined syntactic grammar.
  *
  * Known subclasses:
@@ -36,7 +36,7 @@ class ParseError extends ErrorCode {
 
 
 /**
- * A ParseError01 is thrown when the parser does not recognize the lookahead token.
+ * A ParseError01 is raised when the parser does not recognize the lookahead token.
  */
 export class ParseError01 extends ParseError {
 	static readonly #CODE = 1;

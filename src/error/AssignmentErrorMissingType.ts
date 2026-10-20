@@ -4,7 +4,7 @@ import {AssignmentError} from './AssignmentError.ts';
 
 
 /**
- * An AssignmentErrorMissingType is thrown when a variable/parameter/field is declared without a type annotation
+ * An AssignmentErrorMissingType is raised when a variable/parameter/field is declared without a type annotation
  * and it is not eligible for type inference.
  * @example
  * val a = 42 + 1;                 % AssignmentErrorMissingType: Variable `a` is missing a type annotation.

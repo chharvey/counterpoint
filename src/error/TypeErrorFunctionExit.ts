@@ -4,7 +4,7 @@ import {TypeError as CplTypeError} from './TypeError.ts';
 
 
 /**
- * A TypeErrorFunctionExit is thrown when not every control route in a function body exits the function.
+ * A TypeErrorFunctionExit is raised when not every control route in a function body exits the function.
  * @example
  * func f(b: bool): str {
  * 	if b then {

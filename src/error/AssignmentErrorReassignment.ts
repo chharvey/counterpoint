@@ -4,7 +4,7 @@ import {AssignmentError} from './AssignmentError.ts';
 
 
 /**
- * An AssignmentErrorReassignment is thrown when attempting to reassign a read-only variable.
+ * An AssignmentErrorReassignment is raised when attempting to reassign a read-only variable.
  * @example
  * val my_var: int = 42;
  * set my_var = 24;      % AssignmentErrorReassignment: Reassignment of read-only variable `my_var`.

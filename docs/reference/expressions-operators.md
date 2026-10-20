@@ -556,7 +556,7 @@ val quantity:   int        = item.1 as :int:;        % narrowing
 val in_stock:   int | bool = item.1 as :int | bool:; % shifting
 ```
 
-Unless either type is `nothing` (the Bottom Type), a compiler error is thrown
+Unless either type is `nothing` (the Bottom Type), a compiler error is raised
 when the operand’s computed type is disjoint with the claimed type.
 ```cpl
 42 as :str:; %> TypeError

@@ -13,7 +13,7 @@ import {ErrorCode} from './ErrorCode.ts';
 
 
 /**
- * A CplTypeError is thrown when the validator recognizes a type mismatch.
+ * A CplTypeError is raised when the validator recognizes a type mismatch.
  *
  * Known subclasses:
  * - TypeErrorInvalidOperation

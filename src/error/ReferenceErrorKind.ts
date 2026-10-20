@@ -7,7 +7,7 @@ import {ReferenceError as CplReferenceError} from './ReferenceError.ts';
 
 
 /**
- * A ReferenceErrorKind is thrown when a symbol of the wrong kind is used.
+ * A ReferenceErrorKind is raised when a symbol of the wrong kind is used.
  * @example
  * val FOO: int = 42;
  * type T = FOO | float; % ReferenceErrorKind: `FOO` refers to a value, but is used as a type.

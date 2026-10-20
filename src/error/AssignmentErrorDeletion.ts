@@ -4,7 +4,7 @@ import {AssignmentError} from './AssignmentError.ts';
 
 
 /**
- * An AssignmentErrorDeletion is thrown when attempting to delete a non-optional variable.
+ * An AssignmentErrorDeletion is raised when attempting to delete a non-optional variable.
  * @example
  * val mut my_var: int | null = 42;
  * delete my_var;                   % AssignmentErrorDeletion: Deletion of non-optional variable `my_var`.
