@@ -207,7 +207,7 @@ func f(b: bool): str {
 	% TypeErrorFunctionExit: Function does not exit in every control route.
 }
 ```
-Solution(s): Ensure every code path contains an explicit return or throw statement.
+Solution(s): Ensure every code path contains an explicit return or panic statement.
 
 
 ### Mutability Errors (24xx)
