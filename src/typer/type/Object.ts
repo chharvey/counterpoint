@@ -1,5 +1,6 @@
 import {
 	strictEqual,
+	instanceOf,
 	memoizeBinOp,
 } from '../utils-private.ts';
 import * as VALUE from '../value/index.ts';
@@ -36,8 +37,9 @@ class TypeObject extends ReferenceType {
 	@strictEqual
 	@memoizeBinOp()
 	@subtypeLaws
-	public override isSubtypeOf(_t: Type): boolean {
-		return false;
+	@instanceOf(() => TypeObject)
+	public override isSubtypeOf(_: Type): boolean {
+		return true;
 	}
 
 	public override mutableOf(): Type {

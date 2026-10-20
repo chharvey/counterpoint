@@ -42,7 +42,7 @@ export class Null extends Primitive {
 	@strictEqual
 	@noopMethod(memoizeBinOp(true, true))
 	@instanceOf(() => Null)
-	public override identical(_value: Value): boolean {
+	public override identical(_: Value): boolean {
 		return true;
 	}
 

@@ -34,9 +34,7 @@ class ValueString extends Primitive {
 			: data;
 	}
 
-	/**
-	 * @implements Value
-	 */
+	/** @implements Value */
 	public override get isEmpty(): boolean {
 		return this.data.length === 0;
 	}
