@@ -71,6 +71,13 @@ test.suite('Value', () => {
 			});
 		});
 
+		test.suite('Exception', () => {
+			test.test('Exceptions with same message and cause are not identical.', () => {
+				const a = new VALUE.Exception('alice');
+				return assert.ok(!new VALUE.Exception('bob', a).identical(new VALUE.Exception('bob', a)));
+			});
+		});
+
 		test.suite('Maybe', () => {
 			test.test('different Nones are not identical.', () => {
 				assert.ok(!new VALUE.Maybe(TYPE.STR).identical(new VALUE.Maybe(TYPE.STR)));
@@ -226,6 +233,26 @@ test.suite('Value', () => {
 					new VALUE.String('fire'),
 					new VALUE.String('wind'),
 				]))));
+			});
+		});
+
+		test.suite('Exception', () => {
+			test.test('Exceptions with equal messages and causes are equal.', () => {
+				const a1 = new VALUE.Exception('alice');
+				const a2 = new VALUE.Exception('alice');
+				assert.ok(a1.equal(a2));
+				return assert.ok(new VALUE.Exception('bob', a1).equal(new VALUE.Exception('bob', a2)));
+			});
+			test.test('Exceptions with unequal messages are not equal.', () => {
+				const a = new VALUE.Exception('alice');
+				return assert.ok(!new VALUE.Exception('bob1', a).equal(new VALUE.Exception('bob2', a)));
+			});
+			test.test('Exceptions with unequal causes are not equal.', () => {
+				const a1 = new VALUE.Exception('alice1');
+				const a2 = new VALUE.Exception('alice2');
+				const b1 = new VALUE.Exception('bob', a1);
+				assert.ok(!b1.equal(new VALUE.Exception('bob')));
+				return assert.ok(!b1.equal(new VALUE.Exception('bob', a2)));
 			});
 		});
 

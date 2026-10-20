@@ -100,6 +100,10 @@ The values in Sets are Counterpoint Language Values.
 The values in Maps are Counterpoint Language Values.
 
 
+### `Exception`
+`Exception` objects are used for reporting author-defined errors in a program.
+They each contain a `str` message, a call stack representation, and optionally another `Exception` cause.
+
 ### `Maybe`
 `Maybe` objects either hold a value or do not,
 instantiated respectively by the subclasses `Some` and `None`.
