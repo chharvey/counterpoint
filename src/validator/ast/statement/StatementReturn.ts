@@ -3,7 +3,7 @@ import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../../core/index.ts';
-import type {TYPE} from '../../../typer/index.ts';
+import {TYPE} from '../../../typer/index.ts';
 import type {SyntaxNodeType} from '../../utils-private.ts';
 import {
 	typecheck_assign,
@@ -34,6 +34,9 @@ export class StatementReturn extends Statement {
 
 	public override typeCheck(): void {
 		super.typeCheck();
+		if (this.panic) {
+			return typecheck_assign(this.expression!, TYPE.EXCP, this);
+		}
 		let parent: AstNode | undefined = this.parent;
 		while (parent && !is_Functionlike(parent)) {
 			parent = parent.parent;
