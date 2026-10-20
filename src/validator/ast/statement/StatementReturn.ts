@@ -25,9 +25,10 @@ export class StatementReturn extends Statement {
 
 	public constructor(
 		start_node: SyntaxNodeType<'statement_return'>,
-		public readonly expression: EXPR.Expression | null,
+		private readonly panic:      boolean,
+		public  readonly expression: EXPR.Expression | null,
 	) {
-		super(start_node, {}, expression ? [expression] : []);
+		super(start_node, {panic}, expression ? [expression] : []);
 	}
 
 
