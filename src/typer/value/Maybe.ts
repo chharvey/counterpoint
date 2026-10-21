@@ -16,6 +16,8 @@ import {
  * @final
  */
 export class Maybe<T extends Value = Value> extends Value {
+	public declare readonly isTruthy: boolean;
+
 	private readonly type:   TYPE.Type;
 	public  readonly value?: T;
 
@@ -26,10 +28,7 @@ export class Maybe<T extends Value = Value> extends Value {
 		if (value_or_type instanceof Value) {
 			this.value = value_or_type;
 		}
-	}
-
-	public override get isTruthy(): boolean {
-		return !this.isNone;
+		this.isTruthy = !this.isNone;
 	}
 
 	public get isNone(): boolean {

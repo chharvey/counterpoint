@@ -25,6 +25,9 @@ import {Primitive} from './Primitive.ts';
  * @final
  */
 class ValueBoolean extends Primitive {
+	public declare readonly isTruthy: boolean;
+
+
 	/**
 	 * Return the Counterpoint Language Value `true` or `false` based on the argument.
 	 * @param b a native boolean value
@@ -40,14 +43,11 @@ class ValueBoolean extends Primitive {
 	 */
 	public constructor(private readonly data: boolean = false) {
 		super();
+		this.isTruthy = this.data;
 	}
 
 	public override toString(): string {
 		return `${this.data}`;
-	}
-
-	public override get isTruthy(): boolean {
-		return this.data;
 	}
 
 	@strictEqual

@@ -27,16 +27,15 @@ import {Primitive} from './Primitive.ts';
  * @final
  */
 export class Null extends Primitive {
+	public override readonly isTruthy: boolean = false;
+
+
 	public constructor() {
 		super();
 	}
 
 	public override toString(): string {
 		return 'null';
-	}
-
-	public override get isTruthy(): boolean {
-		return false;
 	}
 
 	@strictEqual

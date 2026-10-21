@@ -16,16 +16,14 @@ import {
  * @final
  */
 export class Exception extends Value {
+	public override readonly isTruthy: boolean = false;
+
+
 	public constructor(
 		private readonly message: string,
 		private readonly cause?:  Exception,
 	) {
 		super();
-	}
-
-
-	public override get isTruthy(): boolean {
-		return false;
 	}
 
 
