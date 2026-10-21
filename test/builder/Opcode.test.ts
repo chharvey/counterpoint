@@ -135,6 +135,16 @@ test.suite('Opcode', () => {
 				]);
 			});
 
+			test.test('ExcpNew', () => {
+				assert_equal_values(interpret_extracted_drops(`{
+					Exception.("message");
+					Exception.("message", Exception.("cause"));
+				}`), [
+					new VALUE.Exception(new VALUE.String('message')),
+					new VALUE.Exception(new VALUE.String('message'), new VALUE.Exception(new VALUE.String('cause'))),
+				]);
+			});
+
 			test.test('MaybeNew', () => {
 				const interp = new Interpreter();
 				return assert_equal_values([
@@ -442,6 +452,7 @@ test.suite('Opcode', () => {
 							IntrinsicName.DICT,
 							IntrinsicName.SET,
 							IntrinsicName.MAP,
+							'Exception',
 							IntrinsicName.FUNCTION,
 						] as const).forEach((name, i) => {
 							test.test(name, () => {
@@ -464,6 +475,7 @@ test.suite('Opcode', () => {
 									VALUE.Dict,
 									VALUE.Set,
 									VALUE.Map,
+									VALUE.Exception,
 									VALUE.Function,
 								][i])));
 							});
@@ -523,6 +535,7 @@ test.suite('Opcode', () => {
 						IntrinsicName.DICT,
 						IntrinsicName.SET,
 						IntrinsicName.MAP,
+						'Exception',
 						IntrinsicName.MAYBE,
 						IntrinsicName.NONE,
 						IntrinsicName.SOME,
@@ -533,7 +546,7 @@ test.suite('Opcode', () => {
 							const expr_visitor = new VisitorExprBuild(builder);
 							srcs.forEach((src) => builder.pushInstruction(new OP.Drop(new OP.Instance(
 								OP.OpCode.CAST,
-								name,
+								name as IntrinsicName,
 								expr_visitor.visit(AST.EXPR.Expression.fromSource(src)).asTac(builder),
 							))));
 							let i: number = -1;

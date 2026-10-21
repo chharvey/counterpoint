@@ -81,12 +81,22 @@ Map! Interpret((MAP.NEW `pairs`)) :=
 	2. *Return:* a new Map containing the pairs in `data`.
 ;
 
-Record! Interpret((MAYBE.NEW)) :=
+Maybe! Interpret((MAYBE.NEW)) :=
 	1. *Return:* a new Maybe containing no value.
 ;
-Record! Interpret((MAYBE.NEW `value`)) :=
+Maybe! Interpret((MAYBE.NEW `value`)) :=
 	1. *Let* `mval` be *Unwrap:* `Interpret(value)`.
 	2. *Return:* a new Maybe containing the value `mval`.
+;
+
+Exception! Interpret((EXCP.NEW `message`)) :=
+	1. *Set* `message` to *Unwrap:* `Interpret(message)`.
+	2. *Return:* a new Exception containing the message `message`.
+;
+Exception! Interpret((EXCP.NEW `message` `cause`)) :=
+	1. *Set* `message` to *Unwrap:* `Interpret(message)`.
+	2. *Set* `cause` to *Unwrap:* `Interpret(cause)`.
+	3. *Return:* a new Exception containing the message `message` and the cause `cause`.
 ;
 
 Value! Interpret((TUPLE.GET `index` `obj`)) :=
@@ -270,18 +280,19 @@ Value! Interpret((MAYBE.UNWRAP `obj`)) :=
 Boolean! Interpret((INSTANCEOF `src` `v`)) :=
 	1. *Set* `v` to *Unwrap:* `Interpret(v)`;
 	2. *If* any of the following conditions is `true`:
-		- `src` is "Symbol"   *and* `v` is an instance of `Symbol`
-		- `src` is "Integer"  *and* `v` is an instance of `Integer`
-		- `src` is "Natural"  *and* `v` is an instance of `Natural`
-		- `src` is "Float"    *and* `v` is an instance of `Float`
-		- `src` is "String"   *and* `v` is an instance of `String`
-		- `src` is "Object"   *and* `v` is an instance of `Object`
-		- `src` is "List"     *and* `v` is an instance of `List`
-		- `src` is "Dict"     *and* `v` is an instance of `Dict`
-		- `src` is "Set"      *and* `v` is an instance of `Set`
-		- `src` is "Map"      *and* `v` is an instance of `Map`
-		- `src` is "Maybe"    *and* `v` is an instance of `Maybe`
-		- `src` is "Function" *and* `v` is an instance of `Function`
+		- `src` is "Symbol"    *and* `v` is an instance of `Symbol`
+		- `src` is "Integer"   *and* `v` is an instance of `Integer`
+		- `src` is "Natural"   *and* `v` is an instance of `Natural`
+		- `src` is "Float"     *and* `v` is an instance of `Float`
+		- `src` is "String"    *and* `v` is an instance of `String`
+		- `src` is "Object"    *and* `v` is an instance of `Object`
+		- `src` is "List"      *and* `v` is an instance of `List`
+		- `src` is "Dict"      *and* `v` is an instance of `Dict`
+		- `src` is "Set"       *and* `v` is an instance of `Set`
+		- `src` is "Map"       *and* `v` is an instance of `Map`
+		- `src` is "Exception" *and* `v` is an instance of `Exception`
+		- `src` is "Maybe"     *and* `v` is an instance of `Maybe`
+		- `src` is "Function"  *and* `v` is an instance of `Function`
 		1. *Return:* `true`.
 	3. *Else If* `src` is "None" *and* `v` is an instance of `Maybe`:
 		1. *If* `v` has a value:

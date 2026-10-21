@@ -83,7 +83,7 @@ export class Instance extends Value {
 			case IntrinsicName.DICT:     { is_instance = operand instanceof VALUE.Dict;                     break; }
 			case IntrinsicName.SET:      { is_instance = operand instanceof VALUE.Set;                      break; }
 			case IntrinsicName.MAP:      { is_instance = operand instanceof VALUE.Map;                      break; }
-			case 'Exception':            { throw new Error('interpret not yet supported.'); }
+			case 'Exception':            { is_instance = operand instanceof VALUE.Exception;                break; }
 			case IntrinsicName.MAYBE:    { is_instance = operand instanceof VALUE.Maybe;                    break; }
 			case IntrinsicName.NONE:     { is_instance = operand instanceof VALUE.Maybe && operand.isNone;  break; }
 			case IntrinsicName.SOME:     { is_instance = operand instanceof VALUE.Maybe && !operand.isNone; break; }
