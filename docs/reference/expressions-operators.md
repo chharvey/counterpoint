@@ -470,18 +470,20 @@ The **emptiness operator**, `?`, determines whether a value is considered “emp
 A value is “empty” if it’s “falsy”, if it’s a zero numeric value (`0`, `0.0`, or `-0.0`),
 or if it’s an empty string or empty collection (such as an array or set).
 
-| “Falsy” Values | “Empty” Values   | “Truthy” Values |
-| -------------- | ---------------- | --------------- |
-| `null`         | `null`           |                 |
-| `false`        | `false`          | `true`          |
-|                |                  | all symbols     |
-|                | `0`              | all integers    |
-|                | `+0`             | all naturals    |
-|                | `0.0`, `-0.0`    | all floats      |
-|                | `""`             | all strings     |
-|                | `()`, `[]`, `{}` | all collections |
-| all `None`s    | all `None`s      | all `Some`s     |
-|                |                  | any other value |
+| “Falsy” Values | “Empty” Values   | “Truthy” Values  |
+| -------------- | ---------------- | ---------------- |
+| `null`         | `null`           |                  |
+| `false`        | `false`          | `true`           |
+|                |                  | all symbols      |
+|                | `0`              | all integers     |
+|                | `+0`             | all naturals     |
+|                | `0.0`, `-0.0`    | all floats       |
+|                | `""`             | all strings      |
+|                | `()`, `[]`, `{}` | all collections  |
+|                |                  | all `Exception`s |
+|                | all `None`s      | all `Some`s      |
+|                |                  | all `Result`s    |
+|                |                  | any other value  |
 
 
 ### Mathematical Affirmation, Mathematical Negation

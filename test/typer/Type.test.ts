@@ -181,10 +181,12 @@ test.suite('Type', () => {
 		test.test('reference types are definitely truthy.', () => {
 			[
 				TYPE.OBJ,
+				TYPE.EXCP,
 				new TYPE.List(TYPE.INT),
 				new TYPE.Dict(TYPE.INT),
 				new TYPE.Set(TYPE.INT),
 				new TYPE.Map(TYPE.INT, TYPE.INT),
+				new TYPE.Maybe(TYPE.INT),
 			].forEach((t) => assert.ok(t.isDefinitelyTruthy, `Expected \`${t}\` to be definitely truthy.`));
 		});
 	});
@@ -202,6 +204,7 @@ test.suite('Type', () => {
 			[TYPE.FLOAT,    TYPE.NOTHING],
 			[TYPE.STR,      TYPE.NOTHING],
 			[TYPE.OBJ,      TYPE.NOTHING],
+			[TYPE.EXCP,     TYPE.NOTHING],
 		]).forEach((right, left) => assert.ok(left.falsySide.equals(right), `${left.falsySide} == ${right}`));
 	});
 

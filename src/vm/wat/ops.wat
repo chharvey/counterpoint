@@ -56,15 +56,12 @@
 
 
 (func $op:not (export "op::not") (param $value (ref $Value)) (result (ref $Value))
-	(call $Value.bool-from-i32 (i32.or
-		(i32.and
-			(call $Value.is-primitive (local.get $value))
-			(i32.or
-				(call $Vect.is-null  (struct.get $Value $primitive (local.get $value)))
-				(call $Vect.is-false (struct.get $Value $primitive (local.get $value)))
-			)
+	(call $Value.bool-from-i32 (i32.and
+		(call $Value.is-primitive (local.get $value))
+		(i32.or
+			(call $Vect.is-null  (struct.get $Value $primitive (local.get $value)))
+			(call $Vect.is-false (struct.get $Value $primitive (local.get $value)))
 		)
-		(call $Value.bool-to-i32 (call $op:is-none (local.get $value)))
 	))
 )
 
@@ -91,11 +88,12 @@
 	(unreachable)
 )
 (func $!op:is-empty/composite (param $composite (ref eq)) (result i32)
-	(if (ref.test (ref $Tuple)  (local.get $composite)) (then (return (i32.eqz (array.len              (ref.cast (ref $Tuple)  (local.get $composite)))))))
-	(if (ref.test (ref $Record) (local.get $composite)) (then (return (i32.eqz (array.len              (ref.cast (ref $Record) (local.get $composite)))))))
-	(if (ref.test (ref $List)   (local.get $composite)) (then (return (i32.eqz (struct.get $List $size (ref.cast (ref $List)   (local.get $composite)))))))
-	(if (ref.test (ref $Dict)   (local.get $composite)) (then (return (i32.eqz (struct.get $Dict $size (ref.cast (ref $Dict)   (local.get $composite)))))))
-	(if (ref.test (ref $Map)    (local.get $composite)) (then (return (i32.eqz (struct.get $Map  $size (ref.cast (ref $Map)    (local.get $composite)))))))
+	(if (ref.test (ref $Tuple)  (local.get $composite)) (then (return (i32.eqz     (array.len                (ref.cast (ref $Tuple)  (local.get $composite)))))))
+	(if (ref.test (ref $Record) (local.get $composite)) (then (return (i32.eqz     (array.len                (ref.cast (ref $Record) (local.get $composite)))))))
+	(if (ref.test (ref $List)   (local.get $composite)) (then (return (i32.eqz     (struct.get $List  $size  (ref.cast (ref $List)   (local.get $composite)))))))
+	(if (ref.test (ref $Dict)   (local.get $composite)) (then (return (i32.eqz     (struct.get $Dict  $size  (ref.cast (ref $Dict)   (local.get $composite)))))))
+	(if (ref.test (ref $Map)    (local.get $composite)) (then (return (i32.eqz     (struct.get $Map   $size  (ref.cast (ref $Map)    (local.get $composite)))))))
+	(if (ref.test (ref $Maybe)  (local.get $composite)) (then (return (ref.is_null (struct.get $Maybe $value (ref.cast (ref $Maybe)  (local.get $composite)))))))
 	(unreachable)
 )
 

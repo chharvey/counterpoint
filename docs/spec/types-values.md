@@ -823,12 +823,7 @@ Boolean ToBoolean(Value value) :=
 		1. *Return:* `false`.
 	2. *If* `value` is an instance of `Boolean`:
 		1. *Return:* `value`.
-	3. *If* `value` is an instance of `Maybe`:
-		1. *If* `v` does not have a value:
-			1. *Return:* `false`.
-		2. *Else:*
-			1. Fall through.
-	4. *Return:* `true`.
+	3. *Return:* `true`.
 ```
 
 
