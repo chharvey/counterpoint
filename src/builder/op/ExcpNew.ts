@@ -18,7 +18,7 @@ import type {ValueTac} from './ValueTac.ts';
 
 
 
-/** Create a Maybe. */
+/** Create an Exception. */
 export class ExcpNew extends Value {
 	public constructor(
 		private readonly message: ValueTac,

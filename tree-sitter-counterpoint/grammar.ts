@@ -349,6 +349,7 @@ module.exports = grammar({
 			'break',
 			'skip',
 			'return',
+			'panic',
 			$.identifier,
 			$.keyword_type,
 			$.keyword_value,
@@ -616,6 +617,7 @@ module.exports = grammar({
 		statement_break: _$ => seq(choice('break', 'skip'), ';'),
 
 		...parameterize('statement_return', ({break: brk}) => $ => seq('return', optional(field('expression_0', call($, '_expression', 'block', {break: brk}, 'return'))), ';'), 'break'),
+		...parameterize('statement_panic',  ({break: brk}) => $ => seq('panic',           field('expression_0', call($, '_expression', 'block', {break: brk}, 'return')),  ';'), 'break'),
 
 		...parameterize('_statement', ({break: brk, return: rtn}) => $ => choice(
 			call($, '_declaration',                          {break: brk}, {return: rtn}),
@@ -628,6 +630,7 @@ module.exports = grammar({
 			call($, 'statement_iteration',                                 {return: rtn}),
 			...iff(brk, $.statement_break),
 			...iff(rtn, call($, 'statement_return', {break: brk})),
+			call($, 'statement_panic', {break: brk}),
 		), 'break', 'return'),
 
 		...parameterize('block', ({break: brk, return: rtn}) => $ => seq('{', repeat1(call($, '_statement', {break: brk}, {return: rtn})), '}'), 'break', 'return'),
@@ -727,6 +730,7 @@ module.exports = grammar({
 			'break',
 			'skip',
 			'return',
+			'panic',
 			// type keyword
 			'nothing',
 			'bool',

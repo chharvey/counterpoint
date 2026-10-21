@@ -666,9 +666,19 @@ export class Decorator {
 				node.children[0].type === Keyword.SKIP,
 			)],
 
-			[/^statement_return(__break)?$/, (node) => new AST.STMT.StatementReturn(
+			[/^statement_return(__break)?$/, (node) => {
+				const expression_0 = node.childForFieldName('expression_0') as SyntaxNodeSupertype<'expression'> | null;
+				return new AST.STMT.StatementReturn(
+					node as SyntaxNodeType<'statement_return'>,
+					false,
+					expression_0 && this.decorateExprNode(expression_0),
+				);
+			}],
+
+			[/^statement_panic(__break)?$/, (node) => new AST.STMT.StatementReturn(
 				node as SyntaxNodeType<'statement_return'>,
-				node.childForFieldName('expression_0') && this.decorateExprNode(node.childForFieldName('expression_0') as SyntaxNodeSupertype<'expression'>),
+				true,
+				this.decorateExprNode(node.childForFieldName('expression_0') as SyntaxNodeSupertype<'expression'>),
 			)],
 
 			[/^block(__break)?(__return)?$/, (node) => this.decorateBlockNode(node as SyntaxNodeFamily<'block', ['break', 'return']>)],

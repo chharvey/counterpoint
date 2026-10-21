@@ -317,7 +317,7 @@ Nil! TypeCheck(SemanticStatementIteration stmt) :=
 
 
 
-Nil! TypeCheck(SemanticStatementReturn ::= ()) :=
+Nil! TypeCheck(SemanticStatementReturn[panic=false] ::= ()) :=
 	1. *Let* `parent` be the result of walking up the AST and finding a node
 		that is either a SemanticExpressionFunction or a SemanticDeclarationFunction.
 	2. *If* `parent` is set:
@@ -331,7 +331,7 @@ Nil! TypeCheck(SemanticStatementReturn ::= ()) :=
 	3. *Else:*
 		1. *Return.*
 ;
-Nil! TypeCheck(SemanticStatementReturn ::= SemanticExpression) :=
+Nil! TypeCheck(SemanticStatementReturn[panic=false] ::= SemanticExpression) :=
 	1. *Let* `parent` be the result of walking up the AST and finding a node
 		that is either a SemanticExpressionFunction or a SemanticDeclarationFunction.
 	2. *If* `parent` is set:
@@ -344,6 +344,8 @@ Nil! TypeCheck(SemanticStatementReturn ::= SemanticExpression) :=
 	3. *Else:*
 		1. *Return.*
 ;
+Nil! TypeCheck(SemanticStatementReturn[panic=true] ::= SemanticExpression)
+	:= TypeCheckAssign(SemanticExpression, Exception);
 
 
 

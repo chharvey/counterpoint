@@ -979,6 +979,13 @@ test.suite('Decorator', () => {
 				% (statement_return)
 			`]],
 
+			['Decorate(Decorate(StatementPanic<Break> ::= "panic" Expression<+Block><?Break><+Return> ";") -> SemanticStatementReturn', [AST.STMT.StatementReturn, `
+				{
+					panic my_exception;
+				}
+				% (statement_panic)
+			`]],
+
 			['Decorate(Block<Break, Return> ::= "{" Statement<?Break><?Return>+ "}") -> SemanticBlock', [AST.Block, `
 				{
 					type T = U;
