@@ -53,7 +53,6 @@ export class ExcpNew extends Value {
 
 	@memoizeMethod
 	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
-		cg;
-		throw new Error('codegen not yet supported.');
+		return cg.vm.Value.newComposite(cg.codegenException(this.message.codegen(cg), this.cause?.codegen(cg)));
 	}
 }

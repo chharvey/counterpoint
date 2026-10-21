@@ -1351,6 +1351,19 @@ test.suite('Opcode', () => {
 				});
 			});
 
+			test.test('ExcpNew', () => {
+				const cg = new CodeGenerator();
+				const actual = new OP.ExcpNew(new OP.Const(new VALUE.String('hello')));
+				const expected: binaryen.ExpressionRef = cg.vm.Value.newComposite(cg.codegenException(genConst(cg, 'hello')));
+				return assertEqualBins([
+					actual,
+					new OP.ExcpNew(new OP.Const(new VALUE.String('world')), actual),
+				].map((opcode) => opcode.codegen(cg)), [
+					expected,
+					cg.vm.Value.newComposite(cg.codegenException(genConst(cg, 'world'), expected)),
+				]);
+			});
+
 			test.test('MaybeNew', () => {
 				const cg = new CodeGenerator();
 				return assertEqualBins([
@@ -1720,7 +1733,7 @@ test.suite('Opcode', () => {
 			test.suite('Instance', () => {
 				test.test('INSTANCEOF', () => {
 					const {builder, cg, wasm} = setupScript(`{
-						${INTRINSICS.slice(2).map((classname) => `null is ${classname};`).join('\n')};
+						${[...INTRINSICS, 'Exception'].slice(2).map((classname) => `null is ${classname};`).join('\n')};
 					}`);
 					const operand: binaryen.ExpressionRef = genConst(cg);
 					return assertEqualBins(builder.instructions.map((instr) => instr.codegen(cg)), [
@@ -1738,11 +1751,12 @@ test.suite('Opcode', () => {
 						cg.vm.op.isNone(operand),
 						cg.vm.op.isSome(operand),
 						cg.vm.op.isFunction(operand),
+						cg.vm.op.isException(operand),
 					].map((expr) => wasm.drop(expr)));
 				});
 				test.test('CAST', () => {
 					const {builder, cg, wasm} = setupScript(`{
-						${INTRINSICS.map((classname) => `null as <anything> as ${classname};`).join('\n')};
+						${[...INTRINSICS, 'Exception'].map((classname) => `null as <anything> as ${classname};`).join('\n')};
 					}`);
 					const operand: binaryen.ExpressionRef = genConst(cg);
 					return assertEqualBins(builder.instructions.filter((instr) => instr instanceof OP.Drop).map((instr) => instr.codegen(cg)), [
@@ -1762,6 +1776,7 @@ test.suite('Opcode', () => {
 						cg.vm.op.asNone(operand),
 						cg.vm.op.asSome(operand),
 						cg.vm.op.asFunction(operand),
+						cg.vm.op.asException(operand),
 					].map((expr) => wasm.drop(expr)));
 				});
 			});

@@ -119,7 +119,7 @@ export class Instance extends Value {
 					case IntrinsicName.DICT:     { return cg.vm.op.isDict(code); }
 					case IntrinsicName.SET:      { return cg.vm.op.isMap(code); }
 					case IntrinsicName.MAP:      { return cg.vm.op.isMap(code); }
-					case 'Exception':            { throw new Error('op::isException not yet supported.'); }
+					case 'Exception':            { return cg.vm.op.isException(code); }
 					case IntrinsicName.MAYBE:    { return cg.vm.op.isMaybe(code); }
 					case IntrinsicName.NONE:     { return cg.vm.op.isNone(code); }
 					case IntrinsicName.SOME:     { return cg.vm.op.isSome(code); }
@@ -141,7 +141,7 @@ export class Instance extends Value {
 					case IntrinsicName.DICT:     { return cg.vm.op.asDict(code); }
 					case IntrinsicName.SET:      { return cg.vm.op.asMap(code); }
 					case IntrinsicName.MAP:      { return cg.vm.op.asMap(code); }
-					case 'Exception':            { throw new Error('op::asException not yet supported.'); }
+					case 'Exception':            { return cg.vm.op.asException(code); }
 					case IntrinsicName.MAYBE:    { return cg.vm.op.asMaybe(code); }
 					case IntrinsicName.NONE:     { return cg.vm.op.asNone(code); }
 					case IntrinsicName.SOME:     { return cg.vm.op.asSome(code); }

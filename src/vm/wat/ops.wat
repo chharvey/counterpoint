@@ -188,6 +188,12 @@
 		(ref.test (ref $Map) (struct.get $Value $composite (local.get $value)))
 	))
 )
+(func $op:is-exception (export "op::isException") (param $value (ref $Value)) (result (ref $Value))
+	(call $Value.bool-from-i32 (i32.and
+		(call $Value.is-composite (local.get $value))
+		(ref.test (ref $Exception) (struct.get $Value $composite (local.get $value)))
+	))
+)
 (func $op:is-maybe (export "op::isMaybe") (param $value (ref $Value)) (result (ref $Value))
 	(call $Value.bool-from-i32 (i32.and
 		(call $Value.is-composite (local.get $value))
@@ -285,6 +291,9 @@
 )
 (func $op:as-map (export "op::asMap") (param $value (ref $Value)) (result (ref $Value))
 	(return_call $Value.new-composite (ref.cast (ref $Map) (struct.get $Value $composite (local.get $value))))
+)
+(func $op:as-exception (export "op::asException") (param $value (ref $Value)) (result (ref $Value))
+	(return_call $Value.new-composite (ref.cast (ref $Exception) (struct.get $Value $composite (local.get $value))))
 )
 (func $op:as-maybe (export "op::asMaybe") (param $value (ref $Value)) (result (ref $Value))
 	(return_call $Value.new-composite (ref.cast (ref $Maybe) (struct.get $Value $composite (local.get $value))))

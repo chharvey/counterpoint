@@ -350,6 +350,21 @@ export class CodeGenerator {
 	}
 
 	/**
+	 * Return a new `$Exception` from a given message and optional cause.
+	 * @param message the error message
+	 * @param value   the optional cause; if not given, `(ref.null $Exception)` is used
+	 * @return        `(struct.new $Exception <message> <cause?>)`
+	 */
+	public codegenException(message: binaryen.ExpressionRef /* (ref $String) */, cause?: binaryen.ExpressionRef /* (ref $Exception) */): binaryen.ExpressionRef /* (ref $Expression) */ {
+		const {vm: {heaptype, Object: VmObject}, mod: {wasm}} = this;
+		return wasm.struct.new([
+			VmObject.ctrPlusPlus(),
+			message,
+			cause ?? wasm.ref.null(heaptype.Exception),
+		], heaptype.Exception);
+	}
+
+	/**
 	 * Return a new `$Maybe` from a given optional value.
 	 * @param value the optional value; if not given, `(ref.null $Value)` is used
 	 * @return      `(struct.new $Maybe <value?>)`
