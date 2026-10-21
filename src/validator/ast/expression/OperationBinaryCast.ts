@@ -69,6 +69,7 @@ export class OperationBinaryCast extends OperationBinary {
 			[IntrinsicName.DICT,     new TYPE.Dict(TYPE.ANYTHING)],
 			[IntrinsicName.SET,      new TYPE.Set(TYPE.ANYTHING)],
 			[IntrinsicName.MAP,      new TYPE.Map(TYPE.ANYTHING, TYPE.ANYTHING)],
+			['Exception' as IntrinsicName, TYPE.EXCP],
 			[IntrinsicName.MAYBE,    new TYPE.Maybe(TYPE.ANYTHING)],
 			[IntrinsicName.NONE,     new TYPE.None(TYPE.ANYTHING)],
 			[IntrinsicName.SOME,     new TYPE.Some(TYPE.ANYTHING)],

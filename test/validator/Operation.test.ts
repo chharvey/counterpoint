@@ -116,7 +116,7 @@ test.suite('Operation', () => {
 					assertEqualTypes(
 						setupScript(`{
 							val n: anything = null;
-							${INTRINSICS.map((t) => `n as ${t};`).join('\n')}
+							${[...INTRINSICS, 'Exception'].map((t) => `n as ${t};`).join('\n')}
 						}`, {build: false}).stmts.slice(1).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()),
 						[
 							TYPE.NULL,
@@ -135,6 +135,7 @@ test.suite('Operation', () => {
 							new TYPE.None(TYPE.ANYTHING),
 							new TYPE.Some(TYPE.ANYTHING),
 							new TYPE.Function(undefined, undefined, TYPE.ANYTHING),
+							TYPE.EXCP,
 						],
 					);
 				});
@@ -153,7 +154,7 @@ test.suite('Operation', () => {
 					assertEqualTypes(
 						setupScript(`{
 							val n: anything = null;
-							${INTRINSICS.map((t) => `n as? ${t};`).join('\n')}
+							${[...INTRINSICS, 'Exception'].map((t) => `n as? ${t};`).join('\n')}
 						}`, {build: false}).stmts.slice(1).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()),
 						[
 							new TYPE.Maybe(TYPE.NULL),
@@ -172,6 +173,7 @@ test.suite('Operation', () => {
 							new TYPE.Maybe(new TYPE.None(TYPE.ANYTHING)),
 							new TYPE.Maybe(new TYPE.Some(TYPE.ANYTHING)),
 							new TYPE.Maybe(new TYPE.Function(undefined, undefined, TYPE.ANYTHING)),
+							new TYPE.Maybe(TYPE.EXCP),
 						],
 					);
 				});
