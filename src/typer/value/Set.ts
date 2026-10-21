@@ -25,8 +25,6 @@ import {Collection} from './Collection.ts';
  * @final
  */
 class ValueSet<T extends Value = Value> extends Collection {
-	public override readonly isReference = true;
-
 	#elements: Set<T>;
 
 

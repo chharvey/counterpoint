@@ -28,9 +28,6 @@ export class Maybe<T extends Value = Value> extends Value {
 		}
 	}
 
-
-	public override readonly isReference = true;
-
 	public override get isTruthy(): boolean {
 		return !this.isNone;
 	}

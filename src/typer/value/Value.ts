@@ -33,7 +33,7 @@ export function identical(
  */
 export abstract class Value {
 	/** Whether this value is of a reference type or a value type. */
-	public abstract readonly isReference: boolean;
+	public readonly isReference: boolean = true;
 
 	/**
 	 * Return the “logical value” of this value.
