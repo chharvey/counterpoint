@@ -698,6 +698,10 @@ test.suite('VisitorExprBuild#visit', () => {
 				3 -> 0.4,
 			})`,
 		] as const;
+		const EXCEPTION_CONS = [
+			'Exception.("message")',
+			'Exception.("message", Exception.("cause"))',
+		] as const;
 		test.test('`Boolean.(‹…›)`', () => {
 			assert.strictEqual(setupScript(`{
 				${BOOL_CONS.map((src) => `${src};`).join('\n')}
@@ -1067,6 +1071,17 @@ test.suite('VisitorExprBuild#visit', () => {
 					(DECL <Map> $46 (MAP.NEW (INT.CONST 1)->(FLOAT.CONST 0.1) (INT.CONST 2)->(FLOAT.CONST 0.2) (INT.CONST 3)->(FLOAT.CONST 0.4)))
 					(MAP.COPY (GET $45) (GET $46))
 					(DROP (GET $45))
+					(ENDPROGRAM)
+			`.trim());
+		});
+		test.test('`Exception.(‹…›)`', () => {
+			assert.strictEqual(setupScript(`{
+				${EXCEPTION_CONS.map((src) => `${src};`).join('\n')}
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
+				"block-0":
+					(DROP (EXCP.NEW (STR.CONST "message")))
+					(DECL <Exception> $0 (EXCP.NEW (STR.CONST "cause")))
+					(DROP (EXCP.NEW (STR.CONST "message") (GET $0)))
 					(ENDPROGRAM)
 			`.trim());
 		});

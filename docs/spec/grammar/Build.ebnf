@@ -39,7 +39,8 @@ LIST.NEW([Value*])                        -> List;
 DICT.NEW(Vector<VALUE.Symbol, Value>*)    -> Dict;
 SET.NEW([Value*])                         -> Set;
 MAP.NEW(Vector<Value, Value>*)            -> Map;
-MAYBE.NEW(Value?)                         -> Maybe;
+EXCP.NEW([Value Value?])                  -> Exception;
+MAYBE.NEW([Value?])                       -> Maybe;
 
 TUPLE.GET (native-bigint [Value]) -> Value;
 RECORD.GET(native-bigint [Value]) -> Value;
@@ -239,6 +240,10 @@ Build(SemanticExpressionCall:has(SemanticExpressionVariable ::= "Map"):has(Seman
 	(MAP.COPY (GET $destination) (GET $arg))
 	return (GET $destination).
 ];
+Build(SemanticExpressionCall ::= "Exception" SemanticType* SemanticExpression__1)
+	:= (EXCP.NEW `Build(SemanticExpression__1)`);
+Build(SemanticExpressionCall ::= "Exception" SemanticType* SemanticExpression__1 SemanticExpression__2)
+	:= (EXCP.NEW `Build(SemanticExpression__1)` `Build(SemanticExpression__2)`);
 Build(SemanticExpressionCall:has(SemanticExpressionVariable ::= "Some"):has(SemanticExpression*) call) := (MAYBE.NEW `Build(call.SemanticExpression*.0)`);
 Build(SemanticExpressionCall call) := (CALL [`Build(call.0)` `...call.SemanticExpression*.map(Build)`]);
 

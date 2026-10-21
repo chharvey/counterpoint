@@ -135,6 +135,16 @@ test.suite('Opcode', () => {
 				]);
 			});
 
+			test.test('ExcpNew', () => {
+				assert_equal_values(interpret_extracted_drops(`{
+					Exception.("message");
+					Exception.("message", Exception.("cause"));
+				}`), [
+					new VALUE.Exception(new VALUE.String('message')),
+					new VALUE.Exception(new VALUE.String('message'), new VALUE.Exception(new VALUE.String('cause'))),
+				]);
+			});
+
 			test.test('MaybeNew', () => {
 				const interp = new Interpreter();
 				return assert_equal_values([
@@ -442,6 +452,7 @@ test.suite('Opcode', () => {
 							IntrinsicName.DICT,
 							IntrinsicName.SET,
 							IntrinsicName.MAP,
+							IntrinsicName.EXCEPTION,
 							IntrinsicName.FUNCTION,
 						] as const).forEach((name, i) => {
 							test.test(name, () => {
@@ -464,6 +475,7 @@ test.suite('Opcode', () => {
 									VALUE.Dict,
 									VALUE.Set,
 									VALUE.Map,
+									VALUE.Exception,
 									VALUE.Function,
 								][i])));
 							});
@@ -523,6 +535,7 @@ test.suite('Opcode', () => {
 						IntrinsicName.DICT,
 						IntrinsicName.SET,
 						IntrinsicName.MAP,
+						IntrinsicName.EXCEPTION,
 						IntrinsicName.MAYBE,
 						IntrinsicName.NONE,
 						IntrinsicName.SOME,
@@ -1338,6 +1351,19 @@ test.suite('Opcode', () => {
 				});
 			});
 
+			test.test('ExcpNew', () => {
+				const cg = new CodeGenerator();
+				const actual = new OP.ExcpNew(new OP.Const(new VALUE.String('hello')));
+				const expected: binaryen.ExpressionRef = cg.vm.Value.newComposite(cg.codegenException(genConst(cg, 'hello')));
+				return assertEqualBins([
+					actual,
+					new OP.ExcpNew(new OP.Const(new VALUE.String('world')), actual),
+				].map((opcode) => opcode.codegen(cg)), [
+					expected,
+					cg.vm.Value.newComposite(cg.codegenException(genConst(cg, 'world'), expected)),
+				]);
+			});
+
 			test.test('MaybeNew', () => {
 				const cg = new CodeGenerator();
 				return assertEqualBins([
@@ -1721,6 +1747,7 @@ test.suite('Opcode', () => {
 						cg.vm.op.isDict(operand),
 						cg.vm.op.isMap(operand),
 						cg.vm.op.isMap(operand),
+						cg.vm.op.isException(operand),
 						cg.vm.op.isMaybe(operand),
 						cg.vm.op.isNone(operand),
 						cg.vm.op.isSome(operand),
@@ -1745,6 +1772,7 @@ test.suite('Opcode', () => {
 						cg.vm.op.asDict(operand),
 						cg.vm.op.asMap(operand),
 						cg.vm.op.asMap(operand),
+						cg.vm.op.asException(operand),
 						cg.vm.op.asMaybe(operand),
 						cg.vm.op.asNone(operand),
 						cg.vm.op.asSome(operand),

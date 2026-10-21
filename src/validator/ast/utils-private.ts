@@ -105,6 +105,7 @@ export type CallableClassName = (
 	| IntrinsicName.DICT
 	| IntrinsicName.SET
 	| IntrinsicName.MAP
+	| IntrinsicName.EXCEPTION
 	| IntrinsicName.NONE
 	| IntrinsicName.SOME
 );
@@ -118,6 +119,7 @@ const CALLABLE_CLASSES: readonly string[] = [
 	IntrinsicName.DICT,
 	IntrinsicName.SET,
 	IntrinsicName.MAP,
+	IntrinsicName.EXCEPTION,
 	IntrinsicName.NONE,
 	IntrinsicName.SOME,
 ];
@@ -235,6 +237,9 @@ export type ConstructorSchema = {
  * 	new ('set': Set.<(K, V)>);
  * 	new (map:   Map.<K, V>);
  * }
+ * declare class Exception extends Object {
+ * 	new (message: str, cause?: Exception);
+ * }
  * declare abstract class Maybe<out T> extends Object {}
  * declare class None<out T> extends Maybe.<T> {
  * 	new ();
@@ -311,6 +316,11 @@ export const CLASS_API = new Map<CallableInterfaceName | CallableClassName, Cons
 			[{positional: true, type: (generic_params) => new TYPE.Map(generic_params[0], generic_params[1])}],
 		],
 		returnType: (generic_params) => new TYPE.Map(generic_params[0], generic_params[1]),
+	}],
+	[IntrinsicName.EXCEPTION, {
+		genericParams: [],
+		overloads:     [[{positional: true, type: () => TYPE.STR}, {positional: true, optional: true, type: () => TYPE.EXCP}]],
+		returnType:    () => TYPE.EXCP,
 	}],
 	[IntrinsicName.MAYBE, {
 		genericParams: [{positional: true, readonlyVariance: 'covariant'}],

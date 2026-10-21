@@ -98,7 +98,7 @@ export class Unop extends Value {
 			case OpCode.STR_FROM:   { return operand.toCplString(); }
 
 			case OpCode.NOT: { return VALUE.Boolean.fromBoolean(!operand.isTruthy); }
-			case OpCode.EMP: { return VALUE.Boolean.fromBoolean(!operand.isTruthy || operand.isEmpty); }
+			case OpCode.EMP: { return VALUE.Boolean.fromBoolean(operand.isEmpty); }
 			case OpCode.NEG: { return (operand as VALUE.Integer | VALUE.Float).neg(); }
 
 			case OpCode.LIST_COUNT: { return new VALUE.Natural((operand as VALUE.List).count); }

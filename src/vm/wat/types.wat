@@ -87,6 +87,19 @@
 		(field $internal (mut (ref $MapInternal)))
 	)))
 
+	;; precursor to the `Exception` class
+	(type $Exception (sub $Object (struct
+		;; --- inherited ---
+		;; unique id for hashing
+		(field $id i64)
+
+		;; --- own ---
+		;; the error message
+		(field $message (ref $String))
+		;; a cause of this Exception
+		(field $cause (ref null $Exception))
+	)))
+
 	;; precursor to the `Maybe` class
 	(type $Maybe (sub final $Object (struct
 		;; --- inherited ---

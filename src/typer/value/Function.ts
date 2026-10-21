@@ -5,6 +5,7 @@ import {Value} from './Value.ts';
 
 /**
  * A Counterpoint function value.
+ * @final
  */
 class ValueFunction extends Value {
 	public constructor(
@@ -13,9 +14,6 @@ class ValueFunction extends Value {
 	) {
 		super();
 	}
-
-
-	public override readonly isReference = true;
 
 
 	public override toString(): string {

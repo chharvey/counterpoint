@@ -32,6 +32,7 @@ export function ops(vm: VirtualMachine) {
 					['op::isList',      {name: 'op:is-list',      param: reftype.Value,  result: reftype.Value}],
 					['op::isDict',      {name: 'op:is-dict',      param: reftype.Value,  result: reftype.Value}],
 					['op::isMap',       {name: 'op:is-map',       param: reftype.Value,  result: reftype.Value}],
+					['op::isException', {name: 'op:is-exception', param: reftype.Value,  result: reftype.Value}],
 					['op::isMaybe',     {name: 'op:is-maybe',     param: reftype.Value,  result: reftype.Value}],
 					['op::isNone',      {name: 'op:is-none',      param: reftype.Value,  result: reftype.Value}],
 					['op::isSome',      {name: 'op:is-some',      param: reftype.Value,  result: reftype.Value}],
@@ -46,6 +47,7 @@ export function ops(vm: VirtualMachine) {
 					['op::asList',      {name: 'op:as-list',      param: reftype.Value,  result: reftype.Value}],
 					['op::asDict',      {name: 'op:as-dict',      param: reftype.Value,  result: reftype.Value}],
 					['op::asMap',       {name: 'op:as-map',       param: reftype.Value,  result: reftype.Value}],
+					['op::asException', {name: 'op:as-exception', param: reftype.Value,  result: reftype.Value}],
 					['op::asMaybe',     {name: 'op:as-maybe',     param: reftype.Value,  result: reftype.Value}],
 					['op::asNone',      {name: 'op:as-none',      param: reftype.Value,  result: reftype.Value}],
 					['op::asSome',      {name: 'op:as-some',      param: reftype.Value,  result: reftype.Value}],
@@ -162,6 +164,11 @@ export function ops(vm: VirtualMachine) {
 			vm.mod.wasm.call('op:is-map', [param0], vm.reftype.Value)
 		),
 
+		/** Is the value a composite `Exception` type? */
+		isException: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
+			vm.mod.wasm.call('op:is-exception', [param0], vm.reftype.Value)
+		),
+
 		/** Is the value a composite `Maybe` type? */
 		isMaybe: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
 			vm.mod.wasm.call('op:is-maybe', [param0], vm.reftype.Value)
@@ -230,6 +237,11 @@ export function ops(vm: VirtualMachine) {
 		/** Cast the value to type `Map`. */
 		asMap: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
 			vm.mod.wasm.call('op:as-map', [param0], vm.reftype.Value)
+		),
+
+		/** Cast the value to type `Exception`. */
+		asException: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
+			vm.mod.wasm.call('op:as-exception', [param0], vm.reftype.Value)
 		),
 
 		/** Cast the value to type `Maybe`. */
