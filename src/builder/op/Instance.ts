@@ -37,6 +37,7 @@ type InstanceOfName = (
 	| IntrinsicName.DICT
 	| IntrinsicName.SET
 	| IntrinsicName.MAP
+	| 'Exception'
 	| IntrinsicName.MAYBE
 	| IntrinsicName.NONE
 	| IntrinsicName.SOME
@@ -82,6 +83,7 @@ export class Instance extends Value {
 			case IntrinsicName.DICT:     { is_instance = operand instanceof VALUE.Dict;                     break; }
 			case IntrinsicName.SET:      { is_instance = operand instanceof VALUE.Set;                      break; }
 			case IntrinsicName.MAP:      { is_instance = operand instanceof VALUE.Map;                      break; }
+			case 'Exception':            { throw new Error('interpret not yet supported.'); }
 			case IntrinsicName.MAYBE:    { is_instance = operand instanceof VALUE.Maybe;                    break; }
 			case IntrinsicName.NONE:     { is_instance = operand instanceof VALUE.Maybe && operand.isNone;  break; }
 			case IntrinsicName.SOME:     { is_instance = operand instanceof VALUE.Maybe && !operand.isNone; break; }
@@ -117,6 +119,7 @@ export class Instance extends Value {
 					case IntrinsicName.DICT:     { return cg.vm.op.isDict(code); }
 					case IntrinsicName.SET:      { return cg.vm.op.isMap(code); }
 					case IntrinsicName.MAP:      { return cg.vm.op.isMap(code); }
+					case 'Exception':            { throw new Error('op::isException not yet supported.'); }
 					case IntrinsicName.MAYBE:    { return cg.vm.op.isMaybe(code); }
 					case IntrinsicName.NONE:     { return cg.vm.op.isNone(code); }
 					case IntrinsicName.SOME:     { return cg.vm.op.isSome(code); }
@@ -138,6 +141,7 @@ export class Instance extends Value {
 					case IntrinsicName.DICT:     { return cg.vm.op.asDict(code); }
 					case IntrinsicName.SET:      { return cg.vm.op.asMap(code); }
 					case IntrinsicName.MAP:      { return cg.vm.op.asMap(code); }
+					case 'Exception':            { throw new Error('op::asException not yet supported.'); }
 					case IntrinsicName.MAYBE:    { return cg.vm.op.asMaybe(code); }
 					case IntrinsicName.NONE:     { return cg.vm.op.asNone(code); }
 					case IntrinsicName.SOME:     { return cg.vm.op.asSome(code); }
