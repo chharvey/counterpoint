@@ -22,9 +22,9 @@ SemanticCase
 
 
 
-SemanticParameterFunction[id=nil][named=true][writable: Boolean][optional=false]
+SemanticParameterFunction[id=*nil*][named=true][writable: Boolean][optional=false]
 	::= SemanticKey SemanticType;
-SemanticParameterFunction[id=nil][named=true][writable: Boolean][optional=true]
+SemanticParameterFunction[id=*nil*][named=true][writable: Boolean][optional=true]
 	::= SemanticKey SemanticType SemanticExpression?;
 SemanticParameterFunction[id: RealNumber][named=true][writable: Boolean][optional=false]
 	::= SemanticKey? SemanticType;
@@ -202,11 +202,11 @@ SemanticDeclaration =:=
 SemanticDeclarationType[id: RealNumber]
 	::= SemanticType;
 
-SemanticDeclarationVariable[writable: Boolean][id: RealNumber]
+SemanticDeclarationVariable[id: RealNumber][writable: Boolean]
 	::= SemanticType? SemanticExpression;
-SemanticDeclarationVariable[writable=false]
+SemanticDeclarationVariable[id=*nil*][writable=false]
 	::= SemanticType? SemanticExpression;
-SemanticDeclarationVariable[writable=true][id: RealNumber]
+SemanticDeclarationVariable[id: RealNumber][writable=true]
 	::= SemanticType;
 
 SemanticDeclarationFunction[id?: RealNumber]

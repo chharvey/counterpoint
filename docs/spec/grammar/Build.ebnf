@@ -134,7 +134,7 @@ Build(String  s) := (STR.CONST   s);
 Build(SemanticProperty prop) := Sequence [`Symbol(prop.0)`, `Build(prop.1)`];
 Build(SemanticCase     case) := Sequence [`Build(case.0)`, `Build(case.1)`];
 
-Build(SemanticParameterFunction[id=nil]) := ();
+Build(SemanticParameterFunction[id=*nil*]) := ();
 Build(SemanticParameterFunction[id: RealNumber][optional=false] ::= SemanticKey? SemanticType)
 	:= (DECL ‹type› `GetSymbolSchema(id)`);
 Build(SemanticParameterFunction[id: RealNumber][optional=true] ::= SemanticKey? SemanticType)
@@ -399,13 +399,13 @@ Build(SemanticExpressionFunction) := (LAMBDA ‹temp_name› ‹arity› `Semant
 
 Build(SemanticDeclarationType decl) := [];
 
-Build(SemanticDeclarationVariable[writable: Boolean][id: RealNumber] ::= SemanticType? SemanticExpression) := [
+Build(SemanticDeclarationVariable[id: RealNumber][writable: Boolean] ::= SemanticType? SemanticExpression) := [
 	(DECL ‹type› `GetSymbolSchema(id)` `Build(SemanticExpression)`)
 ];
-Build(SemanticDeclarationVariable[writable=false] ::= SemanticType? SemanticExpression) := [
+Build(SemanticDeclarationVariable[id=*nil*][writable=false] ::= SemanticType? SemanticExpression) := [
 	(DROP `Build(SemanticExpression)`)
 ];
-Build(SemanticDeclarationVariable[writable=true][id: RealNumber] ::= SemanticType) := [
+Build(SemanticDeclarationVariable[id: RealNumber][writable=true] ::= SemanticType) := [
 	(DECL ‹type› `GetSymbolSchema(id)` (MAYBE.NEW))
 ];
 
