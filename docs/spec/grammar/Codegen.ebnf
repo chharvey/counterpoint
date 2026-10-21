@@ -643,4 +643,5 @@ Codegen((MAP.COPY `dest` `src:Map`)) := (block
 	)
 );
 
-Codegen((RETURN `value`)) := (return `Codegen(value)`);
+Codegen((RETURN `value` nil)) := (return `Codegen(value)`  (ref.null $Exception));
+Codegen((RETURN nil `excp`))  := (return (ref.null $Value) `Codegen(excp)`);

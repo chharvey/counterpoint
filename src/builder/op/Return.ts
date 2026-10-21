@@ -30,6 +30,10 @@ export class Return extends Instruction {
 
 	@memoizeMethod
 	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
-		return cg.mod.wasm.return(this.value?.codegen(cg) ?? cg.mod.wasm.nop());
+		const {vm: {heaptype}, mod: {wasm}} = cg;
+		return cg.mod.wasm.return(wasm.tuple.make([
+			this.value ?.codegen(cg) ?? wasm.ref.null(heaptype.Value),
+			this.excp  ?.codegen(cg) ?? wasm.ref.null(heaptype.Exception),
+		]));
 	}
 }

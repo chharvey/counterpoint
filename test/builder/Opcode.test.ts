@@ -2568,16 +2568,21 @@ test.suite('Opcode', () => {
 					\\(): anything => @hello;
 					\\(): anything => 42;
 					\\(): anything => 4.2;
+					panic Exception.("hello");
 				}`, {build: false});
-				stmts.forEach((stmt) => visitor_build.visit(((stmt as AST.STMT.StatementExpression).expr as AST.EXPR.Function).block.children[0]));
+				stmts.slice(0, 5).forEach((stmt) => visitor_build.visit(((stmt as AST.STMT.StatementExpression).expr as AST.EXPR.Function).block.children[0]));
+				visitor_build.visit(stmts[5]);
+				builder.instructions.map((instr) => instr.codegen(cg));
+				const ref_null_Exception: binaryen.ExpressionRef = wasm.ref.null(cg.vm.heaptype.Exception);
 				return assertEqualBins(
-					builder.instructions.map((instr) => instr.codegen(cg)),
+					builder.instructions.filter((instr) => instr instanceof OP.Return).map((instr) => instr.codegen(cg)),
 					[
-						wasm.return(genConst(cg)),
-						wasm.return(genConst(cg, false)),
-						wasm.return(genConst(cg, 'hello', 'sym')),
-						wasm.return(genConst(cg, 42n)),
-						wasm.return(genConst(cg, 4.2)),
+						wasm.return(wasm.tuple.make([genConst(cg),                        ref_null_Exception])),
+						wasm.return(wasm.tuple.make([genConst(cg, false),                 ref_null_Exception])),
+						wasm.return(wasm.tuple.make([genConst(cg, 'hello', 'sym'),        ref_null_Exception])),
+						wasm.return(wasm.tuple.make([genConst(cg, 42n),                   ref_null_Exception])),
+						wasm.return(wasm.tuple.make([genConst(cg, 4.2),                   ref_null_Exception])),
+						wasm.return(wasm.tuple.make([wasm.ref.null(cg.vm.heaptype.Value), wasm.local.get(0, cg.vm.reftype.Exception)])),
 					],
 				);
 			});
