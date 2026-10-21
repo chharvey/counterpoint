@@ -64,7 +64,7 @@ export function check_unique_keys(keys: readonly Key[]): void {
 
 
 export function validate_intrinsic_name(source: string): asserts source is IntrinsicName {
-	if (!([...INTRINSICS, 'Exception'] as readonly string[]).includes(source)) {
+	if (!(INTRINSICS as readonly string[]).includes(source)) {
 		throw new SyntaxError(`Unexpected token: \`${source}\`; expected \`${INTRINSICS.join(' | ')}\`.`);
 	}
 }
@@ -105,7 +105,7 @@ export type CallableClassName = (
 	| IntrinsicName.DICT
 	| IntrinsicName.SET
 	| IntrinsicName.MAP
-	| 'Exception'
+	| IntrinsicName.EXCEPTION
 	| IntrinsicName.NONE
 	| IntrinsicName.SOME
 );
@@ -119,7 +119,7 @@ const CALLABLE_CLASSES: readonly string[] = [
 	IntrinsicName.DICT,
 	IntrinsicName.SET,
 	IntrinsicName.MAP,
-	'Exception',
+	IntrinsicName.EXCEPTION,
 	IntrinsicName.NONE,
 	IntrinsicName.SOME,
 ];
@@ -317,7 +317,7 @@ export const CLASS_API = new Map<CallableInterfaceName | CallableClassName, Cons
 		],
 		returnType: (generic_params) => new TYPE.Map(generic_params[0], generic_params[1]),
 	}],
-	['Exception', {
+	[IntrinsicName.EXCEPTION, {
 		genericParams: [],
 		overloads:     [[{positional: true, type: () => TYPE.STR}, {positional: true, optional: true, type: () => TYPE.EXCP}]],
 		returnType:    () => TYPE.EXCP,

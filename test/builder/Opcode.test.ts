@@ -452,7 +452,7 @@ test.suite('Opcode', () => {
 							IntrinsicName.DICT,
 							IntrinsicName.SET,
 							IntrinsicName.MAP,
-							'Exception',
+							IntrinsicName.EXCEPTION,
 							IntrinsicName.FUNCTION,
 						] as const).forEach((name, i) => {
 							test.test(name, () => {
@@ -535,7 +535,7 @@ test.suite('Opcode', () => {
 						IntrinsicName.DICT,
 						IntrinsicName.SET,
 						IntrinsicName.MAP,
-						'Exception',
+						IntrinsicName.EXCEPTION,
 						IntrinsicName.MAYBE,
 						IntrinsicName.NONE,
 						IntrinsicName.SOME,
@@ -546,7 +546,7 @@ test.suite('Opcode', () => {
 							const expr_visitor = new VisitorExprBuild(builder);
 							srcs.forEach((src) => builder.pushInstruction(new OP.Drop(new OP.Instance(
 								OP.OpCode.CAST,
-								name as IntrinsicName,
+								name,
 								expr_visitor.visit(AST.EXPR.Expression.fromSource(src)).asTac(builder),
 							))));
 							let i: number = -1;
@@ -1733,7 +1733,7 @@ test.suite('Opcode', () => {
 			test.suite('Instance', () => {
 				test.test('INSTANCEOF', () => {
 					const {builder, cg, wasm} = setupScript(`{
-						${[...INTRINSICS, 'Exception'].slice(2).map((classname) => `null is ${classname};`).join('\n')};
+						${INTRINSICS.slice(2).map((classname) => `null is ${classname};`).join('\n')};
 					}`);
 					const operand: binaryen.ExpressionRef = genConst(cg);
 					return assertEqualBins(builder.instructions.map((instr) => instr.codegen(cg)), [
@@ -1747,16 +1747,16 @@ test.suite('Opcode', () => {
 						cg.vm.op.isDict(operand),
 						cg.vm.op.isMap(operand),
 						cg.vm.op.isMap(operand),
+						cg.vm.op.isException(operand),
 						cg.vm.op.isMaybe(operand),
 						cg.vm.op.isNone(operand),
 						cg.vm.op.isSome(operand),
 						cg.vm.op.isFunction(operand),
-						cg.vm.op.isException(operand),
 					].map((expr) => wasm.drop(expr)));
 				});
 				test.test('CAST', () => {
 					const {builder, cg, wasm} = setupScript(`{
-						${[...INTRINSICS, 'Exception'].map((classname) => `null as <anything> as ${classname};`).join('\n')};
+						${INTRINSICS.map((classname) => `null as <anything> as ${classname};`).join('\n')};
 					}`);
 					const operand: binaryen.ExpressionRef = genConst(cg);
 					return assertEqualBins(builder.instructions.filter((instr) => instr instanceof OP.Drop).map((instr) => instr.codegen(cg)), [
@@ -1772,11 +1772,11 @@ test.suite('Opcode', () => {
 						cg.vm.op.asDict(operand),
 						cg.vm.op.asMap(operand),
 						cg.vm.op.asMap(operand),
+						cg.vm.op.asException(operand),
 						cg.vm.op.asMaybe(operand),
 						cg.vm.op.asNone(operand),
 						cg.vm.op.asSome(operand),
 						cg.vm.op.asFunction(operand),
-						cg.vm.op.asException(operand),
 					].map((expr) => wasm.drop(expr)));
 				});
 			});

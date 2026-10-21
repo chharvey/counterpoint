@@ -107,7 +107,7 @@ test.suite('Operation', () => {
 						val n: null = null;
 						${INTRINSICS.map((t) => `n is ${t};`).join('\n')}
 					}`, {build: false}).stmts.slice(1).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()),
-					repeat(TYPE.BOOL, 16),
+					repeat(TYPE.BOOL, 17),
 				);
 			});
 
@@ -116,7 +116,7 @@ test.suite('Operation', () => {
 					assertEqualTypes(
 						setupScript(`{
 							val n: anything = null;
-							${[...INTRINSICS, 'Exception'].map((t) => `n as ${t};`).join('\n')}
+							${INTRINSICS.map((t) => `n as ${t};`).join('\n')}
 						}`, {build: false}).stmts.slice(1).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()),
 						[
 							TYPE.NULL,
@@ -131,11 +131,11 @@ test.suite('Operation', () => {
 							new TYPE.Dict(TYPE.ANYTHING),
 							new TYPE.Set(TYPE.ANYTHING),
 							new TYPE.Map(TYPE.ANYTHING, TYPE.ANYTHING),
+							TYPE.EXCP,
 							new TYPE.Maybe(TYPE.ANYTHING),
 							new TYPE.None(TYPE.ANYTHING),
 							new TYPE.Some(TYPE.ANYTHING),
 							new TYPE.Function(undefined, undefined, TYPE.ANYTHING),
-							TYPE.EXCP,
 						],
 					);
 				});
@@ -154,7 +154,7 @@ test.suite('Operation', () => {
 					assertEqualTypes(
 						setupScript(`{
 							val n: anything = null;
-							${[...INTRINSICS, 'Exception'].map((t) => `n as? ${t};`).join('\n')}
+							${INTRINSICS.map((t) => `n as? ${t};`).join('\n')}
 						}`, {build: false}).stmts.slice(1).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()),
 						[
 							new TYPE.Maybe(TYPE.NULL),
@@ -169,11 +169,11 @@ test.suite('Operation', () => {
 							new TYPE.Maybe(new TYPE.Dict(TYPE.ANYTHING)),
 							new TYPE.Maybe(new TYPE.Set(TYPE.ANYTHING)),
 							new TYPE.Maybe(new TYPE.Map(TYPE.ANYTHING, TYPE.ANYTHING)),
+							new TYPE.Maybe(TYPE.EXCP),
 							new TYPE.Maybe(new TYPE.Maybe(TYPE.ANYTHING)),
 							new TYPE.Maybe(new TYPE.None(TYPE.ANYTHING)),
 							new TYPE.Maybe(new TYPE.Some(TYPE.ANYTHING)),
 							new TYPE.Maybe(new TYPE.Function(undefined, undefined, TYPE.ANYTHING)),
-							new TYPE.Maybe(TYPE.EXCP),
 						],
 					);
 				});

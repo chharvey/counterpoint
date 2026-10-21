@@ -240,7 +240,7 @@ export class VisitorExprBuild extends EXPR.ExprVisitor<OP.Value> {
 				this.builder.pushInstruction(new OP.CollectionDynamicCopy(name, dest, this.visit(expr.exprargs[0]).asTac(this.builder)));
 				return dest;
 			}
-			case 'Exception': {
+			case IntrinsicName.EXCEPTION: {
 				return new OP.ExcpNew(
 					this.visit(expr.exprargs[0]).asTac(this.builder),
 					expr.exprargs[1] ? this.visit(expr.exprargs[1]).asTac(this.builder) : undefined,
