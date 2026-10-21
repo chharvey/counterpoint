@@ -64,7 +64,7 @@ export function check_unique_keys(keys: readonly Key[]): void {
 
 
 export function validate_intrinsic_name(source: string): asserts source is IntrinsicName {
-	if (!(INTRINSICS as readonly string[]).includes(source)) {
+	if (!([...INTRINSICS, 'Exception'] as readonly string[]).includes(source)) {
 		throw new SyntaxError(`Unexpected token: \`${source}\`; expected \`${INTRINSICS.join(' | ')}\`.`);
 	}
 }
@@ -105,6 +105,7 @@ export type CallableClassName = (
 	| IntrinsicName.DICT
 	| IntrinsicName.SET
 	| IntrinsicName.MAP
+	| 'Exception'
 	| IntrinsicName.NONE
 	| IntrinsicName.SOME
 );
@@ -118,6 +119,7 @@ const CALLABLE_CLASSES: readonly string[] = [
 	IntrinsicName.DICT,
 	IntrinsicName.SET,
 	IntrinsicName.MAP,
+	'Exception',
 	IntrinsicName.NONE,
 	IntrinsicName.SOME,
 ];

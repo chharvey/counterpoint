@@ -127,7 +127,7 @@ Nil! VarCheck(SemanticTypeAlias var) :=
 
 Nil! VarCheck(SemanticTypeCall call) :=
 	1. *Note:* Skip var-checking of `call.children.0` for now, as semantics is determined by syntax.
-	2. *If* `call.children.0.source` is not one of "List", "Dict", "Set", or "Map":
+	2. *If* `call.children.0.source` is not a Callable Interface Name:
 		1. *Throw:* a new SyntaxError.
 	3. *For each* `it` in `call.children[1..]`:
 		1. *Perform:* *Unwrap:* `VarCheck(it)`.
@@ -160,10 +160,21 @@ Nil! VarCheck(SemanticExpressionVariable var) :=
 
 Nil! VarCheck(SemanticExpressionCall call) :=
 	1. *Note:* Skip var-checking of `call.children.0` for now, as semantics is determined by syntax.
-	2. *If* `call.children.0.source` is not one of "List", "Dict", "Set", or "Map":
+	2. *If* `call.children.0.source` is not a Callable Class Name:
 		1. *Throw:* a new SyntaxError.
 	3. *For each* `it` in `call.children[1..]`:
 		1. *Perform:* *Unwrap:* `VarCheck(it)`.
+;
+
+
+
+Nil! VarCheck(SemanticExpressionOperation[operator: IS | CAST | MAYBE | RESULT] ::= SemanticExpression__0 SemanticExpression__1[type: Class]) :=
+	1. *Perform:* *Unwrap:* `VarCheck(SemanticExpression__0)`.
+	2. *Note:* Skip var-checking of `SemanticExpression__1` for now, as semantics is determined by syntax.
+	3. *If* `SemanticExpression__1` is not an Intrinsic Name:
+		1. *Throw:* a new SyntaxError.
+	4. *Else:*
+		1. *Return.*
 ;
 
 
