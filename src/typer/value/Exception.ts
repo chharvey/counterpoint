@@ -8,6 +8,7 @@ import {
 	identical,
 	Value,
 } from './Value.ts';
+import type {String as ValueString} from './String.ts';
 
 
 
@@ -17,7 +18,7 @@ import {
  */
 export class Exception extends Value {
 	public constructor(
-		private readonly message: string,
+		private readonly message: ValueString,
 		private readonly cause?:  Exception,
 	) {
 		super();
@@ -34,7 +35,7 @@ export class Exception extends Value {
 	@instanceOf(() => Exception)
 	public override equal(value: Value): boolean {
 		const exception = value as Exception;
-		return this.message === exception.message && (
+		return this.message.equal(exception.message) && (
 			this.cause && exception.cause ? this.cause.equal(exception.cause) : !this.cause && !exception.cause
 		);
 	}

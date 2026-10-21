@@ -73,8 +73,9 @@ test.suite('Value', () => {
 
 		test.suite('Exception', () => {
 			test.test('Exceptions with same message and cause are not identical.', () => {
-				const a = new VALUE.Exception('alice');
-				return assert.ok(!new VALUE.Exception('bob', a).identical(new VALUE.Exception('bob', a)));
+				const bob = new VALUE.String('bob');
+				const a   = new VALUE.Exception(new VALUE.String('alice'));
+				return assert.ok(!new VALUE.Exception(bob, a).identical(new VALUE.Exception(bob, a)));
 			});
 		});
 
@@ -237,22 +238,25 @@ test.suite('Value', () => {
 		});
 
 		test.suite('Exception', () => {
+			const ALICE  = new VALUE.String('alice');
+			const BOB    = new VALUE.String('bob');
 			test.test('Exceptions with equal messages and causes are equal.', () => {
-				const a1 = new VALUE.Exception('alice');
-				const a2 = new VALUE.Exception('alice');
+				const a1 = new VALUE.Exception(ALICE);
+				const a2 = new VALUE.Exception(ALICE);
 				assert.ok(a1.equal(a2));
-				return assert.ok(new VALUE.Exception('bob', a1).equal(new VALUE.Exception('bob', a2)));
+				assert.ok(new VALUE.Exception(BOB, a1).equal(new VALUE.Exception(BOB, a2)));
+				return assert.ok(new VALUE.Exception(BOB, a1).equal(new VALUE.Exception(new VALUE.String('bob'), a2)));
 			});
 			test.test('Exceptions with unequal messages are not equal.', () => {
-				const a = new VALUE.Exception('alice');
-				return assert.ok(!new VALUE.Exception('bob1', a).equal(new VALUE.Exception('bob2', a)));
+				const a = new VALUE.Exception(ALICE);
+				return assert.ok(!new VALUE.Exception(BOB, a).equal(new VALUE.Exception(new VALUE.String('bob2'), a)));
 			});
 			test.test('Exceptions with unequal causes are not equal.', () => {
-				const a1 = new VALUE.Exception('alice1');
-				const a2 = new VALUE.Exception('alice2');
-				const b1 = new VALUE.Exception('bob', a1);
-				assert.ok(!b1.equal(new VALUE.Exception('bob')));
-				return assert.ok(!b1.equal(new VALUE.Exception('bob', a2)));
+				const a1 = new VALUE.Exception(ALICE);
+				const a2 = new VALUE.Exception(new VALUE.String('alice2'));
+				const b1 = new VALUE.Exception(BOB, a1);
+				assert.ok(!b1.equal(new VALUE.Exception(BOB)));
+				return assert.ok(!b1.equal(new VALUE.Exception(BOB, a2)));
 			});
 		});
 
