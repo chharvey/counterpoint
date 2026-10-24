@@ -192,8 +192,6 @@ test.suite('Operation', () => {
 					return assert.throws(() => stmts[1].typeCheck(), TypeErrorNotNarrow);
 				});
 			});
-
-			test.test.todo('[operator=RESULT');
 		});
 
 

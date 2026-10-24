@@ -96,7 +96,7 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 		</tr>
 		<tr>
 			<th rowspan="4">5</th>
-			<td rowspan="3">Type Cast</td>
+			<td rowspan="2">Type Cast</td>
 			<td rowspan="4">binary infix</td>
 			<td rowspan="4">left-to-right</td>
 			<td><code>… as …</code></td>
@@ -105,11 +105,11 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… as? …</code></td>
 		</tr>
 		<tr>
-			<td><code>… as! …</code></td>
+			<td rowspan="2">Type Claim</td>
+			<td><code>… as : … :</code></td>
 		</tr>
 		<tr>
-			<td>Type Claim</td>
-			<td><code>… as : … :</code></td>
+			<td><code>… as! : … :</code></td>
 		</tr>
 		<tr>
 			<th>6</th>
@@ -609,19 +609,13 @@ cat.meow();                   % calls `meow` on the `Cat` instance
 val dog: Dog = animal as Dog; % panic: `Cat` cannot be converted to `Dog`
 dog.woof();                   % unreachable
 ```
-The `as?` and `as!` casts can be useful in tandem with maybe/result access respectively.
+The `as?` cast can be useful in tandem with maybe access.
 ```cpl
-val cat_m: Maybe[Cat] = animal as? Cat; %== Some.<Cat>
+val cat_m: Maybe[Cat] = animal as? Cat; %== Some[Cat]
 cat_m?.meow();                          % calls `meow`
 
 val dog_m: Maybe[Dog] = animal as? Dog; %== None
 dog_m?.woof();                          %== None
-
-val cat_r: Result[Cat] = animal as! Cat; %== Ok.<Cat>
-cat_r!.meow();                           % calls `meow`
-
-val dog_r: Result[Dog] = animal as! Dog; %== Fail
-dog_r?.woof();                           %== Fail
 ```
 
 A compile-time claim (`expr as :Klass:`) *claims* to the type-checker that `expr` is already of type `Klass`,

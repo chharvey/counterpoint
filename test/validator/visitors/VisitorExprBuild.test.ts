@@ -1406,7 +1406,6 @@ test.suite('VisitorExprBuild#visit', () => {
 				`.trim());
 			});
 		});
-		test.suite.todo('[operator=RESULT]');
 	});
 
 
