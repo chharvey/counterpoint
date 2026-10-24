@@ -129,10 +129,10 @@ export class Instance extends Value {
 					case IntrinsicName.MAYBE:     { return cg.vm.op.isMaybe(code); }
 					case IntrinsicName.NONE:      { return cg.vm.op.isNone(code); }
 					case IntrinsicName.SOME:      { return cg.vm.op.isSome(code); }
+					case IntrinsicName.RESULT:    { return cg.vm.op.isResult(code); }
+					case IntrinsicName.FAIL:      { return cg.vm.op.isFail(code); }
+					case IntrinsicName.OK:        { return cg.vm.op.isOk(code); }
 					case IntrinsicName.FUNCTION:  { return cg.vm.op.isFunction(code); }
-					default: {
-						throw new Error('not yet supported.');
-					}
 				}
 				break;
 			}
@@ -154,10 +154,10 @@ export class Instance extends Value {
 					case IntrinsicName.MAYBE:     { return cg.vm.op.asMaybe(code); }
 					case IntrinsicName.NONE:      { return cg.vm.op.asNone(code); }
 					case IntrinsicName.SOME:      { return cg.vm.op.asSome(code); }
+					case IntrinsicName.RESULT:    { return cg.vm.op.asResult(code); }
+					case IntrinsicName.FAIL:      { return cg.vm.op.asFail(code); }
+					case IntrinsicName.OK:        { return cg.vm.op.asOk(code); }
 					case IntrinsicName.FUNCTION:  { return cg.vm.op.asFunction(code); }
-					default: {
-						throw new Error('not yet supported.');
-					}
 				}
 				break;
 			}

@@ -1780,7 +1780,7 @@ test.suite('Opcode', () => {
 				});
 			});
 
-			test.suite.todo('Instance', () => {
+			test.suite('Instance', () => {
 				test.test('INSTANCEOF', () => {
 					const {builder, cg, wasm} = setupScript(`{
 						${INTRINSICS.slice(2).map((classname) => `null is ${classname};`).join('\n')};
@@ -1801,6 +1801,9 @@ test.suite('Opcode', () => {
 						cg.vm.op.isMaybe(operand),
 						cg.vm.op.isNone(operand),
 						cg.vm.op.isSome(operand),
+						cg.vm.op.isResult(operand),
+						cg.vm.op.isFail(operand),
+						cg.vm.op.isOk(operand),
 						cg.vm.op.isFunction(operand),
 					].map((expr) => wasm.drop(expr)));
 				});
@@ -1826,6 +1829,9 @@ test.suite('Opcode', () => {
 						cg.vm.op.asMaybe(operand),
 						cg.vm.op.asNone(operand),
 						cg.vm.op.asSome(operand),
+						cg.vm.op.asResult(operand),
+						cg.vm.op.asFail(operand),
+						cg.vm.op.asOk(operand),
 						cg.vm.op.asFunction(operand),
 					].map((expr) => wasm.drop(expr)));
 				});
