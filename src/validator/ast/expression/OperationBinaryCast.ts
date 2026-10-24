@@ -73,6 +73,9 @@ export class OperationBinaryCast extends OperationBinary {
 			[IntrinsicName.MAYBE,     new TYPE.Maybe(TYPE.ANYTHING)],
 			[IntrinsicName.NONE,      new TYPE.None(TYPE.ANYTHING)],
 			[IntrinsicName.SOME,      new TYPE.Some(TYPE.ANYTHING)],
+			[IntrinsicName.RESULT,    new TYPE.Result(TYPE.ANYTHING)],
+			[IntrinsicName.FAIL,      new TYPE.Fail(TYPE.ANYTHING)],
+			[IntrinsicName.OK,        new TYPE.Ok(TYPE.ANYTHING)],
 			[IntrinsicName.FUNCTION,  new TYPE.Function(undefined, undefined, TYPE.ANYTHING)],
 		]).get(this.operand1.source as IntrinsicName)!;
 		switch (this.operator) {

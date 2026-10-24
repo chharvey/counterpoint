@@ -190,7 +190,9 @@ export class Call extends Expression {
 	private checkFunctionArgs(constructor_schema: ConstructorSchema, resolved_generic_args: readonly TYPE.Type[]): void {
 		if (!constructor_schema.overloads.length) {
 			throw new TypeErrorNotCallable(
-				this.base.source === IntrinsicName.MAYBE ? new TYPE.Maybe(resolved_generic_args[0]) : this.base.type(),
+				this.base.source === IntrinsicName.MAYBE ? new TYPE.Maybe(resolved_generic_args[0]) :
+				this.base.source === IntrinsicName.RESULT ? new TYPE.Result(resolved_generic_args[0], resolved_generic_args[1]) :
+				this.base.type(),
 				this.base,
 			);
 		}

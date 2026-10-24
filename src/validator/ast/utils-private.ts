@@ -78,6 +78,9 @@ export type CallableInterfaceName = (
 	| IntrinsicName.MAYBE
 	| IntrinsicName.NONE
 	| IntrinsicName.SOME
+	| IntrinsicName.RESULT
+	| IntrinsicName.FAIL
+	| IntrinsicName.OK
 );
 const CALLABLE_INTERFACES: readonly string[] = [
 	IntrinsicName.LIST,
@@ -87,6 +90,9 @@ const CALLABLE_INTERFACES: readonly string[] = [
 	IntrinsicName.MAYBE,
 	IntrinsicName.NONE,
 	IntrinsicName.SOME,
+	IntrinsicName.RESULT,
+	IntrinsicName.FAIL,
+	IntrinsicName.OK,
 ];
 export function validate_callable_interface_name(source: string): asserts source is CallableInterfaceName {
 	if (!CALLABLE_INTERFACES.includes(source)) {
@@ -108,6 +114,8 @@ export type CallableClassName = (
 	| IntrinsicName.EXCEPTION
 	| IntrinsicName.NONE
 	| IntrinsicName.SOME
+	| IntrinsicName.FAIL
+	| IntrinsicName.OK
 );
 const CALLABLE_CLASSES: readonly string[] = [
 	IntrinsicName.BOOLEAN,
@@ -122,6 +130,8 @@ const CALLABLE_CLASSES: readonly string[] = [
 	IntrinsicName.EXCEPTION,
 	IntrinsicName.NONE,
 	IntrinsicName.SOME,
+	IntrinsicName.FAIL,
+	IntrinsicName.OK,
 ];
 export function validate_callable_class_name(source: string): asserts source is CallableClassName {
 	if (!CALLABLE_CLASSES.includes(source)) {
@@ -247,6 +257,13 @@ export type ConstructorSchema = {
  * declare class Some<out T> extends Maybe.<T> {
  * 	new (value: T);
  * }
+ * declare abstract class Result<out T, out E narrows Exception = Exception> extends Object {}
+ * declare class Fail<out T, out E narrows Exception = Exception> extends Result.<T, E> {
+ * 	new (reason: E);
+ * }
+ * declare class Ok<out T, out E narrows Exception = Exception> extends Result.<T, E> {
+ * 	new (value: T);
+ * }
  * ```
  */
 export const CLASS_API = new Map<CallableInterfaceName | CallableClassName, ConstructorSchema>([
@@ -336,6 +353,21 @@ export const CLASS_API = new Map<CallableInterfaceName | CallableClassName, Cons
 		genericParams: [{positional: true, readonlyVariance: 'covariant'}],
 		overloads:     [[{positional: true, type: (generic_params) => generic_params[0]}]],
 		returnType:    (generic_params) => new TYPE.Some(generic_params[0]),
+	}],
+	[IntrinsicName.RESULT, {
+		genericParams: [{positional: true, readonlyVariance: 'covariant'}, {positional: true, readonlyVariance: 'covariant', constraint: {direction: 'narrows', type: () => TYPE.EXCP}, default: () => TYPE.EXCP}],
+		overloads:     [],
+		returnType:    (generic_params) => new TYPE.Result(generic_params[0], generic_params[1]),
+	}],
+	[IntrinsicName.FAIL, {
+		genericParams: [{positional: true, readonlyVariance: 'covariant'}, {positional: true, readonlyVariance: 'covariant', constraint: {direction: 'narrows', type: () => TYPE.EXCP}, default: () => TYPE.EXCP}],
+		overloads:     [[{positional: true, type: (generic_params) => generic_params[1]}]],
+		returnType:    (generic_params) => new TYPE.Fail(generic_params[0], generic_params[1]),
+	}],
+	[IntrinsicName.OK, {
+		genericParams: [{positional: true, readonlyVariance: 'covariant'}, {positional: true, readonlyVariance: 'covariant', constraint: {direction: 'narrows', type: () => TYPE.EXCP}, default: () => TYPE.EXCP}],
+		overloads:     [[{positional: true, type: (generic_params) => generic_params[0]}]],
+		returnType:    (generic_params) => new TYPE.Ok(generic_params[0], generic_params[1]),
 	}],
 ]);
 
