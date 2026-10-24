@@ -272,10 +272,7 @@ export class VisitorBuild extends AstNodeVisitor<void> {
 	public override visitStmtReturn(stmt: STMT.StatementReturn): void {
 		if (stmt.expression) {
 			const expr_build: OP.ValueTac = this.exprVisitor.visit(stmt.expression).asTac(this.builder);
-			this.builder.pushInstruction((stmt.panic
-				? new OP.Return(undefined, expr_build)
-				: new OP.Return(expr_build, undefined)
-			));
+			this.builder.pushInstruction(new OP.Return(!stmt.panic, expr_build));
 		}
 		this.builder.terminateBlock(new OP.Goto('caller'));
 		return this.builder.initiateBlock(this.builder.newLabel(true));

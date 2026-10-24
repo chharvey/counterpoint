@@ -20,23 +20,21 @@ export class Result<T extends Value = Value> extends Value {
 	private readonly successType: TYPE.Type = TYPE.ANYTHING;
 	private readonly failureType: TYPE.Type = TYPE.EXCP;
 
-	private readonly successValue?:  T;
-	private readonly failureReason?: Exception;
 
-
-	public constructor(is_ok: true,    value: T);
-	public constructor(is_ok: false,   reason: Exception);
-	public constructor(is_ok: boolean, value_or_reason: T | Exception) {
+	public constructor(
+		private readonly isOk:     boolean,
+		private readonly argument: T | Exception,
+	) {
 		super();
-		if (is_ok) {
-			[this.successType, this.successValue] = [value_or_reason.toType(), value_or_reason as T];
+		if (isOk) {
+			this.successType = argument.toType();
 		} else {
-			[this.failureType, this.failureReason] = [value_or_reason.toType(), value_or_reason as Exception];
+			this.failureType = argument.toType();
 		}
 	}
 
 	public get isFail(): boolean {
-		return !this.successValue;
+		return !this.isOk;
 	}
 
 
@@ -50,10 +48,7 @@ export class Result<T extends Value = Value> extends Value {
 	@instanceOf(() => Result)
 	public override equal(value: Value): boolean {
 		const result = value as Result;
-		return (
-			!!this.successValue  && !!result.successValue  && this.successValue  .equal(result.successValue) ||
-			!!this.failureReason && !!result.failureReason && this.failureReason .equal(result.failureReason)
-		);
+		return this.isOk === result.isOk && this.argument.equal(result.argument);
 	}
 
 	/**

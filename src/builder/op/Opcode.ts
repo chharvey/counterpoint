@@ -60,6 +60,7 @@ export enum OpCode {
 	MAP_NEW,
 	EXCP_NEW,
 	MAYBE_NEW,
+	RESULT_NEW,
 
 	TUPLE_GET,
 	RECORD_GET,

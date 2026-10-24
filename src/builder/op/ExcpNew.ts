@@ -34,7 +34,7 @@ export class ExcpNew extends Value {
 
 	@runOnceMethod
 	public override validate(builder: Builder): void {
-		assert.ok(this.type.equals(TYPE.EXCP));
+		assert.ok(this.message.type.isSubtypeOf(TYPE.STR));
 		this.message.validate(builder);
 		return this.cause?.validate(builder);
 	}
