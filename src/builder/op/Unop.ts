@@ -137,7 +137,7 @@ export class Unop extends Value {
 			case OpCode.MAP_COUNT:  { return VmValue.newPrimitive(Vect.newNat(wasm.i64.extend_i32_u(VmMap.count(VmValue.cast(code, reftype.Map))))); }
 
 			case OpCode.MAYBE_UNWRAP:  { return op.unwrapMaybe(code); }
-			case OpCode.RESULT_UNWRAP: { throw new Error('TODO:'); }
+			case OpCode.RESULT_UNWRAP: { return op.unwrapResult(code); }
 		}
 	}
 

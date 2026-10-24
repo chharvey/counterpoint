@@ -1805,6 +1805,27 @@ test.suite('Opcode', () => {
 						wasm.drop(cg.vm.op.unwrapMaybe(wasm.local.get(1, cg.vm.reftype.Value))),
 					]);
 				});
+				test.test('RESULT.UNWRAP', () => {
+					const {builder, cg, wasm} = setupScript(`{
+						val x: int! = Fail.<int>(Exception.("42"));
+						val y: Result.<nat> = Ok.<nat>(+42);
+						val z: Result.<float, Exception> = Ok.<float>(4.2);
+						x~!;
+						y~!;
+						z~!;
+					}`);
+					const {vm: {reftype, Value: VmValue}} = cg;
+					const excp: binaryen.ExpressionRef /* (ref $Value) */ = VmValue.newComposite(cg.codegenException(wasm.ref.cast(VmValue.field(genConst(cg, '42')).composite, reftype.String)));
+					return assertEqualBins(builder.instructions.map((instr) => instr.codegen(cg)), [
+						wasm.local.set(0, excp),
+						wasm.local.set(1, cg.vm.Value.newComposite(cg.codegenResult(false, cg.mod.wasm.ref.cast(cg.vm.Value.field(wasm.local.get(0, reftype.Value)).composite, cg.vm.reftype.Exception)))),
+						wasm.local.set(2, cg.vm.Value.newComposite(cg.codegenResult(true, genConst(cg, 42n, 'nat')))),
+						wasm.local.set(3, cg.vm.Value.newComposite(cg.codegenResult(true, genConst(cg, 4.2)))),
+						wasm.drop(cg.vm.op.unwrapResult(wasm.local.get(1, cg.vm.reftype.Value))),
+						wasm.drop(cg.vm.op.unwrapResult(wasm.local.get(2, cg.vm.reftype.Value))),
+						wasm.drop(cg.vm.op.unwrapResult(wasm.local.get(3, cg.vm.reftype.Value))),
+					]);
+				});
 			});
 
 			test.suite('Instance', () => {

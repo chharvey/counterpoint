@@ -125,6 +125,15 @@
 		(else (ref.as_non_null (local.get $mval)))
 	)
 )
+(func $op:unwrap-result (export "op::unwrapResult") (param $value (ref $Value)) (result (ref $Value))
+	(local $rval (ref null $Value))
+	(local.set $rval (struct.get $Result $value (ref.cast (ref $Result) (struct.get $Value $composite (local.get $value)))))
+	(if (result (ref $Value))
+		(ref.is_null (local.get $rval))
+		(then (unreachable))
+		(else (ref.as_non_null (local.get $rval)))
+	)
+)
 
 
 
