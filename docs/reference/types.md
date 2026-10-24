@@ -1177,6 +1177,30 @@ set x = None[int]();
 The [maybe access operator](./expressions-operators.md#maybe-access) works very well with the Maybe type.
 
 
+### Results
+Result objects are containers of success values or Exceptions.
+The Result type is an abstract type with exactly two concrete subtypes: Ok, which contains a value, and Fail, which contains an Exception.
+In general, Result objects are used for representing robust functions’ return values, where the function might or might not fail.
+
+Result types are declared via the **generic result type syntax**: `Result[T, E]`
+where `T` indicates the type of the possible value and `E` indicates a subtype of [`Exception`](#exceptions).
+When not supplied, the default parameter `E` is `Exception`.
+`T` may be any type, including a type unioned with Exception or even another Result type. Nested Result types do not flatten.
+Ok and Fail objects are constructed via the constructor syntaxes `Ok[T, E](value)` and `Fail[T, E](reason)` respectively.
+```cpl
+val mut x: Result[int] = Ok[int](42);
+set x = Fail[int]();
+```
+
+A shorthand for the generic syntax `Result[T]` is `T!`.
+```cpl
+val mut x: int! = Ok[int](42);
+set x = Fail[int]();
+```
+
+The [result access operator](./expressions-operators.md#result-access) works very well with the Result type.
+
+
 
 ## Callable Types
 
