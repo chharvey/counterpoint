@@ -1175,6 +1175,26 @@ test.suite('VisitorExprBuild#visit', () => {
 					(ENDPROGRAM)
 			`.trim());
 		});
+		test.test('[operator=UN_RESULT]', () => {
+			assert.strictEqual(setupScript(`{
+				val x: int! = Fail.<int>(Exception.("42"));
+				val y: Result.<nat> = Ok.<nat>(+42);
+				val z: Result.<float, Exception> = Ok.<float>(4.2);
+				x~!;
+				y~!;
+				z~!;
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
+				"block-0":
+					(DECL <Exception> $0 (EXCP.NEW (STR.CONST "42")))
+					(DECL <Result> x (RESULT.NEW nil (GET $0)))
+					(DECL <Result> y (RESULT.NEW (NAT.CONST +42) nil))
+					(DECL <Result> z (RESULT.NEW (FLOAT.CONST 4.2) nil))
+					(DROP (RESULT.UNWRAP (GET x)))
+					(DROP (RESULT.UNWRAP (GET y)))
+					(DROP (RESULT.UNWRAP (GET z)))
+					(ENDPROGRAM)
+			`.trim());
+		});
 		test.test('[operator=NOT]', () => {
 			assert.strictEqual(setupScript(`{
 				!42;

@@ -269,14 +269,12 @@ export class VisitorExprBuild extends EXPR.ExprVisitor<OP.Value> {
 
 	@memoizePerExpr
 	public override visitOperationUnary(expr: EXPR.OperationUnary): OP.Value {
-		if (expr.operator === Operator.UN_RESULT) {
-			throw new Error('not yet supported.');
-		}
 		return new OP.Unop(new Map<Operator, OP.OpCodeUn>([
-			[Operator.UN_MAYBE, OP.OpCode.MAYBE_UNWRAP],
-			[Operator.NOT,      OP.OpCode.NOT],
-			[Operator.EMP,      OP.OpCode.EMP],
-			[Operator.NEG,      OP.OpCode.NEG],
+			[Operator.UN_MAYBE,  OP.OpCode.MAYBE_UNWRAP],
+			[Operator.UN_RESULT, OP.OpCode.RESULT_UNWRAP],
+			[Operator.NOT,       OP.OpCode.NOT],
+			[Operator.EMP,       OP.OpCode.EMP],
+			[Operator.NEG,       OP.OpCode.NEG],
 		]).get(expr.operator)!, this.visit(expr.operand).asTac(this.builder), expr.type());
 	}
 

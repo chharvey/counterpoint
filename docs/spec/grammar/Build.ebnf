@@ -71,7 +71,8 @@ DICT.COUNT([Value]) -> Natural;
 SET.COUNT([Value])  -> Natural;
 MAP.COUNT([Value])  -> Natural;
 
-MAYBE.UNWRAP([Value]) -> Value;
+MAYBE.UNWRAP ([Value]) -> Value;
+RESULT.UNWRAP([Value]) -> Value;
 
 INSTANCEOF(native-enum [Value]) -> Boolean;
 CAST      (native-enum [Value]) -> Value;
@@ -255,8 +256,8 @@ Build(SemanticExpressionCall call) := (CALL [`Build(call.0)` `...call.SemanticEx
 
 Build(SemanticExpressionClaim claim) := Build(claim.0);
 
-Build(SemanticExpressionOperation[operator=UN_MAYBE]  ::= SemanticExpression)               := (MAYBE.UNWRAP [`Build(SemanticExpression)`]);
-Build(SemanticExpressionOperation[operator=UN_RESULT] ::= SemanticExpression)               := TODO:;
+Build(SemanticExpressionOperation[operator=UN_MAYBE]  ::= SemanticExpression)               := (MAYBE.UNWRAP  [`Build(SemanticExpression)`]);
+Build(SemanticExpressionOperation[operator=UN_RESULT] ::= SemanticExpression)               := (RESULT.UNWRAP [`Build(SemanticExpression)`]);
 Build(SemanticExpressionOperation[operator=NOT]       ::= SemanticExpression)               := (NOT [`Build(SemanticExpression)`]);
 Build(SemanticExpressionOperation[operator=EMP]       ::= SemanticExpression)               := (EMP [`Build(SemanticExpression)`]);
 Build(SemanticExpressionOperation[operator=NEG]       ::= SemanticExpression[type: Number]) := (NEG [`Build(SemanticExpression)`]);
