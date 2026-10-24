@@ -41,6 +41,8 @@ SET.NEW([Value*])                         -> Set;
 MAP.NEW(Vector<Value, Value>*)            -> Map;
 EXCP.NEW([Value Value?])                  -> Exception;
 MAYBE.NEW([Value?])                       -> Maybe;
+RESULT.NEW([Value Nil])                   -> Result;
+RESULT.NEW([Nil Exception])               -> Result;
 
 TUPLE.GET (native-bigint [Value]) -> Value;
 RECORD.GET(native-bigint [Value]) -> Value;
@@ -245,7 +247,10 @@ Build(SemanticExpressionCall ::= "Exception" SemanticType* SemanticExpression__1
 	:= (EXCP.NEW `Build(SemanticExpression__1)`);
 Build(SemanticExpressionCall ::= "Exception" SemanticType* SemanticExpression__1 SemanticExpression__2)
 	:= (EXCP.NEW `Build(SemanticExpression__1)` `Build(SemanticExpression__2)`);
-Build(SemanticExpressionCall:has(SemanticExpressionVariable ::= "Some"):has(SemanticExpression*) call) := (MAYBE.NEW `Build(call.SemanticExpression*.0)`);
+Build(SemanticExpressionCall ::= "None" SemanticType* SemanticExpression*)                       := (MAYBE.NEW);
+Build(SemanticExpressionCall ::= "Some" SemanticType* SemanticExpression__0 SemanticExpression*) := (MAYBE.NEW `Build(SemanticExpression__0)`);
+Build(SemanticExpressionCall ::= "Fail" SemanticType* SemanticExpression__0 SemanticExpression*) := (RESULT.NEW nil `Build(SemanticExpression__0)`);
+Build(SemanticExpressionCall ::= "Ok"   SemanticType* SemanticExpression__0 SemanticExpression*) := (RESULT.NEW `Build(SemanticExpression__0)` nil);
 Build(SemanticExpressionCall call) := (CALL [`Build(call.0)` `...call.SemanticExpression*.map(Build)`]);
 
 Build(SemanticExpressionClaim claim) := Build(claim.0);

@@ -250,8 +250,14 @@ export class VisitorExprBuild extends EXPR.ExprVisitor<OP.Value> {
 			case IntrinsicName.SOME: {
 				return new OP.MaybeNew(expr.typeargs[0].eval(), expr.exprargs[0] ? this.visit(expr.exprargs[0]).asTac(this.builder) : undefined);
 			}
-			default: {
-				assert.fail(`Did not expect base '${base_source}'.`);
+			case IntrinsicName.FAIL:
+			case IntrinsicName.OK: {
+				return new OP.ResultNew(
+					base_source === IntrinsicName.OK,
+					expr.typeargs[0].eval(),
+					expr.typeargs[1]?.eval() ?? TYPE.EXCP,
+					this.visit(expr.exprargs[0]).asTac(this.builder),
+				);
 			}
 		}
 	}
