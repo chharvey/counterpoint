@@ -416,6 +416,7 @@ export class CodeGenerator {
 			this.vm.Map       .funcImportDataMap,
 			this.vm.Exception .funcImportDataMap,
 			this.vm.Maybe     .funcImportDataMap,
+			this.vm.Result    .funcImportDataMap,
 		].forEach((datamap) => datamap.forEach((data, export_name) => (
 			mod.imports.addFunction(data.name, extern_mod_name, export_name, data.param, data.result)
 		)));
