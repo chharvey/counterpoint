@@ -1103,6 +1103,25 @@ test.suite('VisitorExprBuild#visit', () => {
 					(ENDPROGRAM)
 			`.trim());
 		});
+		test.test('`Fail.()`', () => {
+			assert.strictEqual(setupScript(`{
+				Fail.<int>(Exception.("message"));
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
+				"block-0":
+					(DECL <Exception> $0 (EXCP.NEW (STR.CONST "message")))
+					(DROP (RESULT.NEW nil (GET $0)))
+					(ENDPROGRAM)
+			`.trim());
+		});
+		test.test('`Ok.(‹…›)`', () => {
+			assert.strictEqual(setupScript(`{
+				Ok.<int>(42);
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
+				"block-0":
+					(DROP (RESULT.NEW (INT.CONST 42) nil))
+					(ENDPROGRAM)
+			`.trim());
+		});
 	});
 
 

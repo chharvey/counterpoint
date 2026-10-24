@@ -10,17 +10,16 @@ import {Instruction} from './Instruction.ts';
 
 /** Return a value from a function. */
 export class Return extends Instruction {
-	public constructor(value: ValueTac, excp: undefined);
-	public constructor(value: undefined, excp: ValueTac);
 	public constructor(
-		private readonly value?: ValueTac,
-		private readonly excp?:  ValueTac,
+		/** Whether this return completes normally or abruptly (a panic). */
+		private readonly isReturn: boolean,
+		private readonly value:    ValueTac,
 	) {
 		super(OpCode.RETURN);
 	}
 
 	public override toString(): string {
-		return super.toString(this.value ?? 'nil', this.excp ?? 'nil');
+		return super.toString(...(this.isReturn ? [this.value, 'nil'] : ['nil', this.value]));
 	}
 
 	public override interpret(interp: Interpreter): void {
@@ -31,9 +30,10 @@ export class Return extends Instruction {
 	@memoizeMethod
 	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
 		const {vm: {heaptype}, mod: {wasm}} = cg;
-		return cg.mod.wasm.return(wasm.tuple.make([
-			this.value ?.codegen(cg) ?? wasm.ref.null(heaptype.Value),
-			this.excp  ?.codegen(cg) ?? wasm.ref.null(heaptype.Exception),
-		]));
+		const value: binaryen.ExpressionRef = this.value.codegen(cg);
+		return cg.mod.wasm.return(wasm.tuple.make((this.isReturn
+			? [value, wasm.ref.null(heaptype.Exception)]
+			: [wasm.ref.null(heaptype.Value), value]
+		)));
 	}
 }

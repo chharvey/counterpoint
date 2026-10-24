@@ -111,6 +111,19 @@
 		(field $value (ref null $Value))
 	)))
 
+	;; precursor to the `Result` class
+	(type $Result (sub final $Object (struct
+		;; --- inherited ---
+		;; unique id for hashing
+		(field $id i64)
+
+		;; --- own ---
+		;; the success value
+		(field $value (ref null $Value))
+		;; the failure reason
+		(field $reason (ref null $Exception))
+	)))
+
 	;; precursor to the `Function` class
 	(type $Function (sub final $Object (struct
 		;; --- inherited ---

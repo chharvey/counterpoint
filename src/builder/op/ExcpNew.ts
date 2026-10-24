@@ -34,7 +34,7 @@ export class ExcpNew extends Value {
 
 	@runOnceMethod
 	public override validate(builder: Builder): void {
-		assert.ok(this.type.equals(TYPE.EXCP));
+		assert.ok(this.message.type.isSubtypeOf(TYPE.STR));
 		this.message.validate(builder);
 		return this.cause?.validate(builder);
 	}
@@ -53,6 +53,10 @@ export class ExcpNew extends Value {
 
 	@memoizeMethod
 	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
-		return cg.vm.Value.newComposite(cg.codegenException(this.message.codegen(cg), this.cause?.codegen(cg)));
+		const {mod: {wasm}, vm: {reftype, Value: VmValue}} = cg;
+		return VmValue.newComposite(cg.codegenException(
+			wasm.ref.cast(VmValue.field(this.message.codegen(cg)).composite, reftype.String),
+			this.cause ? wasm.ref.cast(VmValue.field(this.cause.codegen(cg)).composite, reftype.Exception) : undefined,
+		));
 	}
 }

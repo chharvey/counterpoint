@@ -129,14 +129,14 @@ Codegen((MAP.NEW `pairs`)) := (call $Value.new-composite
 Codegen((EXCP.NEW `message`)) := (call $Value.new-newComposite
 	(struct.new $Exception
 		(call $Object.ctr-plus-plus)
-		`Codegen(message)`
+		(ref.cast (ref $String) (struct.get $Value $composite `Codegen(message)`))
 	)
 );
 Codegen((EXCP.NEW `message` `cause`)) := (call $Value.new-newComposite
 	(struct.new $Exception
 		(call $Object.ctr-plus-plus)
-		`Codegen(message)`
-		`Codegen(cause)`
+		(ref.cast (ref $String)    (struct.get $Value $composite `Codegen(message)`))
+		(ref.cast (ref $Exception) (struct.get $Value $composite `Codegen(cause)`))
 	)
 );
 
@@ -150,6 +150,21 @@ Codegen((MAYBE.NEW `value`)) := (call $Value.new-composite
 	(struct.new $Maybe
 		(call $Object.ctr-plus-plus)
 		`Codegen(value)`
+	)
+);
+
+Codegen((RESULT.NEW nil `excp`)) := (call $Value.new-composite
+	(struct.new $Result
+		(call $Object.ctr-plus-plus)
+		(ref.null $Value)
+		(ref.cast (ref $Exception) (struct.get $Value $composite `Codegen(excp)`))
+	)
+);
+Codegen((RESULT.NEW `value` nil)) := (call $Value.new-composite
+	(struct.new $Result
+		(call $Object.ctr-plus-plus)
+		`Codegen(value)`
+		(ref.null $Exception)
 	)
 );
 
@@ -244,6 +259,9 @@ Codegen((INSTANCEOF "Exception" `v`)) := (call $op:is-exception `Codegen(v)`);
 Codegen((INSTANCEOF "Maybe"     `v`)) := (call $op:is-maybe     `Codegen(v)`);
 Codegen((INSTANCEOF "None"      `v`)) := (call $op:is-none      `Codegen(v)`);
 Codegen((INSTANCEOF "Some"      `v`)) := (call $op:is-some      `Codegen(v)`);
+Codegen((INSTANCEOF "Result"    `v`)) := (call $op:is-result    `Codegen(v)`);
+Codegen((INSTANCEOF "Fail"      `v`)) := (call $op:is-fail      `Codegen(v)`);
+Codegen((INSTANCEOF "Ok"        `v`)) := (call $op:is-ok        `Codegen(v)`);
 Codegen((INSTANCEOF "Function"  `v`)) := (call $op:is-function  `Codegen(v)`);
 
 Codegen((CAST "Null"      `v`)) := (call $op:as-null      `Codegen(v)`);
@@ -262,6 +280,9 @@ Codegen((CAST "Exception" `v`)) := (call $op:as-exception `Codegen(v)`);
 Codegen((CAST "Maybe"     `v`)) := (call $op:as-maybe     `Codegen(v)`);
 Codegen((CAST "None"      `v`)) := (call $op:as-none      `Codegen(v)`);
 Codegen((CAST "Some"      `v`)) := (call $op:as-some      `Codegen(v)`);
+Codegen((CAST "Result"    `v`)) := (call $op:as-result    `Codegen(v)`);
+Codegen((CAST "Fail"      `v`)) := (call $op:as-fail      `Codegen(v)`);
+Codegen((CAST "Ok"        `v`)) := (call $op:as-ok        `Codegen(v)`);
 Codegen((CAST "Function"  `v`)) := (call $op:as-function  `Codegen(v)`);
 
 Codegen((INT.ADD `v0` `v1`)) := (call $op:int-add `Codegen(v0)` `Codegen(v1)`);

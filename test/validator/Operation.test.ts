@@ -107,7 +107,7 @@ test.suite('Operation', () => {
 						val n: null = null;
 						${INTRINSICS.map((t) => `n is ${t};`).join('\n')}
 					}`, {build: false}).stmts.slice(1).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()),
-					repeat(TYPE.BOOL, 17),
+					repeat(TYPE.BOOL, 20),
 				);
 			});
 
@@ -135,6 +135,9 @@ test.suite('Operation', () => {
 							new TYPE.Maybe(TYPE.ANYTHING),
 							new TYPE.None(TYPE.ANYTHING),
 							new TYPE.Some(TYPE.ANYTHING),
+							new TYPE.Result(TYPE.ANYTHING),
+							new TYPE.Fail(TYPE.ANYTHING),
+							new TYPE.Ok(TYPE.ANYTHING),
 							new TYPE.Function(undefined, undefined, TYPE.ANYTHING),
 						],
 					);
@@ -173,6 +176,9 @@ test.suite('Operation', () => {
 							new TYPE.Maybe(new TYPE.Maybe(TYPE.ANYTHING)),
 							new TYPE.Maybe(new TYPE.None(TYPE.ANYTHING)),
 							new TYPE.Maybe(new TYPE.Some(TYPE.ANYTHING)),
+							new TYPE.Maybe(new TYPE.Result(TYPE.ANYTHING)),
+							new TYPE.Maybe(new TYPE.Fail(TYPE.ANYTHING)),
+							new TYPE.Maybe(new TYPE.Ok(TYPE.ANYTHING)),
 							new TYPE.Maybe(new TYPE.Function(undefined, undefined, TYPE.ANYTHING)),
 						],
 					);

@@ -12,6 +12,7 @@ import {Dict} from './classes/Dict.ts';
 import {Map as VmMap} from './classes/Map.ts';
 import {Exception} from './classes/Exception.ts';
 import {Maybe} from './classes/Maybe.ts';
+import {Result} from './classes/Result.ts';
 import {utils} from './ad-hoc/utils.ts';
 import {ops} from './ad-hoc/ops.ts';
 
@@ -33,6 +34,7 @@ type TypeKey = (
 	| 'Map'
 	| 'Exception'
 	| 'Maybe'
+	| 'Result'
 	| 'Function'
 );
 
@@ -255,6 +257,18 @@ const TYPES: {
 	tb.setSubType(i_maybe, tb.getTempHeapType(i_object));
 	// `$Maybe` is final
 
+	/* (type $Result ...) */
+	const i_result: number = tb.getSize();
+	tb.grow(1);
+	tb.setStructType(i_result, [
+		/* $id */     TypeBuilder_makeField(binaryen.Type.i64),
+		/* $value */  TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_value),     true)),
+		/* $reason */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_exception), true)),
+	]);
+	// @ts-expect-error --- incorrect `setSubType` signature
+	tb.setSubType(i_result, tb.getTempHeapType(i_object));
+	// `$Result` is final
+
 	/* (type $Function ...) */
 	const i_function: number = tb.getSize();
 	tb.grow(1);
@@ -285,6 +299,7 @@ const TYPES: {
 			Map:          heaptypes[i_map],
 			Exception:    heaptypes[i_exception],
 			Maybe:        heaptypes[i_maybe],
+			Result:       heaptypes[i_result],
 			Function:     heaptypes[i_function],
 		},
 
@@ -304,6 +319,7 @@ const TYPES: {
 			Map:          binaryen.getTypeFromHeapType(heaptypes[i_map],           false),
 			Exception:    binaryen.getTypeFromHeapType(heaptypes[i_exception],     false),
 			Maybe:        binaryen.getTypeFromHeapType(heaptypes[i_maybe],         false),
+			Result:       binaryen.getTypeFromHeapType(heaptypes[i_result],        false),
 			Function:     binaryen.getTypeFromHeapType(heaptypes[i_function],      false),
 		},
 
@@ -311,7 +327,7 @@ const TYPES: {
 			Value:     binaryen.getTypeFromHeapType(heaptypes[i_value],     true), // only used as the fields of `$ListInternal` and `$Maybe`
 			Property:  binaryen.getTypeFromHeapType(heaptypes[i_property],  true), // only used as the fields of `$DictInternal`
 			Case:      binaryen.getTypeFromHeapType(heaptypes[i_case],      true), // only used as the fields of `$MapInternal`
-			Exception: binaryen.getTypeFromHeapType(heaptypes[i_exception], true), // only used as the fields of `$Exception`
+			Exception: binaryen.getTypeFromHeapType(heaptypes[i_exception], true), // only used as the fields of `$Exception` and `$Result`
 		},
 	};
 })();
@@ -355,6 +371,7 @@ export class VirtualMachine {
 	public readonly Map       = new VmMap(this);
 	public readonly Exception = new Exception(this);
 	public readonly Maybe     = new Maybe(this);
+	public readonly Result    = new Result(this);
 
 
 	public constructor() {

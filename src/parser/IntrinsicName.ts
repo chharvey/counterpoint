@@ -16,6 +16,9 @@ export enum IntrinsicName {
 	MAYBE     = 'Maybe',
 	NONE      = 'None',
 	SOME      = 'Some',
+	RESULT    = 'Result',
+	FAIL      = 'Fail',
+	OK        = 'Ok',
 	FUNCTION  = 'Function',
 }
 

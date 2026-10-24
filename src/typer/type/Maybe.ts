@@ -76,6 +76,8 @@ export class None extends Maybe {
 	}
 }
 
+
+
 export class Some extends Maybe {
 	public override toString(): string {
 		return `Some[${this.typearg}]`;

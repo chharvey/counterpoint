@@ -156,6 +156,17 @@ test.suite('Opcode', () => {
 				]);
 			});
 
+			test.test('ResultNew', () => {
+				const interp = new Interpreter();
+				return assert_equal_values([
+					new OP.ResultNew(false, TYPE.INT, TYPE.EXCP, new OP.ExcpNew(new OP.Const(new VALUE.String('message')))),
+					new OP.ResultNew(true,  TYPE.INT, TYPE.EXCP, new OP.Const(new VALUE.Integer(42n))),
+				].map((opcode) => opcode.interpret(interp)), [
+					new VALUE.Result(false, new VALUE.Exception(new VALUE.String('message'))),
+					new VALUE.Result(true, new VALUE.Integer(42n)),
+				]);
+			});
+
 			test.test('TupleGet, RecordGet', () => {
 				assert_equal_values(interpret_extracted_drops(`{
 					val     tup_fixed:   (int, float, str) = (1, 2.0, "three");
@@ -441,7 +452,7 @@ test.suite('Opcode', () => {
 					expecteds = interp.drops;
 				});
 				test.suite('INSTANCEOF', () => {
-					test.suite('non-Maybes.', () => {
+					test.suite('non-Maybes/Results.', () => {
 						([
 							IntrinsicName.SYMBOL,
 							IntrinsicName.INTEGER,
@@ -516,6 +527,32 @@ test.suite('Opcode', () => {
 									repeat(VALUE.TRUE, 3),
 									[VALUE.TRUE,  ...repeat(VALUE.FALSE, 2)],
 									[VALUE.FALSE, ...repeat(VALUE.TRUE, 2)],
+								][i]);
+							});
+						});
+					});
+					test.suite('Results.', () => {
+						([
+							IntrinsicName.RESULT,
+							IntrinsicName.FAIL,
+							IntrinsicName.OK,
+						] as const).forEach((name, i) => {
+							test.test(name, () => {
+								const builder = new Builder();
+								const interp  = new Interpreter();
+								[
+									new OP.ResultNew(false, TYPE.INT, TYPE.EXCP, new OP.ExcpNew(new OP.Const(new VALUE.String('message')))),
+									new OP.ResultNew(true,  TYPE.INT, TYPE.EXCP, new OP.Const(new VALUE.Integer(42n))),
+								].forEach((irval) => builder.pushInstruction(new OP.Drop(new OP.Instance(
+									OP.OpCode.INSTANCEOF,
+									name,
+									irval.asTac(builder),
+								))));
+								builder.instructions.forEach((instr) => instr.interpret(interp));
+								return assert_equal_values(interp.drops, [
+									repeat(VALUE.TRUE, 2),
+									[VALUE.TRUE,  VALUE.FALSE],
+									[VALUE.FALSE, VALUE.TRUE],
 								][i]);
 							});
 						});
@@ -1353,14 +1390,18 @@ test.suite('Opcode', () => {
 
 			test.test('ExcpNew', () => {
 				const cg = new CodeGenerator();
+				const {mod: {wasm}, vm: {reftype, Value: VmValue}} = cg;
 				const actual = new OP.ExcpNew(new OP.Const(new VALUE.String('hello')));
-				const expected: binaryen.ExpressionRef = cg.vm.Value.newComposite(cg.codegenException(genConst(cg, 'hello')));
+				const expected: binaryen.ExpressionRef /* (ref $Value) */ = VmValue.newComposite(cg.codegenException(wasm.ref.cast(VmValue.field(genConst(cg, 'hello')).composite, reftype.String)));
 				return assertEqualBins([
 					actual,
 					new OP.ExcpNew(new OP.Const(new VALUE.String('world')), actual),
 				].map((opcode) => opcode.codegen(cg)), [
 					expected,
-					cg.vm.Value.newComposite(cg.codegenException(genConst(cg, 'world'), expected)),
+					VmValue.newComposite(cg.codegenException(
+						wasm.ref.cast(VmValue.field(genConst(cg, 'world')).composite, reftype.String),
+						wasm.ref.cast(VmValue.field(expected).composite, reftype.Exception),
+					)),
 				]);
 			});
 
@@ -1372,6 +1413,19 @@ test.suite('Opcode', () => {
 				].map((opcode) => opcode.codegen(cg)), [
 					cg.codegenMaybe(),
 					cg.codegenMaybe(new VALUE.String('hello').codegen(cg)),
+				].map((mab) => cg.vm.Value.newComposite(mab)));
+			});
+
+			test.test('ResultNew', () => {
+				const cg = new CodeGenerator();
+				const excp = new OP.ExcpNew(new OP.Const(new VALUE.String('message')));
+				const value = new OP.Const(new VALUE.Integer(42n));
+				return assertEqualBins([
+					new OP.ResultNew(false, TYPE.INT, TYPE.EXCP, excp),
+					new OP.ResultNew(true,  TYPE.INT, TYPE.EXCP, value),
+				].map((opcode) => opcode.codegen(cg)), [
+					cg.codegenResult(false, cg.mod.wasm.ref.cast(cg.vm.Value.field(excp.codegen(cg)).composite, cg.vm.reftype.Exception)),
+					cg.codegenResult(true, value.codegen(cg)),
 				].map((mab) => cg.vm.Value.newComposite(mab)));
 			});
 
@@ -1751,6 +1805,9 @@ test.suite('Opcode', () => {
 						cg.vm.op.isMaybe(operand),
 						cg.vm.op.isNone(operand),
 						cg.vm.op.isSome(operand),
+						cg.vm.op.isResult(operand),
+						cg.vm.op.isFail(operand),
+						cg.vm.op.isOk(operand),
 						cg.vm.op.isFunction(operand),
 					].map((expr) => wasm.drop(expr)));
 				});
@@ -1776,6 +1833,9 @@ test.suite('Opcode', () => {
 						cg.vm.op.asMaybe(operand),
 						cg.vm.op.asNone(operand),
 						cg.vm.op.asSome(operand),
+						cg.vm.op.asResult(operand),
+						cg.vm.op.asFail(operand),
+						cg.vm.op.asOk(operand),
 						cg.vm.op.asFunction(operand),
 					].map((expr) => wasm.drop(expr)));
 				});

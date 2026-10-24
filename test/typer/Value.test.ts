@@ -88,6 +88,17 @@ test.suite('Value', () => {
 				return assert.ok(!new VALUE.Maybe(v).identical(new VALUE.Maybe(v)));
 			});
 		});
+
+		test.suite('Result', () => {
+			test.test('Fails with identical reasons are not identical.', () => {
+				const r = new VALUE.Exception(new VALUE.String('error'));
+				return assert.ok(!new VALUE.Result(false, r).identical(new VALUE.Result(false, r)));
+			});
+			test.test('Oks with identical values are not identical.', () => {
+				const v = new VALUE.String('water');
+				return assert.ok(!new VALUE.Result(true, v).identical(new VALUE.Result(true, v)));
+			});
+		});
 	});
 
 
@@ -288,6 +299,41 @@ test.suite('Value', () => {
 			});
 			test.test('None and Some are never equal.', () => {
 				assert.ok(!new VALUE.Maybe(TYPE.STR).equal(new VALUE.Maybe(new VALUE.String('hearts'))));
+			});
+		});
+
+		test.suite('Result', () => {
+			test.test('Fails with equal reasons are equal.', () => {
+				assert.ok(new VALUE.Result(false, new VALUE.Exception(new VALUE.String('error'))).equal(new VALUE.Result(false, new VALUE.Exception(new VALUE.String('error')))));
+			});
+			test.test('Fails with unequal reasons are not equal.', () => {
+				assert.ok(!new VALUE.Result(false, new VALUE.Exception(new VALUE.String('error1'))).equal(new VALUE.Result(false, new VALUE.Exception(new VALUE.String('error2')))));
+			});
+			test.test('Oks with equal values are equal.', () => {
+				assert.ok(new VALUE.Result(true, new VALUE.List<VALUE.String>([
+					new VALUE.String('earth'),
+					new VALUE.String('wind'),
+					new VALUE.String('fire'),
+				])).equal(new VALUE.Result(true, new VALUE.List<VALUE.String>([
+					new VALUE.String('earth'),
+					new VALUE.String('wind'),
+					new VALUE.String('fire'),
+				]))));
+			});
+			test.test('Oks with unequal values are not equal.', () => {
+				assert.ok(!new VALUE.Result(true, new VALUE.List<VALUE.String>([
+					new VALUE.String('earth'),
+					new VALUE.String('wind'),
+					new VALUE.String('fire'),
+				])).equal(new VALUE.Result(true, new VALUE.List<VALUE.String>([
+					new VALUE.String('clubs'),
+					new VALUE.String('spades'),
+					new VALUE.String('diamonds'),
+				]))));
+			});
+			test.test('Fail and Ok are never equal, even with same underlying value.', () => {
+				const excp = new VALUE.Exception(new VALUE.String('success or failure'));
+				assert.ok(!new VALUE.Result(false, excp).equal(new VALUE.Result(true, excp)));
 			});
 		});
 	});

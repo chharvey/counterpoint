@@ -29,6 +29,7 @@ export function identical(
  * - Collection
  * - Exception
  * - Maybe
+ * - Result
  * - ValueFunction
  */
 export abstract class Value {

@@ -355,7 +355,7 @@ export class CodeGenerator {
 	 * @param value   the optional cause; if not given, `(ref.null $Exception)` is used
 	 * @return        `(struct.new $Exception <message> <cause?>)`
 	 */
-	public codegenException(message: binaryen.ExpressionRef /* (ref $String) */, cause?: binaryen.ExpressionRef /* (ref $Exception) */): binaryen.ExpressionRef /* (ref $Expression) */ {
+	public codegenException(message: binaryen.ExpressionRef /* (ref $String) */, cause?: binaryen.ExpressionRef /* (ref $Exception) */): binaryen.ExpressionRef /* (ref $Exception) */ {
 		const {vm: {heaptype, Object: VmObject}, mod: {wasm}} = this;
 		return wasm.struct.new([
 			VmObject.ctrPlusPlus(),
@@ -375,6 +375,27 @@ export class CodeGenerator {
 			VmObject.ctrPlusPlus(),
 			value ?? wasm.ref.null(heaptype.Value),
 		], heaptype.Maybe);
+	}
+
+	/**
+	 * Return a new `$Result` from a given value or reason.
+	 * If a success value  is given (`is_ok` is true),  `(ref.null $Exception)` is set to the reason field.
+	 * If a failure reason is given (`is_ok` is false), `(ref.null $Value)`     is set to the value  field.
+	 * @param is_ok    whether to construct an Ok or Fail
+	 * @param argument the success value or failure reason
+	 * @return         `(struct.new $Result <value?> <reason?>)`
+	 */
+	public codegenResult(is_ok: boolean, argument: binaryen.ExpressionRef /* (ref $Value) | (ref $Exception) */): binaryen.ExpressionRef /* (ref $Result) */ {
+		const {vm: {heaptype, Object: VmObject}, mod: {wasm}} = this;
+		return wasm.struct.new(is_ok ? [
+			VmObject.ctrPlusPlus(),
+			argument,
+			wasm.ref.null(heaptype.Exception),
+		] : [
+			VmObject.ctrPlusPlus(),
+			wasm.ref.null(heaptype.Value),
+			argument,
+		], heaptype.Result);
 	}
 
 	/**
@@ -416,6 +437,7 @@ export class CodeGenerator {
 			this.vm.Map       .funcImportDataMap,
 			this.vm.Exception .funcImportDataMap,
 			this.vm.Maybe     .funcImportDataMap,
+			this.vm.Result    .funcImportDataMap,
 		].forEach((datamap) => datamap.forEach((data, export_name) => (
 			mod.imports.addFunction(data.name, extern_mod_name, export_name, data.param, data.result)
 		)));

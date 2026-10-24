@@ -175,7 +175,9 @@ test.suite('Type', () => {
 			test.test('does not throw when referencing intrinsic identifiers.', () => {
 				setupScript(`{
 					type T = Object;
+					type E = Exception;
 					val obj: Object = 42;
+					val ex: Exception = Exception.("hello");
 				}`, {typeCheck: false}); // assert does not throw
 			});
 			test.test('throws if the validator does not contain a record for the identifier.', () => {
@@ -219,8 +221,10 @@ test.suite('Type', () => {
 			test.test('computes the value of reserved types.', () => {
 				assertEqualTypes([
 					'Object',
+					'Exception',
 				].map((src) => AST.TYPE.TypeAlias.fromSource(src).eval()), [
 					TYPE.OBJ,
+					TYPE.EXCP,
 				]);
 			});
 			test.test('computes the value of a type alias.', () => {

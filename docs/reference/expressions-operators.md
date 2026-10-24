@@ -400,6 +400,7 @@ Conversely, maybe access syntax is not allowed for required properties: `record?
 If the *binding object is a `Maybe`*, then the maybe access operator produces another `Maybe`.
 For example, `None[T]().property` is a type error, but `None[T]()?.property` will simply produce a new `None[U]`
 (and not the same `None[T]` reference object).
+Likewise, `Some[T](obj)?.property` unwraps the value `obj`, accesses `.property` on it, and returns the accessed value in a new `Some`.
 This facet makes maybe access safe to use when chained.
 
 When the maybe access operator is chained, it should be chained down the line,
@@ -447,10 +448,38 @@ rec_maybe~?.item; % unwraps `rec_maybe` to `(item: int)`; returns type `int`; bu
 ```
 
 #### Result Access
-// TODO:
+The **result access** syntax is almost the same as property access, except that
+the operator always produces a `Result` object.
+This operator is designed to work with
+[the `Result` algeraic sum type](./types.md#results).
+
+If the binding object is a `Result`, then the result access operator produces another `Result`.
+For example, `Fail[T]().property` is a type error, but `Fail[T]()!.property` will simply produce a new `Fail[U]`
+(and not the same `Fail[T]` reference object).
+Likewise, `Ok[T](obj)!.property` unwraps the value `obj`, accesses `.property` on it, and returns the accessed value in a new `Ok`.
+This facet makes maybe access safe to use when chained.
+
+When the result access operator is chained, it should be chained down the line,
+e.g., `x!.y!.z` is equivalent to `(x!.y)!.z`.
+However, `x!.y.z` (which can be thought of as `(x!.y).z`) is not the same,
+and will result in a type-error if `z` is not a property of `Result`.
 
 #### Result Unwrapper
-// TODO:
+The **result unwrapping** operator `~!`, if the operand is a `Result[T]` type, ‘unwraps’ the value of the Result, returning type `T`.
+Additionally, if the value is actually a `Fail` at runtime, the `~!` operator panics with that `Fail`’s reason.
+```cpl
+claim rec_result: Result[(item: int)];
+
+val rec: (item: int) = rec_result;   %> TypeError
+val rec: (item: int) = rec_result~!; % no TypeError, but unsafe!
+if rec_result is Ok then {
+	val rec: (item: int) = rec_result~!; % no TypeError, and safe
+};
+
+rec_result.item;   %> TypeErrorNoEntry
+rec_result!.item;  % result access: returns type `Result[int]`
+rec_result~!.item; % unwraps `rec_result` to `(item: int)`; returns type `int`; but panics at runtime if `rec_result` is a `Fail`
+```
 
 
 ### Logical Negation, Emptiness

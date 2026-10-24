@@ -38,6 +38,12 @@ test.suite('TypeCall', () => {
 					'Maybe.<int>',
 					'None.<int>',
 					'Some.<int>',
+					'Result.<int>',
+					'Fail.<int>',
+					'Ok.<int>',
+					'Result.<int, Exception>',
+					'Fail.<int, Exception>',
+					'Ok.<int, Exception>',
 				].map((src) => AST.TYPE.Call.fromSource(src).eval()),
 				[
 					new TYPE.List(TYPE.NULL),
@@ -47,6 +53,12 @@ test.suite('TypeCall', () => {
 					new TYPE.Maybe(TYPE.INT),
 					new TYPE.None(TYPE.INT),
 					new TYPE.Some(TYPE.INT),
+					new TYPE.Result(TYPE.INT),
+					new TYPE.Fail(TYPE.INT),
+					new TYPE.Ok(TYPE.INT),
+					new TYPE.Result(TYPE.INT),
+					new TYPE.Fail(TYPE.INT),
+					new TYPE.Ok(TYPE.INT),
 				],
 			);
 		});
