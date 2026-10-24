@@ -261,7 +261,7 @@ test.suite('Decorator', () => {
 				}
 				% (type_unary_symbol)
 			`]],
-			['expectFailure: Decorate(TypeUnarySymbol ::= TypeUnarySymbol "!") -> SemanticTypeOperation', [AST.TYPE.Operation, `
+			['Decorate(TypeUnarySymbol ::= TypeUnarySymbol "!") -> SemanticTypeOperation', [AST.TYPE.Operation, `
 				{
 					type T = U!;
 				}
@@ -1284,17 +1284,6 @@ test.suite('Decorator', () => {
 					instance = decorator.decorate(parsenode);
 				}
 				return assert_instanceof(instance, klass, `\`${parsenode.text}\` should be an instance of ${klass.name}.`);
-			});
-		});
-		['!'].forEach((op) => {
-			test.suite(`Decorate(TypeUnarySymbol ::= TypeUnarySymbol "${op}") -> SemanticTypeOperation`, () => {
-				test.test(`operator \`${op}\` is not yet supported.`, () => {
-					assert.throws(() => new Decorator().decorate(captureParseNode(`
-						{
-							type T = U${op};
-						}
-					`, '(type_unary_symbol)')), /not yet supported/);
-				});
 			});
 		});
 		['!.'].forEach((op) => {

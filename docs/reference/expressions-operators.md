@@ -1054,27 +1054,15 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… . …</code></td>
 		</tr>
 		<tr>
-			<th rowspan="5">3</th>
-			<td>Nullish</td>
-			<td rowspan="5">unary postfix</td>
-			<td rowspan="5">left-to-right</td>
+			<th rowspan="2">3</th>
+			<td>To-Maybe</td>
+			<td rowspan="2">unary postfix</td>
+			<td rowspan="2">left-to-right</td>
 			<td><code>… ?</code></td>
 		</tr>
 		<tr>
-			<td>TBA</td>
+			<td>To-Result</td>
 			<td><code>… !</code></td>
-		</tr>
-		<tr>
-			<td>List</td>
-			<td><code>… []</code></td>
-		</tr>
-		<tr>
-			<td>Tuple</td>
-			<td><code>… […]</code></td>
-		</tr>
-		<tr>
-			<td>Set</td>
-			<td><code>… {}</code></td>
 		</tr>
 		<tr>
 			<th>4</th>
@@ -1137,11 +1125,15 @@ type T = int?; % equivalent to `type T = Maybe[int];`
 ```
 
 
-### TBA
+### To-Result
 ```
 <Type> `!`
 ```
-To be announced.
+The **to-result** operator creates a new [Result type](./types.md#results) containing the operand.
+```cpl
+type T = int!; % equivalent to `type T = Result[int];`
+```
+Note that the second generic argument of `Result` defaults to `Exception`.
 
 
 ### Mutable

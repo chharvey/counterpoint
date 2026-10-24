@@ -96,14 +96,14 @@ Type! TypeValueOf(SemanticTypeCall ::= SemanticType__0 SemanticType__1+) :=
 
 
 
-Type! TypeValueOf(SemanticTypeOperation[operator: MAYBE] oper) :=
-	1. *Assert:* `oper.children.count` is 1.
-	2. *Let* `t0` be *Unwrap:* `TypeValueOf(oper.children.0)`.
-	3. *Return:* `Maybe(t0)`.
+Type! TypeValueOf(SemanticTypeOperation[operator=MAYBE] ::= SemanticType) :=
+	1. *Let* `t0` be *Unwrap:* `TypeValueOf(SemanticType)`.
+	2. *Return:* `Maybe(t0)`.
 ;
 
-Type! TypeValueOf(SemanticTypeOperation[operator: RESULT] oper) :=
-	// TODO: implement
+Type! TypeValueOf(SemanticTypeOperation[operator=RESULT] ::= SemanticType) :=
+	1. *Let* `t0` be *Unwrap:* `TypeValueOf(SemanticType)`.
+	2. *Return:* `Result(t0)`.
 ;
 
 Type! TypeValueOf(SemanticTypeOperation[operator: MUTABLE] oper) :=
