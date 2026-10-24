@@ -36,6 +36,9 @@ export function ops(vm: VirtualMachine) {
 					['op::isMaybe',     {name: 'op:is-maybe',     param: reftype.Value,  result: reftype.Value}],
 					['op::isNone',      {name: 'op:is-none',      param: reftype.Value,  result: reftype.Value}],
 					['op::isSome',      {name: 'op:is-some',      param: reftype.Value,  result: reftype.Value}],
+					['op::isResult',    {name: 'op:is-result',    param: reftype.Value,  result: reftype.Value}],
+					['op::isFail',      {name: 'op:is-fail',      param: reftype.Value,  result: reftype.Value}],
+					['op::isOk',        {name: 'op:is-ok',        param: reftype.Value,  result: reftype.Value}],
 					['op::isFunction',  {name: 'op:is-function',  param: reftype.Value,  result: reftype.Value}],
 					['op::asNull',      {name: 'op:as-null',      param: reftype.Value,  result: reftype.Value}],
 					['op::asBool',      {name: 'op:as-bool',      param: reftype.Value,  result: reftype.Value}],
@@ -51,6 +54,9 @@ export function ops(vm: VirtualMachine) {
 					['op::asMaybe',     {name: 'op:as-maybe',     param: reftype.Value,  result: reftype.Value}],
 					['op::asNone',      {name: 'op:as-none',      param: reftype.Value,  result: reftype.Value}],
 					['op::asSome',      {name: 'op:as-some',      param: reftype.Value,  result: reftype.Value}],
+					['op::asResult',    {name: 'op:as-result',    param: reftype.Value,  result: reftype.Value}],
+					['op::asFail',      {name: 'op:as-fail',      param: reftype.Value,  result: reftype.Value}],
+					['op::asOk',        {name: 'op:as-ok',        param: reftype.Value,  result: reftype.Value}],
 					['op::asFunction',  {name: 'op:as-function',  param: reftype.Value,  result: reftype.Value}],
 					['op::intAdd',      {name: 'op:int-add',      param: binary_params,  result: reftype.Value}],
 					['op::natAdd',      {name: 'op:nat-add',      param: binary_params,  result: reftype.Value}],
@@ -184,6 +190,21 @@ export function ops(vm: VirtualMachine) {
 			vm.mod.wasm.call('op:is-some', [param0], vm.reftype.Value)
 		),
 
+		/** Is the value a composite `Result` type? */
+		isResult: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
+			vm.mod.wasm.call('op:is-result', [param0], vm.reftype.Value)
+		),
+
+		/** Is the value a composite `Result` type with a failure reason? */
+		isFail: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
+			vm.mod.wasm.call('op:is-fail', [param0], vm.reftype.Value)
+		),
+
+		/** Is the value a composite `Result` type with a success value? */
+		isOk: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
+			vm.mod.wasm.call('op:is-ok', [param0], vm.reftype.Value)
+		),
+
 		/** Is the value a composite `Function` type? */
 		isFunction: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
 			vm.mod.wasm.call('op:is-function', [param0], vm.reftype.Value)
@@ -257,6 +278,21 @@ export function ops(vm: VirtualMachine) {
 		/** Cast the value to type `Some`. */
 		asSome: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
 			vm.mod.wasm.call('op:as-some', [param0], vm.reftype.Value)
+		),
+
+		/** Cast the value to type `Result`. */
+		asResult: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
+			vm.mod.wasm.call('op:as-result', [param0], vm.reftype.Value)
+		),
+
+		/** Cast the value to type `Fail`. */
+		asFail: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
+			vm.mod.wasm.call('op:as-fail', [param0], vm.reftype.Value)
+		),
+
+		/** Cast the value to type `Ok`. */
+		asOk: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
+			vm.mod.wasm.call('op:as-ok', [param0], vm.reftype.Value)
 		),
 
 		/** Cast the value to type `Function`. */
