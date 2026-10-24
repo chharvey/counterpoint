@@ -7,7 +7,7 @@ import {
 	runOnceMethod,
 } from '../../lib/index.ts';
 import {
-	type VALUE,
+	VALUE,
 	TYPE,
 } from '../../typer/index.ts';
 import type {Builder} from '../Builder.ts';
@@ -44,8 +44,7 @@ export class ResultNew extends Value {
 	}
 
 	public override interpret(interp: Interpreter): VALUE.Result {
-		interp;
-		throw new Error('not yet supported.');
+		return new VALUE.Result(this.isOk, this.argument.interpret(interp));
 	}
 
 	@memoizeMethod

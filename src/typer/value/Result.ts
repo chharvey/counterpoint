@@ -22,7 +22,7 @@ export class Result<T extends Value = Value> extends Value {
 
 
 	public constructor(
-		private readonly isOk:     boolean,
+		public  readonly isOk:     boolean,
 		private readonly argument: T | Exception,
 	) {
 		super();
@@ -31,10 +31,6 @@ export class Result<T extends Value = Value> extends Value {
 		} else {
 			this.failureType = argument.toType();
 		}
-	}
-
-	public get isFail(): boolean {
-		return !this.isOk;
 	}
 
 

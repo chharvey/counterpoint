@@ -81,14 +81,6 @@ Map! Interpret((MAP.NEW `pairs`)) :=
 	2. *Return:* a new Map containing the pairs in `data`.
 ;
 
-Maybe! Interpret((MAYBE.NEW)) :=
-	1. *Return:* a new Maybe containing no value.
-;
-Maybe! Interpret((MAYBE.NEW `value`)) :=
-	1. *Let* `mval` be *Unwrap:* `Interpret(value)`.
-	2. *Return:* a new Maybe containing the value `mval`.
-;
-
 Exception! Interpret((EXCP.NEW `message`)) :=
 	1. *Set* `message` to *Unwrap:* `Interpret(message)`.
 	2. *Return:* a new Exception containing the message `message`.
@@ -97,6 +89,23 @@ Exception! Interpret((EXCP.NEW `message` `cause`)) :=
 	1. *Set* `message` to *Unwrap:* `Interpret(message)`.
 	2. *Set* `cause` to *Unwrap:* `Interpret(cause)`.
 	3. *Return:* a new Exception containing the message `message` and the cause `cause`.
+;
+
+Maybe! Interpret((MAYBE.NEW)) :=
+	1. *Return:* a new Maybe containing no value.
+;
+Maybe! Interpret((MAYBE.NEW `value`)) :=
+	1. *Set* `value` to *Unwrap:* `Interpret(value)`.
+	2. *Return:* a new Maybe containing the value `value`.
+;
+
+Maybe! Interpret((RESULT.NEW nil `excp`)) :=
+	1. *Set* `excp` to *Unwrap:* `Interpret(excp)`.
+	2. *Return:* a new Result containing the failure reason `excp`.
+;
+Maybe! Interpret((RESULT.NEW `value` nil)) :=
+	1. *Set* `value` to *Unwrap:* `Interpret(value)`.
+	2. *Return:* a new Result containing the success value `value`.
 ;
 
 Value! Interpret((TUPLE.GET `index` `obj`)) :=
@@ -292,6 +301,7 @@ Boolean! Interpret((INSTANCEOF `src` `v`)) :=
 		- `src` is "Map"       *and* `v` is an instance of `Map`
 		- `src` is "Exception" *and* `v` is an instance of `Exception`
 		- `src` is "Maybe"     *and* `v` is an instance of `Maybe`
+		- `src` is "Result"    *and* `v` is an instance of `Result`
 		- `src` is "Function"  *and* `v` is an instance of `Function`
 		1. *Return:* `true`.
 	3. *Else If* `src` is "None" *and* `v` is an instance of `Maybe`:
@@ -304,7 +314,17 @@ Boolean! Interpret((INSTANCEOF `src` `v`)) :=
 			1. *Return:* `true`.
 		2. *Else:*
 			1. *Return:* `false`.
-	5. *Else*:
+	5. *Else If* `src` is "Fail" *and* `v` is an instance of `Result`:
+		1. *If* `v` has a failure reason:
+			1. *Return:* `true`.
+		2. *Else:*
+			1. *Return:* `false`.
+	6. *Else If* `src` is "Ok" *and* `v` is an instance of `Result`:
+		1. *If* `v` has a success value:
+			1. *Return:* `true`.
+		2. *Else:*
+			1. *Return:* `false`.
+	7. *Else*:
 		1. *Return:* `false`.
 ;
 

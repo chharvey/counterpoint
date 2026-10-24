@@ -90,10 +90,10 @@ export class Instance extends Value {
 			case IntrinsicName.MAYBE:     { is_instance = operand instanceof VALUE.Maybe;                    break; }
 			case IntrinsicName.NONE:      { is_instance = operand instanceof VALUE.Maybe && operand.isNone;  break; }
 			case IntrinsicName.SOME:      { is_instance = operand instanceof VALUE.Maybe && !operand.isNone; break; }
+			case IntrinsicName.RESULT:    { is_instance = operand instanceof VALUE.Result;                   break; }
+			case IntrinsicName.FAIL:      { is_instance = operand instanceof VALUE.Result && !operand.isOk;  break; }
+			case IntrinsicName.OK:        { is_instance = operand instanceof VALUE.Result && operand.isOk;   break; }
 			case IntrinsicName.FUNCTION:  { is_instance = operand instanceof VALUE.Function;                 break; }
-			default: {
-				throw new Error('not yet supported.');
-			}
 		}
 		switch (this.operator) {
 			case OpCode.INSTANCEOF: {

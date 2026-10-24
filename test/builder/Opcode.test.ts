@@ -156,6 +156,17 @@ test.suite('Opcode', () => {
 				]);
 			});
 
+			test.test('ResultNew', () => {
+				const interp = new Interpreter();
+				return assert_equal_values([
+					new OP.ResultNew(false, TYPE.INT, TYPE.EXCP, new OP.ExcpNew(new OP.Const(new VALUE.String('message')))),
+					new OP.ResultNew(true,  TYPE.INT, TYPE.EXCP, new OP.Const(new VALUE.Integer(42n))),
+				].map((opcode) => opcode.interpret(interp)), [
+					new VALUE.Result(false, new VALUE.Exception(new VALUE.String('message'))),
+					new VALUE.Result(true, new VALUE.Integer(42n)),
+				]);
+			});
+
 			test.test('TupleGet, RecordGet', () => {
 				assert_equal_values(interpret_extracted_drops(`{
 					val     tup_fixed:   (int, float, str) = (1, 2.0, "three");
@@ -441,7 +452,7 @@ test.suite('Opcode', () => {
 					expecteds = interp.drops;
 				});
 				test.suite('INSTANCEOF', () => {
-					test.suite('non-Maybes.', () => {
+					test.suite('non-Maybes/Results.', () => {
 						([
 							IntrinsicName.SYMBOL,
 							IntrinsicName.INTEGER,
@@ -516,6 +527,32 @@ test.suite('Opcode', () => {
 									repeat(VALUE.TRUE, 3),
 									[VALUE.TRUE,  ...repeat(VALUE.FALSE, 2)],
 									[VALUE.FALSE, ...repeat(VALUE.TRUE, 2)],
+								][i]);
+							});
+						});
+					});
+					test.suite('Results.', () => {
+						([
+							IntrinsicName.RESULT,
+							IntrinsicName.FAIL,
+							IntrinsicName.OK,
+						] as const).forEach((name, i) => {
+							test.test(name, () => {
+								const builder = new Builder();
+								const interp  = new Interpreter();
+								[
+									new OP.ResultNew(false, TYPE.INT, TYPE.EXCP, new OP.ExcpNew(new OP.Const(new VALUE.String('message')))),
+									new OP.ResultNew(true,  TYPE.INT, TYPE.EXCP, new OP.Const(new VALUE.Integer(42n))),
+								].forEach((irval) => builder.pushInstruction(new OP.Drop(new OP.Instance(
+									OP.OpCode.INSTANCEOF,
+									name,
+									irval.asTac(builder),
+								))));
+								builder.instructions.forEach((instr) => instr.interpret(interp));
+								return assert_equal_values(interp.drops, [
+									repeat(VALUE.TRUE, 2),
+									[VALUE.TRUE,  VALUE.FALSE],
+									[VALUE.FALSE, VALUE.TRUE],
 								][i]);
 							});
 						});
