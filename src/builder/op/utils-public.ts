@@ -31,6 +31,7 @@ export enum TypeName {
 	MAP,
 	EXCEPTION,
 	MAYBE,
+	RESULT,
 	ANY,
 }
 
@@ -64,6 +65,7 @@ export function ast_type_name(typ: TYPE.Type): TypeName {
 		case typ instanceof TYPE.Set:    { return TypeName.SET; }
 		case typ instanceof TYPE.Map:    { return TypeName.MAP; }
 		case typ instanceof TYPE.Maybe:  { return TypeName.MAYBE; }
+		case typ instanceof TYPE.Result: { return TypeName.RESULT; }
 	}
 
 	if (typ instanceof TYPE.Union || typ instanceof TYPE.Intersection) {

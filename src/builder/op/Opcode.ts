@@ -87,6 +87,7 @@ export enum OpCode {
 	MAP_COUNT,
 
 	MAYBE_UNWRAP,
+	RESULT_UNWRAP,
 
 	INSTANCEOF,
 	CAST,

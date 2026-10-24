@@ -243,7 +243,8 @@ Codegen((MAP.COUNT `obj`)) := (call $Value.new-primitive
 	)
 );
 
-Codegen((MAYBE.UNWRAP `obj`)) := (call $op:unwrap-maybe `Codegen(obj)`);
+Codegen((MAYBE.UNWRAP  `obj`)) := (call $op:unwrap-maybe  `Codegen(obj)`);
+Codegen((RESULT.UNWRAP `obj`)) := (call $op:unwrap-result `Codegen(obj)`);
 
 Codegen((INSTANCEOF "Symbol"    `v`)) := (call $op:is-int       `Codegen(v)`);
 Codegen((INSTANCEOF "Integer"   `v`)) := (call $op:is-int       `Codegen(v)`);

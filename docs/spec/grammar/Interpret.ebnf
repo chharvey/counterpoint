@@ -286,6 +286,15 @@ Value! Interpret((MAYBE.UNWRAP `obj`)) :=
 		1. *Return:* the value contained in `obj`.
 ;
 
+Value! Interpret((RESULT.UNWRAP `obj`)) :=
+	1. *Set* `obj` to *Unwrap:* `Interpret(obj)`.
+	2. *Assert:* `obj` is instance of `Result`.
+	3. *If* `obj` does not have a success value:
+		1. *Throw:* a new Error "Unwrapped a Fail value.".
+	4. *Else:*
+		1. *Return:* the success value contained in `obj`.
+;
+
 Boolean! Interpret((INSTANCEOF `src` `v`)) :=
 	1. *Set* `v` to *Unwrap:* `Interpret(v)`;
 	2. *If* any of the following conditions is `true`:

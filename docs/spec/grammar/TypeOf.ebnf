@@ -155,7 +155,7 @@ Type! TypeOf(SemanticExpressionClaim claim) :=
 
 
 
-Type! TypeOf(SemanticExpressionOperation[operator: UN_MAYBE] ::= SemanticExpression) :=
+Type! TypeOf(SemanticExpressionOperation[operator=UN_MAYBE] ::= SemanticExpression) :=
 	1. *Let* `operand` be *Unwrap:* `TypeOf(SemanticExpression)`.
 	2. *If* `operand` is not a Maybe type:
 		1. *Throw:* a new TypeErrorInvalidOperation.
@@ -163,8 +163,12 @@ Type! TypeOf(SemanticExpressionOperation[operator: UN_MAYBE] ::= SemanticExpress
 	4. *Return:* `valuetype`.
 ;
 
-Type! TypeOf(SemanticExpressionOperation[operator: UN_RESULT] ::= SemanticExpression) :=
-	// TODO:
+Type! TypeOf(SemanticExpressionOperation[operator=UN_RESULT] ::= SemanticExpression) :=
+	1. *Let* `operand` be *Unwrap:* `TypeOf(SemanticExpression)`.
+	2. *If* `operand` is not a Result type:
+		1. *Throw:* a new TypeErrorInvalidOperation.
+	3. *Let* `valuetype` be the first type argument to `operand`.
+	4. *Return:* `valuetype`.
 ;
 
 Type! TypeOf(SemanticExpressionOperation[operator: NOT] expr) :=

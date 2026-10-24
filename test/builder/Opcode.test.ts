@@ -416,6 +416,29 @@ test.suite('Opcode', () => {
 						}`), [new VALUE.String('hello')]);
 					});
 				});
+				test.suite('[operator=RESULT_UNWRAP]', () => {
+					test.test('throws when operand is a Fail.', () => {
+						const instrs: readonly OP.Instruction[] = setupScript(`{
+							val x: int! = Fail.<int>(Exception.("42"));
+							x~!;
+						}`, {codegen: false}).builder.instructions;
+						const interp = new Interpreter();
+						instrs[0].interpret(interp);
+						instrs[1].interpret(interp);
+						return assert.throws(() => instrs[2].interpret(interp), /Unwrapped a Fail value/);
+					});
+					test.test('returns the value when operand is an Ok.', () => {
+						assert_equal_values(interpret_extracted_drops(`{
+							val y: Result.<nat> = Ok.<nat>(+42);
+							val z: Result.<float, Exception> = Ok.<float>(4.2);
+							y~!;
+							z~!;
+						}`), [
+							new VALUE.Natural(42n),
+							new VALUE.Float(4.2),
+						]);
+					});
+				});
 			});
 
 			test.suite('Instance', () => {
@@ -1780,6 +1803,27 @@ test.suite('Opcode', () => {
 						wasm.local.set(1, cg.vm.Value.newComposite(cg.codegenMaybe(genConst(cg, 42n)))),
 						wasm.drop(cg.vm.op.unwrapMaybe(wasm.local.get(0, cg.vm.reftype.Value))),
 						wasm.drop(cg.vm.op.unwrapMaybe(wasm.local.get(1, cg.vm.reftype.Value))),
+					]);
+				});
+				test.test('RESULT.UNWRAP', () => {
+					const {builder, cg, wasm} = setupScript(`{
+						val x: int! = Fail.<int>(Exception.("42"));
+						val y: Result.<nat> = Ok.<nat>(+42);
+						val z: Result.<float, Exception> = Ok.<float>(4.2);
+						x~!;
+						y~!;
+						z~!;
+					}`);
+					const {vm: {reftype, Value: VmValue}} = cg;
+					const excp: binaryen.ExpressionRef /* (ref $Value) */ = VmValue.newComposite(cg.codegenException(wasm.ref.cast(VmValue.field(genConst(cg, '42')).composite, reftype.String)));
+					return assertEqualBins(builder.instructions.map((instr) => instr.codegen(cg)), [
+						wasm.local.set(0, excp),
+						wasm.local.set(1, cg.vm.Value.newComposite(cg.codegenResult(false, cg.mod.wasm.ref.cast(cg.vm.Value.field(wasm.local.get(0, reftype.Value)).composite, cg.vm.reftype.Exception)))),
+						wasm.local.set(2, cg.vm.Value.newComposite(cg.codegenResult(true, genConst(cg, 42n, 'nat')))),
+						wasm.local.set(3, cg.vm.Value.newComposite(cg.codegenResult(true, genConst(cg, 4.2)))),
+						wasm.drop(cg.vm.op.unwrapResult(wasm.local.get(1, cg.vm.reftype.Value))),
+						wasm.drop(cg.vm.op.unwrapResult(wasm.local.get(2, cg.vm.reftype.Value))),
+						wasm.drop(cg.vm.op.unwrapResult(wasm.local.get(3, cg.vm.reftype.Value))),
 					]);
 				});
 			});
