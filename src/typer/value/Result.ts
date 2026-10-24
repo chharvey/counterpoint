@@ -22,8 +22,8 @@ export class Result<T extends Value = Value> extends Value {
 
 
 	public constructor(
-		public  readonly isOk:     boolean,
-		private readonly argument: T | Exception,
+		public readonly isOk:     boolean,
+		public readonly argument: T | Exception,
 	) {
 		super();
 		if (isOk) {

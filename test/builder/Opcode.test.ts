@@ -416,6 +416,29 @@ test.suite('Opcode', () => {
 						}`), [new VALUE.String('hello')]);
 					});
 				});
+				test.suite('[operator=RESULT_UNWRAP]', () => {
+					test.test('throws when operand is a Fail.', () => {
+						const instrs: readonly OP.Instruction[] = setupScript(`{
+							val x: int! = Fail.<int>(Exception.("42"));
+							x~!;
+						}`, {codegen: false}).builder.instructions;
+						const interp = new Interpreter();
+						instrs[0].interpret(interp);
+						instrs[1].interpret(interp);
+						return assert.throws(() => instrs[2].interpret(interp), /Unwrapped a Fail value/);
+					});
+					test.test('returns the value when operand is an Ok.', () => {
+						assert_equal_values(interpret_extracted_drops(`{
+							val y: Result.<nat> = Ok.<nat>(+42);
+							val z: Result.<float, Exception> = Ok.<float>(4.2);
+							y~!;
+							z~!;
+						}`), [
+							new VALUE.Natural(42n),
+							new VALUE.Float(4.2),
+						]);
+					});
+				});
 			});
 
 			test.suite('Instance', () => {

@@ -112,7 +112,7 @@ export class Unop extends Value {
 			case OpCode.MAP_COUNT:  { return new VALUE.Natural((operand as VALUE.Map).count); }
 
 			case OpCode.MAYBE_UNWRAP:  { return (operand as VALUE.Maybe).value ?? assert.fail(new Error('Unwrapped a None value.')); }
-			case OpCode.RESULT_UNWRAP: { throw new Error('TODO:'); }
+			case OpCode.RESULT_UNWRAP: { return (operand as VALUE.Result).isOk ? (operand as VALUE.Result).argument : assert.fail(new Error('Unwrapped a Fail value.')); }
 		}
 	}
 
