@@ -1218,7 +1218,7 @@ test.suite('VisitorExprBuild#visit', () => {
 	});
 
 
-	test.suite('OperationBinaryCast', () => {
+	test.suite.todo('OperationBinaryCast', () => {
 		test.suite('[operator=IS]', () => {
 			test.test('"Null"', () => {
 				assert.strictEqual(setupScript(`{

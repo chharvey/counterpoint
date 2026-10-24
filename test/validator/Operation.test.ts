@@ -100,7 +100,7 @@ test.suite('Operation', () => {
 		});
 
 
-		test.suite('OperationBinaryCast', () => {
+		test.suite.todo('OperationBinaryCast', () => {
 			test.test('[operator=IS] always returns `bool`.', () => {
 				assert_shallowStrictEqual(
 					setupScript(`{

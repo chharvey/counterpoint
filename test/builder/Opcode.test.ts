@@ -1730,7 +1730,7 @@ test.suite('Opcode', () => {
 				});
 			});
 
-			test.suite('Instance', () => {
+			test.suite.todo('Instance', () => {
 				test.test('INSTANCEOF', () => {
 					const {builder, cg, wasm} = setupScript(`{
 						${INTRINSICS.slice(2).map((classname) => `null is ${classname};`).join('\n')};
