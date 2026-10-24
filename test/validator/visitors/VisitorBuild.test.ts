@@ -157,13 +157,53 @@ test.suite('VisitorBuild#visit', () => {
 					(GOTO.IF (LT (INT.CONST 42) (INT.CONST 43)) "block-3" "block-4")
 				"block-3":
 					(DROP (INT.CONST 44))
-					(RETURN (FLOAT.CONST 1.1))
+					(RETURN (FLOAT.CONST 1.1) nil)
 					(GOTO "caller")
 				"unreachable-6":
 					(GOTO "block-5")
 				"block-4":
 					(DROP (INT.CONST 45))
-					(RETURN (FLOAT.CONST 2.2))
+					(RETURN (FLOAT.CONST 2.2) nil)
+					(GOTO "caller")
+				"unreachable-7":
+					(GOTO "block-5")
+				"block-5":
+					(DROP (INT.CONST 46))
+					(DROP (TRAP))
+					(ENDPROGRAM)
+				"block-2":
+					(ENDPROGRAM)
+			`.trim());
+		});
+		test.test('conditional panic statements.', () => {
+			assert.strictEqual(setupScript(`{
+				func f(): float {
+					if 42 < 43 then {
+						44;
+						panic Exception.("hello");
+					} else {
+						45;
+						panic Exception.("hello", Exception.("world"));
+					};
+					46;
+				}
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
+				"block-0":
+					(GOTO "block-2")
+				"block-1":
+					(GOTO.IF (LT (INT.CONST 42) (INT.CONST 43)) "block-3" "block-4")
+				"block-3":
+					(DROP (INT.CONST 44))
+					(DECL <Exception> $0 (EXCP.NEW (STR.CONST "hello")))
+					(RETURN nil (GET $0))
+					(GOTO "caller")
+				"unreachable-6":
+					(GOTO "block-5")
+				"block-4":
+					(DROP (INT.CONST 45))
+					(DECL <Exception> $1 (EXCP.NEW (STR.CONST "world")))
+					(DECL <Exception> $2 (EXCP.NEW (STR.CONST "hello") (GET $1)))
+					(RETURN nil (GET $2))
 					(GOTO "caller")
 				"unreachable-7":
 					(GOTO "block-5")

@@ -96,6 +96,7 @@ export abstract class ValueVisitor<T> {
  * - RecordNew
  * - DictNew
  * - MapNew
+ * - ExcpNew
  * - MaybeNew
  * - TupleGet
  * - RecordGet

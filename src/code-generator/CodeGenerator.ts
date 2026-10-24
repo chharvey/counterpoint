@@ -350,6 +350,21 @@ export class CodeGenerator {
 	}
 
 	/**
+	 * Return a new `$Exception` from a given message and optional cause.
+	 * @param message the error message
+	 * @param value   the optional cause; if not given, `(ref.null $Exception)` is used
+	 * @return        `(struct.new $Exception <message> <cause?>)`
+	 */
+	public codegenException(message: binaryen.ExpressionRef /* (ref $String) */, cause?: binaryen.ExpressionRef /* (ref $Exception) */): binaryen.ExpressionRef /* (ref $Expression) */ {
+		const {vm: {heaptype, Object: VmObject}, mod: {wasm}} = this;
+		return wasm.struct.new([
+			VmObject.ctrPlusPlus(),
+			message,
+			cause ?? wasm.ref.null(heaptype.Exception),
+		], heaptype.Exception);
+	}
+
+	/**
 	 * Return a new `$Maybe` from a given optional value.
 	 * @param value the optional value; if not given, `(ref.null $Value)` is used
 	 * @return      `(struct.new $Maybe <value?>)`
@@ -388,18 +403,19 @@ export class CodeGenerator {
 			mod.imports.addGlobal(data.name, extern_mod_name, export_name, data.type, false)
 		));
 		[
-			this.vm.util     .funcImportDataMap,
-			this.vm.op       .funcImportDataMap,
-			this.vm.Vect     .funcImportDataMap,
-			this.vm.Value    .funcImportDataMap,
-			this.vm.Property .funcImportDataMap,
-			this.vm.Case     .funcImportDataMap,
-			this.vm.Record   .funcImportDataMap,
-			this.vm.Object   .funcImportDataMap,
-			this.vm.List     .funcImportDataMap,
-			this.vm.Dict     .funcImportDataMap,
-			this.vm.Map      .funcImportDataMap,
-			this.vm.Maybe    .funcImportDataMap,
+			this.vm.util      .funcImportDataMap,
+			this.vm.op        .funcImportDataMap,
+			this.vm.Vect      .funcImportDataMap,
+			this.vm.Value     .funcImportDataMap,
+			this.vm.Property  .funcImportDataMap,
+			this.vm.Case      .funcImportDataMap,
+			this.vm.Record    .funcImportDataMap,
+			this.vm.Object    .funcImportDataMap,
+			this.vm.List      .funcImportDataMap,
+			this.vm.Dict      .funcImportDataMap,
+			this.vm.Map       .funcImportDataMap,
+			this.vm.Exception .funcImportDataMap,
+			this.vm.Maybe     .funcImportDataMap,
 		].forEach((datamap) => datamap.forEach((data, export_name) => (
 			mod.imports.addFunction(data.name, extern_mod_name, export_name, data.param, data.result)
 		)));

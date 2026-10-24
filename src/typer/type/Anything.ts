@@ -25,7 +25,7 @@ export class Anything extends Type {
 		return Keyword.ANYTHING;
 	}
 
-	public override includes(_v: VALUE.Value): boolean {
+	public override includes(_: VALUE.Value): boolean {
 		return true;
 	}
 

@@ -39,7 +39,8 @@ LIST.NEW([Value*])                        -> List;
 DICT.NEW(Vector<VALUE.Symbol, Value>*)    -> Dict;
 SET.NEW([Value*])                         -> Set;
 MAP.NEW(Vector<Value, Value>*)            -> Map;
-MAYBE.NEW(Value?)                         -> Maybe;
+EXCP.NEW([Value Value?])                  -> Exception;
+MAYBE.NEW([Value?])                       -> Maybe;
 
 TUPLE.GET (native-bigint [Value]) -> Value;
 RECORD.GET(native-bigint [Value]) -> Value;
@@ -116,7 +117,8 @@ DICT.COPY([Value Value]);
 SET.COPY ([Value Value]);
 MAP.COPY ([Value Value]);
 
-RETURN([Value]);
+RETURN([Value Nil]);
+RETURN([Nil Exception]);
 
 
 
@@ -239,6 +241,10 @@ Build(SemanticExpressionCall:has(SemanticExpressionVariable ::= "Map"):has(Seman
 	(MAP.COPY (GET $destination) (GET $arg))
 	return (GET $destination).
 ];
+Build(SemanticExpressionCall ::= "Exception" SemanticType* SemanticExpression__1)
+	:= (EXCP.NEW `Build(SemanticExpression__1)`);
+Build(SemanticExpressionCall ::= "Exception" SemanticType* SemanticExpression__1 SemanticExpression__2)
+	:= (EXCP.NEW `Build(SemanticExpression__1)` `Build(SemanticExpression__2)`);
 Build(SemanticExpressionCall:has(SemanticExpressionVariable ::= "Some"):has(SemanticExpression*) call) := (MAYBE.NEW `Build(call.SemanticExpression*.0)`);
 Build(SemanticExpressionCall call) := (CALL [`Build(call.0)` `...call.SemanticExpression*.map(Build)`]);
 
@@ -415,7 +421,7 @@ Build(SemanticDeclarationFunction[id: RealNumber] ::= SemanticParameterFunction*
 	`SemanticCapture*.map(Build)`
 	`SemanticParameterFunction*.map(Build)`
 	`Build(SemanticBlock)`
-	(DROP (TRAP)) // traps because this part should be unreachable (a return/throw statement should have been encountered in the function body by now)
+	(DROP (TRAP)) // traps because this part should be unreachable (a return/panic statement should have been encountered in the function body by now)
 	"endfunc":
 ];
 
@@ -544,9 +550,13 @@ Build(SemanticStatementIteration ::= SemanticType SemanticExpression SemanticBlo
 Build(SemanticStatementBreak[skip=false] stmt) := [ (GOTO "endwhile") ];
 Build(SemanticStatementBreak[skip=true]  stmt) := [ (GOTO "while") ];
 
-Build(SemanticStatementReturn ::= ()) := [ (GOTO "caller") ];
-Build(SemanticStatementReturn ::= SemanticExpression) := [
-	(RETURN `Build(SemanticExpression)`)
+Build(SemanticStatementReturn[panic=false] ::= ()) := [ (GOTO "caller") ];
+Build(SemanticStatementReturn[panic=false] ::= SemanticExpression) := [
+	(RETURN `Build(SemanticExpression)` nil)
+	(GOTO "caller")
+];
+Build(SemanticStatementReturn[panic=true] ::= SemanticExpression) := [
+	(RETURN nil `Build(SemanticExpression)`)
 	(GOTO "caller")
 ];
 

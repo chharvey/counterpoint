@@ -33,7 +33,7 @@ export abstract class InstrVisitor<T> {
 			case OpSet:                 { return this.visitSet                   (instr as OpSet); }
 			case CollectionDynamicSet:  { return this.visitCollectionDynamicSet  (instr as CollectionDynamicSet); }
 			case CollectionDynamicCopy: { return this.visitCollectionDynamicCopy (instr as CollectionDynamicCopy); }
-			case Return:                { return this.visitReturn                (instr as Return); }
+			case Return:                { return this.visitReturn                (instr as Return); } // eslint-disable-line @typescript-eslint/no-unnecessary-type-assertion
 
 			default: { return this.defaultVisit(instr); }
 		}

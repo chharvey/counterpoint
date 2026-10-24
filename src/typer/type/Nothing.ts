@@ -25,7 +25,7 @@ export class Nothing extends Type {
 		return Keyword.NOTHING;
 	}
 
-	public override includes(_v: VALUE.Value): boolean {
+	public override includes(_: VALUE.Value): boolean {
 		return false;
 	}
 

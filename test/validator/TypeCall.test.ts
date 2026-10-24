@@ -28,7 +28,7 @@ test.suite('TypeCall', () => {
 
 
 	test.suite('#eval', () => {
-		test.test('evaluates List, Dict, Set, Map, Maybe, None, and Some.', () => {
+		test.test('evaluates Callable Interface Names.', () => {
 			assertEqualTypes(
 				[
 					'List.<null>',

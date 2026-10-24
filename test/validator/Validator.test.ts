@@ -41,6 +41,7 @@ test.suite('Validator', () => {
 				'Dict',
 				'Set',
 				'Map',
+				'Exception',
 				'Maybe',
 				'None',
 				'Some',

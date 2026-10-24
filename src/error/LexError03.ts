@@ -3,7 +3,7 @@ import {LexError} from './LexError.ts';
 
 
 /**
- * A LexError03 is thrown when an integer literal or string literal contains an invalid Unicode escape sequence.
+ * A LexError03 is raised when an integer literal or string literal contains an invalid Unicode escape sequence.
  * @example
  * "this is invalid: \u{defg}"; % LexError03: Invalid escape sequence...
  */

@@ -29,6 +29,7 @@ export enum TypeName {
 	DICT,
 	SET,
 	MAP,
+	EXCEPTION,
 	MAYBE,
 	ANY,
 }
@@ -54,6 +55,7 @@ export function ast_type_name(typ: TYPE.Type): TypeName {
 		case typ.isSubtypeOf(TYPE.NAT):   { return TypeName.NAT; }
 		case typ.isSubtypeOf(TYPE.FLOAT): { return TypeName.FLOAT; }
 		case typ.isSubtypeOf(TYPE.STR):   { return TypeName.STR; }
+		case typ.isSubtypeOf(TYPE.EXCP):  { return TypeName.EXCEPTION; }
 
 		case typ instanceof TYPE.Tuple:  { return TypeName.TUPLE; }
 		case typ instanceof TYPE.Record: { return TypeName.RECORD; }

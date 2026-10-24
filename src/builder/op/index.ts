@@ -14,6 +14,7 @@ export * from './CollectionLinearNew.ts';
 export * from './RecordNew.ts';
 export * from './DictNew.ts';
 export * from './MapNew.ts';
+export * from './ExcpNew.ts';
 export * from './MaybeNew.ts';
 export * from './TupleGet.ts';
 export * from './RecordGet.ts';

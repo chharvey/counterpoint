@@ -127,7 +127,7 @@ export class VisitorCompletion extends AstNodeVisitor<CompletionKind> {
 	}
 
 	public override visitStmtReturn(): CompletionKind {
-		return CompletionKind.RETURN_OR_THROW;
+		return CompletionKind.RETURN_OR_PANIC;
 	}
 	/* eslint-enable @stylistic/space-before-function-paren */
 

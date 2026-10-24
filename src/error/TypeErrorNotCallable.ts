@@ -5,7 +5,7 @@ import {TypeError as CplTypeError} from './TypeError.ts';
 
 
 /**
- * A TypeErrorNotCallable is thrown when an attempt is made to call an object that is not callable.
+ * A TypeErrorNotCallable is raised when an attempt is made to call an object that is not callable.
  * @example
  * type U = int;
  * type T = U.<V>; % TypeErrorNotCallable: Type `U` is not callable.

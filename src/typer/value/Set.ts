@@ -25,8 +25,6 @@ import {Collection} from './Collection.ts';
  * @final
  */
 class ValueSet<T extends Value = Value> extends Collection {
-	public override readonly isReference = true;
-
 	#elements: Set<T>;
 
 
@@ -38,16 +36,12 @@ class ValueSet<T extends Value = Value> extends Collection {
 		});
 	}
 
-	/**
-	 * @implements Value
-	 */
+	/** @implements Value */
 	public override get isEmpty(): boolean {
 		return this.#elements.size === 0;
 	}
 
-	/**
-	 * @implements Collection
-	 */
+	/** @implements Collection */
 	public override get count(): bigint {
 		return BigInt(this.#elements.size);
 	}

@@ -32,6 +32,7 @@ test.suite('Call', () => {
 			(2, 0.2),
 			(3, 0.4),
 		))`,
+		'Exception.("message")',
 		'None.<int>()',
 		'Some.<int>(42)',
 	] as const;
@@ -199,6 +200,10 @@ test.suite('Call', () => {
 			3 -> 0.4,
 		})`,
 	] as const;
+	const EXCEPTION_CONS = [
+		'Exception.("message")',
+		'Exception.("message", Exception.("cause"))',
+	] as const;
 
 
 	test.suite('#varCheck', () => {
@@ -212,7 +217,7 @@ test.suite('Call', () => {
 
 
 	test.suite('#type', () => {
-		test.test('evaluates Boolean, Integer, Natural, Float, String, List, Dict, Set, Map, None, and Some.', () => {
+		test.test('evaluates Callable Class Names.', () => {
 			assertEqualTypes(
 				EVALUATE.map((src) => AST.EXPR.Call.fromSource(src).type()),
 				[
@@ -225,6 +230,7 @@ test.suite('Call', () => {
 					new TYPE.Dict(TYPE.INT, true),
 					new TYPE.Set(TYPE.INT, true),
 					new TYPE.Map(TYPE.INT, TYPE.FLOAT, true),
+					TYPE.EXCP,
 					new TYPE.None(TYPE.INT),
 					new TYPE.Some(TYPE.INT),
 				],
@@ -282,6 +288,12 @@ test.suite('Call', () => {
 			assertEqualTypes(
 				MAP_CONS.map((src) => AST.EXPR.Call.fromSource(src).type()),
 				repeat(new TYPE.Map(TYPE.INT, TYPE.FLOAT, true), MAP_CONS.length),
+			);
+		});
+		test.test('`Exception.(‹…›)`', () => {
+			assertEqualTypes(
+				EXCEPTION_CONS.map((src) => AST.EXPR.Call.fromSource(src).type()),
+				repeat(TYPE.EXCP, EXCEPTION_CONS.length),
 			);
 		});
 		test.test('`Maybe.()` throws.', () => {

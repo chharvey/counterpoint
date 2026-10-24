@@ -21,7 +21,7 @@ import {
  */
 export class Maybe extends ReferenceType {
 	/**
-	 * Constructs a Record type resembling the `Maybe[T]` type, with the given generic argument.
+	 * Constructs a new Maybe object resembling the `Maybe[T]` type, with the given generic argument.
 	 * @param typearg the generic argument to `Maybe[T]`
 	 */
 	public constructor(public readonly typearg: Type) {

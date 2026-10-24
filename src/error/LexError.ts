@@ -11,7 +11,7 @@ import {ErrorCode} from './ErrorCode.ts';
 
 
 /**
- * A LexError is thrown when a span of source code fails to
+ * A LexError is raised when a span of source code fails to
  * produce a valid token per the rules of the defined lexical grammar.
  *
  * Known subclasses:

@@ -63,6 +63,7 @@ Word ::=
 		| "break"
 		| "skip"
 		| "return"
+		| "panic"
 	| IDENTIFIER
 	| KeywordType
 	| KeywordValue
@@ -295,6 +296,7 @@ StatementIteration<Return> ::=
 
 StatementBreak         ::= ("break" | "skip")                                      ";";
 StatementReturn<Break> ::=  "return"          Expression<+Block><?Break><+Return>? ";";
+StatementPanic<Break>  ::=  "panic"           Expression<+Block><?Break><+Return>  ";";
 
 Statement<Break, Return> ::=
 	| Declaration                   <?Break><?Return>
@@ -307,6 +309,7 @@ Statement<Break, Return> ::=
 	| StatementIteration                    <?Return>
 	| <Break+> StatementBreak
 	| <Return+>StatementReturn<?Break>
+	| StatementPanic<?Break>
 ;
 
 

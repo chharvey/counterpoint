@@ -59,7 +59,7 @@ Nil! TypeCheck(SemanticCapture[ref: false] ::= SemanticExpressionVariable[id: Re
 Nil! TypeCheck(SemanticBlock block) :=
 	1. *For each* `stmt` in `block.children`:
 		1. *Perform:* *Unwrap:* `TypeCheck(stmt)`.
-	2. *If* `block` is a function body *and* *UnwrapAffirm:* `CompletionOf(block)` is not *RETURN_OR_THROW*:
+	2. *If* `block` is a function body *and* *UnwrapAffirm:* `CompletionOf(block)` is not *RETURN_OR_PANIC*:
 		1. *Throw:* a new TypeErrorFunctionExit.
 	3. *Else:*
 		1. *Return.*
@@ -68,14 +68,41 @@ Nil! TypeCheck(SemanticBlock block) :=
 
 
 Nil TypeCheck(SemanticType typexpr) :=
-	1. *Perform:* *Unwrap:* `TypeValueOf(typexpr)`.
+	1. *For each* `it` in `typexpr.children`:
+		1. *Perform:* *Unwrap:* `TypeCheck(it)`.
+	2. *Perform:* *Unwrap:* `TypeValueOf(typexpr)`.
+		1. *Note:* The result of this step is not used; it is only performed to rethrow any TypeErrors.
+;
+
+Nil TypeCheck(SemanticTypeCall typexpr) :=
+	1. *Note:* Skip type-checking of `typexpr.children.0` for now, as semantics is determined by syntax.
+	2. *For each* `it` in `typexpr.children[1..]`:
+		1. *Perform:* *Unwrap:* `TypeCheck(it)`.
+	3. *Perform:* *Unwrap:* `TypeValueOf(typexpr)`.
 		1. *Note:* The result of this step is not used; it is only performed to rethrow any TypeErrors.
 ;
 
 
 
 Nil! TypeCheck(SemanticExpression expr) :=
-	1. *Perform:* *Unwrap:* `TypeOf(expr)`.
+	1. *For each* `it` in `expr.children`:
+		1. *Perform:* *Unwrap:* `TypeCheck(it)`.
+	2. *Perform:* *Unwrap:* `TypeOf(expr)`.
+		1. *Note:* The result of this step is not used; it is only performed to rethrow any TypeErrors.
+;
+
+Nil! TypeCheck(SemanticExpressionCall expr) :=
+	1. *Note:* Skip type-checking of `expr.children.0` for now, as semantics is determined by syntax.
+	2. *For each* `it` in `expr.children[1..]`:
+		1. *Perform:* *Unwrap:* `TypeCheck(it)`.
+	3. *Perform:* *Unwrap:* `TypeOf(expr)`.
+		1. *Note:* The result of this step is not used; it is only performed to rethrow any TypeErrors.
+;
+
+Nil! TypeCheck(SemanticExpressionOperation[operator: IS | CAST | MAYBE | RESULT] ::= SemanticExpression__0 SemanticExpression__1[type: Class]) :=
+	1. *Perform:* *Unwrap:* `TypeCheck(SemanticExpression__0)`.
+	2. *Note:* Skip type-checking of `SemanticExpression__1` for now, as semantics is determined by syntax.
+	3. *Perform:* *Unwrap:* `TypeOf(SemanticExpressionOperation)`.
 		1. *Note:* The result of this step is not used; it is only performed to rethrow any TypeErrors.
 ;
 
@@ -290,7 +317,7 @@ Nil! TypeCheck(SemanticStatementIteration stmt) :=
 
 
 
-Nil! TypeCheck(SemanticStatementReturn ::= ()) :=
+Nil! TypeCheck(SemanticStatementReturn[panic=false] ::= ()) :=
 	1. *Let* `parent` be the result of walking up the AST and finding a node
 		that is either a SemanticExpressionFunction or a SemanticDeclarationFunction.
 	2. *If* `parent` is set:
@@ -304,7 +331,7 @@ Nil! TypeCheck(SemanticStatementReturn ::= ()) :=
 	3. *Else:*
 		1. *Return.*
 ;
-Nil! TypeCheck(SemanticStatementReturn ::= SemanticExpression) :=
+Nil! TypeCheck(SemanticStatementReturn[panic=false] ::= SemanticExpression) :=
 	1. *Let* `parent` be the result of walking up the AST and finding a node
 		that is either a SemanticExpressionFunction or a SemanticDeclarationFunction.
 	2. *If* `parent` is set:
@@ -317,6 +344,8 @@ Nil! TypeCheck(SemanticStatementReturn ::= SemanticExpression) :=
 	3. *Else:*
 		1. *Return.*
 ;
+Nil! TypeCheck(SemanticStatementReturn[panic=true] ::= SemanticExpression)
+	:= TypeCheckAssign(SemanticExpression, Exception);
 
 
 

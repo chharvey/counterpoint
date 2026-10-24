@@ -235,5 +235,7 @@ SemanticStatementIteration[id?: RealNumber]
 SemanticStatementBreak[skip: Boolean]
 	::= ();
 
-SemanticStatementReturn
+SemanticStatementReturn[panic=false]
 	::= SemanticExpression?;
+SemanticStatementReturn[panic=true]
+	::= SemanticExpression;

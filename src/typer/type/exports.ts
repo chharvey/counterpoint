@@ -10,17 +10,19 @@ import {Natural} from './Natural.ts';
 import {Float} from './Float.ts';
 import {String as TypeString} from './String.ts';
 import {Object as TypeObject} from './Object.ts';
+import {Exception} from './Exception.ts';
 
 
 
-/** The Counterpoint Language Nothing  Type `nothing`.  */ export const NOTHING  = new Nothing();
-/** The Counterpoint Language Anything Type `anything`. */ export const ANYTHING = new Anything();
-/** The Counterpoint Language Symbol   Type `sym`.      */ export const SYM      = new TypeSymbol();
-/** The Counterpoint Language Integer  Type `int`.      */ export const INT      = new Integer();
-/** The Counterpoint Language Natural  Type `nat`.      */ export const NAT      = new Natural();
-/** The Counterpoint Language Float    Type `float`.    */ export const FLOAT    = new Float();
-/** The Counterpoint Language String   Type `str`.      */ export const STR      = new TypeString();
-/** The Counterpoint Language Object   Type `Object`.   */ export const OBJ      = new TypeObject();
+/** The Counterpoint Language Nothing  Type `nothing`.   */ export const NOTHING  = new Nothing();
+/** The Counterpoint Language Anything Type `anything`.  */ export const ANYTHING = new Anything();
+/** The Counterpoint Language Symbol   Type `sym`.       */ export const SYM      = new TypeSymbol();
+/** The Counterpoint Language Integer  Type `int`.       */ export const INT      = new Integer();
+/** The Counterpoint Language Natural  Type `nat`.       */ export const NAT      = new Natural();
+/** The Counterpoint Language Float    Type `float`.     */ export const FLOAT    = new Float();
+/** The Counterpoint Language String   Type `str`.       */ export const STR      = new TypeString();
+/** The Counterpoint Language Object   Type `Object`.    */ export const OBJ      = new TypeObject();
+/** The Counterpoint Language Object   Type `Exception`. */ export const EXCP     = new Exception();
 
 
 
@@ -52,6 +54,7 @@ export const TYPE_CONSTANTS = [
 	FLOAT,
 	STR,
 	OBJ,
+	EXCP,
 	FALSE,
 	TRUE,
 ] as const;

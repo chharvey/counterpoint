@@ -87,34 +87,11 @@ Type! TypeValueOf(SemanticTypeAccess access) :=
 
 
 
-Type! TypeValueOf(SemanticTypeCall call) :=
-	1. *Assert:* `call.children.count` is greater than or equal to 2.
-	2. *Let* `base` be `call.children.0`.
-	3. *If* `base` is not a SemanticTypeAlias:
-		1. *Note:* Currently, the only allowed generic calls are `List.<T>`, `Dict.<T>`, `Set.<T>`, `Map.<K, V>`.
-		2. *Throw:* a new TypeError.
-	4. *If* `base.source` is one of "List", "Dict", or "Set":
-		1. *If* `call.children.count` is 2:
-			1. *Let* `genericarg` be *Unwrap:* `TypeValueOf(call.children.1)`.
-			2. *If* `base.source` is "List":
-				1. *Return:* a List type under the type argument `genericarg`.
-			3. *If* `base.source` is "Dict":
-				1. *Return:* a Dict type under the type argument `genericarg`.
-			4. *If* `base.source` is "Set":
-				1. *Return:* a Set type under the type argument `genericarg`.
-		2. *Throw:* a new TypeError.
-	5. *Else If* `base.source` is "Map":
-		1. *Let* `antecedenttype` be *Unwrap:* `TypeValueOf(call.children.1)`.
-		2. *If* `call.children.count` is 2:
-			1. *Let* `consequenttype` be `antecedenttype`.
-		3. *Else If* `call.children.count` is 3:
-			1. *Let* `consequenttype` be *Unwrap:* `TypeValueOf(call.children.2)`.
-		4. *Else:*
-			1. *Throw:* a new TypeError.
-		5. *Return:* a Map type under an antecedent type argument `antecedenttype`
-			and a consequent type argument `consequenttype`.
-	6. *Else:*
-		// TODO: see Class API
+Type! TypeValueOf(SemanticTypeCall ::= SemanticType__0 SemanticType__1+) :=
+	1. *If* `SemanticType__0` is not a SemanticTypeAlias:
+		1. *Note:* Currently, the only allowed generic calls are Callable Interface Names.
+		2. *Throw:* a new TypeErrorNotCallable.
+	2. See Class API.
 ;
 
 

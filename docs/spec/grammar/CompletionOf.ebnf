@@ -1,7 +1,7 @@
 CompletionKind =:=
 	| NORMAL
 	| BREAK_OR_SKIP
-	| RETURN_OR_THROW
+	| RETURN_OR_PANIC
 ;
 
 
@@ -182,16 +182,15 @@ CompletionKind CompletionOf(SemanticStatementIteration ::= SemanticType Semantic
 	);
 
 CompletionKind CompletionOf(SemanticStatementBreak)  := BREAK_OR_SKIP;
-CompletionKind CompletionOf(SemanticStatementReturn) := RETURN_OR_THROW;
-CompletionKind CompletionOf(SemanticStatementThrow)  := RETURN_OR_THROW;
+CompletionKind CompletionOf(SemanticStatementReturn) := RETURN_OR_PANIC;
 
 
 
 CompletionKind MinimumCompletion(Sequence<CompletionKind> completions) :=
-	1. *Let* `result` be *RETURN_OR_THROW*.
+	1. *Let* `result` be *RETURN_OR_PANIC*.
 	2. *For each* `completion` in `completions`:
-		1. *If* `result` is *RETURN_OR_THROW*:
-			1. *If* `completion` is not *RETURN_OR_THROW*:
+		1. *If* `result` is *RETURN_OR_PANIC*:
+			1. *If* `completion` is not *RETURN_OR_PANIC*:
 				1. *Set* `result` to `completion`.
 			2. *Else:*
 				1. Fall through.
@@ -217,12 +216,12 @@ CompletionKind MaximumCompletion(Sequence<CompletionKind> completions) :=
 			2. *Else:*
 				1. Fall through.
 		2. *Else If* `result` is *BREAK_OR_SKIP*:
-			1. *If* `completion` is *RETURN_OR_THROW*:
+			1. *If* `completion` is *RETURN_OR_PANIC*:
 				1. *Set* `result` to `completion`.
 			2. *Else:*
 				1. Fall through.
 		3. *Else:*
-			1. *Assert:* `result` is *RETURN_OR_THROW*.
+			1. *Assert:* `result` is *RETURN_OR_PANIC*.
 			2. Fall through.
 	3. *Return:* `result`.
 ;

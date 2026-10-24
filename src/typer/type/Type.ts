@@ -472,7 +472,7 @@ export abstract class Type {
 	@strictEqual
 	@memoizeBinOp()
 	@subtypeLaws
-	public isSubtypeOf(_t: Type): boolean {
+	public isSubtypeOf(_type: Type): boolean {
 		/*
 		 * By default (unless overridden), this type will not be a subtype of anything
 		 * unless that thing is a union having this type as a constituent.

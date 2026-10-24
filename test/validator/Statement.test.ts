@@ -760,6 +760,14 @@ test.suite('Statement', () => {
 				ret1a.typeCheck(); // assert does not throw
 				return assert.throws(() => ret1b.typeCheck(), expected);
 			});
+			test.test('throws when panicked expression is not an Exception.', () => {
+				const {stmts} = setupScript(`{
+					panic Exception.("error1");
+					panic "error2";
+				}`, {typeCheck: false});
+				stmts[0].typeCheck(); // assert does not throw
+				return assert.throws(() => stmts[1].typeCheck(), TypeErrorNotAssignable);
+			});
 		});
 	});
 });

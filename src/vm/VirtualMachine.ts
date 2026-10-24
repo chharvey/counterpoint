@@ -10,6 +10,7 @@ import {Object as VmObject} from './classes/Object.ts';
 import {List} from './classes/List.ts';
 import {Dict} from './classes/Dict.ts';
 import {Map as VmMap} from './classes/Map.ts';
+import {Exception} from './classes/Exception.ts';
 import {Maybe} from './classes/Maybe.ts';
 import {utils} from './ad-hoc/utils.ts';
 import {ops} from './ad-hoc/ops.ts';
@@ -30,6 +31,7 @@ type TypeKey = (
 	| 'List'
 	| 'Dict'
 	| 'Map'
+	| 'Exception'
 	| 'Maybe'
 	| 'Function'
 );
@@ -39,7 +41,7 @@ type TypeKey = (
 type HeaptypeRegistry = Readonly<Record<TypeKey, binaryen.HeapType>>;
 type ReftypeRegistry  = Readonly<Record<TypeKey, binaryen.Type>>;
 
-type ReftypeNullRegistry = Readonly<Record<TypeKey & ('Value' | 'Property' | 'Case'), binaryen.Type>>;
+type ReftypeNullRegistry = Readonly<Record<TypeKey & ('Value' | 'Property' | 'Case' | 'Exception'), binaryen.Type>>;
 
 
 
@@ -230,6 +232,18 @@ const TYPES: {
 	tb.setSubType(i_map, tb.getTempHeapType(i_object));
 	tb.setOpen(i_map);
 
+	/* (type $Exception ...) */
+	const i_exception: number = tb.getSize();
+	tb.grow(1);
+	tb.setStructType(i_exception, [
+		/* $id */      TypeBuilder_makeField(binaryen.Type.i64),
+		/* $message */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_string),    false)),
+		/* $cause */   TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_exception), true)),
+	]);
+	// @ts-expect-error --- incorrect `setSubType` signature
+	tb.setSubType(i_exception, tb.getTempHeapType(i_object));
+	tb.setOpen(i_exception);
+
 	/* (type $Maybe ...) */
 	const i_maybe: number = tb.getSize();
 	tb.grow(1);
@@ -269,6 +283,7 @@ const TYPES: {
 			List:         heaptypes[i_list],
 			Dict:         heaptypes[i_dict],
 			Map:          heaptypes[i_map],
+			Exception:    heaptypes[i_exception],
 			Maybe:        heaptypes[i_maybe],
 			Function:     heaptypes[i_function],
 		},
@@ -287,14 +302,16 @@ const TYPES: {
 			List:         binaryen.getTypeFromHeapType(heaptypes[i_list],          false),
 			Dict:         binaryen.getTypeFromHeapType(heaptypes[i_dict],          false),
 			Map:          binaryen.getTypeFromHeapType(heaptypes[i_map],           false),
+			Exception:    binaryen.getTypeFromHeapType(heaptypes[i_exception],     false),
 			Maybe:        binaryen.getTypeFromHeapType(heaptypes[i_maybe],         false),
 			Function:     binaryen.getTypeFromHeapType(heaptypes[i_function],      false),
 		},
 
 		reftypeNullRegistry: {
-			Value:    binaryen.getTypeFromHeapType(heaptypes[i_value],    true), // only used as the fields of `$ListInternal` and `$Maybe`
-			Property: binaryen.getTypeFromHeapType(heaptypes[i_property], true), // only used as the fields of `$DictInternal`
-			Case:     binaryen.getTypeFromHeapType(heaptypes[i_case],     true), // only used as the fields of `$MapInternal`
+			Value:     binaryen.getTypeFromHeapType(heaptypes[i_value],     true), // only used as the fields of `$ListInternal` and `$Maybe`
+			Property:  binaryen.getTypeFromHeapType(heaptypes[i_property],  true), // only used as the fields of `$DictInternal`
+			Case:      binaryen.getTypeFromHeapType(heaptypes[i_case],      true), // only used as the fields of `$MapInternal`
+			Exception: binaryen.getTypeFromHeapType(heaptypes[i_exception], true), // only used as the fields of `$Exception`
 		},
 	};
 })();
@@ -327,16 +344,17 @@ export class VirtualMachine {
 	public readonly util = utils(this);
 	public readonly op   = ops(this);
 
-	public readonly Vect     = new Vect(this);
-	public readonly Value    = new Value(this);
-	public readonly Property = new Property(this);
-	public readonly Case     = new Case(this);
-	public readonly Record   = new VmRecord(this);
-	public readonly Object   = new VmObject(this);
-	public readonly List     = new List(this);
-	public readonly Dict     = new Dict(this);
-	public readonly Map      = new VmMap(this);
-	public readonly Maybe    = new Maybe(this);
+	public readonly Vect      = new Vect(this);
+	public readonly Value     = new Value(this);
+	public readonly Property  = new Property(this);
+	public readonly Case      = new Case(this);
+	public readonly Record    = new VmRecord(this);
+	public readonly Object    = new VmObject(this);
+	public readonly List      = new List(this);
+	public readonly Dict      = new Dict(this);
+	public readonly Map       = new VmMap(this);
+	public readonly Exception = new Exception(this);
+	public readonly Maybe     = new Maybe(this);
 
 
 	public constructor() {

@@ -5,7 +5,7 @@ import {TypeError as CplTypeError} from './TypeError.ts';
 
 
 /**
- * A TypeErrorNotAssignable is thrown when an expression is assigned to a type to which it is not assignable,
+ * A TypeErrorNotAssignable is raised when an expression is assigned to a type to which it is not assignable,
  * or when an argument is assigned to a parameter to which it is not assignable.
  * @example
  * val x: int = true;               % TypeErrorNotAssignable: Expression `true` is not assignable to type `int`.

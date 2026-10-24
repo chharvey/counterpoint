@@ -21,10 +21,10 @@ public class String {
 	public new (arg: anything) { % catch-all for all other value objects (tuples, records, etc)
 		if '::op::isTuple'(arg) as :bool: then {
 			% loop through tuple internal array and stringify each value
-			throw "TODO: not yet supported";
+			panic "TODO: not yet supported";
 		} else if '::op::isRecord'(arg) as :bool: then {
 			% loop through record internal array and stringify each property
-			throw "TODO: not yet supported";
+			panic "TODO: not yet supported";
 		};
 	}
 }

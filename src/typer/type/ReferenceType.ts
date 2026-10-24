@@ -29,6 +29,7 @@ export function isObjectType(
  * - Dict
  * - TypeSet
  * - TypeMap
+ * - Exception
  * - Maybe
  * - TypeFunction
  */
