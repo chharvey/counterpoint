@@ -916,6 +916,20 @@ test.suite('Type', () => {
 			});
 		});
 
+		test.suite('Result', () => {
+			test.test('is a subtype but not a supertype of `Object`.', () => {
+				const result = new TYPE.Result(TYPE.STR);
+				assert.ok(result.isSubtypeOf(TYPE.OBJ), 'Maybe[str] <: Object');
+				assert.ok(!TYPE.OBJ.isSubtypeOf(result), 'Object !<: Maybe[str]');
+			});
+			test.test('always covariant: `A <: C && B <: D --> Result[A, B] <: Result[C, D]`.', () => {
+				const sub = new TYPE.Result(TYPE.INT);
+				const sup = new TYPE.Result(TYPE.INT.union(TYPE.FLOAT));
+				assert.ok(sub.isSubtypeOf(sup), 'Result[int, Exception] <: Result[int | float, Exception]');
+				assert.ok(!sup.isSubtypeOf(sub), 'Result[int | float, Exception] !<: Result[int, Exception]');
+			});
+		});
+
 		test.suite('TypeFunction', () => {
 			test.test('is a subtype but not a supertype of `anything` and `Object`.', () => {
 				const fn = new TYPE.Function();
@@ -1081,6 +1095,16 @@ test.suite('Type', () => {
 		});
 		test.test('immutable counterparts of types with mutability are not subtypes of their mutable types.', () => {
 			with_mutability.forEach((t) => assert.ok(!t.isSubtypeOf(t.mutableOf()), `${t} !<: mut ${t}`));
+		});
+	});
+
+
+	test.suite('Result#constructor', () => {
+		test.test('throws when failure type argument is not a subtype of Exception.', () => {
+			const fail_type: TYPE.Type = TYPE.FLOAT;
+			assert.ok(!fail_type.isSubtypeOf(TYPE.EXCP));
+			new TYPE.Result(TYPE.INT, TYPE.EXCP); // assert does not throw
+			return assert.throws(() => new TYPE.Result(TYPE.INT, fail_type), TypeError);
 		});
 	});
 });
