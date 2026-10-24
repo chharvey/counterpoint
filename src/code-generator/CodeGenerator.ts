@@ -355,7 +355,7 @@ export class CodeGenerator {
 	 * @param value   the optional cause; if not given, `(ref.null $Exception)` is used
 	 * @return        `(struct.new $Exception <message> <cause?>)`
 	 */
-	public codegenException(message: binaryen.ExpressionRef /* (ref $String) */, cause?: binaryen.ExpressionRef /* (ref $Exception) */): binaryen.ExpressionRef /* (ref $Expression) */ {
+	public codegenException(message: binaryen.ExpressionRef /* (ref $String) */, cause?: binaryen.ExpressionRef /* (ref $Exception) */): binaryen.ExpressionRef /* (ref $Exception) */ {
 		const {vm: {heaptype, Object: VmObject}, mod: {wasm}} = this;
 		return wasm.struct.new([
 			VmObject.ctrPlusPlus(),
