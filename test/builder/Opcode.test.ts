@@ -1412,6 +1412,19 @@ test.suite('Opcode', () => {
 				].map((mab) => cg.vm.Value.newComposite(mab)));
 			});
 
+			test.test('ResultNew', () => {
+				const cg = new CodeGenerator();
+				const excp = new OP.ExcpNew(new OP.Const(new VALUE.String('message')));
+				const value = new OP.Const(new VALUE.Integer(42n));
+				return assertEqualBins([
+					new OP.ResultNew(false, TYPE.INT, TYPE.EXCP, excp),
+					new OP.ResultNew(true,  TYPE.INT, TYPE.EXCP, value),
+				].map((opcode) => opcode.codegen(cg)), [
+					cg.codegenResult(false, cg.mod.wasm.ref.cast(cg.vm.Value.field(excp.codegen(cg)).composite, cg.vm.reftype.Exception)),
+					cg.codegenResult(true, value.codegen(cg)),
+				].map((mab) => cg.vm.Value.newComposite(mab)));
+			});
+
 			test.test('TupleGet returns (array.get).', () => {
 				const {builder, cg, wasm} = setupScript(`{
 					val mut x:   int                = 42;

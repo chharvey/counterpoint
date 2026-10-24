@@ -153,6 +153,21 @@ Codegen((MAYBE.NEW `value`)) := (call $Value.new-composite
 	)
 );
 
+Codegen((RESULT.NEW nil `excp`)) := (call $Value.new-composite
+	(struct.new $Result
+		(call $Object.ctr-plus-plus)
+		(ref.null $Value)
+		(ref.cast (ref $Exception) (struct.get $Value $composite `Codegen(excp)`))
+	)
+);
+Codegen((RESULT.NEW `value` nil)) := (call $Value.new-composite
+	(struct.new $Result
+		(call $Object.ctr-plus-plus)
+		`Codegen(value)`
+		(ref.null $Exception)
+	)
+);
+
 Codegen((TUPLE.GET `index` `obj`)) := (array.get
 	(ref.cast (ref $Tuple) (struct.get $Value $composite `Codegen(obj)`))
 	(i32.const `index`)
