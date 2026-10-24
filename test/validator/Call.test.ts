@@ -37,6 +37,8 @@ test.suite('Call', () => {
 		'Some.<int>(42)',
 		'Fail.<int>(Exception.("message"))',
 		'Ok.<int>(42)',
+		'Fail.<int, Exception>(Exception.("message"))',
+		'Ok.<int, Exception>(42)',
 	] as const;
 	const BOOL_CONS = [
 		'Boolean.(null)',
@@ -235,6 +237,8 @@ test.suite('Call', () => {
 					TYPE.EXCP,
 					new TYPE.None(TYPE.INT),
 					new TYPE.Some(TYPE.INT),
+					new TYPE.Fail(TYPE.INT),
+					new TYPE.Ok(TYPE.INT),
 					new TYPE.Fail(TYPE.INT),
 					new TYPE.Ok(TYPE.INT),
 				],

@@ -259,13 +259,25 @@ test.suite('CodeGenerator', () => {
 				], cg.vm.reftype.Map),
 			);
 		});
-		test.test('`#codegenFunction` (struct.new) with id and arity.', () => {
+
+		test.test('#codegenException', () => {
+			const message:   binaryen.ExpressionRef /* (ref $String) */    = wasm.ref.cast(cg.vm.Value.field(genConst(cg, 'message')).composite, cg.vm.reftype.String);
+			const expected1: binaryen.ExpressionRef /* (ref $Exception) */ = wasm.struct.new([
+				cg.vm.Object.ctrPlusPlus(),
+				message,
+				wasm.ref.null(cg.vm.heaptype.Exception),
+			], cg.vm.heaptype.Exception);
 			assertEqualBins(
-				cg.codegenFunction(3n),
+				cg.codegenException(message),
+				expected1,
+			);
+			return assertEqualBins(
+				cg.codegenException(message, expected1),
 				wasm.struct.new([
 					cg.vm.Object.ctrPlusPlus(),
-					wasm.i32.const(3),
-				], cg.vm.heaptype.Function),
+					message,
+					expected1,
+				], cg.vm.heaptype.Exception),
 			);
 		});
 
@@ -304,6 +316,16 @@ test.suite('CodeGenerator', () => {
 					value,
 					wasm.ref.null(cg.vm.heaptype.Exception),
 				], cg.vm.heaptype.Maybe),
+			);
+		});
+
+		test.test('`#codegenFunction` (struct.new) with id and arity.', () => {
+			assertEqualBins(
+				cg.codegenFunction(3n),
+				wasm.struct.new([
+					cg.vm.Object.ctrPlusPlus(),
+					wasm.i32.const(3),
+				], cg.vm.heaptype.Function),
 			);
 		});
 
