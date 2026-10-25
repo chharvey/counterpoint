@@ -5,12 +5,10 @@ import {
 	type ConstructorType,
 	AST,
 	TYPE,
-	TypeErrorInvalidOperation,
 	TypeErrorNoEntry,
 } from '../../src/index.ts';
 import {
 	extract_lines,
-	repeat,
 	assertEqualTypes,
 	typeUnit,
 	setupScript,
@@ -90,7 +88,7 @@ test.suite('TypeAccess', () => {
 					TYPE.STR,
 				]);
 			});
-			test.test('returns Maybe if entry is optional.', {expectFailure: true}, () => {
+			test.test('returns Maybe if entry is optional.', () => {
 				testTypeEvals(`{
 					type TupoC = (1,   2.0,   ?: "three");
 					type TupoV = (int, float, ?: str);
@@ -110,21 +108,6 @@ test.suite('TypeAccess', () => {
 					new TYPE.Maybe(typeUnit(2.0)),
 					new TYPE.Maybe(TYPE.FLOAT),
 				]);
-			});
-			test.test('throws when entry is optional.', () => {
-				testTypeEvals(`{
-					type TupoC = (1,   2.0,   ?: "three");
-					type TupoV = (int, float, ?: str);
-
-					type RecoC = (a: 1,   b?: 2.0,   c: "three");
-					type RecoV = (a: int, b?: float, c: str);
-
-					type D1 = TupoC.2;
-					type D2 = TupoV.2;
-
-					type E1 = RecoC.b;
-					type E2 = RecoV.b;
-				}`, 4, repeat(TypeErrorInvalidOperation, 4));
 			});
 			test.test('throws when base object is of incorrect type.', () => {
 				xjs.Array.forEachAggregated(extract_lines`

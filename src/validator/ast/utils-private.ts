@@ -21,7 +21,6 @@ import {
 } from '../../parser/index.ts';
 import {
 	Operator,
-	type ValidTypeAccessOperator,
 	type ValidAccessOperator,
 	Validator,
 } from '../index.ts';
@@ -389,7 +388,7 @@ function decombine(t: TYPE.Type): TYPE.Type[] {
 }
 
 export function get_entry_info(base_type: TYPE.Type, access: AST_TYPE.Access | EXPR.Access, is_writing: boolean = false): EntryType {
-	const accessor_maybe: boolean = access.kind === Operator.DOT_MAYBE;
+	const accessor_maybe: boolean = access instanceof EXPR.Access && access.kind === Operator.DOT_MAYBE;
 	if (base_type.isBottomType) {
 		return {type: TYPE.NOTHING, optional: accessor_maybe};
 	}
@@ -511,7 +510,7 @@ export function get_entry_info(base_type: TYPE.Type, access: AST_TYPE.Access | E
 
 
 export function access_type(
-	access_kind: ValidTypeAccessOperator | ValidAccessOperator,
+	access_kind: ValidAccessOperator,
 	base_type:   TYPE.Type,
 	entry:       EntryType,
 	access:      AST_TYPE.Access | EXPR.Access,

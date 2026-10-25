@@ -31,10 +31,6 @@ export enum Operator {
 	COND,
 }
 
-export type ValidTypeAccessOperator = (
-	| Operator.DOT
-);
-
 export type ValidAccessOperator = (
 	| Operator.DOT
 	| Operator.DOT_MAYBE

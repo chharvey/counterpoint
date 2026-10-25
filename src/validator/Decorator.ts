@@ -20,7 +20,6 @@ import {
 } from './utils-private.ts';
 import {
 	Operator,
-	type ValidTypeAccessOperator,
 	type ValidAccessOperator,
 	type ValidTypeOperator,
 	type ValidOperatorUnary,
@@ -233,7 +232,6 @@ export class Decorator {
 				const property_accessor_type_0 = node.childForFieldName('property_accessor_type_0') as SyntaxNodeType<'property_accessor_type'> | null;
 				return property_accessor_type_0 ? new AST.TYPE.Access(
 					node as SyntaxNodeType<'type_compound'>,
-					Decorator.ACCESSORS.get(node.children[1].type as Punctuator) as ValidTypeAccessOperator,
 					this.decorateTypeNode(type_0),
 					this.decorate(property_accessor_type_0),
 				) : new AST.TYPE.Call(

@@ -259,14 +259,14 @@ EntryTypeSchema! GetEntryInfo(Type base_type, Or<SemanticTypeAccess, SemanticExp
 	1. *Assert:* `access.children.count` is 2.
 	2. *Let* `accessor` be `access.children.1`.
 	3. *Let* `accessor_maybe` be `false`.
-	4. *If* `access.kind` is `MAYBE`:
+	4. *If* `access` is a SemanticExpressionAccess *and* `access.kind` is `MAYBE`:
 		1. *Set* `accessor_maybe` to `true`.
 	5. *If* *UnwrapAffirm:* `IsBottomType(base_type)` is `true`:
 		1. *Return:* a new EntryTypeSchema [
 				type=     `Nothing`,
 				optional= `accessor_maybe`,
 			].
-	6. *If* `base_type` is a Maybe type *and* `access.kind` is MAYBE:
+	6. *If* `base_type` is a Maybe type *and* `access` is a SemanticExpressionAccess *and* `access.kind` is MAYBE:
 		1. *Let* `entry_info` be *Unwrap*: `GetEntryInfo(base_type.typearg, access, is_writing)`.
 		2. *Return:* a new EntryTypeSchema [
 			type=     `Maybe(entry_info.type)`,
