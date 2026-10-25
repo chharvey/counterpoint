@@ -105,23 +105,27 @@ function call<RuleName extends string>($: GrammarSymbols<RuleName>, family_name:
 
 
 /* # LEXER HELPERS */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function rg(s: string | RegExp): RegExp { // s -> (s)
 	return new RegExp(`(${typeof s === 'string' ? RegExp.escape(s) : s.source})`);
 }
-function ro(s: string | RegExp): RegExp { // s -> (s)?
-	return new RegExp(rg(s).source.concat('?'));
+function ru(s: string | RegExp): RegExp { // s -> (?:s)
+	return new RegExp(`(?:${typeof s === 'string' ? RegExp.escape(s) : s.source})`);
 }
-function rr0(s: string | RegExp): RegExp { // s -> (s)*
-	return new RegExp(rg(s).source.concat('*'));
+function ro(s: string | RegExp): RegExp { // s -> (?:s)?
+	return new RegExp(ru(s).source.concat('?'));
 }
-function rr1(s: string | RegExp): RegExp { // s -> (s)+
-	return new RegExp(rg(s).source.concat('+'));
+function rr0(s: string | RegExp): RegExp { // s -> (?:s)*
+	return new RegExp(ru(s).source.concat('*'));
 }
-function rs(...ss: readonly (string | RegExp)[]): RegExp { // s,t -> (s)(t)
-	return new RegExp(ss.map((s) => rg(s).source).join(''));
+function rr1(s: string | RegExp): RegExp { // s -> (?:s)+
+	return new RegExp(ru(s).source.concat('+'));
 }
-function rc(...ss: readonly (string | RegExp)[]): RegExp { // s,t -> (s)|(t)
-	return new RegExp(ss.map((s) => rg(s).source).join('|'));
+function rs(...ss: readonly (string | RegExp)[]): RegExp { // s,t -> (?:s)(?:t)
+	return new RegExp(ss.map((s) => ru(s).source).join(''));
+}
+function rc(...ss: readonly (string | RegExp)[]): RegExp { // s,t -> (?:s)|(?:t)
+	return new RegExp(ss.map((s) => ru(s).source).join('|'));
 }
 
 const WORD_BASIC   = /[A-Za-z][A-Za-z0-9_]*|_[A-Za-z0-9_]+/;
