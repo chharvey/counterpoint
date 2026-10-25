@@ -8,7 +8,7 @@ import {AstNode} from './AstNode.ts';
 export class Index extends AstNode {
 	public readonly index: bigint;
 
-	public constructor(start_node: SyntaxNodeType<'integer'> | SyntaxNodeType<'natural'>) {
+	public constructor(start_node: SyntaxNodeType<'whole_digits'>) {
 		super(start_node);
 		const cooked: bigint | number = Validator.cookTokenNumber(this.start_node.text).value;
 		assert.ok(typeof cooked === 'bigint', 'Cooked value should be a bigint.'); // better type guard than `assert.strictEqual`

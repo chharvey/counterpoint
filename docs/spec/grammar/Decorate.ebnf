@@ -134,10 +134,8 @@ Decorate(ParametersType ::= ","? EntryType<-Named><-Optional># "," EntryType<-Na
 
 
 
-Decorate(PropertyAccessorType ::= INTEGER) -> SemanticIndex
-	:= (SemanticIndex[index=TokenWorth(INTEGER)]);
-Decorate(PropertyAccessorType ::= NATURAL) -> SemanticIndex
-	:= (SemanticIndex[index=TokenWorth(NATURAL)]);
+Decorate(PropertyAccessorType ::= WHOLE_DIGITS) -> SemanticIndex
+	:= (SemanticIndex[index=TokenWorth(WHOLE_DIGITS)]);
 Decorate(PropertyAccessorType ::= Word) -> SemanticKey
 	:= Decorate(Word);
 
@@ -529,10 +527,8 @@ Decorate(CaptureClause<Ref> ::= "with" "(" ","? Capture<?Ref># ","? ")") -> Sequ
 
 
 
-Decorate(PropertyAccessor<Break, Return> ::= INTEGER) -> SemanticIndex
-	:= (SemanticIndex[index=TokenWorth(INTEGER)]);
-Decorate(PropertyAccessor<Break, Return> ::= NATURAL) -> SemanticIndex
-	:= (SemanticIndex[index=TokenWorth(NATURAL)]);
+Decorate(PropertyAccessor<Break, Return> ::= WHOLE_DIGITS) -> SemanticIndex
+	:= (SemanticIndex[index=TokenWorth(WHOLE_DIGITS)]);
 Decorate(PropertyAccessor<Break, Return> ::= Word) -> SemanticKey
 	:= Decorate(Word);
 Decorate(PropertyAccessor<Break, Return> ::= "[" Expression<+Block><?Break><?Return> "]") -> SemanticExpression

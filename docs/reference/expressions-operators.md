@@ -352,15 +352,15 @@ This table highlights some exceptional cases.
 
 ### Property Access
 ```
-<Tuple>  `.` int-literal
+<Tuple>  `.` whole-digits
 <Record> `.` word
 <Object> `.` `[` <Object> `]`
 
-<Tuple>  `?.` int-literal
+<Tuple>  `?.` whole-digits
 <Record> `?.` word
 <Object> `?.` `[` <Object> `]`
 
-<Tuple>  `!.` int-literal
+<Tuple>  `!.` whole-digits
 <Record> `!.` word
 <Object> `!.` `[` <Object> `]`
 ```
@@ -1095,9 +1095,9 @@ Read about Tuples, Records, Lists, Dicts, Sets, and Maps in the [Types](./types.
 
 ### Type Property Access
 ```
-<Type> `.`  int-literal
+<Type> `.`  whole-digits
 <Type> `.`  word
-<Type> `?.` int-literal
+<Type> `?.` whole-digits
 <Type> `?.` word
 ```
 The **type property accesss** syntax for types is analogous to the property access syntax of values.
@@ -1105,7 +1105,6 @@ It accesses the index or key of a tuple or record type respectively.
 ```
 type T = (bool, int, str);
 type T1 = T.1;             %== int
-type T_1 = T.-1;           %== str
 type T3 = T.3;             %> TypeError
 
 type R = (a: bool, b?: int, c: str);

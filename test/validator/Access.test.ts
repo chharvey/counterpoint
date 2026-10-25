@@ -284,12 +284,10 @@ test.suite('Access', () => {
 				test.test('throws when index is out of bounds / when key is out of range.', () => {
 					testExprTypes(`{
 						(1, 2.0, "three").3;
-						(1, 2.0, "three").-4;
 						(a= 1, b= 2.0, c= "three").d;
 						(1, 2.0, "three")?.3;
-						(1, 2.0, "three")?.-4;
 						(a= 1, b= 2.0, c= "three")?.d;
-					}`, repeat(TypeErrorNoEntry, 6));
+					}`, repeat(TypeErrorNoEntry, 4));
 				});
 			});
 

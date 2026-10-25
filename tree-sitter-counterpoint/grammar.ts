@@ -136,13 +136,14 @@ const DIGIT_SEQ_HEX = /([0-9a-f]_?)*[0-9a-f]/;
 const DIGIT_SEQ_NIF = /([0-9a-z]_?)*[0-9a-z]/;
 
 const WHOLE_DIGITS = rc(
-	rs('\\b',     DIGIT_SEQ_BIN),
-	rs('\\q',     DIGIT_SEQ_QUA),
-	rs('\\s',     DIGIT_SEQ_SEX),
-	rs('\\o',     DIGIT_SEQ_OCT),
-	rs(ro('\\d'), DIGIT_SEQ_DEC),
-	rs('\\x',     DIGIT_SEQ_HEX),
-	rs('\\z',     DIGIT_SEQ_NIF),
+	// HACK: issues with tree-sitter not handling "s" and "d"
+	rs('\\b',        DIGIT_SEQ_BIN),
+	rs('\\q',        DIGIT_SEQ_QUA),
+	rs(/\\\x73/,     DIGIT_SEQ_SEX), // '\\s'
+	rs('\\o',        DIGIT_SEQ_OCT),
+	rs(ro(/\\\x64/), DIGIT_SEQ_DEC), // '\\d'
+	rs('\\x',        DIGIT_SEQ_HEX),
+	rs('\\z',        DIGIT_SEQ_NIF),
 );
 
 const SIGNED_DIGIT_SEQ_DEC = rs(/[+-]?/, DIGIT_SEQ_DEC);
@@ -274,6 +275,8 @@ module.exports = grammar({
 			WORD_UNICODE,
 		)),
 
+		whole_digits: _$ => token(WHOLE_DIGITS),
+
 		integer: _$ => token(rs(/-?/, WHOLE_DIGITS)),
 		natural: _$ => token(rs('+',  WHOLE_DIGITS)),
 
@@ -391,7 +394,7 @@ module.exports = grammar({
 			);
 		},
 
-		property_accessor_type: $ => choice($.integer, $.natural, $.word),
+		property_accessor_type: $ => choice($.whole_digits, $.word),
 
 		type_grouped:        $ => seq('(', $._type,                            ')'),
 		type_tuple_literal:  $ => seq('(', optional($._items_type),            ')'),
@@ -476,7 +479,7 @@ module.exports = grammar({
 
 		...parameterize('_capture_clause', ({ref}) => $ => seq('with', '(', OPT_COM, repCom1(call($, 'capture', {ref})), OPT_COM, ')'), 'ref'),
 
-		...parameterize('property_accessor', ({break: brk, return: rtn}) => $ => choice($.integer, $.natural, $.word, seq('[', call($, '_expression', 'block', {break: brk}, {return: rtn}), ']')), 'break', 'return'),
+		...parameterize('property_accessor', ({break: brk, return: rtn}) => $ => choice($.whole_digits, $.word, seq('[', call($, '_expression', 'block', {break: brk}, {return: rtn}), ']')), 'break', 'return'),
 
 		...parameterize('expression_grouped',        ({break: brk, return: rtn}) => $ => seq('(',                               call($, '_expression', 'block', {break: brk}, {return: rtn}),             ')'), 'break', 'return'),
 		...parameterize('expression_tuple_literal',  ({break: brk, return: rtn}) => $ => seq('(', optional(                     call($, '_items',               {break: brk}, {return: rtn})           ), ')'), 'break', 'return'),
