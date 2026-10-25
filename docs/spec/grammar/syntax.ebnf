@@ -128,10 +128,7 @@ TypeUnit ::=
 
 TypeCompound ::=
 	| TypeUnit
-	| TypeCompound (
-		| ("." | "?.") PropertyAccessorType
-		|  "."         GenericArguments
-	)
+	| TypeCompound "." (PropertyAccessorType | GenericArguments)
 ;
 
 TypeUnarySymbol  ::= TypeCompound    | TypeUnarySymbol ("?" | "!");

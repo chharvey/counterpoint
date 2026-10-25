@@ -236,12 +236,6 @@ test.suite('Decorator', () => {
 				}
 				% (type_compound)
 			`]],
-			['Decorate(TypeCompound ::= TypeCompound "?." PropertyAccessorType) -> SemanticTypeAccess', [AST.TYPE.Access, `
-				{
-					type T = U?.p;
-				}
-				% (type_compound)
-			`]],
 			['Decorate(TypeCompound ::= TypeCompound "." GenericArguments) -> SemanticTypeCall', [AST.TYPE.Call, `
 				{
 					type T = List.<U>;

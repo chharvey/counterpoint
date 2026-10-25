@@ -86,7 +86,7 @@ SemanticTypeDict   ::= SemanticType;
 SemanticTypeSet    ::= SemanticType;
 SemanticTypeMap    ::= SemanticType SemanticType;
 
-SemanticTypeAccess[kind: NORMAL | MAYBE]
+SemanticTypeAccess
 	::= SemanticType (SemanticIndex | SemanticKey);
 
 SemanticTypeCall

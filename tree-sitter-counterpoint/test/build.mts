@@ -479,9 +479,6 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					type T = TupleType.\\d0;
 					type T = RecordType.prop;
 					type T = RecordType._;
-					type T = TupleType?.0;
-					type T = RecordType?.prop;
-					type T = RecordType?._;
 					type T = Set.<T>;
 					type T = SomeType.type;
 					type T = SomeType.bool;
@@ -499,21 +496,6 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					'type_compound',
 					f('type_0', 'identifier'),
 					f('property_accessor_type_0', 'property_accessor_type', s('whole_digits')),
-				),
-				s(
-					'type_compound',
-					f('type_0', 'identifier'),
-					f('property_accessor_type_0', 'property_accessor_type', s('whole_digits')),
-				),
-				s(
-					'type_compound',
-					f('type_0', 'identifier'),
-					f('property_accessor_type_0', 'property_accessor_type', s('word', s('identifier'))),
-				),
-				s(
-					'type_compound',
-					f('type_0', 'identifier'),
-					f('property_accessor_type_0', 'property_accessor_type', s('word')),
 				),
 				s(
 					'type_compound',

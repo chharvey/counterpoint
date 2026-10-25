@@ -208,12 +208,7 @@ Decorate(TypeUnit ::= TypeMapLiteral) -> SemanticTypeMap
 Decorate(TypeCompound ::= TypeUnit) -> SemanticType
 	:= Decorate(TypeUnit);
 Decorate(TypeCompound ::= TypeCompound "." PropertyAccessorType) -> SemanticTypeAccess
-	:= (SemanticTypeAccess[kind=NORMAL]
-		Decorate(TypeCompound)
-		Decorate(PropertyAccessorType)
-	);
-Decorate(TypeCompound ::= TypeCompound "?." PropertyAccessorType) -> SemanticTypeAccess
-	:= (SemanticTypeAccess[kind=MAYBE]
+	:= (SemanticTypeAccess
 		Decorate(TypeCompound)
 		Decorate(PropertyAccessorType)
 	);

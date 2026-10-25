@@ -33,7 +33,6 @@ export enum Operator {
 
 export type ValidTypeAccessOperator = (
 	| Operator.DOT
-	| Operator.DOT_MAYBE
 );
 
 export type ValidAccessOperator = (

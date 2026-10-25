@@ -1095,10 +1095,8 @@ Read about Tuples, Records, Lists, Dicts, Sets, and Maps in the [Types](./types.
 
 ### Type Property Access
 ```
-<Type> `.`  whole-digits
-<Type> `.`  word
-<Type> `?.` whole-digits
-<Type> `?.` word
+<Type> `.` whole-digits
+<Type> `.` word
 ```
 The **type property accesss** syntax for types is analogous to the property access syntax of values.
 It accesses the index or key of a tuple or record type respectively.
@@ -1109,7 +1107,6 @@ type T3 = T.3;             %> TypeError
 
 type R = (a: bool, b?: int, c: str);
 type Ra = R.a;                       %== bool
-type Rc = R?.b;                      %== int | null
 type Rd = R.d;                       %> TypeError
 ```
 
