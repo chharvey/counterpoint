@@ -216,15 +216,15 @@ test.suite('Access', () => {
 						], 4).flat(),
 					]);
 				});
-				test.test('base is an explicit Maybe.', {expectFailure: true}, () => {
+				test.test('base is an explicit Maybe.', () => {
 					testExprTypes(`{
-						val mut tup_a: Maybe[(int, int, ?: int)] = None[(int, int, ?: int)]();
-						val mut tup_b: Maybe[(int, int, ?: int)] = None[(int, int, ?: int)]();
-						set tup_a = Some[(int, int, ?: int)]((10, 20));
+						val mut tup_a: Maybe.<(int, int, ?: int)> = None.<(int, int, ?: int)>();
+						val mut tup_b: Maybe.<(int, int, ?: int)> = None.<(int, int, ?: int)>();
+						set tup_a = Some.<(int, int, ?: int)>((10, 20));
 
-						val mut rec_a?: Maybe[(x: int, y?: int, z: int)] = None[(x: int, y?: int, z: int)]();
-						val mut rec_b?: Maybe[(x: int, y?: int, z: int)] = None[(x: int, y?: int, z: int)]();
-						set rec_a = Some[(x: int, y?: int, z: int)]((x= 10, z= 20));
+						val mut rec_a?: Maybe.<(x: int, y?: int, z: int)>;
+						val mut rec_b?: Maybe.<(x: int, y?: int, z: int)>;
+						set rec_a = Some.<(x: int, y?: int, z: int)>((x= 10, z= 20));
 
 						tup_a.1;
 						tup_a.2;
@@ -241,16 +241,20 @@ test.suite('Access', () => {
 						tup_b?.1; % type \`Maybe[int]\`
 						tup_b?.2; % type \`Maybe[Maybe[int]]\`
 
-						rec_a?.z; % type \`Maybe[int]\`
-						rec_a?.y; % type \`Maybe[Maybe[int]]\`
-						rec_b?.z; % type \`Maybe[int]\`
-						rec_b?.y; % type \`Maybe[Maybe[int]]\`
+						rec_a?.z; % type \`Maybe[Maybe[int]]\`
+						rec_a?.y; % type \`Maybe[Maybe[Maybe[int]]]\`
+						rec_b?.z; % type \`Maybe[Maybe[int]]\`
+						rec_b?.y; % type \`Maybe[Maybe[Maybe[int]]]\`
 					}`, [
 						...repeat(TypeErrorNoEntry, 8),
 						...repeat([
 							new TYPE.Maybe(TYPE.INT),
 							new TYPE.Maybe(new TYPE.Maybe(TYPE.INT)),
-						], 4).flat(),
+						], 2).flat(),
+						...repeat([
+							new TYPE.Maybe(new TYPE.Maybe(TYPE.INT)),
+							new TYPE.Maybe(new TYPE.Maybe(new TYPE.Maybe(TYPE.INT))),
+						], 2).flat(),
 					]);
 				});
 				test.test('throws when base object is of incorrect type.', () => {
