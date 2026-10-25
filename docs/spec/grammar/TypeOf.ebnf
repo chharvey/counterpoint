@@ -118,18 +118,24 @@ Type! TypeOf(SemanticExpressionBlock ::= SemanticBlock) :=
 
 
 
-Type! TypeOf(SemanticExpressionAccess[kind: RESULT] access) :=
-	// TODO: implement
-;
-
-Type! TypeOf(SemanticExpressionAccess[kind: NORMAL | MAYBE] access) :=
-	1. *Assert:* `access.children.count` is 2.
-	2. *Let* `base` be `access.children.0`.
-	3. *Let* `base_type` be *Unwrap:* `TypeOf(base)`.
-	4. *If* *UnwrapAffirm:* `IsBottomType(base_type)` is `true`:
+Type! TypeOf(SemanticExpressionAccess[kind: NORMAL | MAYBE | RESULT] ::= SemanticExpression (SemanticIndex | SemanticKey | SemanticExpression)) :=
+	1. *Let* `base_type` be *Unwrap:* `TypeOf(SemanticExpression)`.
+	2. *If* *UnwrapAffirm:* `IsBottomType(base_type)` is `true`:
 		1. *Return:* `Nothing`.
-	5. *Let* `entry` be *Unwrap:* `GetEntryInfo(base_type, access, false)`.
-	6. *Return:* `AccessType(access.kind, base_type, entry)`.
+	3. *If* `SemanticExpressionAccess.kind` is *MAYBE*:
+		1. *If* `base_type` is not a Maybe type:
+			1. *Throw:* a new TypeErrorInvalidOperation.
+		2. *Else:*
+			1. Fall through.
+	4. *Else If* `SemanticExpressionAccess.kind` is *RESULT*:
+		// TODO: implement
+	5. *Else:*
+		1. Fall through.
+	6. *Let* `entry` be *Unwrap:* `GetEntryInfo(base_type, SemanticExpressionAccess, false)`.
+	7. *If* `entry.optional` is `true`:
+		1. *Return:* `Maybe(entry.type)`.
+	8. *Else:*
+		1. *Return:* `entry.type`.
 ;
 
 

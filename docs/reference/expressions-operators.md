@@ -378,26 +378,19 @@ such as an operation of expressions, e.g., `map.[expr]`.
 The expression in the brackets evaluates to an index, key, element, or antecedent
 of the binding object and must be of the correct type.
 
+When an optional entry is accessed, a `Maybe` object is returned.
+For example, given a record `record` of type `(a: bool, b?: int)`, with an optional property `b`,
+the expression `record.b` will produce a `Some` containing the value at `record.b` if it exists,
+but otherwise will produce a `None`. The type of `record.b` is `Maybe[int]`.
+
 More information about property access when used on collections
 can be found in the [Types](./types.md) chapter.
 
 #### Maybe Access
-The **maybe access** syntax is almost the same as property access, except that
-the operator always produces a `Maybe` object — a `None` object if and when there is no such bound property
-on the binding object at runtime, else a `Some` object containing the accesssed value.
-This operator is designed to work with optional entries on types, such as optional properties on a record type, as well as
-[the `Maybe` algeraic sum type](./types.md#maybes).
+The **maybe access** syntax is almost the same as property access, except that the operator always produces a `Maybe` object.
+This operator is designed to work with [the `Maybe` algeraic sum type](./types.md#maybes).
 
-Given a record `record` of type `(a: bool, b?: int)`,
-the expression `record.b` would result in a crash if there’s no actual value at that location,
-so the compiler raises an error when using that syntax.
-Using the maybe access operator though, `record?.b` will produce a `Some` containing the value at `record.b`
-if it exists, but otherwise will produce a `None` and avoid the crash.
-An equivalent syntax exists for dynamic access: `map?.[expr]`, etc.
-
-Conversely, maybe access syntax is not allowed for required properties: `record?.a` would raise a compiler error.
-
-If the *binding object is a `Maybe`*, then the maybe access operator produces another `Maybe`.
+If the binding object is a `Maybe`, then the maybe access operator produces another `Maybe`.
 For example, `None[T]().property` is a type error, but `None[T]()?.property` will simply produce a new `None[U]`
 (and not the same `None[T]` reference object).
 Likewise, `Some[T](obj)?.property` unwraps the value `obj`, accesses `.property` on it, and returns the accessed value in a new `Some`.
@@ -410,16 +403,6 @@ and will result in a type-error if `z` is not a property of `Maybe`.
 
 **Type-Checking Note:**
 
-For static types (e.g., tuples and records),
-either the normal or maybe access operator is allowed, corresponding to the optionality of the entry being accessed.
-When the maybe access operator is used for an optional entry, the entry type is wrapped in a `Maybe`.
-```cpl
-claim record: (required: bool, optional?: int);
-record.required;  %: bool
-record?.required; %> TypeErrorInvalidOperation
-record.optional;  %> TypeErrorInvalidOperation
-record?.optional; %: int?
-```
 For dynamic types (e.g., lists and dicts),
 both normal and maybe access operators are allowed.
 The normal access operator treats all entries as required (does not wrap the declared type in `Maybe`), and
@@ -448,10 +431,8 @@ rec_maybe~?.item; % unwraps `rec_maybe` to `(item: int)`; returns type `int`; bu
 ```
 
 #### Result Access
-The **result access** syntax is almost the same as property access, except that
-the operator always produces a `Result` object.
-This operator is designed to work with
-[the `Result` algeraic sum type](./types.md#results).
+The **result access** syntax is almost the same as property access, except that the operator always produces a `Result` object.
+This operator is designed to work with [the `Result` algeraic sum type](./types.md#results).
 
 If the binding object is a `Result`, then the result access operator produces another `Result`.
 For example, `Fail[T]().property` is a type error, but `Fail[T]()!.property` will simply produce a new `Fail[U]`

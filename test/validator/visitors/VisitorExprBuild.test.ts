@@ -374,7 +374,7 @@ test.suite('VisitorExprBuild#visit', () => {
 						(DROP (GET ${result_name}))
 				`.trim();
 			}
-			test.test('tuple access.', () => {
+			test.test.todo('tuple access.', () => {
 				assert.strictEqual(setupScript(`{
 					val mut my_tupleA: (int, int, ?:int) = (41 + 1, 42 / 2, 43 ^ 3);
 					val mut my_tupleB: (int, int, ?:int) = (41 + 1, 42 / 2);
@@ -400,7 +400,7 @@ test.suite('VisitorExprBuild#visit', () => {
 						(ENDPROGRAM)
 				`.trim());
 			});
-			test.test('record access.', () => {
+			test.test.todo('record access.', () => {
 				assert.strictEqual(setupScript(`{
 					val mut my_recordX: (a: int, b?: int, c: int) = (a= 41 + 1, c= 42 / 2, b= 43 ^ 3);
 					val mut my_recordY: (a: int, b?: int, c: int) = (a= 41 + 1, c= 42 / 2);

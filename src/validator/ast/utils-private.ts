@@ -21,7 +21,6 @@ import {
 } from '../../parser/index.ts';
 import {
 	Operator,
-	type ValidAccessOperator,
 	Validator,
 } from '../index.ts';
 import {
@@ -505,24 +504,4 @@ export function get_entry_info(base_type: TYPE.Type, access: AST_TYPE.Access | E
 			}
 		}
 	}
-}
-
-
-
-export function access_type(
-	access_kind: ValidAccessOperator,
-	base_type:   TYPE.Type,
-	entry:       EntryType,
-	access:      AST_TYPE.Access | EXPR.Access,
-): TYPE.Type {
-	if (
-		access_kind === Operator.DOT     && entry.optional ||
-		access_kind === Operator.DOT_MAYBE && !entry.optional && !(base_type instanceof TYPE.Maybe)
-	) {
-		throw new TypeErrorInvalidOperation(access);
-	}
-	if (access_kind === Operator.DOT_RESULT) {
-		throw new Error('Operator `!.` not yet supported.');
-	}
-	return entry.optional ? new TYPE.Maybe(entry.type) : entry.type;
 }
