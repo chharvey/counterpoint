@@ -110,70 +110,6 @@ export class VisitorExprBuild extends EXPR.ExprVisitor<OP.Value> {
 
 	@memoizePerExpr
 	public override visitAccess(expr: EXPR.Access): OP.Value {
-		const build_non_maybe_base = (base_val: OP.ValueTac, return_type: TYPE.Type): OP.Value | undefined => {
-			switch (true) {
-				case expr.accessor instanceof Index: {
-					assert_instanceof(base_val.type, TYPE.Tuple);
-					/*
-					 * Ensure a canonical index. It may be within the mathematical range *[0, count - 1]*.
-					 * We cannot assume that this index is validated by the type-checker,
-					 * since the actual type of the base may be narrower than its declared type.
-					 * E.g.:
-					 * ```
-					 * val tuple: (int, ?: float) = (42,);
-					 * tuple?.1;
-					 * ```
-					 * The accessor is valid, but we want to make sure
-					 * we don’t accidentally try to get the value there at runtime.
-					 * If the index is out of range, drop the base and return a None.
-					 * We can assert there are no optional entries since this tuple type was created by the AST expression (`TYPE.Tuple.fromTypes`).
-					 */
-					if (base_val.type.isIndexCanonical(expr.accessor.index)) {
-						return new OP.TupleGet(base_val, expr.accessor.index, return_type);
-					} else {
-						this.builder.pushInstruction(new OP.Drop(base_val));
-						return undefined;
-					}
-				}
-				case expr.accessor instanceof Key: {
-					assert_instanceof(base_val.type, TYPE.Record);
-					/*
-					 * Ensure a canonical key. It must have been added to the value’s type.
-					 * We cannot assume that this key is validated by the type-checker,
-					 * since the actual type of the base may be narrower than its declared type.
-					 * E.g.:
-					 * ```
-					 * val record: (a: int, b?: float) = (a= 42);
-					 * record?.b;
-					 * ```
-					 * The accessor is valid, but we want to make sure
-					 * we don’t accidentally try to get the value there at runtime.
-					 * If the key is not canonical, drop the base and return a None.
-					 * We can assert there are no optional entries since this record type was created by the AST expression (`TYPE.Record.fromTypes`).
-					 *
-					 * Note: Key hashing will be taken care of in the codegen phase.
-					 */
-					if (base_val.type.isKeyCanonical(expr.accessor.id)) {
-						return new OP.RecordGet(base_val, {keyid: expr.accessor.id, keysrc: expr.accessor.source}, return_type);
-					} else {
-						this.builder.pushInstruction(new OP.Drop(base_val));
-						return undefined;
-					}
-				}
-				default: {
-					assert_instanceof(expr.accessor, EXPR.Expression);
-					const base_typename: OP.TypeName = OP.ast_type_name(base_val.type);
-					assert.ok([OP.TypeName.LIST, OP.TypeName.DICT, OP.TypeName.SET, OP.TypeName.MAP].includes(base_typename), 'Expected base to be a List, Dict, Set, or Map.');
-					return new OP.CollectionDynamicGet(
-						base_typename as OP.CollectionDynamicName,
-						base_val,
-						this.visit(expr.accessor).asTac(this.builder),
-						return_type,
-					);
-				}
-			}
-		};
-
 		const typ:        TYPE.Type   = expr.type();
 		const base_value: OP.ValueTac = this.visit(expr.base).asTac(this.builder);
 
@@ -184,13 +120,14 @@ export class VisitorExprBuild extends EXPR.ExprVisitor<OP.Value> {
 				typ,
 				() => new OP.Instance(OP.OpCode.INSTANCEOF, IntrinsicName.NONE, base_value),
 				() => new OP.MaybeNew(typ.typearg),
-				() => new OP.MaybeNew(typ.typearg, build_non_maybe_base(
+				() => new OP.MaybeNew(typ.typearg, this.#buildUnwrappedGet(
+					expr,
 					base_value.type instanceof TYPE.Maybe ? new OP.Unop(OP.OpCode.MAYBE_UNWRAP, base_value, base_value.type.typearg).asTac(this.builder) : base_value,
 					typ.typearg,
-				)?.asTac(this.builder)),
+				).asTac(this.builder)),
 			);
 		}
-		return build_non_maybe_base(base_value, typ) ?? new OP.Const(VALUE.NULL); // FIXME: remove undefined from return type
+		return this.#buildUnwrappedGet(expr, base_value, typ);
 	}
 
 	@memoizePerExpr
@@ -457,5 +394,45 @@ export class VisitorExprBuild extends EXPR.ExprVisitor<OP.Value> {
 
 	public override defaultVisit(_expr: EXPR.Expression): OP.Value {
 		return new OP.Trap();
+	}
+
+	#buildUnwrappedGet(access: EXPR.Access, base_val: OP.ValueTac, return_type: TYPE.Type): OP.Value {
+		switch (true) {
+			case access.accessor instanceof Index: {
+				assert_instanceof(base_val.type, TYPE.Tuple);
+				const index: bigint = access.accessor.index;
+				const returned      = new OP.TupleGet(base_val, index, return_type);
+				return access.entryInfo.optional ? OP.conditional_expression(
+					this.builder,
+					new TYPE.Maybe(return_type),
+					() => new OP.TupleHas(base_val, index),
+					() => new OP.MaybeNew(return_type, returned),
+					() => new OP.MaybeNew(return_type),
+				) : returned;
+			}
+			case access.accessor instanceof Key: {
+				assert_instanceof(base_val.type, TYPE.Record);
+				const key      = {keyid: access.accessor.id, keysrc: access.accessor.source} as const;
+				const returned = new OP.RecordGet(base_val, key, return_type);
+				return access.entryInfo.optional ? OP.conditional_expression(
+					this.builder,
+					new TYPE.Maybe(return_type),
+					() => new OP.RecordHas(base_val, key),
+					() => new OP.MaybeNew(return_type, returned),
+					() => new OP.MaybeNew(return_type),
+				) : returned;
+			}
+			default: {
+				assert_instanceof(access.accessor, EXPR.Expression);
+				const base_typename: OP.TypeName = OP.ast_type_name(base_val.type);
+				assert.ok([OP.TypeName.LIST, OP.TypeName.DICT, OP.TypeName.SET, OP.TypeName.MAP].includes(base_typename), 'Expected base to be a List, Dict, Set, or Map.');
+				return new OP.CollectionDynamicGet(
+					base_typename as OP.CollectionDynamicName,
+					base_val,
+					this.visit(access.accessor).asTac(this.builder),
+					return_type,
+				);
+			}
+		}
 	}
 }
