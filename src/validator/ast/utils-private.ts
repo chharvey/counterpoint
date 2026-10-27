@@ -391,10 +391,6 @@ export function get_entry_info(base_type: TYPE.Type, access: AST_TYPE.Access | E
 	if (base_type.isBottomType) {
 		return {type: TYPE.NOTHING, optional: accessor_maybe};
 	}
-	if (base_type instanceof TYPE.Maybe && accessor_maybe) {
-		const info: EntryType = get_entry_info(base_type.typearg, access, is_writing);
-		return {...info, type: new TYPE.Maybe(info.type)};
-	}
 	if (base_type instanceof TYPE.Combinable) {
 		const constituents: readonly TYPE.Type[] = decombine(base_type);
 		constituents.slice(0, -1).forEach((comp, i) => {

@@ -123,10 +123,16 @@ Type! TypeOf(SemanticExpressionAccess[kind: NORMAL | MAYBE | RESULT] ::= Semanti
 	2. *If* *UnwrapAffirm:* `IsBottomType(base_type)` is `true`:
 		1. *Return:* `Nothing`.
 	3. *If* `SemanticExpressionAccess.kind` is *MAYBE*:
-		1. *If* `base_type` is not a Maybe type:
-			1. *Throw:* a new TypeErrorInvalidOperation.
+		1. *If* `base_type` is a Maybe type:
+			1. *Let* `entry` be *Unwrap*: `GetEntryInfo(base_type.typearg, SemanticExpressionAccess, false)`.
+			2. *If* `entry.optional` is `true`:
+				1. *Set* `SemanticExpressionAccess.isEntryOptional` to `true`.
+				2. *Set* `entry.type` to `Maybe(entry.type)`.
+			3. *Else:*
+				1. *Set* `SemanticExpressionAccess.isEntryOptional` to `false`.
+			4. *Return:* `Maybe(entry.type)`.
 		2. *Else:*
-			1. Fall through.
+			1. *Throw:* a new TypeErrorInvalidOperation.
 	4. *Else If* `SemanticExpressionAccess.kind` is *RESULT*:
 		// TODO: implement
 	5. *Else:*

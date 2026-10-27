@@ -67,8 +67,12 @@ export class Access extends Expression implements Reassignable {
 		if (base_type.isBottomType) {
 			return TYPE.NOTHING;
 		}
-		if (this.kind === Operator.DOT_MAYBE && !(base_type instanceof TYPE.Maybe)) {
-			if (!(this.accessor instanceof Expression)) { // TODO: remove expression access
+		if (this.kind === Operator.DOT_MAYBE) {
+			if (base_type instanceof TYPE.Maybe) {
+				const entry: EntryType = get_entry_info(base_type.typearg, this);
+				this.#isEntryOptional = entry.optional;
+				return new TYPE.Maybe(entry.optional ? new TYPE.Maybe(entry.type) : entry.type);
+			} else if (!(this.accessor instanceof Expression)) { // TODO: remove expression access
 				throw new TypeErrorInvalidOperation(this);
 			}
 		}

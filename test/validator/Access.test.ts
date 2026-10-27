@@ -73,7 +73,7 @@ test.suite('Access', () => {
 					...repeat(TypeErrorInvalidOperation, 4),
 				]);
 			});
-			test.test('chained maybe access.', () => {
+			test.test('chained maybe access does not unwrap recursively.', () => {
 				const propid: bigint = Validator.cookTokenIdentifier('prop');
 				const prop1: TYPE.Tuple = TYPE.Tuple.fromTypes([TYPE.BOOL]);       // (bool,)
 				const prop2 = new TYPE.Tuple([{type: TYPE.BOOL, optional: true}]); // (?: bool)
@@ -85,14 +85,14 @@ test.suite('Access', () => {
 					bound1.prop?.0;
 					bound2;
 					bound2?.prop;
-					bound2?.prop?.0;
+					bound2?.prop?.0; %> TypeErrorNoEntry
 				}`, [
 					new TYPE.Record(new Map([[propid, {type: prop1, optional: true}]])), // (prop?: (bool,))
 					new TYPE.Maybe(prop1),                                               // Maybe[(bool,)]
 					new TYPE.Maybe(TYPE.BOOL),                                           // Maybe[bool]
 					new TYPE.Maybe(new TYPE.Record(new Map([[propid, {type: prop2, optional: true}]]))), // Maybe[(prop?: (?: bool))]
 					new TYPE.Maybe(new TYPE.Maybe(prop2)),                                               // Maybe[Maybe[(?: bool)]]
-					new TYPE.Maybe(new TYPE.Maybe(new TYPE.Maybe(TYPE.BOOL))),                           // Maybe[Maybe[Maybe[bool]]]
+					TypeErrorNoEntry,
 				]);
 			});
 		});
@@ -241,20 +241,17 @@ test.suite('Access', () => {
 						tup_b?.1; % type \`Maybe[int]\`
 						tup_b?.2; % type \`Maybe[Maybe[int]]\`
 
-						rec_a?.z; % type \`Maybe[Maybe[int]]\`
-						rec_a?.y; % type \`Maybe[Maybe[Maybe[int]]]\`
-						rec_b?.z; % type \`Maybe[Maybe[int]]\`
-						rec_b?.y; % type \`Maybe[Maybe[Maybe[int]]]\`
+						rec_a?.z; %> TypeErrorNoEntry
+						rec_a?.y; %> TypeErrorNoEntry
+						rec_b?.z; %> TypeErrorNoEntry
+						rec_b?.y; %> TypeErrorNoEntry
 					}`, [
 						...repeat(TypeErrorNoEntry, 8),
 						...repeat([
 							new TYPE.Maybe(TYPE.INT),
 							new TYPE.Maybe(new TYPE.Maybe(TYPE.INT)),
 						], 2).flat(),
-						...repeat([
-							new TYPE.Maybe(new TYPE.Maybe(TYPE.INT)),
-							new TYPE.Maybe(new TYPE.Maybe(new TYPE.Maybe(TYPE.INT))),
-						], 2).flat(),
+						...repeat(TypeErrorNoEntry, 4),
 					]);
 				});
 				test.test('throws when base object is of incorrect type.', () => {
