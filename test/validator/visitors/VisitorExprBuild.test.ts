@@ -345,36 +345,36 @@ test.suite('VisitorExprBuild#visit', () => {
 				`.trim());
 			});
 		});
+		/** Output for accessing an optional entry. */
+		function optional_access_output(
+			block_n:      number,
+			base_type:    'TUPLE' | 'RECORD',
+			base_name:    string,
+			accessor_idx: string,
+			return_n:     number,
+			return_doer:  (value: string) => string = (value) => `(DROP ${value})`,
+		): string {
+			const block_then:  string = `block-${block_n}`;
+			const block_else:  string = `block-${block_n + 1}`;
+			const block_endif: string = `block-${block_n + 2}`;
+			const return_name: string = `$${return_n}`;
+			const get_name:    string = `$${return_n + 1}`;
+			return xjs.String.dedent`
+				${''}
+					(DECL <Maybe> ${return_name})
+					(GOTO.IF (${base_type}.HAS ${accessor_idx} (GET ${base_name})) "${block_then}" "${block_else}")
+				"${block_then}":
+					(DECL <Maybe> ${get_name} (${base_type}.GET ${accessor_idx} (GET ${base_name})))
+					(SET ${return_name} (MAYBE.NEW (GET ${get_name})))
+					(GOTO "${block_endif}")
+				"${block_else}":
+					(SET ${return_name} (MAYBE.NEW))
+					(GOTO "${block_endif}")
+				"${block_endif}":
+					${return_doer(`(GET ${return_name})`)}
+			`.trim();
+		}
 		test.suite('access kind: maybe access (`a?.‹b›`).', () => {
-			/** Output for accessing an optional entry. */
-			function optional_access_output(
-				block_n:      number,
-				base_type:    'TUPLE' | 'RECORD',
-				base_name:    string,
-				accessor_idx: string,
-				return_n:     number,
-				return_doer:  (value: string) => string = (value) => `(DROP ${value})`,
-			): string {
-				const block_then:  string = `block-${block_n}`;
-				const block_else:  string = `block-${block_n + 1}`;
-				const block_endif: string = `block-${block_n + 2}`;
-				const return_name: string = `$${return_n}`;
-				const get_name:    string = `$${return_n + 1}`;
-				return xjs.String.dedent`
-					${''}
-						(DECL <Maybe> ${return_name})
-						(GOTO.IF (${base_type}.HAS ${accessor_idx} (GET ${base_name})) "${block_then}" "${block_else}")
-					"${block_then}":
-						(DECL <Maybe> ${get_name} (${base_type}.GET ${accessor_idx} (GET ${base_name})))
-						(SET ${return_name} (MAYBE.NEW (GET ${get_name})))
-						(GOTO "${block_endif}")
-					"${block_else}":
-						(SET ${return_name} (MAYBE.NEW))
-						(GOTO "${block_endif}")
-					"${block_endif}":
-						${return_doer(`(GET ${return_name})`)}
-				`.trim();
-			}
 			/** Output for accessing a property of a Maybe’s value using maybe-access. */
 			function maybe_access_output(
 				block_n:      number,
@@ -623,6 +623,125 @@ test.suite('VisitorExprBuild#visit', () => {
 								(DECL <int> $18 (INT.ADD (INT.CONST 5) (GET $17)))
 								(DECL <Maybe> $19 (MAP.GET (GET $16) (GET $18)))
 								${return_setter('(GET $19)')}
+						`.trim())}
+						(ENDPROGRAM)
+				`.trim());
+			});
+		});
+		test.suite('access kind: result access (`a!.‹b›`).', () => {
+			/** Output for accessing a property of a Result’s value using result-access. */
+			function result_access_output(
+				block_n:      number,
+				base_name:    string,
+				return_n:     number,
+				return_setup: (return_setter: (value?: string) => string) => string,
+			): string {
+				const block_then:  string = `block-${block_n}`;
+				const block_else:  string = `block-${block_n + 1}`;
+				const block_endif: string = `block-${block_n + 2}`;
+				const return_name: string = `$${return_n}`;
+				const excp_name:   string = `$${return_n + 1}`;
+				return xjs.String.dedent`
+					${''}
+						(DECL <Result> ${return_name})
+						(GOTO.IF (INSTANCEOF Fail (GET ${base_name})) "${block_then}" "${block_else}")
+					"${block_then}":
+						(DECL <Exception> ${excp_name} (RESULT.EXTRACT (GET ${base_name})))
+						(SET ${return_name} (RESULT.NEW nil (GET ${excp_name})))
+						(GOTO "${block_endif}")
+					"${block_else}":
+						${return_setup((ret_val) => `(SET ${return_name} (RESULT.NEW ${ret_val} nil))`)}
+						(GOTO "${block_endif}")
+					"${block_endif}":
+						(DROP (GET ${return_name}))
+				`.trim();
+			}
+			test.test('tuple access.', () => {
+				assert.strictEqual(setupScript(`{
+					type T = (int, int, ?:int);
+					val ok_tupleA: T! = Ok.<T>((41 + 1, 42 / 2, 43 ^ 3));
+					val ok_tupleB: T! = Ok.<T>((41 + 1, 42 / 2));
+					ok_tupleA!.1;
+					ok_tupleB!.1;
+					ok_tupleA!.2;
+					ok_tupleB!.2;
+				}`, {codegen: false}).builder.print(), xjs.String.dedent`
+					"block-0":
+						(DECL <int> $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
+						(DECL <int> $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
+						(DECL <int> $2 (INT.EXP (INT.CONST 43) (INT.CONST 3)))
+						(DECL <tuple> $3 (TUPLE.NEW (GET $0) (GET $1) (GET $2)))
+						(DECL <Result> ok_tupleA (RESULT.NEW (GET $3) nil))
+						(DECL <int> $4 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
+						(DECL <int> $5 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
+						(DECL <tuple> $6 (TUPLE.NEW (GET $4) (GET $5)))
+						(DECL <Result> ok_tupleB (RESULT.NEW (GET $6) nil))
+						${result_access_output(1, 'ok_tupleA', 7, (return_setter) => xjs.String.dedent`
+							${''}
+								(DECL <tuple> $9 (RESULT.UNWRAP (GET ok_tupleA)))
+								(DECL <int> $10 (TUPLE.GET 1 (GET $9)))
+								${return_setter('(GET $10)')}
+						`.trim())}
+						${result_access_output(4, 'ok_tupleB', 11, (return_setter) => xjs.String.dedent`
+							${''}
+								(DECL <tuple> $13 (RESULT.UNWRAP (GET ok_tupleB)))
+								(DECL <int> $14 (TUPLE.GET 1 (GET $13)))
+								${return_setter('(GET $14)')}
+						`.trim())}
+						${result_access_output(7, 'ok_tupleA', 15, (return_setter) => xjs.String.dedent`
+							${''}
+								(DECL <tuple> $17 (RESULT.UNWRAP (GET ok_tupleA)))
+								${optional_access_output(10, 'TUPLE', '$17', '2', 18, (ret_val) => return_setter(ret_val))}
+						`.trim())}
+						${result_access_output(13, 'ok_tupleB', 20, (return_setter) => xjs.String.dedent`
+							${''}
+								(DECL <tuple> $22 (RESULT.UNWRAP (GET ok_tupleB)))
+								${optional_access_output(16, 'TUPLE', '$22', '2', 23, (ret_val) => return_setter(ret_val))}
+						`.trim())}
+						(ENDPROGRAM)
+				`.trim());
+			});
+			test.test('record access.', () => {
+				assert.strictEqual(setupScript(`{
+					type R = (a: int, b?: int, c: int);
+					val ok_recordX: R! = Ok.<R>((a= 41 + 1, c= 42 / 2, b= 43 ^ 3));
+					val ok_recordY: R! = Ok.<R>((a= 41 + 1, c= 42 / 2));
+					ok_recordX!.a;
+					ok_recordY!.a;
+					ok_recordX!.b;
+					ok_recordY!.b;
+				}`, {codegen: false}).builder.print(), xjs.String.dedent`
+					"block-0":
+						(DECL <int> $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
+						(DECL <int> $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
+						(DECL <int> $2 (INT.EXP (INT.CONST 43) (INT.CONST 3)))
+						(DECL <record> $3 (RECORD.NEW @a->(GET $0) @c->(GET $1) @b->(GET $2)))
+						(DECL <Result> ok_recordX (RESULT.NEW (GET $3) nil))
+						(DECL <int> $4 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
+						(DECL <int> $5 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
+						(DECL <record> $6 (RECORD.NEW @a->(GET $4) @c->(GET $5)))
+						(DECL <Result> ok_recordY (RESULT.NEW (GET $6) nil))
+						${result_access_output(1, 'ok_recordX', 7, (return_setter) => xjs.String.dedent`
+							${''}
+								(DECL <record> $9 (RESULT.UNWRAP (GET ok_recordX)))
+								(DECL <int> $10 (RECORD.GET @a (GET $9)))
+								${return_setter('(GET $10)')}
+						`.trim())}
+						${result_access_output(4, 'ok_recordY', 11, (return_setter) => xjs.String.dedent`
+							${''}
+								(DECL <record> $13 (RESULT.UNWRAP (GET ok_recordY)))
+								(DECL <int> $14 (RECORD.GET @a (GET $13)))
+								${return_setter('(GET $14)')}
+						`.trim())}
+						${result_access_output(7, 'ok_recordX', 15, (return_setter) => xjs.String.dedent`
+							${''}
+								(DECL <record> $17 (RESULT.UNWRAP (GET ok_recordX)))
+								${optional_access_output(10, 'RECORD', '$17', '@b', 18, (ret_val) => return_setter(ret_val))}
+						`.trim())}
+						${result_access_output(13, 'ok_recordY', 20, (return_setter) => xjs.String.dedent`
+							${''}
+								(DECL <record> $22 (RESULT.UNWRAP (GET ok_recordY)))
+								${optional_access_output(16, 'RECORD', '$22', '@b', 23, (ret_val) => return_setter(ret_val))}
 						`.trim())}
 						(ENDPROGRAM)
 				`.trim());

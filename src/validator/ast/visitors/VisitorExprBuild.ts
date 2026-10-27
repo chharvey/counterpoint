@@ -126,6 +126,20 @@ export class VisitorExprBuild extends EXPR.ExprVisitor<OP.Value> {
 					typ.typearg,
 				).asTac(this.builder)),
 			);
+		} else if (expr.kind === Operator.DOT_RESULT) {
+			assert_instanceof(typ,             TYPE.Result);
+			assert_instanceof(base_value.type, TYPE.Result);
+			return OP.conditional_expression(
+				this.builder,
+				typ,
+				() => new OP.Instance(OP.OpCode.INSTANCEOF, IntrinsicName.FAIL, base_value),
+				() => new OP.ResultNew(false, typ.typeargSuccess, typ.typeargFailure, new OP.Unop(OP.OpCode.RESULT_EXTRACT, base_value, (base_value.type as TYPE.Result).typeargFailure).asTac(this.builder)),
+				() => new OP.ResultNew(true,  typ.typeargSuccess, typ.typeargFailure, this.#buildUnwrappedGet(
+					expr,
+					new OP.Unop(OP.OpCode.RESULT_UNWRAP, base_value, (base_value.type as TYPE.Result).typeargSuccess).asTac(this.builder),
+					typ.typeargSuccess,
+				).asTac(this.builder)),
+			);
 		}
 		return this.#buildUnwrappedGet(expr, base_value, typ);
 	}

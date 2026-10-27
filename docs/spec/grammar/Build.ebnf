@@ -74,8 +74,9 @@ DICT.COUNT([Value]) -> Natural;
 SET.COUNT([Value])  -> Natural;
 MAP.COUNT([Value])  -> Natural;
 
-MAYBE.UNWRAP ([Value]) -> Value;
-RESULT.UNWRAP([Value]) -> Value;
+MAYBE.UNWRAP  ([Value]) -> Value;
+RESULT.UNWRAP ([Value]) -> Value;
+RESULT.EXTRACT([Value]) -> Exception;
 
 INSTANCEOF(native-enum [Value]) -> Boolean;
 CAST      (native-enum [Value]) -> Value;
@@ -250,6 +251,19 @@ Build(SemanticExpressionAccess[kind=MAYBE] ::= SemanticExpression__0 (SemanticIn
 	(GOTO "endif")
 	"else":
 	(SET $returned (MAYBE.NEW `Build(SemanticExpressionAccess[kind=NORMAL] ::= (MAYBE.UNWRAP (GET $base)) (SemanticIndex | SemanticKey | SemanticExpression__1))`))
+	(GOTO "endif")
+	"endif":
+	return (GET $returned).
+];
+Build(SemanticExpressionAccess[kind=RESULT] ::= SemanticExpression__0 (SemanticIndex | SemanticKey | SemanticExpression__1)) := [
+	(DECL ‹type› $base `Build(SemanticExpression__0)`)
+	(DECL <Maybe> $returned)
+	(GOTO.IF (INSTANCEOF "Fail" (GET $base)) "then" "else")
+	"then":
+	(SET $returned (RESULT.NEW nil (RESULT.EXTRACT (GET $base))))
+	(GOTO "endif")
+	"else":
+	(SET $returned (RESULT.NEW `Build(SemanticExpressionAccess[kind=NORMAL] ::= (RESULT.UNWRAP (GET $base)) (SemanticIndex | SemanticKey | SemanticExpression__1))` nil))
 	(GOTO "endif")
 	"endif":
 	return (GET $returned).

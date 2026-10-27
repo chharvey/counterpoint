@@ -93,6 +93,7 @@ export enum OpCode {
 
 	MAYBE_UNWRAP,
 	RESULT_UNWRAP,
+	RESULT_EXTRACT,
 
 	INSTANCEOF,
 	CAST,
