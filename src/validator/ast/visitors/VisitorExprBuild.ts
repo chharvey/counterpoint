@@ -190,7 +190,7 @@ export class VisitorExprBuild extends EXPR.ExprVisitor<OP.Value> {
 				)?.asTac(this.builder)),
 			);
 		}
-		return build_non_maybe_base(base_value, typ)!; // if not Maybe access, asserts it will always return a value
+		return build_non_maybe_base(base_value, typ) ?? new OP.Const(VALUE.NULL); // FIXME: remove undefined from return type
 	}
 
 	@memoizePerExpr

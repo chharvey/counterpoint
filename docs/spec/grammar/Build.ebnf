@@ -183,17 +183,17 @@ Build(SemanticExpressionDict dict)  := (DICT.NEW   `...dict.children.flatMap(Bui
 Build(SemanticExpressionSet set)    := (SET.NEW    [`...set.children.map(Build)`]);
 Build(SemanticExpressionMap map)    := (MAP.NEW    `...map.children.map(Build)`);
 
+Build(SemanticExpressionBlock blex) := [
+	...`blex.0.SemanticStatement.slice(0, 1).map(Build)`
+	return `Build(blex.0.-1.SemanticExpression)`.
+];
+
 Build(SemanticExpressionAccess[kind=NORMAL] ::= SemanticExpression SemanticIndex) := (TUPLE.GET  `SemanticIndex.index` [`Build(SemanticExpression)`]);
 Build(SemanticExpressionAccess[kind=NORMAL] ::= SemanticExpression SemanticKey)   := (RECORD.GET `SemanticKey.id`      [`Build(SemanticExpression)`]);
 Build(SemanticExpressionAccess[kind=NORMAL] ::= SemanticExpression__0[type: TYPE.List] SemanticExpression__1) := (LIST.GET [`Build(SemanticExpression__0)` `Build(SemanticExpression__1)`]);
 Build(SemanticExpressionAccess[kind=NORMAL] ::= SemanticExpression__0[type: TYPE.Dict] SemanticExpression__1) := (DICT.GET [`Build(SemanticExpression__0)` `Build(SemanticExpression__1)`]);
 Build(SemanticExpressionAccess[kind=NORMAL] ::= SemanticExpression__0[type: TYPE.Set]  SemanticExpression__1) := (SET.GET  [`Build(SemanticExpression__0)` `Build(SemanticExpression__1)`]);
 Build(SemanticExpressionAccess[kind=NORMAL] ::= SemanticExpression__0[type: TYPE.Map]  SemanticExpression__1) := (MAP.GET  [`Build(SemanticExpression__0)` `Build(SemanticExpression__1)`]);
-
-Build(SemanticExpressionBlock blex) := [
-	...`blex.0.SemanticStatement.slice(0, 1).map(Build)`
-	return `Build(blex.0.-1.SemanticExpression)`.
-];
 
 Build(SemanticExpressionAccess[kind=MAYBE] access) := [
 	(DECL ‹type› $base `Build(access.0)`)
