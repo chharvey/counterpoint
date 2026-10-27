@@ -373,33 +373,6 @@ EntryTypeSchema! GetEntryInfo(Type base_type, Or<SemanticTypeAccess, SemanticExp
 
 
 
-## AccessType
-Checks for correctness, matching access kind with accessed bound entry of a collection,
-then returns either the resulting type unwrapped or wrapped a Maybe.
-If access kind is normal, the entry must be non-optioal.
-If access kind is maybe, the entry must be optional, or base must be a Maybe.
-Otherwise, the access kind may be result.
-```
-Type! AccessType(Or<NORMAL, MAYBE, RESULT> access_kind, Type base_type, EntryTypeSchema entry) :=
-	1. *If* `access_kind` is *NORMAL* *and* `entry.optional` is `true`:
-		1. *Throw:* a new TypeErrorInvalidOperation.
-	2. *Else If* `access_kind` is *MAYBE*:
-		1. *If* `entry.optional` is `false` *and* `base_type` is not a Maybe type:
-			1. *Throw:* a new TypeErrorInvalidOperation.
-		2. *Else:*
-			1. Fall through.
-	3. *Else:*
-		1. *Assert:* `access_kind` is *RESULT*.
-		// TODO: implement
-	4. *If* `entry.optional` is `true`:
-		1. *Return:* `Maybe(entry.type)`.
-	5. *Else:*
-		1. *Return:* `entry.type`.
-;
-```
-
-
-
 ## WriteTypeOf
 Assuming reassignment of a symbol/entry is valid, gives the write-type of that symbol/entry.
 ```
