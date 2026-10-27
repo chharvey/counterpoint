@@ -12,7 +12,6 @@ import {
 	VisitorExprBuild,
 } from '../../../src/index.ts';
 import {
-	extract_lines,
 	op_maybe_string,
 	typeUnit,
 	setupScript,
@@ -362,8 +361,9 @@ test.suite('VisitorExprBuild#visit', () => {
 				const block_endif: string = `block-${block_n + 2}`;
 				const return_name: string = `$${return_n}`;
 				return xjs.String.dedent`
-					${'\t'}(DECL <Maybe> ${return_name})
-					${'\t'}(GOTO.IF (INSTANCEOF None (GET ${base_name})) "${block_then}" "${block_else}")
+					${''}
+						(DECL <Maybe> ${return_name})
+						(GOTO.IF (INSTANCEOF None (GET ${base_name})) "${block_then}" "${block_else}")
 					"${block_then}":
 						(SET ${return_name} ${op_maybe_string()})
 						(GOTO "${block_endif}")
@@ -406,16 +406,18 @@ test.suite('VisitorExprBuild#visit', () => {
 						(DROP (TUPLE.GET 2 (GET my_tupleA)))
 						(DROP (GET my_tupleB))
 						(DROP (NULL.CONST null))
-						${maybe_access_output(1, 'some_tupleA', 12, (return_setter) => extract_lines`
-							(DECL <tuple> $13 (MAYBE.UNWRAP (GET some_tupleA)))
-							(DECL <Maybe> $14 (TUPLE.GET 2 (GET $13)))
-							${return_setter('(GET $14)')}
-						`.join('\n\t'))}
-						${maybe_access_output(4, 'some_tupleB', 15, (return_setter) => extract_lines`
-							(DECL <tuple> $16 (MAYBE.UNWRAP (GET some_tupleB)))
-							(DECL <Maybe> $17 (TUPLE.GET 2 (GET $16)))
-							${return_setter('(GET $17)')}
-						`.join('\n\t'))}
+						${maybe_access_output(1, 'some_tupleA', 12, (return_setter) => xjs.String.dedent`
+							${''}
+								(DECL <tuple> $13 (MAYBE.UNWRAP (GET some_tupleA)))
+								(DECL <Maybe> $14 (TUPLE.GET 2 (GET $13)))
+								${return_setter('(GET $14)')}
+						`.trim())}
+						${maybe_access_output(4, 'some_tupleB', 15, (return_setter) => xjs.String.dedent`
+							${''}
+								(DECL <tuple> $16 (MAYBE.UNWRAP (GET some_tupleB)))
+								(DECL <Maybe> $17 (TUPLE.GET 2 (GET $16)))
+								${return_setter('(GET $17)')}
+						`.trim())}
 						(ENDPROGRAM)
 				`.trim());
 			});
@@ -451,16 +453,18 @@ test.suite('VisitorExprBuild#visit', () => {
 						(DROP (RECORD.GET @b (GET my_recordX)))
 						(DROP (GET my_recordY))
 						(DROP (NULL.CONST null))
-						${maybe_access_output(1, 'some_recordX', 12, (return_setter) => extract_lines`
-							(DECL <record> $13 (MAYBE.UNWRAP (GET some_recordX)))
-							(DECL <Maybe> $14 (RECORD.GET @b (GET $13)))
-							${return_setter('(GET $14)')}
-						`.join('\n\t'))}
-						${maybe_access_output(4, 'some_recordY', 15, (return_setter) => extract_lines`
-							(DECL <record> $16 (MAYBE.UNWRAP (GET some_recordY)))
-							(DECL <Maybe> $17 (RECORD.GET @b (GET $16)))
-							${return_setter('(GET $17)')}
-						`.join('\n\t'))}
+						${maybe_access_output(1, 'some_recordX', 12, (return_setter) => xjs.String.dedent`
+							${''}
+								(DECL <record> $13 (MAYBE.UNWRAP (GET some_recordX)))
+								(DECL <Maybe> $14 (RECORD.GET @b (GET $13)))
+								${return_setter('(GET $14)')}
+						`.trim())}
+						${maybe_access_output(4, 'some_recordY', 15, (return_setter) => xjs.String.dedent`
+							${''}
+								(DECL <record> $16 (MAYBE.UNWRAP (GET some_recordY)))
+								(DECL <Maybe> $17 (RECORD.GET @b (GET $16)))
+								${return_setter('(GET $17)')}
+						`.trim())}
 						(ENDPROGRAM)
 				`.trim());
 			});
@@ -471,10 +475,11 @@ test.suite('VisitorExprBuild#visit', () => {
 				}`, {codegen: false}).builder.print(), xjs.String.dedent`
 					"block-0":
 						(DECL <List> my_list (LIST.NEW (INT.CONST 41) (INT.CONST 42)))
-						${maybe_access_output(1, 'my_list', 0, (return_setter) => extract_lines`
-							(DECL <int> $1 (LIST.GET (GET my_list) (INT.CONST 2)))
-							${return_setter('(GET $1)')}
-						`.join('\n\t'))}
+						${maybe_access_output(1, 'my_list', 0, (return_setter) => xjs.String.dedent`
+							${''}
+								(DECL <int> $1 (LIST.GET (GET my_list) (INT.CONST 2)))
+								${return_setter('(GET $1)')}
+						`.trim())}
 						(ENDPROGRAM)
 				`.trim());
 			});
@@ -485,10 +490,11 @@ test.suite('VisitorExprBuild#visit', () => {
 				}`, {codegen: false}).builder.print(), xjs.String.dedent`
 					"block-0":
 						(DECL <Dict> my_dict (DICT.NEW @a->(INT.CONST 41) @c->(INT.CONST 42)))
-						${maybe_access_output(1, 'my_dict', 0, (return_setter) => extract_lines`
-							(DECL <int> $1 (DICT.GET (GET my_dict) (SYM.CONST @b)))
-							${return_setter('(GET $1)')}
-						`.join('\n\t'))}
+						${maybe_access_output(1, 'my_dict', 0, (return_setter) => xjs.String.dedent`
+							${''}
+								(DECL <int> $1 (DICT.GET (GET my_dict) (SYM.CONST @b)))
+								${return_setter('(GET $1)')}
+						`.trim())}
 						(ENDPROGRAM)
 				`.trim());
 			});
@@ -500,10 +506,11 @@ test.suite('VisitorExprBuild#visit', () => {
 					"block-0":
 						(DECL <int> accessor (INT.CONST 22))
 						(DECL <Map> $0 (MAP.NEW (INT.CONST 21)->(INT.CONST 41) (INT.CONST 22)->(INT.CONST 42) (INT.CONST 23)->(INT.CONST 43)))
-						${maybe_access_output(1, '$0', 1, (return_setter) => extract_lines`
-							(DECL <int> $2 (MAP.GET (GET $0) (GET accessor)))
-							${return_setter('(GET $2)')}
-						`.join('\n\t'))}
+						${maybe_access_output(1, '$0', 1, (return_setter) => xjs.String.dedent`
+							${''}
+								(DECL <int> $2 (MAP.GET (GET $0) (GET accessor)))
+								${return_setter('(GET $2)')}
+						`.trim())}
 						(ENDPROGRAM)
 				`.trim());
 			});
@@ -526,27 +533,31 @@ test.suite('VisitorExprBuild#visit', () => {
 						(DECL <Maybe> my_list ${op_maybe_string()})
 						(DECL <Maybe> my_dict ${op_maybe_string()})
 						(DECL <Maybe> my_map ${ op_maybe_string()})
-						${maybe_access_output(1, 'my_tup', 0, (return_setter) => extract_lines`
-							(DECL <tuple> $1 ${op_maybe_unwrap_string('(GET my_tup)')})
-							(DECL <bool> $2 (TUPLE.GET 1 (GET $1)))
-							${return_setter('(GET $2)')}
-						`.join('\n\t'))}
-						${maybe_access_output(4, 'my_rec', 3, (return_setter) => extract_lines`
-							(DECL <record> $4 ${op_maybe_unwrap_string('(GET my_rec)')})
-							(DECL <int> $5 (RECORD.GET @a (GET $4)))
-							${return_setter('(GET $5)')}
-						`.join('\n\t'))}
-						${maybe_access_output(7, 'my_list', 6, (return_setter) => extract_lines`
-							(DECL <List> $7 ${op_maybe_unwrap_string('(GET my_list)')})
-							(DECL <int> $8 (INT.MUL (INT.CONST 2) (INT.CONST 2)))
-							(DECL <int> $9 (INT.SUB (GET $8) (INT.CONST 3)))
-							(DECL <Maybe> $10 (LIST.GET (GET $7) (GET $9)))
-							${return_setter('(GET $10)')}
-						`.join('\n\t'))}
+						${maybe_access_output(1, 'my_tup', 0, (return_setter) => xjs.String.dedent`
+							${''}
+								(DECL <tuple> $1 ${op_maybe_unwrap_string('(GET my_tup)')})
+								(DECL <bool> $2 (TUPLE.GET 1 (GET $1)))
+								${return_setter('(GET $2)')}
+						`.trim())}
+						${maybe_access_output(4, 'my_rec', 3, (return_setter) => xjs.String.dedent`
+							${''}
+								(DECL <record> $4 ${op_maybe_unwrap_string('(GET my_rec)')})
+								(DECL <int> $5 (RECORD.GET @a (GET $4)))
+								${return_setter('(GET $5)')}
+						`.trim())}
+						${maybe_access_output(7, 'my_list', 6, (return_setter) => xjs.String.dedent`
+							${''}
+								(DECL <List> $7 ${op_maybe_unwrap_string('(GET my_list)')})
+								(DECL <int> $8 (INT.MUL (INT.CONST 2) (INT.CONST 2)))
+								(DECL <int> $9 (INT.SUB (GET $8) (INT.CONST 3)))
+								(DECL <Maybe> $10 (LIST.GET (GET $7) (GET $9)))
+								${return_setter('(GET $10)')}
+						`.trim())}
 						${maybe_access_output(10, 'my_dict', 11, (return_setter) => xjs.String.dedent`
-							${'\t'}(DECL <Dict> $12 ${op_maybe_unwrap_string('(GET my_dict)')})
-							${'\t'}(DECL <sym> $13)
-							${'\t'}(GOTO.IF (BOOL.FROM (SYM.CONST @b)) "block-13" "block-14")
+							${''}
+								(DECL <Dict> $12 ${op_maybe_unwrap_string('(GET my_dict)')})
+								(DECL <sym> $13)
+								(GOTO.IF (BOOL.FROM (SYM.CONST @b)) "block-13" "block-14")
 							"block-13":
 								(SET $13 (SYM.CONST @a))
 								(GOTO "block-15")
@@ -557,13 +568,14 @@ test.suite('VisitorExprBuild#visit', () => {
 								(DECL <Maybe> $14 (DICT.GET (GET $12) (GET $13)))
 								${return_setter('(GET $14)')}
 						`.trim())}
-						${maybe_access_output(16, 'my_map', 15, (return_setter) => extract_lines`
-							(DECL <Map> $16 ${op_maybe_unwrap_string('(GET my_map)')})
-							(DECL <int> $17 (INT.MUL (INT.CONST 3) (INT.CONST 2)))
-							(DECL <int> $18 (INT.ADD (INT.CONST 5) (GET $17)))
-							(DECL <Maybe> $19 (MAP.GET (GET $16) (GET $18)))
-							${return_setter('(GET $19)')}
-						`.join('\n\t'))}
+						${maybe_access_output(16, 'my_map', 15, (return_setter) => xjs.String.dedent`
+							${''}
+								(DECL <Map> $16 ${op_maybe_unwrap_string('(GET my_map)')})
+								(DECL <int> $17 (INT.MUL (INT.CONST 3) (INT.CONST 2)))
+								(DECL <int> $18 (INT.ADD (INT.CONST 5) (GET $17)))
+								(DECL <Maybe> $19 (MAP.GET (GET $16) (GET $18)))
+								${return_setter('(GET $19)')}
+						`.trim())}
 						(ENDPROGRAM)
 				`.trim());
 			});
@@ -1448,8 +1460,9 @@ test.suite('VisitorExprBuild#visit', () => {
 							const block_endif: string = `block-${3 * i + 3}`;
 							const return_name: string = `$${i}`;
 							return xjs.String.dedent`
-								${'\t'}(DECL <Maybe> ${return_name})
-								${'\t'}(GOTO.IF (INSTANCEOF ${t} (GET n)) "${block_then}" "${block_else}")
+								${''}
+									(DECL <Maybe> ${return_name})
+									(GOTO.IF (INSTANCEOF ${t} (GET n)) "${block_then}" "${block_else}")
 								"${block_then}":
 									(SET ${return_name} ${op_maybe_string(`(CAST ${t} (GET n))`)})
 									(GOTO "${block_endif}")
@@ -1459,7 +1472,7 @@ test.suite('VisitorExprBuild#visit', () => {
 								"${block_endif}":
 									(DROP (GET ${return_name}))
 							`.trim();
-						}).join('\n\t').trimStart()}
+						}).join('\n\t').trim()}
 						(ENDPROGRAM)
 				`.trim());
 			});
