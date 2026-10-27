@@ -406,7 +406,7 @@ export class VisitorExprBuild extends EXPR.ExprVisitor<OP.Value> {
 					this.builder,
 					new TYPE.Maybe(return_type),
 					() => new OP.TupleHas(base_val, index),
-					() => new OP.MaybeNew(return_type, returned),
+					() => new OP.MaybeNew(return_type, returned.asTac(this.builder)),
 					() => new OP.MaybeNew(return_type),
 				) : returned;
 			}
@@ -418,7 +418,7 @@ export class VisitorExprBuild extends EXPR.ExprVisitor<OP.Value> {
 					this.builder,
 					new TYPE.Maybe(return_type),
 					() => new OP.RecordHas(base_val, key),
-					() => new OP.MaybeNew(return_type, returned),
+					() => new OP.MaybeNew(return_type, returned.asTac(this.builder)),
 					() => new OP.MaybeNew(return_type),
 				) : returned;
 			}

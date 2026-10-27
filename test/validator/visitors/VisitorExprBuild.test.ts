@@ -359,12 +359,14 @@ test.suite('VisitorExprBuild#visit', () => {
 				const block_else:  string = `block-${block_n + 1}`;
 				const block_endif: string = `block-${block_n + 2}`;
 				const return_name: string = `$${return_n}`;
+				const get_name:    string = `$${return_n + 1}`;
 				return xjs.String.dedent`
 					${''}
 						(DECL <Maybe> ${return_name})
 						(GOTO.IF (${base_type}.HAS ${accessor_idx} (GET ${base_name})) "${block_then}" "${block_else}")
 					"${block_then}":
-						(SET ${return_name} (MAYBE.NEW (${base_type}.GET ${accessor_idx} (GET ${base_name}))))
+						(DECL <Maybe> ${get_name} (${base_type}.GET ${accessor_idx} (GET ${base_name})))
+						(SET ${return_name} (MAYBE.NEW (GET ${get_name})))
 						(GOTO "${block_endif}")
 					"${block_else}":
 						(SET ${return_name} (MAYBE.NEW))
@@ -428,16 +430,16 @@ test.suite('VisitorExprBuild#visit', () => {
 						(DECL <tuple> $11 (TUPLE.NEW (GET $9) (GET $10)))
 						(DECL <Maybe> some_tupleB (MAYBE.NEW (GET $11)))
 						${optional_access_output(1, 'TUPLE', 'my_tupleA', '2', 12)}
-						${optional_access_output(4, 'TUPLE', 'my_tupleB', '2', 13)}
-						${maybe_access_output(7, 'some_tupleA', 14, (return_setter) => xjs.String.dedent`
+						${optional_access_output(4, 'TUPLE', 'my_tupleB', '2', 14)}
+						${maybe_access_output(7, 'some_tupleA', 16, (return_setter) => xjs.String.dedent`
 							${''}
-								(DECL <tuple> $15 (MAYBE.UNWRAP (GET some_tupleA)))
-								${optional_access_output(10, 'TUPLE', '$15', '2', 16, (ret_val) => return_setter(ret_val))}
+								(DECL <tuple> $17 (MAYBE.UNWRAP (GET some_tupleA)))
+								${optional_access_output(10, 'TUPLE', '$17', '2', 18, (ret_val) => return_setter(ret_val))}
 						`.trim())}
-						${maybe_access_output(13, 'some_tupleB', 17, (return_setter) => xjs.String.dedent`
+						${maybe_access_output(13, 'some_tupleB', 20, (return_setter) => xjs.String.dedent`
 							${''}
-								(DECL <tuple> $18 (MAYBE.UNWRAP (GET some_tupleB)))
-								${optional_access_output(16, 'TUPLE', '$18', '2', 19, (ret_val) => return_setter(ret_val))}
+								(DECL <tuple> $21 (MAYBE.UNWRAP (GET some_tupleB)))
+								${optional_access_output(16, 'TUPLE', '$21', '2', 22, (ret_val) => return_setter(ret_val))}
 						`.trim())}
 						(ENDPROGRAM)
 				`.trim());
@@ -472,16 +474,16 @@ test.suite('VisitorExprBuild#visit', () => {
 						(DECL <record> $11 (RECORD.NEW @a->(GET $9) @c->(GET $10)))
 						(DECL <Maybe> some_recordY (MAYBE.NEW (GET $11)))
 						${optional_access_output(1, 'RECORD', 'my_recordX', '@b', 12)}
-						${optional_access_output(4, 'RECORD', 'my_recordY', '@b', 13)}
-						${maybe_access_output(7, 'some_recordX', 14, (return_setter) => xjs.String.dedent`
+						${optional_access_output(4, 'RECORD', 'my_recordY', '@b', 14)}
+						${maybe_access_output(7, 'some_recordX', 16, (return_setter) => xjs.String.dedent`
 							${''}
-								(DECL <record> $15 (MAYBE.UNWRAP (GET some_recordX)))
-								${optional_access_output(10, 'RECORD', '$15', '@b', 16, (ret_val) => return_setter(ret_val))}
+								(DECL <record> $17 (MAYBE.UNWRAP (GET some_recordX)))
+								${optional_access_output(10, 'RECORD', '$17', '@b', 18, (ret_val) => return_setter(ret_val))}
 						`.trim())}
-						${maybe_access_output(13, 'some_recordY', 17, (return_setter) => xjs.String.dedent`
+						${maybe_access_output(13, 'some_recordY', 20, (return_setter) => xjs.String.dedent`
 							${''}
-								(DECL <record> $18 (MAYBE.UNWRAP (GET some_recordY)))
-								${optional_access_output(16, 'RECORD', '$18', '@b', 19, (ret_val) => return_setter(ret_val))}
+								(DECL <record> $21 (MAYBE.UNWRAP (GET some_recordY)))
+								${optional_access_output(16, 'RECORD', '$21', '@b', 22, (ret_val) => return_setter(ret_val))}
 						`.trim())}
 						(ENDPROGRAM)
 				`.trim());
