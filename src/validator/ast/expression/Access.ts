@@ -2,6 +2,7 @@ import {TypeErrorInvalidOperation} from '../../../index.ts';
 import {
 	assert_instanceof,
 	memoizeMethod,
+	memoizeGetter,
 } from '../../../lib/index.ts';
 import {
 	type CplConfig,
@@ -49,6 +50,13 @@ export class Access extends Expression implements Reassignable {
 		}
 	}
 
+
+	@memoizeGetter
+	public get entryInfo(): EntryType {
+		return get_entry_info(this.base.type(), this);
+	}
+
+
 	@memoizeMethod
 	public override type(): TYPE.Type {
 		const base_type: TYPE.Type = this.base.type();
@@ -63,7 +71,7 @@ export class Access extends Expression implements Reassignable {
 		if (this.kind === Operator.DOT_RESULT) {
 			throw new SyntaxError('Operator `!.` not yet supported.');
 		}
-		const entry: EntryType = get_entry_info(base_type, this);
+		const entry: EntryType = this.entryInfo;
 		return entry.optional ? new TYPE.Maybe(entry.type) : entry.type;
 	}
 
