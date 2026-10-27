@@ -168,6 +168,16 @@ Codegen((RESULT.NEW `value` nil)) := (call $Value.new-composite
 	)
 );
 
+Codegen((TUPLE.HAS `index` `obj`)) := (call $Value.bool-from-i32 (i32.lt_u
+	(i32.const `index`)
+	(array.len (ref.cast (ref $Tuple) (struct.get $Value $composite `Codegen(obj)`)))
+));
+
+Codegen((RECORD.HAS `key` `obj`)) := (call cg.vm.Value.boolFromI32 (call $Record.has-key
+	(ref.cast (ref $Record) (struct.get $Value $composite `Codegen(obj)`))
+	(i64.const `key`)
+));
+
 Codegen((TUPLE.GET `index` `obj`)) := (array.get
 	(ref.cast (ref $Tuple) (struct.get $Value $composite `Codegen(obj)`))
 	(i32.const `index`)

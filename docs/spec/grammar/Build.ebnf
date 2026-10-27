@@ -44,6 +44,9 @@ MAYBE.NEW([Value?])                       -> Maybe;
 RESULT.NEW([Value Nil])                   -> Result;
 RESULT.NEW([Nil Exception])               -> Result;
 
+TUPLE.HAS (native-bigint [Value]) -> Boolean;
+RECORD.HAS(native-bigint [Value]) -> Boolean;
+
 TUPLE.GET (native-bigint [Value]) -> Value;
 RECORD.GET(native-bigint [Value]) -> Value;
 LIST.GET([Value Value])           -> Value;

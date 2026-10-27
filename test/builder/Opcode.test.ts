@@ -167,6 +167,26 @@ test.suite('Opcode', () => {
 				]);
 			});
 
+			test.test('TupleHas', () => {
+				// there exists no syntax for Tuple has, so constructing it manually
+				const tuple  = new VisitorExprBuild(new Builder()).visit(AST.EXPR.Tuple.fromSource('(10, 20)'));
+				const interp = new Interpreter();
+				return assert_equal_values(new Map<VALUE.Boolean, VALUE.Boolean>([
+					[new OP.TupleHas(tuple, 1n).interpret(interp), VALUE.TRUE],
+					[new OP.TupleHas(tuple, 2n).interpret(interp), VALUE.FALSE],
+				]));
+			});
+
+			test.test('RecordHas', () => {
+				// there exists no syntax for Record has, so constructing it manually
+				const record = new VisitorExprBuild(new Builder()).visit(AST.EXPR.Record.fromSource('(a= 10, c= 20)'));
+				const interp = new Interpreter();
+				return assert_equal_values(new Map<VALUE.Boolean, VALUE.Boolean>([
+					[new OP.RecordHas(record, {keyid: Validator.cookTokenIdentifier('a'), keysrc: 'a'}).interpret(interp), VALUE.TRUE],
+					[new OP.RecordHas(record, {keyid: Validator.cookTokenIdentifier('b'), keysrc: 'b'}).interpret(interp), VALUE.FALSE],
+				]));
+			});
+
 			test.test('TupleGet, RecordGet', () => {
 				assert_equal_values(interpret_extracted_drops(`{
 					val     tup_fixed:   (int, float, str) = (1, 2.0, "three");
@@ -1450,6 +1470,37 @@ test.suite('Opcode', () => {
 					cg.codegenResult(false, cg.mod.wasm.ref.cast(cg.vm.Value.field(excp.codegen(cg)).composite, cg.vm.reftype.Exception)),
 					cg.codegenResult(true, value.codegen(cg)),
 				].map((mab) => cg.vm.Value.newComposite(mab)));
+			});
+
+			test.test('TupleHas', () => {
+				// there exists no syntax for Tuple has, so constructing it manually
+				const tuple = new VisitorExprBuild(new Builder()).visit(AST.EXPR.Tuple.fromSource('(10, 20)'));
+				const cg    = new CodeGenerator();
+				const {vm: {reftype, Value: VmValue}, mod: {wasm}} = cg;
+				xjs.Array.forEachAggregated([1n, 2n], (idx) => assertEqualBins(
+					new OP.TupleHas(tuple, idx).codegen(cg),
+					VmValue.boolFromI32(wasm.i32.lt_u(
+						wasm.i32.const(Number(idx)),
+						wasm.array.len(VmValue.cast(tuple.codegen(cg), reftype.Tuple)),
+					)),
+				));
+			});
+
+			test.test('RecordHas', () => {
+				// there exists no syntax for Record has, so constructing it manually
+				const record = new VisitorExprBuild(new Builder()).visit(AST.EXPR.Record.fromSource('(a= 10, c= 20)'));
+				const cg     = new CodeGenerator();
+				const {vm: {reftype, Value: VmValue, Record}, mod: {wasm}} = cg;
+				return xjs.Array.forEachAggregated(['a', 'b'], (keysrc) => {
+					const keyid: bigint = Validator.cookTokenIdentifier(keysrc);
+					return assertEqualBins(
+						new OP.RecordHas(record, {keyid, keysrc}).codegen(cg),
+						VmValue.boolFromI32(Record.hasKey(
+							VmValue.cast(record.codegen(cg), reftype.Record),
+							wasm.i64.const(keyid),
+						)),
+					);
+				});
 			});
 
 			test.test('TupleGet returns (array.get).', () => {
