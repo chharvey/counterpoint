@@ -133,9 +133,11 @@ Type! TypeOf(SemanticExpressionAccess[kind: NORMAL | MAYBE | RESULT] ::= Semanti
 		1. Fall through.
 	6. *Let* `entry` be *Unwrap:* `GetEntryInfo(base_type, SemanticExpressionAccess, false)`.
 	7. *If* `entry.optional` is `true`:
-		1. *Return:* `Maybe(entry.type)`.
+		1. *Set* `SemanticExpressionAccess.isEntryOptional` to `true`.
+		2. *Return:* `Maybe(entry.type)`.
 	8. *Else:*
-		1. *Return:* `entry.type`.
+		1. *Set* `SemanticExpressionAccess.isEntryOptional` to `false`.
+		2. *Return:* `entry.type`.
 ;
 
 

@@ -402,7 +402,7 @@ export class VisitorExprBuild extends EXPR.ExprVisitor<OP.Value> {
 				assert_instanceof(base_val.type, TYPE.Tuple);
 				const index: bigint = access.accessor.index;
 				const returned      = new OP.TupleGet(base_val, index, return_type);
-				return access.entryInfo.optional ? OP.conditional_expression(
+				return access.isEntryOptional ? OP.conditional_expression(
 					this.builder,
 					new TYPE.Maybe(return_type),
 					() => new OP.TupleHas(base_val, index),
@@ -414,7 +414,7 @@ export class VisitorExprBuild extends EXPR.ExprVisitor<OP.Value> {
 				assert_instanceof(base_val.type, TYPE.Record);
 				const key      = {keyid: access.accessor.id, keysrc: access.accessor.source} as const;
 				const returned = new OP.RecordGet(base_val, key, return_type);
-				return access.entryInfo.optional ? OP.conditional_expression(
+				return access.isEntryOptional ? OP.conditional_expression(
 					this.builder,
 					new TYPE.Maybe(return_type),
 					() => new OP.RecordHas(base_val, key),

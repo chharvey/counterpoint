@@ -149,7 +149,7 @@ SemanticExpressionMap    ::= SemanticCase+;
 SemanticExpressionBlock
 	::= SemanticBlock;
 
-SemanticExpressionAccess[kind: NORMAL | MAYBE | RESULT]
+SemanticExpressionAccess[kind: NORMAL | MAYBE | RESULT][isEntryOptional?: Boolean]
 	::= SemanticExpression (SemanticIndex | SemanticKey | SemanticExpression);
 
 SemanticExpressionCall

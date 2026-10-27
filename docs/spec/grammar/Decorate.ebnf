@@ -611,17 +611,17 @@ Decorate(ExpressionCompound<Block, Break, Return> ::= ExpressionCompound<?Block>
 		Decorate(ExpressionCompound<?Block><?Break><?Return>)
 	);
 Decorate(ExpressionCompound<Block, Break, Return> ::= ExpressionCompound<?Block><?Break><?Return> "." PropertyAccessor<?Break><?Return>) -> SemanticExpressionAccess
-	:= (SemanticExpressionAccess[kind=NORMAL]
+	:= (SemanticExpressionAccess[kind=NORMAL][isEntryOptional=*nil*]
 		Decorate(ExpressionCompound<?Block><?Break><?Return>)
 		Decorate(PropertyAccessor<?Break><?Return>)
 	);
 Decorate(ExpressionCompound<Block, Break, Return> ::= ExpressionCompound<?Block><?Break><?Return> "?." PropertyAccessor<?Break><?Return>) -> SemanticExpressionAccess
-	:= (SemanticExpressionAccess[kind=MAYBE]
+	:= (SemanticExpressionAccess[kind=MAYBE][isEntryOptional=*nil*]
 		Decorate(ExpressionCompound<?Block><?Break><?Return>)
 		Decorate(PropertyAccessor<?Break><?Return>)
 	);
 Decorate(ExpressionCompound<Block, Break, Return> ::= ExpressionCompound<?Block><?Break><?Return> "!." PropertyAccessor<?Break><?Return>) -> SemanticExpressionAccess
-	:= (SemanticExpressionAccess[kind=RESULT]
+	:= (SemanticExpressionAccess[kind=RESULT][isEntryOptional=*nil*]
 		Decorate(ExpressionCompound<?Block><?Break><?Return>)
 		Decorate(PropertyAccessor<?Break><?Return>)
 	);
@@ -965,7 +965,7 @@ Decorate(Expression<Block, Break, Return> ::= ExpressionFunction) -> SemanticExp
 Decorate(Assignee<Break, Return> ::= IDENTIFIER) -> SemanticExpressionVariable
 	:= (SemanticExpressionVariable[id=TokenWorth(IDENTIFIER)]);
 Decorate(Assignee<Break, Return> ::= ExpressionCompound<+Block><?Break><?Return> "." PropertyAccessor<?Break><?Return>) -> SemanticExpressionAccess
-	:= (SemanticExpressionAccess[kind=NORMAL]
+	:= (SemanticExpressionAccess[kind=NORMAL][isEntryOptional=*nil*]
 		Decorate(ExpressionCompound<+Block><?Break><?Return>)
 		Decorate(PropertyAccessor<?Break><?Return>)
 	);

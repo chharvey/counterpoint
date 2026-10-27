@@ -193,10 +193,9 @@ Build(SemanticExpressionBlock blex) := [
 
 Build(SemanticExpressionAccess[kind=NORMAL] ::= SemanticExpression SemanticIndex) :=
 	1. *Let* `base_type` be *Unwrap:* `TypeOf(SemanticExpression)`.
-	2. *Let* `entry_info` be *Unwrap:* `GetEntryInfo(base_type, SemanticExpressionAccess, false)`.
-	3. *Let* `base_value` be *UnwrapAffirm:* `Build(SemanticExpression)`.
-	4. *Let* `returned` be "(TUPLE.GET `SemanticIndex.index` [`base_value`])".
-	5. *If* `entry_info.optional` is `true`:
+	2. *Let* `base_value` be *UnwrapAffirm:* `Build(SemanticExpression)`.
+	3. *Let* `returned` be "(TUPLE.GET `SemanticIndex.index` [`base_value`])".
+	4. *If* `SemanticExpressionAccess.isEntryOptional` is `true`:
 		1. *Return:* [
 			(DECL ‹type› $base `base_value`)
 			(DECL <Maybe> $returned)
@@ -210,7 +209,7 @@ Build(SemanticExpressionAccess[kind=NORMAL] ::= SemanticExpression SemanticIndex
 			"endif":
 			return (GET $returned).
 		].
-	6. *Else:*
+	5. *Else:*
 		1. *Return:* `returned`.
 ;
 

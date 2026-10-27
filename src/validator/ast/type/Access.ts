@@ -1,7 +1,6 @@
 import {
 	assert_instanceof,
 	memoizeMethod,
-	memoizeGetter,
 } from '../../../lib/index.ts';
 import {
 	type CplConfig,
@@ -37,15 +36,9 @@ export class Access extends Type {
 	}
 
 
-	@memoizeGetter
-	private get entryInfo(): EntryType {
-		return get_entry_info(this.base.eval(), this);
-	}
-
-
 	@memoizeMethod
 	public override eval(): TYPE.Type {
-		const entry: EntryType = this.entryInfo;
+		const entry: EntryType = get_entry_info(this.base.eval(), this);
 		return entry.optional ? new TYPE.Maybe(entry.type) : entry.type;
 	}
 }

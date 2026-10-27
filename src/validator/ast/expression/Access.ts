@@ -35,6 +35,9 @@ export class Access extends Expression implements Reassignable {
 		return expression;
 	}
 
+	#isEntryOptional?: boolean;
+
+
 	public constructor(
 		start_node:
 			| SyntaxNodeType<'expression_compound'>
@@ -52,8 +55,9 @@ export class Access extends Expression implements Reassignable {
 
 
 	@memoizeGetter
-	public get entryInfo(): EntryType {
-		return get_entry_info(this.base.type(), this);
+	public get isEntryOptional(): boolean {
+		this.type();
+		return this.#isEntryOptional!;
 	}
 
 
@@ -71,7 +75,8 @@ export class Access extends Expression implements Reassignable {
 		if (this.kind === Operator.DOT_RESULT) {
 			throw new SyntaxError('Operator `!.` not yet supported.');
 		}
-		const entry: EntryType = this.entryInfo;
+		const entry: EntryType = get_entry_info(base_type, this);
+		this.#isEntryOptional = entry.optional;
 		return entry.optional ? new TYPE.Maybe(entry.type) : entry.type;
 	}
 
