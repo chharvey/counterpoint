@@ -511,7 +511,7 @@ test.suite('Decorator', () => {
 				}
 				% (expression_compound)
 			`]],
-			['expectFailure: Decorate(ExpressionCompound<Block, Break, Return> ::= ExpressionCompound<?Block><?Break><?Return> "!." PropertyAccessor<?Break><?Return>) -> SemanticExpressionAccess', [AST.EXPR.Access, `
+			['Decorate(ExpressionCompound<Block, Break, Return> ::= ExpressionCompound<?Block><?Break><?Return> "!." PropertyAccessor<?Break><?Return>) -> SemanticExpressionAccess', [AST.EXPR.Access, `
 				{
 					v!.p;
 				}
@@ -1260,19 +1260,6 @@ test.suite('Decorator', () => {
 					instance = decorator.decorate(parsenode);
 				}
 				return assert_instanceof(instance, klass, `\`${parsenode.text}\` should be an instance of ${klass.name}.`);
-			});
-		});
-		['!.'].forEach((op) => {
-			['1', '_', 'p', '[a + b]'].forEach((accessor) => {
-				test.suite(`Decorate(ExpressionCompound<Block> ::= ExpressionCompound<?Block> "${op}" PropertyAccessor) -> SemanticExpressionAccess`, () => {
-					test.test(`operator \`${op}\` is not yet supported.`, () => {
-						assert.throws(() => new Decorator().decorate(captureParseNode(`
-							{
-								v${op}${accessor};
-							}
-						`, '(expression_compound)')), /not yet supported/);
-					});
-				});
 			});
 		});
 	});

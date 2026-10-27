@@ -48,9 +48,6 @@ export class Access extends Expression implements Reassignable {
 		public readonly accessor: Index | Key | Expression,
 	) {
 		super(start_node, {kind}, [base, accessor]);
-		if (this.kind === Operator.DOT_RESULT) {
-			throw new TypeError(`Operator ${this.kind} not yet supported.`);
-		}
 	}
 
 
@@ -77,7 +74,13 @@ export class Access extends Expression implements Reassignable {
 			}
 		}
 		if (this.kind === Operator.DOT_RESULT) {
-			throw new SyntaxError('Operator `!.` not yet supported.');
+			if (base_type instanceof TYPE.Result) {
+				const entry: EntryType = get_entry_info(base_type.typeargSuccess, this);
+				this.#isEntryOptional = entry.optional;
+				return new TYPE.Result(entry.optional ? new TYPE.Maybe(entry.type) : entry.type, base_type.typeargFailure);
+			} else {
+				throw new TypeErrorInvalidOperation(this);
+			}
 		}
 		const entry: EntryType = get_entry_info(base_type, this);
 		this.#isEntryOptional = entry.optional;

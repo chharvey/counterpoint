@@ -52,15 +52,9 @@ test.suite('Access', () => {
 	}
 
 
-	test.test.todo('access kind: result access (`a!.‹b›`) is unsupported.', () => { // TODO: Maybe & Result types (#100)
-		assert.throws(() => AST.EXPR.Access.fromSource('(42,)!.0;'), TypeError);
-	});
-
-
-
 	test.suite('#type', () => {
 		test.suite('when base is null.', () => {
-			test.test('normal/maybe access throws.', () => {
+			test.test('normal/maybe/result access throws.', () => {
 				testExprTypes(`{
 					null.3;
 					null.four;
@@ -68,9 +62,12 @@ test.suite('Access', () => {
 					null?.3;
 					null?.four;
 					null?.[((((),),),)];
+					null!.3;
+					null!.four;
+					null!.[((((),),),)];
 				}`, [
 					...repeat(TypeErrorNoEntry, 2),
-					...repeat(TypeErrorInvalidOperation, 4),
+					...repeat(TypeErrorInvalidOperation, 7),
 				]);
 			});
 			test.test('chained maybe access does not unwrap recursively.', () => {
@@ -92,6 +89,24 @@ test.suite('Access', () => {
 					new TYPE.Maybe(TYPE.BOOL),                                           // Maybe[bool]
 					new TYPE.Maybe(new TYPE.Record(new Map([[propid, {type: prop2, optional: true}]]))), // Maybe[(prop?: (?: bool))]
 					new TYPE.Maybe(new TYPE.Maybe(prop2)),                                               // Maybe[Maybe[(?: bool)]]
+					TypeErrorNoEntry,
+				]);
+			});
+			test.test('chained result access does not unwrap recursively.', () => {
+				const propid: bigint = Validator.cookTokenIdentifier('prop');
+				return testExprTypes(`{
+					val bound1: (prop: (float,)!)! = Ok.<(prop: Result.<(float,)>)>((prop= Ok.<(float,)>((4.2,))));
+					val bound2: (str,)!! = Ok.<Result.<(str,)>>(Ok.<(str,)>(("hello",)));
+					bound1;
+					bound1!.prop;
+					bound1!.prop!.0; %> TypeErrorNoEntry
+					bound2;
+					bound2!.0; %> TypeErrorNoEntry
+				}`, [
+					new TYPE.Result(TYPE.Record.fromTypes(new Map([[propid, new TYPE.Result(TYPE.Tuple.fromTypes([TYPE.FLOAT]))]]))), // Result[(prop: Result[(float,)])]
+					new TYPE.Result(new TYPE.Result(TYPE.Tuple.fromTypes([TYPE.FLOAT]))),                                             // Result[Result[(float,)]]
+					TypeErrorNoEntry,
+					new TYPE.Result(new TYPE.Result(TYPE.Tuple.fromTypes([TYPE.STR]))), // Result[Result[(str,)]]
 					TypeErrorNoEntry,
 				]);
 			});
@@ -252,6 +267,29 @@ test.suite('Access', () => {
 							new TYPE.Maybe(new TYPE.Maybe(TYPE.INT)),
 						], 2).flat(),
 						...repeat(TypeErrorNoEntry, 4),
+					]);
+				});
+				test.test('base is an explicit Result.', () => {
+					testExprTypes(`{
+						val mut tup_a: Result.<(int, int, ?: int)> = Fail.<(int, int, ?: int)>(Exception.("tup_a"));
+						val mut tup_b: Result.<(int, int, ?: int)> = Fail.<(int, int, ?: int)>(Exception.("tup_b"));
+						set tup_a = Ok.<(int, int, ?: int)>((10, 20));
+
+						tup_a.1;
+						tup_a.2;
+						tup_b.1;
+						tup_b.2;
+
+						tup_a!.1; % type \`Result[int]\`
+						tup_a!.2; % type \`Result[Maybe[int]]\`
+						tup_b!.1; % type \`Result[int]\`
+						tup_b!.2; % type \`Result[Maybe[int]]\`
+					}`, [
+						...repeat(TypeErrorNoEntry, 4),
+						...repeat([
+							new TYPE.Result(TYPE.INT),
+							new TYPE.Result(new TYPE.Maybe(TYPE.INT)),
+						], 2).flat(),
 					]);
 				});
 				test.test('throws when base object is of incorrect type.', () => {
