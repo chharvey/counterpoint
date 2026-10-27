@@ -168,7 +168,7 @@ Nil! VarCheck(SemanticExpressionCall call) :=
 
 
 
-Nil! VarCheck(SemanticExpressionOperation[operator: IS | CAST | MAYBE | RESULT] ::= SemanticExpression__0 SemanticExpression__1[type: Class]) :=
+Nil! VarCheck(SemanticExpressionOperation[operator: IS | CAST | MAYBE] ::= SemanticExpression__0 SemanticExpression__1[type: Class]) :=
 	1. *Perform:* *Unwrap:* `VarCheck(SemanticExpression__0)`.
 	2. *Note:* Skip var-checking of `SemanticExpression__1` for now, as semantics is determined by syntax.
 	3. *If* `SemanticExpression__1` is not an Intrinsic Name:
