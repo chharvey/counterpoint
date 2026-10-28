@@ -56,6 +56,7 @@ export class Call extends Expression {
 		return xjs.Array.forEachAggregated([
 			...this.typeargs,
 			...this.exprargsPosit,
+			...this.exprargsNamed,
 		], (arg) => arg.varCheck());
 	}
 
@@ -65,6 +66,7 @@ export class Call extends Expression {
 		xjs.Array.forEachAggregated([
 			...this.typeargs,
 			...this.exprargsPosit,
+			...this.exprargsNamed,
 		], (arg) => arg.typeCheck());
 		this.type(); // assert does not throw
 	}
@@ -74,7 +76,10 @@ export class Call extends Expression {
 		if (!(this.base instanceof Variable)) {
 			throw new TypeErrorNotCallable(this.base.type(), this.base);
 		}
-		if (this.exprargsPosit.some((arg) => arg.type().isBottomType)) {
+		if (
+			this.exprargsPosit.some((arg) => arg.type().isBottomType) ||
+			this.exprargsNamed.some((arg) => arg.val.type().isBottomType)
+		) {
 			return TYPE.NOTHING;
 		}
 		const constructor_schema:    ConstructorSchema = CLASS_API.get(this.base.source as CallableClassName)!;
@@ -201,8 +206,8 @@ export class Call extends Expression {
 		xjs.Array.forEither(constructor_schema.overloads, (func_params) => {
 			/* Argument Counting. Throws if the number of given args does not match the number of expected parameters. */
 			const expected_function = {
-				min: BigInt(func_params.filter((param) => !param.optional).length),
-				max: BigInt(func_params.length),
+				min: BigInt(func_params.positional?.filter((param) => !param.optional).length ?? 0),
+				max: BigInt(func_params.positional?.length ?? 0),
 			} as const;
 			const actual_function: bigint = BigInt(this.exprargsPosit.length);
 			// TODO: throw AggregateError if both
@@ -214,13 +219,20 @@ export class Call extends Expression {
 			}
 
 			/* Argument Typing. Handles optionality and default values. Also checks if each argument matches the constraints given. */
-			func_params.forEach((param, i) => {
-				if (!this.exprargsPosit.at(i)) {
-					assert.ok(param.optional); // we can assert this due to argument counting above
-				}
+			func_params.positional?.forEach((param, i) => {
 				const argnode: Expression | undefined = this.exprargsPosit.at(i);
 				if (argnode) {
 					typecheck_assign(argnode, param.type.call(null, resolved_generic_args), this);
+				} else {
+					assert.ok(param.optional); // we can assert this due to argument counting above
+				}
+			});
+			func_params.named?.forEach((param, id) => {
+				const argnode: Property | undefined = this.exprargsNamed.find((prop) => prop.key.id === id);
+				if (argnode) {
+					typecheck_assign(argnode.val, param.type.call(null, resolved_generic_args), this);
+				} else if (!param.optional) {
+					throw new TypeError(`Missing argument for requierd named parameter ${id}.`); // TODO: new class of CplTypeError
 				}
 			});
 		});

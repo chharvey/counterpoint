@@ -162,17 +162,25 @@ type GenericParameterSchema = (
 
 /**
  * A schema for a functional parameter.
- * @property positional - Is the parameter positional (as opposed to named)? If true, this schema must not have a `name` property.
  * @property name       - Is the parameter named? If true, this schema must not have a `positional` property.
  * @property type       - The required type of the parameter.
  * @property optional   - Is the parameter optional? If true, it may or may not have a default value.
  * @property default    - The default value of the parameter. If present, this schema’s `optional` property must be `true`.
  */
 type FunctionParameterSchema = (
-	& ({readonly positional: true}) // TODO: union with `{readonly name: string}` once we have named arguments
 	& {readonly type: (generic_params: GenericArgsSpec) => TYPE.Type}
 	& ({readonly optional?: false} | {readonly optional: true, readonly default?: unknown})
 );
+
+/**
+ * A schema defining a single constructor overload.
+ * @property positional - an array of positional parameters
+ * @property named      - a map of named parameters, keyed by hash id
+ */
+type OverloadSchema = {
+	readonly positional?: readonly FunctionParameterSchema[],
+	readonly named?:      ReadonlyMap<bigint, FunctionParameterSchema>,
+};
 
 /**
  * A schema for a constructor type call or constructor call.
@@ -182,140 +190,140 @@ type FunctionParameterSchema = (
  */
 export type ConstructorSchema = {
 	readonly genericParams: readonly GenericParameterSchema[],
-	readonly overloads:     readonly (readonly FunctionParameterSchema[])[],
+	readonly overloads:     readonly OverloadSchema[],
 	readonly returnType:    (generic_params: GenericArgsSpec) => TYPE.Type,
 };
 
 /**
  * ```cpl
- * declare class data Boolean {
- * 	new (x: anything);
+ * declare class Boolean {
+ * 	new (anything);
  * }
- * declare class data Integer {
- * 	new (x: int | nat | float);
+ * declare class Integer {
+ * 	new (int | nat | float);
  * }
- * declare class data Natural {
- * 	new (x: int | nat | float);
+ * declare class Natural {
+ * 	new (int | nat | float);
  * }
- * declare class data Float {
- * 	new (x: int | nat | float);
+ * declare class Float {
+ * 	new (int | nat | float);
  * }
- * declare class data String {
- * 	new (x: anything);
+ * declare class String {
+ * 	new (anything);
  * }
  * declare class List<out(in) T> extends Object {
  * 	new ();
- * 	new (tup0:  ());
- * 	new (tup1:  (T,));
- * 	new (tup2:  (T, T));
- * 	new (tup:   anything); % any tuple type with items of type `T`
- * 	new (list:  List.<T>);
- * 	new ('set': Set.<T>);
+ * 	new (());
+ * 	new ((T,));
+ * 	new ((T, T));
+ * 	new (anything); % any tuple type with items of type `T`
+ * 	new (List.<T>);
+ * 	new (Set.<T>);
  * }
  * declare class Dict<out(in) T> extends Object {
  * 	new ();
- * 	new (tup0:  ());
- * 	new (tup1:  ((sym, T),));
- * 	new (tup2:  ((sym, T), (sym, T)));
- * 	new (tup:   anything); % any tuple type with items of type `(sym, T)`
- * 	new (recA:  (a: T));
- * 	new (recAB: (a: T, b: T));
- * 	new (rec:   anything); % any record type with values of type `T`
- * 	new (list:  List.<(sym, T)>);
- * 	new (dict:  Dict.<T>);
- * 	new ('set': Set.<(sym, T)>);
- * 	new (map:   Map.<sym, T>);
+ * 	new (());
+ * 	new (((sym, T),));
+ * 	new (((sym, T), (sym, T)));
+ * 	new (anything); % any tuple type with items of type `(sym, T)`
+ * 	new ((a: T));
+ * 	new ((a: T, b: T));
+ * 	new (anything); % any record type with values of type `T`
+ * 	new (List.<(sym, T)>);
+ * 	new (Dict.<T>);
+ * 	new (Set.<(sym, T)>);
+ * 	new (Map.<sym, T>);
  * }
  * declare class Set<out(in) T> extends Object {
  * 	new ();
- * 	new (tup0:  ());
- * 	new (tup1:  (T,));
- * 	new (tup2:  (T, T));
- * 	new (tup:   anything); % any tuple type with items of type `T`
- * 	new (list:  List.<T>);
- * 	new ('set': Set.<T>);
+ * 	new (());
+ * 	new ((T,));
+ * 	new ((T, T));
+ * 	new (anything); % any tuple type with items of type `T`
+ * 	new (List.<T>);
+ * 	new (Set.<T>);
  * }
  * declare class Map<out(in) K, out(in) V> extends Object {
  * 	new ();
- * 	new (tup0:  ());
- * 	new (tup1:  ((K, V),));
- * 	new (tup2:  ((K, V), (K, V)));
- * 	new (tup:   anything); % any tuple type with items of type `(K, V)`
- * 	new (list:  List.<(K, V)>);
- * 	new ('set': Set.<(K, V)>);
- * 	new (map:   Map.<K, V>);
+ * 	new (());
+ * 	new (((K, V),));
+ * 	new (((K, V), (K, V)));
+ * 	new (anything); % any tuple type with items of type `(K, V)`
+ * 	new (List.<(K, V)>);
+ * 	new (Set.<(K, V)>);
+ * 	new (Map.<K, V>);
  * }
  * declare class Exception extends Object {
- * 	new (message: str, cause?: Exception);
+ * 	new (str, ?: Exception);
  * }
  * declare abstract class Maybe<out T> extends Object {}
  * declare class None<out T> extends Maybe.<T> {
  * 	new ();
  * }
  * declare class Some<out T> extends Maybe.<T> {
- * 	new (value: T);
+ * 	new (T);
  * }
  * declare abstract class Result<out T, out E narrows Exception = Exception> extends Object {}
  * declare class Fail<out T, out E narrows Exception = Exception> extends Result.<T, E> {
- * 	new (reason: E);
+ * 	new (E);
  * }
  * declare class Ok<out T, out E narrows Exception = Exception> extends Result.<T, E> {
- * 	new (value: T);
+ * 	new (T);
  * }
  * ```
  */
 export const CLASS_API = new Map<CallableInterfaceName | CallableClassName, ConstructorSchema>([
 	[IntrinsicName.BOOLEAN, {
 		genericParams: [],
-		overloads:     [[{positional: true, type: () => TYPE.ANYTHING}]],
+		overloads:     [{positional: [{type: () => TYPE.ANYTHING}]}],
 		returnType:    () => TYPE.BOOL,
 	}],
 	[IntrinsicName.INTEGER, {
 		genericParams: [],
-		overloads:     [[{positional: true, type: () => TYPE.NUMBER}]],
+		overloads:     [{positional: [{type: () => TYPE.NUMBER}]}],
 		returnType:    () => TYPE.INT,
 	}],
 	[IntrinsicName.NATURAL, {
 		genericParams: [],
-		overloads:     [[{positional: true, type: () => TYPE.NUMBER}]],
+		overloads:     [{positional: [{type: () => TYPE.NUMBER}]}],
 		returnType:    () => TYPE.NAT,
 	}],
 	[IntrinsicName.FLOAT, {
 		genericParams: [],
-		overloads:     [[{positional: true, type: () => TYPE.NUMBER}]],
+		overloads:     [{positional: [{type: () => TYPE.NUMBER}]}],
 		returnType:    () => TYPE.FLOAT,
 	}],
 	[IntrinsicName.STRING, {
 		genericParams: [],
-		overloads:     [[{positional: true, type: () => TYPE.ANYTHING}]],
+		overloads:     [{positional: [{type: () => TYPE.ANYTHING}]}],
 		returnType:    () => TYPE.STR,
 	}],
 	[IntrinsicName.LIST, {
 		genericParams: [{positional: true, readonlyVariance: 'covariant', mutableVariance: 'invariant'}],
 		overloads:     [
-			[],
-			[{positional: true, type: (generic_params) => new TYPE.List(generic_params[0])}],
-			[{positional: true, type: (generic_params) => new TYPE.Set (generic_params[0])}],
+			{},
+			{positional: [{type: (generic_params) => new TYPE.List(generic_params[0])}]},
+			{positional: [{type: (generic_params) => new TYPE.Set (generic_params[0])}]},
 		],
 		returnType: (generic_params) => new TYPE.List(generic_params[0]),
 	}],
 	[IntrinsicName.DICT, {
 		genericParams: [{positional: true, readonlyVariance: 'covariant', mutableVariance: 'invariant'}],
 		overloads:     [
-			[],
-			[{positional: true, type: (generic_params) => new TYPE.List(TYPE.Tuple.fromTypes([TYPE.SYM, generic_params[0]]))}],
-			[{positional: true, type: (generic_params) => new TYPE.Dict(generic_params[0])}],
-			[{positional: true, type: (generic_params) => new TYPE.Set(TYPE.Tuple.fromTypes([TYPE.SYM, generic_params[0]]))}],
-			[{positional: true, type: (generic_params) => new TYPE.Map(TYPE.SYM, generic_params[0])}],
+			{},
+			{positional: [{type: (generic_params) => new TYPE.List(TYPE.Tuple.fromTypes([TYPE.SYM, generic_params[0]]))}]},
+			{positional: [{type: (generic_params) => new TYPE.Dict(generic_params[0])}]},
+			{positional: [{type: (generic_params) => new TYPE.Set(TYPE.Tuple.fromTypes([TYPE.SYM, generic_params[0]]))}]},
+			{positional: [{type: (generic_params) => new TYPE.Map(TYPE.SYM, generic_params[0])}]},
 		],
 		returnType: (generic_params) => new TYPE.Dict(generic_params[0]),
 	}],
 	[IntrinsicName.SET, {
 		genericParams: [{positional: true, readonlyVariance: 'covariant', mutableVariance: 'invariant'}],
 		overloads:     [
-			[],
-			[{positional: true, type: (generic_params) => new TYPE.List(generic_params[0])}],
-			[{positional: true, type: (generic_params) => new TYPE.Set (generic_params[0])}],
+			{},
+			{positional: [{type: (generic_params) => new TYPE.List(generic_params[0])}]},
+			{positional: [{type: (generic_params) => new TYPE.Set (generic_params[0])}]},
 		],
 		returnType: (generic_params) => new TYPE.Set(generic_params[0]),
 	}],
@@ -325,16 +333,16 @@ export const CLASS_API = new Map<CallableInterfaceName | CallableClassName, Cons
 			{positional: true, readonlyVariance: 'covariant', mutableVariance: 'invariant', default: (generic_params) => generic_params[0]},
 		],
 		overloads: [
-			[],
-			[{positional: true, type: (generic_params) => new TYPE.List(TYPE.Tuple.fromTypes([generic_params[0], generic_params[1]]))}],
-			[{positional: true, type: (generic_params) => new TYPE.Set (TYPE.Tuple.fromTypes([generic_params[0], generic_params[1]]))}],
-			[{positional: true, type: (generic_params) => new TYPE.Map(generic_params[0], generic_params[1])}],
+			{},
+			{positional: [{type: (generic_params) => new TYPE.List(TYPE.Tuple.fromTypes([generic_params[0], generic_params[1]]))}]},
+			{positional: [{type: (generic_params) => new TYPE.Set (TYPE.Tuple.fromTypes([generic_params[0], generic_params[1]]))}]},
+			{positional: [{type: (generic_params) => new TYPE.Map(generic_params[0], generic_params[1])}]},
 		],
 		returnType: (generic_params) => new TYPE.Map(generic_params[0], generic_params[1]),
 	}],
 	[IntrinsicName.EXCEPTION, {
 		genericParams: [],
-		overloads:     [[{positional: true, type: () => TYPE.STR}, {positional: true, optional: true, type: () => TYPE.EXCP}]],
+		overloads:     [{positional: [{type: () => TYPE.STR}, {optional: true, type: () => TYPE.EXCP}]}],
 		returnType:    () => TYPE.EXCP,
 	}],
 	[IntrinsicName.MAYBE, {
@@ -344,12 +352,12 @@ export const CLASS_API = new Map<CallableInterfaceName | CallableClassName, Cons
 	}],
 	[IntrinsicName.NONE, {
 		genericParams: [{positional: true, readonlyVariance: 'covariant'}],
-		overloads:     [[]],
+		overloads:     [{}],
 		returnType:    (generic_params) => new TYPE.None(generic_params[0]),
 	}],
 	[IntrinsicName.SOME, {
 		genericParams: [{positional: true, readonlyVariance: 'covariant'}],
-		overloads:     [[{positional: true, type: (generic_params) => generic_params[0]}]],
+		overloads:     [{positional: [{type: (generic_params) => generic_params[0]}]}],
 		returnType:    (generic_params) => new TYPE.Some(generic_params[0]),
 	}],
 	[IntrinsicName.RESULT, {
@@ -359,12 +367,12 @@ export const CLASS_API = new Map<CallableInterfaceName | CallableClassName, Cons
 	}],
 	[IntrinsicName.FAIL, {
 		genericParams: [{positional: true, readonlyVariance: 'covariant'}, {positional: true, readonlyVariance: 'covariant', constraint: {direction: 'narrows', type: () => TYPE.EXCP}, default: () => TYPE.EXCP}],
-		overloads:     [[{positional: true, type: (generic_params) => generic_params[1]}]],
+		overloads:     [{positional: [{type: (generic_params) => generic_params[1]}]}],
 		returnType:    (generic_params) => new TYPE.Fail(generic_params[0], generic_params[1]),
 	}],
 	[IntrinsicName.OK, {
 		genericParams: [{positional: true, readonlyVariance: 'covariant'}, {positional: true, readonlyVariance: 'covariant', constraint: {direction: 'narrows', type: () => TYPE.EXCP}, default: () => TYPE.EXCP}],
-		overloads:     [[{positional: true, type: (generic_params) => generic_params[0]}]],
+		overloads:     [{positional: [{type: (generic_params) => generic_params[0]}]}],
 		returnType:    (generic_params) => new TYPE.Ok(generic_params[0], generic_params[1]),
 	}],
 ]);
