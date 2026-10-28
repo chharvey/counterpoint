@@ -459,6 +459,37 @@ test.suite('Opcode', () => {
 						]);
 					});
 				});
+				test.suite('[operator=RESULT_EXTRACT]', () => {
+					test.test('throws when operand is an Ok.', () => {
+						const builder = new Builder();
+						const interp  = new Interpreter();
+						builder.pushInstruction(new OP.Drop(new OP.Unop(
+							OP.OpCode.RESULT_EXTRACT,
+							new OP.ResultNew(true, TYPE.INT, TYPE.EXCP, new OP.Const(VALUE.INT_1)).asTac(builder),
+							TYPE.EXCP,
+						)));
+						assert.strictEqual(builder.instructions.length, 2);
+						builder.instructions[0].interpret(interp);
+						return assert.throws(() => builder.instructions[1].interpret(interp), /Extracted from an Ok value/);
+					});
+					test.test('returns the reason when operand is a Fail.', () => {
+						const builder = new Builder();
+						const interp  = new Interpreter();
+						const message = new VALUE.String('message');
+						builder.pushInstruction(new OP.Drop(new OP.Unop(
+							OP.OpCode.RESULT_EXTRACT,
+							new OP.ResultNew(
+								false,
+								TYPE.INT,
+								TYPE.EXCP,
+								new OP.ExcpNew(new OP.Const(message)).asTac(builder),
+							).asTac(builder),
+							TYPE.EXCP,
+						)));
+						builder.instructions.forEach((instr) => instr.interpret(interp));
+						return assert_equal_values(interp.drops, [new VALUE.Exception(message)]);
+					});
+				});
 			});
 
 			test.suite('Instance', () => {

@@ -116,9 +116,9 @@ export class Unop extends Value {
 			case OpCode.SET_COUNT:  { return new VALUE.Natural((operand as VALUE.Set).count); }
 			case OpCode.MAP_COUNT:  { return new VALUE.Natural((operand as VALUE.Map).count); }
 
-			case OpCode.MAYBE_UNWRAP:   { return (operand as VALUE.Maybe).value ?? assert.fail(new Error('Unwrapped a None value.')); }
-			case OpCode.RESULT_UNWRAP:  { return (operand as VALUE.Result).isOk ? (operand as VALUE.Result).argument : assert.fail(new Error('Unwrapped a Fail value.')); }
-			case OpCode.RESULT_EXTRACT: { throw new Error('not yet supported.'); }
+			case OpCode.MAYBE_UNWRAP:   { return (operand as VALUE.Maybe).value ?? assert.fail(new TypeError('Unwrapped a None value.')); }
+			case OpCode.RESULT_UNWRAP:  { return  (operand as VALUE.Result).isOk ? (operand as VALUE.Result).argument : assert.fail(new TypeError('Unwrapped a Fail value.')); }
+			case OpCode.RESULT_EXTRACT: { return !(operand as VALUE.Result).isOk ? (operand as VALUE.Result).argument : assert.fail(new TypeError('Extracted from an Ok value.')); }
 		}
 	}
 
