@@ -33,7 +33,7 @@ export class CfgNode {
 
 	public toString(): string {
 		return [
-			`"${ this.label }":`,
+			`"${this.label}":`,
 			...this.#instructions.map((instr) => instr.toString()),
 			...(this.#terminator ? [this.#terminator.toString()] : []),
 		].join('\n\t');

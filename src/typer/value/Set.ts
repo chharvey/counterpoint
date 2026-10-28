@@ -57,7 +57,7 @@ class ValueSet<T extends Value = Value> extends Collection {
 	}
 
 	public override toString(): string {
-		return `{${ [...this.#elements].map((el) => el.toString()).join(', ') }}`;
+		return `{${[...this.#elements].map((el) => el.toString()).join(', ')}}`;
 	}
 
 	@strictEqual

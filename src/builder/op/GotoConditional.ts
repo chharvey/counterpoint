@@ -36,7 +36,7 @@ export class GotoConditional extends Terminator {
 	}
 
 	public override toString(): string {
-		return super.toString(this.condition, `"${ this.labelIfTrue }"`, `"${ this.labelIfFalse }"`);
+		return super.toString(this.condition, `"${this.labelIfTrue}"`, `"${this.labelIfFalse}"`);
 	}
 
 	@runOnceMethod

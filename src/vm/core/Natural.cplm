@@ -15,7 +15,7 @@ public class Natural {
 
 	internal toString(radix?: nat = +10): Result[str, RangeException] {
 		if radix < +2 || +36 < radix then {
-			return Fail[str, RangeException](RangeException("""Invalid radix: {{ radix }}. Must be between 2 and 36 (inclusive)."""));
+			return Fail[str, RangeException](RangeException("""Invalid radix: {{radix}}. Must be between 2 and 36 (inclusive)."""));
 		};
 
 		if this.data < radix then {
@@ -26,7 +26,7 @@ public class Natural {
 		val mut returned: str = "";
 
 		do {
-			set returned  = """{{ DIGITS.get(mod(copy, radix))~? }}{{ returned }}""";
+			set returned  = """{{DIGITS.get(mod(copy, radix))~?}}{{returned}}""";
 			set copy     /= radix;
 		} until copy == +0;
 

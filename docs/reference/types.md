@@ -128,9 +128,9 @@ val greeting1: sym = @'¡héllö wôrld!';
 val greeting2: sym = @hello_world;
 greeting2 !== @'hello_world';      %== true
 
-"""{{ greeting2 }}"""          == "hello_world";           %== true
-"""{{ greeting1 }}"""          == "'¡héllö wôrld!'";       %== true % notice the single-quotes are included
-"""{{ @'\u{24}5\u{2e}99' }}""" == """'\u{24}5\u{2e}99'"""; %== true % escape sequences are raw
+"""{{greeting2}}"""          == "hello_world";           %== true
+"""{{greeting1}}"""          == "'¡héllö wôrld!'";       %== true % notice the single-quotes are included
+"""{{@'\u{24}5\u{2e}99'}}""" == """'\u{24}5\u{2e}99'"""; %== true % escape sequences are raw
 ```
 
 
@@ -371,45 +371,45 @@ String templates are dynamic and may contain interpolated expressions.
 They’re delimited with three double-quotes (`"""`).
 ```
 val years: int = 10;
-val greeting: str = """I’ve been coding for {{ years }} years.
-That’s about {{ 365 * years }} days.""";
+val greeting: str = """I’ve been coding for {{years}} years.
+That’s about {{365 * years}} days.""";
 ```
 
 ##### Interpolation
-String templates may contain interpolated expressions, which are enclosed within double-braces `{{ … }}`.
+String templates may contain interpolated expressions, which are enclosed within double-braces `{{…}}`.
 An interpolated expression is an expression that computes to a string.
 ```
 val twelve: str = "12";
-"""3 times 4 is {{ twelve }}""";
+"""3 times 4 is {{twelve}}""";
 ```
 > "3 times 4 is 12"
 
 If the type of an interpolated expression is not a string, it’s **coerced** into a string at run-time.
 ```
-"""3 times 4 is {{ 3 * 4 }}""";
+"""3 times 4 is {{3 * 4}}""";
 ```
 > "3 times 4 is 12"
 
 If an interpolated expression is absent, the empty string is assumed.
 ```
-"""3 times 4 is {{  }} twelve""";   %== "3 times 4 is  twelve"
-"""3 times 4 is {{ "" }} twelve"""; %== "3 times 4 is  twelve"
+"""3 times 4 is {{}} twelve""";   %== "3 times 4 is  twelve"
+"""3 times 4 is {{""}} twelve"""; %== "3 times 4 is  twelve"
 ```
 
 Comments in interpolated expressions are ignored.
 ```
-"""Pack {{ %% a multline comment %% }} my box
-with five dozen {{ %% another
-multiline comment %% "liquor" }} jugs.""";
+"""Pack {{%% a multline comment %%}} my box
+with five dozen {{%% another
+multiline comment %% "liquor"}} jugs.""";
 ```
 > "Pack &nbsp;my box\
 with five dozen liquor jugs."
 
 Be careful with single-line comments.
 ```
-"""Hello {{ % a line comment }} world."""; %> ParseError
+"""Hello {{% a line comment}} world."""; %> ParseError
 
-"""Hello {{ % a line comment
+"""Hello {{% a line comment
 }} world.""";                % ok
 ```
 
@@ -468,23 +468,23 @@ we can use string interpolation.
 ```
 """
 We can’t escape code points: \u{24} will not print a dollar sign.
-But we can interpolate a string literal: {{ "\u{24}" }}.
+But we can interpolate a string literal: {{"\u{24}"}}.
 
-We also can’t escape \{\{ curly_braces \}\},
-but we can {{ "{{ interpolate }}" }}.
+We also can’t escape \{\{curly_braces\}\},
+but we can {{"{{interpolate}}"}}.
 
 Quotes can’t be escaped either: \"\"\" will print as it looks.
-But here are three, interpolated: {{ "\"\"\"" }}
+But here are three, interpolated: {{"\"\"\""}}
 
-I {{ "\u{2764}" }} Unicode!
+I {{"\u{2764}"}} Unicode!
 """
 ```
 > "\
 > We can’t escape code points: \u{24} will not print a dollar sign.\
 > But we can interpolate a string literal: $.\
 > \
-> We also can’t escape \\{\\{ curly_braces \\}\\},\
-> but we can {{ interpolate }}.\
+> We also can’t escape \\{\\{curly_braces\\}\\},\
+> but we can {{interpolate}}.\
 > \
 > Quotes can’t be escaped either: \\"\\"\\" will print as it looks.\
 > But here are three, interpolated: """\
@@ -543,7 +543,7 @@ If the compiler can compute the value of a string template, then it may also be 
 ```
 val hello: str = "Hello";
 val world: str = "World";
-val GREETING: "Hello World!" = """{{ hello }} {{ world }}!""";
+val GREETING: "Hello World!" = """{{hello}} {{world}}!""";
 ```
 Notice that even though the variables `hello` and `world` are *not* declared with unit types (`str` is not a unit type),
 the compiler is still able to compute their values, thus the assignment to `GREETING` is valid.
@@ -551,7 +551,7 @@ However, if they were writable, that wouldn’t be possible.
 ```
 val mut hello: str = "Hello";
 val mut world: str = "World";
-val GREETING: "Hello World!" = """{{ hello }} {{ world }}!"""; %> TypeError
+val GREETING: "Hello World!" = """{{hello}} {{world}}!"""; %> TypeError
 ```
 This is because the type of the template can only be inferred as `str`,
 which is wider than the unit type it’s being assigned to.
@@ -1019,9 +1019,9 @@ val bases: {anything} = {
 	["what"],
 	{ "i" -> {"don’t" -> "know"} },
 };
-bases.["""{{ "w" }}{{ "h" }}{{ "o" }}"""]; %== true
-bases.[["what"]];                          %== false
-bases.["idk"];                             %== false
+bases.["""{{"w"}}{{"h"}}{{"o"}}"""]; %== true
+bases.[["what"]];                    %== false
+bases.["idk"];                       %== false
 ```
 
 A TypeError is produced when the expression is not assignable to the set’s type argument.
@@ -1104,9 +1104,9 @@ val bases: {int | str -> anything} = {
 	"2nd" -> ("what",),
 	1 + 2 -> { "i" -> {"don’t" -> "know"} },
 };
-bases.[-1 * -1];         %== "who"
-bases.["""{{ 2 }}nd"""]; %== ("what",)
-bases.[3].["i"];         %== {"don’t" -> "know"}
+bases.[-1 * -1];       %== "who"
+bases.["""{{2}}nd"""]; %== ("what",)
+bases.[3].["i"];       %== {"don’t" -> "know"}
 ```
 
 A VoidErrorOutOfBounds is produced when the compiler can determine if the antecedent does not exist.

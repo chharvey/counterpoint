@@ -53,7 +53,7 @@ export class Variable extends Expression implements Reassignable {
 
 	@memoizeMethod
 	public override type(): TYPE.Type {
-		assert.ok(this.validator.hasSymbol(this.id), `Expected ${ this.source } (${ this.id }) to be in the symbol table.`);
+		assert.ok(this.validator.hasSymbol(this.id), `Expected ${this.source} (${this.id}) to be in the symbol table.`);
 		const symbol: SymbolSchema = this.validator.getSymbol(this.id)!;
 		assert_instanceof(symbol, SymbolSchemaVar);
 		return symbol.isUninitialized ? new TYPE.Maybe(symbol.type) : symbol.type;

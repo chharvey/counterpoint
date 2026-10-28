@@ -93,7 +93,7 @@ export class Instance extends Value {
 				if (is_instance) {
 					return operand;
 				} else {
-					throw new Error(`Invalid cast to ${ this.name }.`);
+					throw new Error(`Invalid cast to ${this.name}.`);
 				}
 			}
 		}

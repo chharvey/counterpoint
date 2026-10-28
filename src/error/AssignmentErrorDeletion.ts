@@ -16,7 +16,7 @@ export class AssignmentErrorDeletion extends AssignmentError {
 	 */
 	public constructor(variable: AST.EXPR.Variable) {
 		super(
-			`Deletion of non-optional variable \`${ variable.source }\`.`,
+			`Deletion of non-optional variable \`${variable.source}\`.`,
 			AssignmentError.CODES.get(AssignmentErrorDeletion),
 			variable.line_index,
 			variable.col_index,

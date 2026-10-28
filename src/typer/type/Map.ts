@@ -36,7 +36,7 @@ class TypeMap extends ReferenceType {
 	}
 
 	public override toString(): string {
-		return `${ this.isMutable ? `${ Keyword.MUTABLE } ` : '' }Map.<${ this.typearg_ant }, ${ this.typearg_con }>`;
+		return `${this.isMutable ? `${Keyword.MUTABLE} ` : ''}Map.<${this.typearg_ant}, ${this.typearg_con}>`;
 	}
 
 	@instanceOf(() => VALUE.Map)

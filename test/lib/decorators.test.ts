@@ -20,7 +20,7 @@ test.suite('@noopMethod', () => {
 			decorator_applications++;
 			return function () {
 				decorated_calls++;
-				return `${ method.call(this) }!!`;
+				return `${method.call(this)}!!`;
 			};
 		}
 
@@ -75,7 +75,7 @@ test.suite('@noopMethod', () => {
 				decorator_applications++;
 				return function () {
 					decorated_calls++;
-					return `${ method.call(this) }!!`;
+					return `${method.call(this)}!!`;
 				};
 			};
 		}
@@ -134,7 +134,7 @@ test.suite('@noopGetter', () => {
 			decorator_applications++;
 			return function () {
 				decorated_calls++;
-				return `${ getter.call(this) }!!`;
+				return `${getter.call(this)}!!`;
 			};
 		}
 
@@ -189,7 +189,7 @@ test.suite('@noopGetter', () => {
 				decorator_applications++;
 				return function () {
 					decorated_calls++;
-					return `${ getter.call(this) }!!`;
+					return `${getter.call(this)}!!`;
 				};
 			};
 		}
@@ -248,7 +248,7 @@ test.suite('@noopSetter', () => {
 			decorator_applications++;
 			return function (arg) {
 				decorated_calls++;
-				return setter.call(this, `${ arg }!!`);
+				return setter.call(this, `${arg}!!`);
 			};
 		}
 
@@ -305,7 +305,7 @@ test.suite('@noopSetter', () => {
 				decorator_applications++;
 				return function (arg) {
 					decorated_calls++;
-					return setter.call(this, `${ arg }!!`);
+					return setter.call(this, `${arg}!!`);
 				};
 			};
 		}

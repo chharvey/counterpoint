@@ -17,7 +17,7 @@ export class LexError05 extends LexError {
 	 */
 	public constructor(char: Serializable) {
 		super(
-			`Invalid exponential notation: at line ${ char.line_index + 1 } col ${ char.col_index + 1 }.`,
+			`Invalid exponential notation: at line ${char.line_index + 1} col ${char.col_index + 1}.`,
 			LexError.CODES.get(LexError05),
 			char.line_index,
 			char.col_index,

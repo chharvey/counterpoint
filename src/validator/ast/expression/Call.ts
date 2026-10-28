@@ -236,7 +236,7 @@ export class Call extends Expression {
 				return new OP.MaybeNew(this.typeargs[0].eval(), this.exprargs[0]?.build(builder).asTac(builder));
 			}
 			default: {
-				assert.fail(`Did not expect base '${ base_source }'.`);
+				assert.fail(`Did not expect base '${base_source}'.`);
 			}
 		}
 	}

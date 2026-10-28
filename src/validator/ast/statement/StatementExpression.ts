@@ -28,7 +28,7 @@ export class StatementExpression extends Statement {
 		start_node: SyntaxNodeFamily<'statement_expression', ['break']>,
 		public readonly expr?: EXPR.Expression,
 	) {
-		super(start_node, {}, (expr) ? [expr] : void 0);
+		super(start_node, {}, expr ? [expr] : undefined);
 	}
 
 	@memoizeGetter

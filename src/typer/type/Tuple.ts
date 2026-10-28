@@ -51,7 +51,7 @@ class TypeTuple extends ValueType {
 	}
 
 	public override toString(): string {
-		return `(${ this.typeargs.map((it) => `${ it.optional ? '?: ' : '' }${ it.type }`).join(', ') }${ this.typeargs.length === 1 ? ',' : '' })`;
+		return `(${this.typeargs.map((it) => `${it.optional ? '?: ' : ''}${it.type}`).join(', ')}${this.typeargs.length === 1 ? ',' : ''})`;
 	}
 
 	@instanceOf(() => VALUE.Tuple)
@@ -71,7 +71,7 @@ class TypeTuple extends ValueType {
 				if (!thattype.optional) {
 					/* NOTE: We can assert `thistype` exists and is not optional because of item ordering.
 						We cannot do so with record types since properties are not ordered. */
-					assert.strictEqual(thistype?.optional, false, `${ thistype!.type } should exist and not be optional.`);
+					assert.strictEqual(thistype?.optional, false, `${thistype!.type} should exist and not be optional.`);
 				}
 				return thistype?.type.isSubtypeOf(thattype.type) ?? true; // Covariance for tuples: `A <: B --> Tuple.<A> <: Tuple.<B>`.
 			})

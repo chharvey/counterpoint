@@ -40,8 +40,8 @@ class CplReferenceError extends ErrorCode {
 			message,
 			name: CplReferenceError.name,
 			code: CplReferenceError.#CODE + code,
-			...((line !== void 0) ? {line_index: line} : {}),
-			...((col  !== void 0) ? {col_index:  col}  : {}),
+			...(line !== undefined ? {line_index: line} : {}),
+			...(col  !== undefined ? {col_index:  col}  : {}),
 		});
 	}
 }

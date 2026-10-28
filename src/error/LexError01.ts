@@ -13,7 +13,7 @@ export class LexError01 extends LexError {
 	 */
 	public constructor(char: Serializable) {
 		super(
-			`Unrecognized character: \`${ char.source }\` at line ${ char.line_index + 1 } col ${ char.col_index + 1 }.`,
+			`Unrecognized character: \`${char.source}\` at line ${char.line_index + 1} col ${char.col_index + 1}.`,
 			LexError.CODES.get(LexError01),
 			char.line_index,
 			char.col_index,

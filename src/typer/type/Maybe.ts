@@ -30,7 +30,7 @@ export class Maybe extends ReferenceType {
 
 
 	public override toString(): string {
-		return `Maybe[${ this.typearg }]`;
+		return `Maybe[${this.typearg}]`;
 	}
 
 	@instanceOf(() => VALUE.Maybe)
@@ -57,7 +57,7 @@ export class Maybe extends ReferenceType {
 
 export class None extends Maybe {
 	public override toString(): string {
-		return `None[${ this.typearg }]`;
+		return `None[${this.typearg}]`;
 	}
 
 	public override isSubtypeOf(t: Type): boolean {
@@ -78,7 +78,7 @@ export class None extends Maybe {
 
 export class Some extends Maybe {
 	public override toString(): string {
-		return `Some[${ this.typearg }]`;
+		return `Some[${this.typearg}]`;
 	}
 
 	public override isSubtypeOf(t: Type): boolean {

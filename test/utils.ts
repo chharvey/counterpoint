@@ -55,7 +55,7 @@ export function assertAssignable(actual: Error, validation: ValidationObject): v
 	} else if ('errors' in validation) {
 		assert.ok(
 			validation.cons === AggregateError || validation.cons.prototype instanceof AggregateError, // validation.cons extends AggregateError
-			`The \`cons\` value of validation object ${ validation.cons } with an \`errors\` property must be \`AggregateError\` or a subclass of it.`,
+			`The \`cons\` value of validation object ${validation.cons} with an \`errors\` property must be \`AggregateError\` or a subclass of it.`,
 		);
 		assert.strictEqual(
 			(actual as AggregateError).errors.length,
@@ -107,7 +107,7 @@ export function assertEqualTypes(arg0: TYPE.Type | readonly TYPE.Type[] | Readon
 			try {
 				return assert.deepStrictEqual(arg0, arg1);
 			} catch {
-				return assert.ok((arg0 as TYPE.Type).equals(arg1 as TYPE.Type), `${ arg0 as TYPE.Type } == ${ arg1 }`);
+				return assert.ok((arg0 as TYPE.Type).equals(arg1 as TYPE.Type), `${arg0 as TYPE.Type} == ${arg1}`);
 			}
 		};
 	}
@@ -143,7 +143,7 @@ export function assert_equal_values(arg0: VALUE.Value | readonly VALUE.Value[] |
 		assert.strictEqual(arg0.length, (arg1 as VALUE.Value[]).length, 'Expected arrays to have the same length.');
 		return xjs.Array.forEachAggregated(arg0, (act, i) => assert_equal_values(act as VALUE.Value, (arg1 as VALUE.Value[])[i]));
 	} else {
-		return assert.ok((arg0 as VALUE.Value).equal(arg1 as VALUE.Value), `${ arg0 as VALUE.Value } == ${ arg1 }`);
+		return assert.ok((arg0 as VALUE.Value).equal(arg1 as VALUE.Value), `${arg0 as VALUE.Value} == ${arg1}`);
 	}
 }
 
@@ -178,7 +178,7 @@ export function assertEqualBins<Ref extends binaryen.ExpressionRef>(arg0: Ref | 
 
 
 export function op_maybe_string(val?: string): string {
-	return `(MAYBE.NEW${ val ? ` ${ val }` : '' })`;
+	return `(MAYBE.NEW${val ? ` ${val}` : ''})`;
 }
 
 
@@ -214,7 +214,7 @@ export function typeUnit(value: symbol | bigint | number | string, tag?: string)
 		typeof value === 'bigint' ? new VALUE.Integer(value) :
 		typeof value === 'number' ? new VALUE.Float(value) :
 		typeof value === 'string' ? new VALUE.String(value) :
-		assert.fail(new TypeError(`Did not expect type ${ typeof value }.`))
+		assert.fail(new TypeError(`Did not expect type ${typeof value}.`))
 	).toType());
 	return TYPE_UNIT_MEMO.get(value)!;
 }
@@ -246,7 +246,7 @@ export function genConst(cg: CodeGenerator, value: null | boolean | symbol | big
 		typeof value === 'bigint' ? new VALUE.Integer(value) :
 		typeof value === 'number' ? new VALUE.Float(value) :
 		typeof value === 'string' ? new VALUE.String(value) :
-		assert.fail(new TypeError(`Did not expect type ${ typeof value }.`))
+		assert.fail(new TypeError(`Did not expect type ${typeof value}.`))
 	).codegen(cg);
 }
 

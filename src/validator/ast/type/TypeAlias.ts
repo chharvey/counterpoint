@@ -59,7 +59,7 @@ export class TypeAlias extends Type {
 		if (this.source === IntrinsicName.OBJECT) {
 			return TYPE.OBJ;
 		}
-		assert.ok(this.validator.hasSymbol(this.id), `Expected ${ this.source } (${ this.id }) to be in the symbol table.`);
+		assert.ok(this.validator.hasSymbol(this.id), `Expected ${this.source} (${this.id}) to be in the symbol table.`);
 		const symbol: SymbolSchema = this.validator.getSymbol(this.id)!;
 		assert_instanceof(symbol, SymbolSchemaType);
 		return symbol.typevalue;

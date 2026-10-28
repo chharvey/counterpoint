@@ -42,7 +42,7 @@ export class Natural extends ValueNumber<Natural> {
 	}
 
 	public override toString(): string {
-		return `+${ this.data }`;
+		return `+${this.data}`;
 	}
 
 	@strictEqual

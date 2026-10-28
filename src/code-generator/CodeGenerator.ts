@@ -153,7 +153,7 @@ export class CodeGenerator {
 	 */
 	public getBlockRef(label: string): binaryen.RelooperBlockRef {
 		if (!this.#blockRefs.has(label)) {
-			throw new Error(`BlockRef with label \`${ label }\` not found in CodeGenerator.`);
+			throw new Error(`BlockRef with label \`${label}\` not found in CodeGenerator.`);
 		}
 		return this.#blockRefs.get(label)!;
 	}
@@ -189,11 +189,11 @@ export class CodeGenerator {
 				return Vect.newFloat(arg);
 			}
 			default: {
-				throw new TypeError(`Expected argument \`${ binaryen.emitText(arg) }\` to be one of the following types:\n\t${ [
+				throw new TypeError(`Expected argument \`${binaryen.emitText(arg)}\` to be one of the following types:\n\t${[
 					'`unreachable`',
 					'`i64`',
 					'`f64`',
-				].join('\n\t') }.`);
+				].join('\n\t')}.`);
 			}
 		}
 	}

@@ -22,7 +22,7 @@ export class List<T extends Value = Value> extends CollectionIndexed<T> {
 
 
 	public override toString(): string {
-		return `[${ super.toString() }]`;
+		return `[${super.toString()}]`;
 	}
 
 	@strictEqual

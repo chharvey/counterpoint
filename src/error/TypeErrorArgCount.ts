@@ -22,7 +22,7 @@ export class TypeErrorArgCount extends CplTypeError {
 	 */
 	public constructor(actual: bigint, expected: bigint, generic: boolean, call: AST.TYPE.Call | AST.EXPR.Call) {
 		super(
-			`Got ${ actual } ${ generic ? 'type ' : '' }arguments, but expected ${ expected }.`,
+			`Got ${actual} ${generic ? 'type ' : ''}arguments, but expected ${expected}.`,
 			CplTypeError.CODES.get(TypeErrorArgCount),
 			call.line_index,
 			call.col_index,

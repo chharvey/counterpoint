@@ -15,7 +15,7 @@ export class ReferenceErrorUndeclared extends CplReferenceError {
 	 */
 	public constructor(variable: AST.TYPE.TypeAlias | AST.EXPR.Variable) {
 		super(
-			`\`${ variable.source }\` is never declared.`,
+			`\`${variable.source}\` is never declared.`,
 			CplReferenceError.CODES.get(ReferenceErrorUndeclared),
 			variable.line_index,
 			variable.col_index,

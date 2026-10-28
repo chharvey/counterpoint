@@ -37,7 +37,7 @@ export class Interpreter {
 
 	public interpretNextBlock(label: string): void {
 		if (!this.#blocks.has(label)) {
-			throw new Error(`CfgNode with label \`${ label }\` not found in Interpreter.`);
+			throw new Error(`CfgNode with label \`${label}\` not found in Interpreter.`);
 		}
 		return this.#blocks.get(label)!.interpret(this);
 	}

@@ -17,8 +17,8 @@ export enum Keyword {
 	// operator
 	MUTABLE = 'mut',
 	AS      = 'as',
-	AS_MAY  = 'as?',
-	AS_RES  = 'as!',
+	AS_QUST = 'as?',
+	AS_BANG = 'as!',
 	IS      = 'is',
 	ISNT    = '!is',
 	IF      = 'if',

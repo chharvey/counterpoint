@@ -89,7 +89,7 @@ export class StatementIteration extends StatementBreakable {
 			throw new TypeErrorNotNarrow(item_type, assignee_type, this.line_index, this.col_index);
 		}
 		if (this.assignee) {
-			assert.ok(this.block.validator.hasSymbol(this.id!), `The validator symbol table should include ${ this.id }.`);
+			assert.ok(this.block.validator.hasSymbol(this.id!), `The validator symbol table should include ${this.id}.`);
 			(this.block.validator.getSymbol(this.id!) as SymbolSchemaVar).type = assignee_type;
 		}
 		this.block.typeCheck();

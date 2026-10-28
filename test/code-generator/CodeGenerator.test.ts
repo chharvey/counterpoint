@@ -474,7 +474,7 @@ test.suite('CodeGenerator', () => {
 				e;
 
 				val user: (name: str) = (name= "Alan");
-				"""Hello, {{ user.name }}, you have {{ 2 * 3 }} new messages.""";
+				"""Hello, {{user.name}}, you have {{2 * 3}} new messages.""";
 			`;
 			const collection_literals = `
 				();
@@ -644,7 +644,7 @@ test.suite('CodeGenerator', () => {
 				Map.<float, int>({ (1.414, 2), (1.732, 3), (2.236, 5) });
 				Map.<float, int>({1.414 -> 2, 1.732 -> 3, 2.236 -> 5});
 			`;
-			const {builder} = setupScript(`{ ${ [
+			const {builder} = setupScript(`{ ${[
 				constants,
 				variables,
 				collection_literals,
@@ -652,7 +652,7 @@ test.suite('CodeGenerator', () => {
 				operators,
 				reassignments,
 				calls,
-			].join('') } }`, {codegen: false});
+			].join('')} }`, {codegen: false});
 			cg.setupMain(builder.codegen(cg));
 		});
 	});

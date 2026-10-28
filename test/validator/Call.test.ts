@@ -336,13 +336,13 @@ test.suite('Call', () => {
 		test.test('throws when providing incorrect type of arguments.', () => {
 			// API overload checks
 			xjs.Map.forEachAggregated(new Map<string, readonly [string, readonly string[]]>(['Integer', 'Natural', 'Float'].flatMap((basesrc) => ['()', '[]', '{}'].map((argsrc) => (
-				[`${ basesrc }.(${ argsrc })`, [argsrc, ['int', 'nat', 'float']]] as const
+				[`${basesrc}.(${argsrc})`, [argsrc, ['int', 'nat', 'float']]] as const
 			)))), ([argexpr, allowed_types], src) => assert.throws(() => AST.EXPR.Call.fromSource(src).type(), (thrown) => {
 				assertAssignable(thrown as Error, {
 					cons:   AggregateError,
 					errors: allowed_types.map((allowed_type) => ({
 						cons:    TypeErrorNotAssignable,
-						message: `Expression \`${ argexpr }\` is not assignable to type \`${ allowed_type }\`.`,
+						message: `Expression \`${argexpr}\` is not assignable to type \`${allowed_type}\`.`,
 					})),
 				});
 				return true;
@@ -361,7 +361,7 @@ test.suite('Call', () => {
 							{cons: TypeErrorArgCount, message: 'Got 1 arguments, but expected 0.'},
 							...allowed_types.map((allowed_type) => ({
 								cons:    TypeErrorNotAssignable,
-								message: `Expression \`${ argexpr }\` is not assignable to type \`${ allowed_type }\`.`,
+								message: `Expression \`${argexpr}\` is not assignable to type \`${allowed_type}\`.`,
 							})),
 						],
 					});
@@ -383,7 +383,7 @@ test.suite('Call', () => {
 	test.suite('#build', () => {
 		test.test('`Boolean.(‹…›)`', () => {
 			assert.strictEqual(setupScript(`{
-				${ BOOL_CONS.map((src) => `${ src };`).join('\n') }
+				${BOOL_CONS.map((src) => `${src};`).join('\n')}
 			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
 					(DROP (BOOL.FROM (NULL.CONST null)))
@@ -402,7 +402,7 @@ test.suite('Call', () => {
 		});
 		test.test('`Integer.(‹…›)`', () => {
 			assert.strictEqual(setupScript(`{
-				${ INT_CONS.map((src) => `${ src };`).join('\n') }
+				${INT_CONS.map((src) => `${src};`).join('\n')}
 			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
 					(DROP (INT.FROM (INT.CONST -42)))
@@ -413,7 +413,7 @@ test.suite('Call', () => {
 		});
 		test.test('`Natural.(‹…›)`', () => {
 			assert.strictEqual(setupScript(`{
-				${ NAT_CONS.map((src) => `${ src };`).join('\n') }
+				${NAT_CONS.map((src) => `${src};`).join('\n')}
 			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
 					(DROP (NAT.FROM (INT.CONST -42)))
@@ -424,7 +424,7 @@ test.suite('Call', () => {
 		});
 		test.test('`Float.(‹…›)`', () => {
 			assert.strictEqual(setupScript(`{
-				${ FLOAT_CONS.map((src) => `${ src };`).join('\n') }
+				${FLOAT_CONS.map((src) => `${src};`).join('\n')}
 			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
 					(DROP (FLOAT.FROM (INT.CONST -42)))
@@ -435,7 +435,7 @@ test.suite('Call', () => {
 		});
 		test.test('`String.(‹…›)`', () => {
 			assert.strictEqual(setupScript(`{
-				${ STRING_CONS.map((src) => `${ src };`).join('\n') }
+				${STRING_CONS.map((src) => `${src};`).join('\n')}
 			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
 					(DROP (STR.FROM (NULL.CONST null)))
@@ -461,7 +461,7 @@ test.suite('Call', () => {
 		});
 		test.test('`List.(‹…›)`', () => {
 			assert.strictEqual(setupScript(`{
-				${ LIST_CONS.map((src) => `${ src };`).join('\n') }
+				${LIST_CONS.map((src) => `${src};`).join('\n')}
 			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
 					(DROP (LIST.NEW))
@@ -514,7 +514,7 @@ test.suite('Call', () => {
 		});
 		test.test('`Dict.(‹…›)`', () => {
 			assert.strictEqual(setupScript(`{
-				${ DICT_CONS.map((src) => `${ src };`).join('\n') }
+				${DICT_CONS.map((src) => `${src};`).join('\n')}
 			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
 					(DROP (DICT.NEW))
@@ -617,7 +617,7 @@ test.suite('Call', () => {
 		});
 		test.test('`Set.(‹…›)`', () => {
 			assert.strictEqual(setupScript(`{
-				${ SET_CONS.map((src) => `${ src };`).join('\n') }
+				${SET_CONS.map((src) => `${src};`).join('\n')}
 			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
 					(DROP (SET.NEW))
@@ -670,7 +670,7 @@ test.suite('Call', () => {
 		});
 		test.test('`Map.(‹…›)`', () => {
 			assert.strictEqual(setupScript(`{
-				${ MAP_CONS.map((src) => `${ src };`).join('\n') }
+				${MAP_CONS.map((src) => `${src};`).join('\n')}
 			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
 					(DROP (MAP.NEW))

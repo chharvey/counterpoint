@@ -128,7 +128,7 @@ The condition is re-evaluated on every repetition. `while–do` loops are “top
 ```cpl
 val mut unread_messages: int = 5;
 while unread_messages > 0 do {
-	print.("""You have {{ unread_messages }} unread messages…""");
+	print.("""You have {{unread_messages}} unread messages…""");
 	set unread_messages -= 1;
 };
 print.("All caught up!");
@@ -140,7 +140,7 @@ A `do–while` loop inverts the order. First it executes the block, then tests t
 ```cpl
 val mut unread_messages: int = 5;
 do {
-	print.("""You have {{ unread_messages }} unread messages …""");
+	print.("""You have {{unread_messages}} unread messages …""");
 	set unread_messages -= 1;
 } while unread_messages > 0;
 print.("All caught up!");
@@ -151,11 +151,11 @@ The keyword `until` simply negates the condition. It executes the block if the c
 ```cpl
 val mut progress: float = 0.0;
 until progress >= 1.0 do {
-	print.("""Download at {{ progress * 100.0 }}% …""");
+	print.("""Download at {{progress * 100.0}}% …""");
 	set progress += 0.02718281828;
 };
 do {
-	print.("""Download at {{ progress * 100.0 }}% …""");
+	print.("""Download at {{progress * 100.0}}% …""");
 	set progress += 0.02718281828;
 } until progress >= 1.0;
 print.("Download complete!");

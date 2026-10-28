@@ -60,10 +60,10 @@ export function to_serializable(node: SyntaxNode): Serializable {
 		line_index:   node.startPosition.row,
 		col_index:    node.startPosition.column,
 		serialize() {
-			return `<${ this.tagname } ${ stringifyAttributes(new Map<string, string>([
+			return `<${this.tagname} ${stringifyAttributes(new Map<string, string>([
 				['line', (this.line_index + 1).toString()],
 				['col',  (this.col_index  + 1).toString()],
-			])) }>${ sanitizeContent(this.source) }</${ this.tagname }>`;
+			]))}>${sanitizeContent(this.source)}</${this.tagname}>`;
 		},
 	};
 }

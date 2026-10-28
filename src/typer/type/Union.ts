@@ -104,7 +104,7 @@ export class Union extends Combinable {
 				return filtered_operands[0].union(t);
 			} else {
 				/* 3-7 | `A <: C    &&  B <: C  <->  A \| B <: C` */
-				assert.ok(this.isSubtypeOf(t), `Expected ${ this } to be a subtype of ${ t }.`);
+				assert.ok(this.isSubtypeOf(t), `Expected ${this} to be a subtype of ${t}.`);
 				return assert.fail('`@unionLaws` should have already returned.');
 			}
 		} else {

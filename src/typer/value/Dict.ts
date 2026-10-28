@@ -22,7 +22,7 @@ export class Dict<T extends Value = Value> extends CollectionKeyed<T> {
 
 
 	public override toString(): string {
-		return `[${ super.toString() }]`;
+		return `[${super.toString()}]`;
 	}
 
 	@strictEqual

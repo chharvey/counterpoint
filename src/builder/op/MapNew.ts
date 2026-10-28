@@ -28,7 +28,7 @@ export class MapNew extends Value {
 	}
 
 	public override toString(): string {
-		return super.toString(...[...this.cases].map(([ant, con]) => `${ ant }->${ con }`));
+		return super.toString(...[...this.cases].map(([ant, con]) => `${ant}->${con}`));
 	}
 
 	@runOnceMethod

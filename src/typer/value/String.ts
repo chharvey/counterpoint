@@ -42,7 +42,7 @@ class ValueString extends Primitive {
 	}
 
 	public override toString(): string {
-		return `${ DELIM_STRING }${ new TextDecoder().decode(this.data) }${ DELIM_STRING }`;
+		return `${DELIM_STRING}${new TextDecoder().decode(this.data)}${DELIM_STRING}`;
 	}
 
 	@strictEqual

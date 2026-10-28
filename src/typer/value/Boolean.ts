@@ -43,7 +43,7 @@ class ValueBoolean extends Primitive {
 	}
 
 	public override toString(): string {
-		return `${ this.data }`;
+		return `${this.data}`;
 	}
 
 	public override get isTruthy(): boolean {

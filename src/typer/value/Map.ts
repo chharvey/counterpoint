@@ -54,7 +54,7 @@ class ValueMap<K extends Value = Value, V extends Value = Value> extends Collect
 	}
 
 	public override toString(): string {
-		return `{${ [...this.#cases].map(([ant, con]) => `${ ant } -> ${ con }`).join(', ') }}`;
+		return `{${[...this.#cases].map(([ant, con]) => `${ant} -> ${con}`).join(', ')}}`;
 	}
 
 	@strictEqual

@@ -190,49 +190,49 @@ The `delete` statement can only be used on optional variables or optional entrie
 
 
 ## Type Claim Declarations
-A type claim declaration is a [type claim](./expressions-operators.md#type-claim) for a variable at the block level.
+A type claim declaration is a [type claim](./expressions-operators.md#type-castclaim) for a variable at the block level.
 After a variable `expr` has been declared, we may want to **claim** that it has type `T` throughout the rest of the block,
 so we would declare the following:
-```
+```cpl
 claim expr: T;
 ```
 This is convenient because we don’t have to claim the expression everywhere it’s used in later the block.
 
 The code below has to claim that `item.1` is of type `int` every time it’s referenced.
-```
-val item: [str, int | str] = ["apples", 42];
+```cpl
+val item: (str, int | str) = ("apples", 42);
 """
-	Clerk: How many {{ item.0 }} would you like?
-	Customer: {{ item.1 as <int> }} please.
-	Clerk: Wow, {{ item.1 as <int> }} is a lot!
+	Clerk: How many {{item.0}} would you like?
+	Customer: {{item.1 as :int:}} please.
+	Clerk: Wow, {{item.1 as :int:}} is a lot!
 """;
 ```
 One way to simplify this would be to declare a new variable:
-```
-val item: [str, int | str] = ["apples", 42];
-val quantity: int = item.1 as <int>;
+```cpl
+val item: (str, int | str) = ("apples", 42);
+val quantity: int = item.1 as :int:;
 """
-	Clerk: How many {{ item.0 }} would you like?
-	Customer: {{ quantity }} please.
-	Clerk: Wow, {{ quantity }} is a lot!
+	Clerk: How many {{item.0}} would you like?
+	Customer: {{quantity}} please.
+	Clerk: Wow, {{quantity}} is a lot!
 """;
 ```
 But a new variable could take up space on the runtime machine.
 The only purpose of `quantity` is to make a type claim, so it’s not necessary at runtime.
 Instead, we should claim the expression’s type in a claim statement.
 Type claims take place only in the compiler, so no memory is wasted.
-```
-val item: [str, int | str] = ["apples", 42];
+```cpl
+val item: (str, int | str) = ("apples", 42);
 claim item.1: int;
 """
-	Clerk: How many {{ item.0 }} would you like?
-	Customer: {{ item.1 }} please.
-	Clerk: Wow, {{ item.1 }} is a lot!
+	Clerk: How many {{item.0}} would you like?
+	Customer: {{item.1}} please.
+	Clerk: Wow, {{item.1}} is a lot!
 """;
 ```
 
 Type claim declarations only apply to statements below, not to previous statements.
-```
+```cpl
 val mut x: bool | int = false;
 set x = true;
 claim x: int;
@@ -240,7 +240,7 @@ claim x: int;
 Even though we claimed `x` as type `int` on line 3, the reassignment to a boolean on line 2 is still valid.
 
 Any reassignments after a claim are still held to that claim, though.
-```
+```cpl
 val mut x: bool | int = false;
 claim x: int;
 set x = true; %> TypeError

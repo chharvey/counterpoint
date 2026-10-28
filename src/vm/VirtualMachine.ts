@@ -299,7 +299,7 @@ export class VirtualMachine {
 	/** The Binaryen module that holds static types and functions, independent of any source program. */
 	public readonly mod: binaryen.Module = binaryen.parseText(`
 		(module $wat
-			${ IMPORTS.join('') }
+			${IMPORTS.join('')}
 		)
 	`);
 

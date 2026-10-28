@@ -39,8 +39,8 @@ class Phi extends Value {
 
 	public override toString(): string {
 		return super.toString(
-			`"${ this.labelThen }"->${ this.valueThen }`,
-			`"${ this.labelElse }"->${ this.valueElse }`,
+			`"${this.labelThen}"->${this.valueThen}`,
+			`"${this.labelElse}"->${this.valueElse}`,
 		);
 	}
 

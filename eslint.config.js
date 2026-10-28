@@ -69,7 +69,7 @@ export default [
 			'@stylistic/space-unary-ops':             'error',
 			'@stylistic/spaced-comment':              'error',
 			'@stylistic/switch-colon-spacing':        'error',
-			'@stylistic/template-curly-spacing':      ['error', 'always'],
+			'@stylistic/template-curly-spacing':      'warn',
 			'@stylistic/template-tag-spacing':        'error',
 			'@stylistic/type-annotation-spacing':     'error',
 			'@stylistic/yield-star-spacing':          ['error', 'both'],

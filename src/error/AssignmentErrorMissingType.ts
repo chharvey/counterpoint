@@ -22,7 +22,7 @@ export class AssignmentErrorMissingType extends AssignmentError {
 		const symbol_kind: 'Variable' | 'Parameter' | 'Field' = 'Variable';
 		const symbol_name: string | undefined                 = declaration.assignee?.source;
 		super(
-			`${ symbol_kind }${ symbol_name ? ` \`${ symbol_name }\`` : '' } is missing a type annotation.`,
+			`${symbol_kind}${symbol_name ? ` \`${symbol_name}\`` : ''} is missing a type annotation.`,
 			AssignmentError.CODES.get(AssignmentErrorMissingType),
 			declaration.line_index,
 			declaration.col_index,

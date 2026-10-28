@@ -20,7 +20,7 @@ export class LexError04 extends LexError {
 	 */
 	public constructor(char: Serializable) {
 		super(
-			`Numeric separator not allowed: at line ${ char.line_index + 1 } col ${ char.col_index + 1 }.`,
+			`Numeric separator not allowed: at line ${char.line_index + 1} col ${char.col_index + 1}.`,
 			LexError.CODES.get(LexError04),
 			char.line_index,
 			char.col_index,

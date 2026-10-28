@@ -57,7 +57,7 @@ export class Builder {
 	 */
 	public newTemp(value_or_type: OP.Value | TYPE.Type): Temp {
 		const id:   bigint = this.#tempCounter--; // temp ids are negative so as not to conflict with actual variable ids
-		const name: string = `$${ -id }`; // appears positive
+		const name: string = `$${-id}`; // appears positive
 		const temp: Temp   = {
 			id,
 			name,
