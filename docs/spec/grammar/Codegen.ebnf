@@ -168,6 +168,16 @@ Codegen((RESULT.NEW `value` nil)) := (call $Value.new-composite
 	)
 );
 
+Codegen((TUPLE.HAS `index` `obj`)) := (call $Value.bool-from-i32 (i32.lt_u
+	(i32.const `index`)
+	(array.len (ref.cast (ref $Tuple) (struct.get $Value $composite `Codegen(obj)`)))
+));
+
+Codegen((RECORD.HAS `key` `obj`)) := (call cg.vm.Value.boolFromI32 (call $Record.has-key
+	(ref.cast (ref $Record) (struct.get $Value $composite `Codegen(obj)`))
+	(i64.const `key`)
+));
+
 Codegen((TUPLE.GET `index` `obj`)) := (array.get
 	(ref.cast (ref $Tuple) (struct.get $Value $composite `Codegen(obj)`))
 	(i32.const `index`)
@@ -243,8 +253,9 @@ Codegen((MAP.COUNT `obj`)) := (call $Value.new-primitive
 	)
 );
 
-Codegen((MAYBE.UNWRAP  `obj`)) := (call $op:unwrap-maybe  `Codegen(obj)`);
-Codegen((RESULT.UNWRAP `obj`)) := (call $op:unwrap-result `Codegen(obj)`);
+Codegen((MAYBE.UNWRAP   `obj`)) := (call $op:unwrap-maybe   `Codegen(obj)`);
+Codegen((RESULT.UNWRAP  `obj`)) := (call $op:unwrap-result  `Codegen(obj)`);
+Codegen((RESULT.EXTRACT `obj`)) := (call $op:extract-result `Codegen(obj)`);
 
 Codegen((INSTANCEOF "Symbol"    `v`)) := (call $op:is-int       `Codegen(v)`);
 Codegen((INSTANCEOF "Integer"   `v`)) := (call $op:is-int       `Codegen(v)`);

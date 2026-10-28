@@ -52,15 +52,9 @@ test.suite('Access', () => {
 	}
 
 
-	test.test.todo('access kind: result access (`a!.‹b›`) is unsupported.', () => { // TODO: Maybe & Result types (#100)
-		assert.throws(() => AST.EXPR.Access.fromSource('(42,)!.0;'), TypeError);
-	});
-
-
-
 	test.suite('#type', () => {
 		test.suite('when base is null.', () => {
-			test.test('normal access throws.', () => {
+			test.test('normal/maybe/result access throws.', () => {
 				testExprTypes(`{
 					null.3;
 					null.four;
@@ -68,30 +62,52 @@ test.suite('Access', () => {
 					null?.3;
 					null?.four;
 					null?.[((((),),),)];
-				}`, repeat([
+					null!.3;
+					null!.four;
+					null!.[((((),),),)];
+				}`, [
 					...repeat(TypeErrorNoEntry, 2),
-					TypeErrorInvalidOperation,
-				], 2).flat());
+					...repeat(TypeErrorInvalidOperation, 7),
+				]);
 			});
-			test.test('chained maybe access.', () => {
+			test.test('chained maybe access does not unwrap recursively.', () => {
+				const propid: bigint = Validator.cookTokenIdentifier('prop');
 				const prop1: TYPE.Tuple = TYPE.Tuple.fromTypes([TYPE.BOOL]);       // (bool,)
 				const prop2 = new TYPE.Tuple([{type: TYPE.BOOL, optional: true}]); // (?: bool)
 				return testExprTypes(`{
 					val mut bound1: (prop?: (bool,)) = (prop= (true,));
-					val mut bound2: (prop?: (?: bool)) = (prop= ());
+					val mut bound2: (prop?: (?: bool))? = Some.<(prop?: (?: bool))>((prop= ()));
 					bound1;
-					bound1?.prop;
-					bound1?.prop?.0;
+					bound1.prop;
+					bound1.prop?.0;
 					bound2;
 					bound2?.prop;
-					bound2?.prop?.0;
+					bound2?.prop?.0; %> TypeErrorNoEntry
 				}`, [
-					new TYPE.Record(new Map([[0x100n, {type: prop1, optional: true}]])), // (prop?: (bool,))
+					new TYPE.Record(new Map([[propid, {type: prop1, optional: true}]])), // (prop?: (bool,))
 					new TYPE.Maybe(prop1),                                               // Maybe[(bool,)]
 					new TYPE.Maybe(TYPE.BOOL),                                           // Maybe[bool]
-					new TYPE.Record(new Map([[0x100n, {type: prop2, optional: true}]])), // (prop?: (?: bool))
-					new TYPE.Maybe(prop2),                                               // Maybe[(?: bool)]
-					new TYPE.Maybe(new TYPE.Maybe(TYPE.BOOL)),                           // Maybe[Maybe[bool]]
+					new TYPE.Maybe(new TYPE.Record(new Map([[propid, {type: prop2, optional: true}]]))), // Maybe[(prop?: (?: bool))]
+					new TYPE.Maybe(new TYPE.Maybe(prop2)),                                               // Maybe[Maybe[(?: bool)]]
+					TypeErrorNoEntry,
+				]);
+			});
+			test.test('chained result access does not unwrap recursively.', () => {
+				const propid: bigint = Validator.cookTokenIdentifier('prop');
+				return testExprTypes(`{
+					val bound1: (prop: (float,)!)! = Ok.<(prop: Result.<(float,)>)>((prop= Ok.<(float,)>((4.2,))));
+					val bound2: (str,)!! = Ok.<Result.<(str,)>>(Ok.<(str,)>(("hello",)));
+					bound1;
+					bound1!.prop;
+					bound1!.prop!.0; %> TypeErrorNoEntry
+					bound2;
+					bound2!.0; %> TypeErrorNoEntry
+				}`, [
+					new TYPE.Result(TYPE.Record.fromTypes(new Map([[propid, new TYPE.Result(TYPE.Tuple.fromTypes([TYPE.FLOAT]))]]))), // Result[(prop: Result[(float,)])]
+					new TYPE.Result(new TYPE.Result(TYPE.Tuple.fromTypes([TYPE.FLOAT]))),                                             // Result[Result[(float,)]]
+					TypeErrorNoEntry,
+					new TYPE.Result(new TYPE.Result(TYPE.Tuple.fromTypes([TYPE.STR]))), // Result[Result[(str,)]]
+					TypeErrorNoEntry,
 				]);
 			});
 		});
@@ -150,12 +166,11 @@ test.suite('Access', () => {
 						val rec_a: (x: int, y?: int, z: int) = (x= 10, z= 20);
 						val rec_b: (x: int, y?: int, z: int) = (x= 10, z= 20, y= 30);
 
-						tup_a.2;
-						tup_b.2;
+						tup_a.2; % type \`Maybe[int]\`
+						tup_b.2; % type \`Maybe[int]\`
 
-						rec_a.y;
-						rec_b.y;
-
+						rec_a?.y; %> TypeErrorInvalidOperation
+						rec_b?.y; %> TypeErrorInvalidOperation
 
 						val     tupo1_f: (int, float, ?: str) = (1, 2.0, "three");
 						val mut tupo1_u: (int, float, ?: str) = (1, 2.0, "three");
@@ -165,16 +180,18 @@ test.suite('Access', () => {
 						val mut reco1_u: (a: int, c: float, b?: str) = (a= 1, c= 2.0, b= "three");
 						val mut reco2_u: (a: int, c: float, b?: str) = (a= 1, c= 2.0);
 
-						tupo1_f?.2; % type \`Maybe[str]\`
-						tupo1_u?.2; % type \`Maybe[str]\`
-						tupo2_u?.2; % type \`Maybe[str]\`
+						tupo1_f.2; % type \`Maybe[str]\`
+						tupo1_u.2; % type \`Maybe[str]\`
+						tupo2_u.2; % type \`Maybe[str]\`
 
-						reco1_f?.b; % type \`Maybe[str]\`
-						reco1_u?.b; % type \`Maybe[str]\`
-						reco2_u?.b; % type \`Maybe[str]\`
+						reco1_f?.b; %> TypeErrorInvalidOperation
+						reco1_u?.b; %> TypeErrorInvalidOperation
+						reco2_u?.b; %> TypeErrorInvalidOperation
 					}`, [
-						...repeat(TypeErrorInvalidOperation, 4),
-						...repeat(new TYPE.Maybe(TYPE.STR), 6),
+						...repeat(new TYPE.Maybe(TYPE.INT), 2),
+						...repeat(TypeErrorInvalidOperation, 2),
+						...repeat(new TYPE.Maybe(TYPE.STR), 3),
+						...repeat(TypeErrorInvalidOperation, 3),
 					]);
 				});
 				test.test('base is an optional variable.', () => {
@@ -214,15 +231,15 @@ test.suite('Access', () => {
 						], 4).flat(),
 					]);
 				});
-				test.test('base is an explicit Maybe.', {expectFailure: true}, () => {
+				test.test('base is an explicit Maybe.', () => {
 					testExprTypes(`{
-						val mut tup_a: Maybe[(int, int, ?: int)] = None[(int, int, ?: int)]();
-						val mut tup_b: Maybe[(int, int, ?: int)] = None[(int, int, ?: int)]();
-						set tup_a = Some[(int, int, ?: int)]((10, 20));
+						val mut tup_a: Maybe.<(int, int, ?: int)> = None.<(int, int, ?: int)>();
+						val mut tup_b: Maybe.<(int, int, ?: int)> = None.<(int, int, ?: int)>();
+						set tup_a = Some.<(int, int, ?: int)>((10, 20));
 
-						val mut rec_a?: Maybe[(x: int, y?: int, z: int)] = None[(x: int, y?: int, z: int)]();
-						val mut rec_b?: Maybe[(x: int, y?: int, z: int)] = None[(x: int, y?: int, z: int)]();
-						set rec_a = Some[(x: int, y?: int, z: int)]((x= 10, z= 20));
+						val mut rec_a?: Maybe.<(x: int, y?: int, z: int)>;
+						val mut rec_b?: Maybe.<(x: int, y?: int, z: int)>;
+						set rec_a = Some.<(x: int, y?: int, z: int)>((x= 10, z= 20));
 
 						tup_a.1;
 						tup_a.2;
@@ -239,16 +256,40 @@ test.suite('Access', () => {
 						tup_b?.1; % type \`Maybe[int]\`
 						tup_b?.2; % type \`Maybe[Maybe[int]]\`
 
-						rec_a?.z; % type \`Maybe[int]\`
-						rec_a?.y; % type \`Maybe[Maybe[int]]\`
-						rec_b?.z; % type \`Maybe[int]\`
-						rec_b?.y; % type \`Maybe[Maybe[int]]\`
+						rec_a?.z; %> TypeErrorNoEntry
+						rec_a?.y; %> TypeErrorNoEntry
+						rec_b?.z; %> TypeErrorNoEntry
+						rec_b?.y; %> TypeErrorNoEntry
 					}`, [
 						...repeat(TypeErrorNoEntry, 8),
 						...repeat([
 							new TYPE.Maybe(TYPE.INT),
 							new TYPE.Maybe(new TYPE.Maybe(TYPE.INT)),
-						], 4).flat(),
+						], 2).flat(),
+						...repeat(TypeErrorNoEntry, 4),
+					]);
+				});
+				test.test('base is an explicit Result.', () => {
+					testExprTypes(`{
+						val mut tup_a: Result.<(int, int, ?: int)> = Fail.<(int, int, ?: int)>(Exception.("tup_a"));
+						val mut tup_b: Result.<(int, int, ?: int)> = Fail.<(int, int, ?: int)>(Exception.("tup_b"));
+						set tup_a = Ok.<(int, int, ?: int)>((10, 20));
+
+						tup_a.1;
+						tup_a.2;
+						tup_b.1;
+						tup_b.2;
+
+						tup_a!.1; % type \`Result[int]\`
+						tup_a!.2; % type \`Result[Maybe[int]]\`
+						tup_b!.1; % type \`Result[int]\`
+						tup_b!.2; % type \`Result[Maybe[int]]\`
+					}`, [
+						...repeat(TypeErrorNoEntry, 4),
+						...repeat([
+							new TYPE.Result(TYPE.INT),
+							new TYPE.Result(new TYPE.Maybe(TYPE.INT)),
+						], 2).flat(),
 					]);
 				});
 				test.test('throws when base object is of incorrect type.', () => {
@@ -279,17 +320,16 @@ test.suite('Access', () => {
 
 						(4)?.c;
 						[a= 10, b= 20, c= 30]?.b;
-					}`, repeat(TypeErrorNoEntry, 16));
+					}`, [
+						...repeat(TypeErrorNoEntry, 8),
+						...repeat(TypeErrorInvalidOperation, 8),
+					]);
 				});
 				test.test('throws when index is out of bounds / when key is out of range.', () => {
 					testExprTypes(`{
 						(1, 2.0, "three").3;
-						(1, 2.0, "three").-4;
 						(a= 1, b= 2.0, c= "three").d;
-						(1, 2.0, "three")?.3;
-						(1, 2.0, "three")?.-4;
-						(a= 1, b= 2.0, c= "three")?.d;
-					}`, repeat(TypeErrorNoEntry, 6));
+					}`, repeat(TypeErrorNoEntry, 2));
 				});
 			});
 
@@ -324,11 +364,11 @@ test.suite('Access', () => {
 				test.test('every constituent has the entry and it’s optional in every constituent.', () => {
 					testExprTypes(`{
 						${DECLS}
-						rec.z;  % optional & optional
-						rec?.z; % optional & optional % type \`Maybe[B & D]\`
+						rec.z;  % optional & optional % type \`Maybe[B & D]\`
+						rec?.z; % optional & optional
 					}`, [
-						TypeErrorInvalidOperation,
 						new TYPE.Maybe(B.intersect(D)),
+						TypeErrorInvalidOperation,
 					]);
 				});
 				test.test('some constituent does not have the entry.', () => {
@@ -336,25 +376,23 @@ test.suite('Access', () => {
 						${DECLS}
 						tup.2;  % required & missing % type \`int\`
 						tup.3;  % missing  & missing
-						rec.y;  % optional & missing
+						rec.y;  % optional & missing % type \`Maybe[int]\`
 						tup?.2; % required & missing
 						tup?.3; % missing  & missing
-						rec?.y; % optional & missing % type \`Maybe[int]\`
+						rec?.y; % optional & missing
 					}`, [
 						TYPE.INT,
 						AggregateError,
-						TypeErrorInvalidOperation,
-						TypeErrorInvalidOperation,
-						AggregateError,
 						new TYPE.Maybe(TYPE.INT),
+						...repeat(TypeErrorInvalidOperation, 3),
 					]);
 				});
 				test.test('an intersection with union constituents.', () => {
 					testExprTypes(`{
 						val mut collectionA: ((alpha: bool, bravo: 1) | (bravo: 2 | 3 | 4)) & (bravo: 3 | 4 | 5) = (bravo= 3);
 						val mut collectionB: ((alpha: bool, bravo?: 1) | (bravo?: 2 | 3 | 4)) & (bravo?: 3 | 4 | 5) = (alpha= true);
-						collectionA.bravo;  % type \`3 | 4\`
-						collectionB?.bravo; % type \`Maybe[3 | 4]\`
+						collectionA.bravo; % type \`3 | 4\`
+						collectionB.bravo; % type \`Maybe[3 | 4]\`
 					}`, [
 						typeUnit(3n).union(typeUnit(4n)),
 						new TYPE.Maybe(typeUnit(3n).union(typeUnit(4n))),
@@ -397,14 +435,14 @@ test.suite('Access', () => {
 				test.test('every constituent has the entry and it’s optional in some constituent.', () => {
 					testExprTypes(`{
 						${DECLS}
-						tup.1;  % required | optional
-						rec.c;  % optional | optional
-						tup?.1; % required | optional % type \`Maybe[bool | float]\`
-						rec?.c; % optional | optional % type \`Maybe[sym  | str]\`
+						tup.1;  % required | optional % type \`Maybe[bool | float]\`
+						rec.c;  % optional | optional % type \`Maybe[sym  | str]\`
+						tup?.1; % required | optional
+						rec?.c; % optional | optional
 					}`, [
-						...repeat(TypeErrorInvalidOperation, 2),
 						new TYPE.Maybe(TYPE.Union.all(TYPE.BOOL, TYPE.FLOAT)),
 						new TYPE.Maybe(TYPE.Union.all(TYPE.SYM,  TYPE.STR)),
+						...repeat(TypeErrorInvalidOperation, 2),
 					]);
 				});
 				test.test('some constituent does not have the entry.', () => {
@@ -414,14 +452,17 @@ test.suite('Access', () => {
 						rec.b;  % optional | missing
 						tup?.2; % required | missing
 						rec?.b; % optional | missing
-					}`, repeat(TypeErrorNoEntry, 4));
+					}`, [
+						...repeat(TypeErrorNoEntry, 2),
+						...repeat(TypeErrorInvalidOperation, 2),
+					]);
 				});
 				test.test('a union with intersection constituents.', () => {
 					testExprTypes(`{
 						val mut collectionA: (alpha: bool, bravo: 2 | 3 | 4) & (bravo: 3 | 4 | 5, charlie: str) | (bravo: 6) = (bravo= 6);
 						val mut collectionB: (alpha: bool, bravo?: 2 | 3 | 4) & (bravo?: 3 | 4 | 5, charlie: str) | (bravo?: 6) = (bravo= 6);
-						collectionA.bravo;  % type \`3 | 4 | 6\`
-						collectionB?.bravo; % type \`Maybe[3 | 4 | 6]\`
+						collectionA.bravo; % type \`3 | 4 | 6\`
+						collectionB.bravo; % type \`Maybe[3 | 4 | 6]\`
 					}`, [
 						typeUnit(3n).union(typeUnit(4n)).union(typeUnit(6n)),
 						new TYPE.Maybe(typeUnit(3n).union(typeUnit(4n)).union(typeUnit(6n))),
@@ -517,23 +558,27 @@ test.suite('Access', () => {
 					(4)?.[2];
 					(10, 20, 30)?.[1];
 					(a= 10, b= 20, c= 30)?.[@b];
+				}`, repeat(TypeErrorInvalidOperation, 6));
+			});
+			test.test('allows normal and optional expression access on sets.', () => {
+				testExprTypes(`{
 					Set.<int>((10, 20, 30))?.[20];
 					{10, 20, 30}?.[20];
-				}`, repeat(TypeErrorInvalidOperation, 8));
+				}`, repeat(TYPE.BOOL, 2));
 				return testExprTypes(`{
 					val     set_fixed:   Set.<int | float | str> = {1, 2.0, "three"};
 					val mut set_unfixed: Set.<int | float | str> = set_fixed;
 
-					set_fixed?.[1];
-					set_fixed?.[2.0];
+					set_fixed.[1];
+					set_fixed.[2.0];
 					set_fixed?.["three"];
 					set_fixed?.[42.0];
 
-					set_unfixed?.[1];
-					set_unfixed?.[2.0];
+					set_unfixed.[1];
+					set_unfixed.[2.0];
 					set_unfixed?.["three"];
 					set_unfixed?.[42.0];
-				}`, repeat(TypeErrorInvalidOperation, 8));
+				}`, repeat(TYPE.BOOL, 8));
 			});
 			test.test('throws when constituents are of different types.', () => {
 				testExprTypes(`{
@@ -566,9 +611,9 @@ test.suite('Access', () => {
 					list_unfixed.[-4]; % type \`int | float | str\`
 					dict_unfixed.[@d]; % type \`int | float | str\`
 
-					list_fixed?.[3];  % type \`int | float | str | null\`
-					list_fixed?.[-4]; % type \`int | float | str | null\`
-					dict_fixed?.[@d]; % type \`int | float | str | null\`
+					list_fixed?.[3];  % type \`Maybe[int | float | str]\`
+					list_fixed?.[-4]; % type \`Maybe[int | float | str]\`
+					dict_fixed?.[@d]; % type \`Maybe[int | float | str]\`
 
 					list_unfixed?.[3];  % type \`Maybe[int | float | str]\`
 					list_unfixed?.[-4]; % type \`Maybe[int | float | str]\`

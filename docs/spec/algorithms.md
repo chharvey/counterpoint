@@ -259,22 +259,14 @@ EntryTypeSchema! GetEntryInfo(Type base_type, Or<SemanticTypeAccess, SemanticExp
 	1. *Assert:* `access.children.count` is 2.
 	2. *Let* `accessor` be `access.children.1`.
 	3. *Let* `accessor_maybe` be `false`.
-	4. *If* `access.kind` is `MAYBE`:
+	4. *If* `access` is a SemanticExpressionAccess *and* `access.kind` is `MAYBE`:
 		1. *Set* `accessor_maybe` to `true`.
 	5. *If* *UnwrapAffirm:* `IsBottomType(base_type)` is `true`:
 		1. *Return:* a new EntryTypeSchema [
 				type=     `Nothing`,
 				optional= `accessor_maybe`,
 			].
-	6. *If* `base_type` is a Maybe type *and* `access.kind` is MAYBE:
-		1. *Let* `entry_info` be *Unwrap*: `GetEntryInfo(base_type.typearg, access, is_writing)`.
-		2. *Return:* a new EntryTypeSchema [
-			type=     `Maybe(entry_info.type)`,
-			optional= `entry_info.optional`,
-		].
-	7. *Else:*
-		1. Fall through.
-	8. *If* `base_type` is the intersection or union of some types `a` and `b`:
+	6. *If* `base_type` is the intersection or union of some types `a` and `b`:
 		1. If `a` and `b` are of different types:
 			1. *Throw:* a new TypeErrorInvalidOperation.
 		2. *Let* `entry_infos` be the Sequence [`GetEntryInfo(a, access, is_writing)`, `GetEntryInfo(b, access, is_writing)`].
@@ -307,17 +299,17 @@ EntryTypeSchema! GetEntryInfo(Type base_type, Or<SemanticTypeAccess, SemanticExp
 					type=     `union`,
 					optional= `any_optional`,
 				].
-	9. *If* `accessor` is a SemanticIndex:
+	7. *If* `accessor` is a SemanticIndex:
 		1. *If* `base_type` is a Tuple type *and* `accessor.index` is an index in `base_type`:
 			1. *Return:* the item accessed at index `accessor.index` in `base_type`.
 		2. *Else:*
 			1. *Throw:* a new TypeErrorNoEntry.
-	10. *Else If* `accessor` is a SemanticKey:
+	8. *Else If* `accessor` is a SemanticKey:
 		1. *If* `base_type` is a Record type *and* `accessor.id` is a key in `base_type`:
 			1. *Return:* the value accessed at key `accessor.id` in `base_type`.
 		2. *Else:*
 			1. *Throw:* a new TypeErrorNoEntry.
-	11. *Else:*
+	9. *Else:*
 		1. *Assert:* `accessor` is a SemanticExpression.
 		2. *Let* `accessor_type` be *Unwrap:* `TypeOf(accessor)`.
 		3. *If* *UnwrapAffirm:* `IsBottomType(accessor_type)` is `true`:
@@ -368,33 +360,6 @@ EntryTypeSchema! GetEntryInfo(Type base_type, Or<SemanticTypeAccess, SemanticExp
 				1. *Throw:* a new TypeErrorNotNarrow.
 		8. *Else:*
 			1. *Throw:* a new TypeErrorInvalidOperation.
-;
-```
-
-
-
-## AccessType
-Checks for correctness, matching access kind with accessed bound entry of a collection,
-then returns either the resulting type unwrapped or wrapped a Maybe.
-If access kind is normal, the entry must be non-optioal.
-If access kind is maybe, the entry must be optional, or base must be a Maybe.
-Otherwise, the access kind may be result.
-```
-Type! AccessType(Or<NORMAL, MAYBE, RESULT> access_kind, Type base_type, EntryTypeSchema entry) :=
-	1. *If* `access_kind` is *NORMAL* *and* `entry.optional` is `true`:
-		1. *Throw:* a new TypeErrorInvalidOperation.
-	2. *Else If* `access_kind` is *MAYBE*:
-		1. *If* `entry.optional` is `false` *and* `base_type` is not a Maybe type:
-			1. *Throw:* a new TypeErrorInvalidOperation.
-		2. *Else:*
-			1. Fall through.
-	3. *Else:*
-		1. *Assert:* `access_kind` is *RESULT*.
-		// TODO: implement
-	4. *If* `entry.optional` is `true`:
-		1. *Return:* `Maybe(entry.type)`.
-	5. *Else:*
-		1. *Return:* `entry.type`.
 ;
 ```
 

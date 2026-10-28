@@ -105,23 +105,27 @@ function call<RuleName extends string>($: GrammarSymbols<RuleName>, family_name:
 
 
 /* # LEXER HELPERS */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function rg(s: string | RegExp): RegExp { // s -> (s)
 	return new RegExp(`(${typeof s === 'string' ? RegExp.escape(s) : s.source})`);
 }
-function ro(s: string | RegExp): RegExp { // s -> (s)?
-	return new RegExp(rg(s).source.concat('?'));
+function ru(s: string | RegExp): RegExp { // s -> (?:s)
+	return new RegExp(`(?:${typeof s === 'string' ? RegExp.escape(s) : s.source})`);
 }
-function rr0(s: string | RegExp): RegExp { // s -> (s)*
-	return new RegExp(rg(s).source.concat('*'));
+function ro(s: string | RegExp): RegExp { // s -> (?:s)?
+	return new RegExp(ru(s).source.concat('?'));
 }
-function rr1(s: string | RegExp): RegExp { // s -> (s)+
-	return new RegExp(rg(s).source.concat('+'));
+function rr0(s: string | RegExp): RegExp { // s -> (?:s)*
+	return new RegExp(ru(s).source.concat('*'));
 }
-function rs(...ss: readonly (string | RegExp)[]): RegExp { // s,t -> (s)(t)
-	return new RegExp(ss.map((s) => rg(s).source).join(''));
+function rr1(s: string | RegExp): RegExp { // s -> (?:s)+
+	return new RegExp(ru(s).source.concat('+'));
 }
-function rc(...ss: readonly (string | RegExp)[]): RegExp { // s,t -> (s)|(t)
-	return new RegExp(ss.map((s) => rg(s).source).join('|'));
+function rs(...ss: readonly (string | RegExp)[]): RegExp { // s,t -> (?:s)(?:t)
+	return new RegExp(ss.map((s) => ru(s).source).join(''));
+}
+function rc(...ss: readonly (string | RegExp)[]): RegExp { // s,t -> (?:s)|(?:t)
+	return new RegExp(ss.map((s) => ru(s).source).join('|'));
 }
 
 const WORD_BASIC   = /[A-Za-z][A-Za-z0-9_]*|_[A-Za-z0-9_]+/;
@@ -136,13 +140,14 @@ const DIGIT_SEQ_HEX = /([0-9a-f]_?)*[0-9a-f]/;
 const DIGIT_SEQ_NIF = /([0-9a-z]_?)*[0-9a-z]/;
 
 const WHOLE_DIGITS = rc(
-	rs('\\b',     DIGIT_SEQ_BIN),
-	rs('\\q',     DIGIT_SEQ_QUA),
-	rs('\\s',     DIGIT_SEQ_SEX),
-	rs('\\o',     DIGIT_SEQ_OCT),
-	rs(ro('\\d'), DIGIT_SEQ_DEC),
-	rs('\\x',     DIGIT_SEQ_HEX),
-	rs('\\z',     DIGIT_SEQ_NIF),
+	// HACK: issues with tree-sitter not handling "s" and "d"
+	rs('\\b',        DIGIT_SEQ_BIN),
+	rs('\\q',        DIGIT_SEQ_QUA),
+	rs(/\\\x73/,     DIGIT_SEQ_SEX), // '\\s'
+	rs('\\o',        DIGIT_SEQ_OCT),
+	rs(ro(/\\\x64/), DIGIT_SEQ_DEC), // '\\d'
+	rs('\\x',        DIGIT_SEQ_HEX),
+	rs('\\z',        DIGIT_SEQ_NIF),
 );
 
 const SIGNED_DIGIT_SEQ_DEC = rs(/[+-]?/, DIGIT_SEQ_DEC);
@@ -274,6 +279,8 @@ module.exports = grammar({
 			WORD_UNICODE,
 		)),
 
+		whole_digits: _$ => token(WHOLE_DIGITS),
+
 		integer: _$ => token(rs(/-?/, WHOLE_DIGITS)),
 		natural: _$ => token(rs('+',  WHOLE_DIGITS)),
 
@@ -391,7 +398,7 @@ module.exports = grammar({
 			);
 		},
 
-		property_accessor_type: $ => choice($.integer, $.natural, $.word),
+		property_accessor_type: $ => choice($.whole_digits, $.word),
 
 		type_grouped:        $ => seq('(', $._type,                            ')'),
 		type_tuple_literal:  $ => seq('(', optional($._items_type),            ')'),
@@ -415,9 +422,9 @@ module.exports = grammar({
 			$.type_map_literal,
 		),
 
-		type_compound: $ => prec(5, seq(field('type_0', $._type), choice(
-			seq(choice('.', '?.'), field('property_accessor_type_0', $.property_accessor_type)),
-			seq('.',               field('generic_arguments_0',      $.generic_arguments)),
+		type_compound: $ => prec(5, seq(field('type_0', $._type), '.', choice(
+			field('property_accessor_type_0', $.property_accessor_type),
+			field('generic_arguments_0',      $.generic_arguments),
 		))),
 
 		type_unary_symbol:  $ => prec(4, seq($._type, choice('?', '!'))),
@@ -476,7 +483,7 @@ module.exports = grammar({
 
 		...parameterize('_capture_clause', ({ref}) => $ => seq('with', '(', OPT_COM, repCom1(call($, 'capture', {ref})), OPT_COM, ')'), 'ref'),
 
-		...parameterize('property_accessor', ({break: brk, return: rtn}) => $ => choice($.integer, $.natural, $.word, seq('[', call($, '_expression', 'block', {break: brk}, {return: rtn}), ']')), 'break', 'return'),
+		...parameterize('property_accessor', ({break: brk, return: rtn}) => $ => choice($.whole_digits, $.word, seq('[', call($, '_expression', 'block', {break: brk}, {return: rtn}), ']')), 'break', 'return'),
 
 		...parameterize('expression_grouped',        ({break: brk, return: rtn}) => $ => seq('(',                               call($, '_expression', 'block', {break: brk}, {return: rtn}),             ')'), 'break', 'return'),
 		...parameterize('expression_tuple_literal',  ({break: brk, return: rtn}) => $ => seq('(', optional(                     call($, '_items',               {break: brk}, {return: rtn})           ), ')'), 'break', 'return'),

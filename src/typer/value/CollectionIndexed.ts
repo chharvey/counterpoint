@@ -57,6 +57,11 @@ export abstract class CollectionIndexed<T extends Value = Value> extends Collect
 	}
 
 	/** @final */
+	public has(index: bigint): boolean {
+		return !!this.#items.at(Number(index));
+	}
+
+	/** @final */
 	public get(index: bigint): T | Null {
 		return this.#items.at(Number(index)) ?? NULL;
 	}

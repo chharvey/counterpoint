@@ -81,7 +81,7 @@ class TypeRecord extends ValueType {
 	}
 
 	public get(key: bigint, accessor: AST.Key): EntryType {
-		return this.isKeyCanonical(key)
+		return this.typeargs.has(key)
 			? this.typeargs.get(key)!
 			: assert.fail(new TypeErrorNoEntry('key', this, accessor));
 	}
@@ -97,10 +97,6 @@ class TypeRecord extends ValueType {
 
 	public valueTypes(): Type {
 		return Union.all(...[...this.typeargs.values()].map((t) => t.type));
-	}
-
-	public isKeyCanonical(key: bigint): boolean {
-		return this.typeargs.has(key);
 	}
 }
 export {TypeRecord as Record};

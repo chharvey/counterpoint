@@ -102,7 +102,7 @@ export function ast_type_name(typ: TYPE.Type): TypeName {
  * return (GET $result).
  * ```
  * @param builder
- * @param result_type the type of the expression’s value
+ * @param return_type the type of the expression’s value
  * @param condition
  * @param consequent
  * @param alternative
@@ -110,7 +110,7 @@ export function ast_type_name(typ: TYPE.Type): TypeName {
  */
 export function conditional_expression(
 	builder:   Builder,
-	result_type: TYPE.Type,
+	return_type: TYPE.Type,
 	condition:   () => Value,
 	consequent:  () => Value,
 	alternative: () => Value,
@@ -119,7 +119,7 @@ export function conditional_expression(
 	const label_else:  string = builder.newLabel();
 	const label_endif: string = builder.newLabel();
 
-	const result: Temp = builder.newTemp(result_type);
+	const result: Temp = builder.newTemp(return_type);
 	builder.pushInstruction(new Decl(result));
 	builder.terminateBlock(new GotoConditional(condition(), label_then, label_else));
 

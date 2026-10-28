@@ -632,12 +632,6 @@ elements.\b01; %== "wind"
 elements.\b10; %== "fire"
 ```
 
-We can also access by natural number index.
-```cpl
-elements.+1;    %== "wind"
-elements.+\b10; %== "fire"
-```
-
 Tuple size is known at compile-time,
 so attempting to retrieve an out-of-bounds index results in a compile-time error.
 Positive indices beyond the end of the list result in a TypeErrorNoEntry.

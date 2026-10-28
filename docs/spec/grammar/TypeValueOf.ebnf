@@ -76,13 +76,13 @@ Type! TypeValueOf(SemanticTypeMap maptype) :=
 
 
 
-Type! TypeValueOf(SemanticTypeAccess access) :=
-	1. *Assert:* `access.children.count` is 2.
-	2. *Let* `base` be `access.children.0`.
-	3. *Let* `accessor` be `access.children.1`.
-	4. *Let* `base_type` be *Unwrap:* `TypeValueOf(base)`.
-	5. *Let* `entry` be *Unwrap:* `GetEntryInfo(base_type, access, false)`.
-	6. *Return:* `AccessType(access.kind, base_type, entry)`.
+Type! TypeValueOf(SemanticTypeAccess ::= SemanticType (SemanticIndex | SemanticKey)) :=
+	1. *Let* `base_type` be *Unwrap:* `TypeValueOf(SemanticType)`.
+	2. *Let* `entry` be *Unwrap:* `GetEntryInfo(base_type, SemanticTypeAccess, false)`.
+	3. *If* `entry.optional` is `true`:
+		1. *Return:* `Maybe(entry.type)`.
+	4. *Else:*
+		1. *Return:* `entry.type`.
 ;
 
 

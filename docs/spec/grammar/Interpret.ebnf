@@ -108,6 +108,24 @@ Maybe! Interpret((RESULT.NEW `value` nil)) :=
 	2. *Return:* a new Result containing the success value `value`.
 ;
 
+Value! Interpret((TUPLE.HAS `index` `obj`)) :=
+	1. *Let* `base` be *Unwrap:* `Interpret(obj)`.
+	2. *Assert:* `base` is an instance of `Tuple`.
+	3. *If* `index` is an index in `base`:
+		1. *Return:* `true`.
+	4. *Else:*
+		1. *Return:* `false`.
+;
+
+Value! Interpret((RECORD.HAS `key` `obj`)) :=
+	1. *Let* `base` be *Unwrap:* `Interpret(obj)`.
+	2. *Assert:* `base` is an instance of `Record`.
+	3. *If* `key` is a key in `base`:
+		1. *Return:* `true`.
+	4. *Else:*
+		1. *Return:* `false`.
+;
+
 Value! Interpret((TUPLE.GET `index` `obj`)) :=
 	1. *Let* `base` be *Unwrap:* `Interpret(obj)`.
 	2. *Assert:* `base` is an instance of `Tuple`.
@@ -293,6 +311,15 @@ Value! Interpret((RESULT.UNWRAP `obj`)) :=
 		1. *Throw:* a new Error "Unwrapped a Fail value.".
 	4. *Else:*
 		1. *Return:* the success value contained in `obj`.
+;
+
+Exception! Interpret((RESULT.EXTRACT `obj`)) :=
+	1. *Set* `obj` to *Unwrap:* `Interpret(obj)`.
+	2. *Assert:* `obj` is instance of `Result`.
+	3. *If* `obj` does not have a failure reason:
+		1. *Throw:* a new Error "Extracted from an Ok value.".
+	4. *Else:*
+		1. *Return:* the failure reason contained in `obj`.
 ;
 
 Boolean! Interpret((INSTANCEOF `src` `v`)) :=

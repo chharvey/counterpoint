@@ -162,15 +162,9 @@ test.suite('Decorator', () => {
 				% (entry_type__named__optional)
 			`]],
 
-			['Decorate(PropertyAccessorType ::= INTEGER) -> SemanticIndex', [AST.Index, `
+			['Decorate(PropertyAccessorType ::= WHOLE_DIGITS) -> SemanticIndex', [AST.Index, `
 				{
 					type T = U.1;
-				}
-				% (property_accessor_type)
-			`]],
-			['Decorate(PropertyAccessorType ::= NATURAL) -> SemanticIndex', [AST.Index, `
-				{
-					type T = U.+1;
 				}
 				% (property_accessor_type)
 			`]],
@@ -239,12 +233,6 @@ test.suite('Decorator', () => {
 			['Decorate(TypeCompound ::= TypeCompound "." PropertyAccessorType) -> SemanticTypeAccess', [AST.TYPE.Access, `
 				{
 					type T = U.p;
-				}
-				% (type_compound)
-			`]],
-			['Decorate(TypeCompound ::= TypeCompound "?." PropertyAccessorType) -> SemanticTypeAccess', [AST.TYPE.Access, `
-				{
-					type T = U?.p;
 				}
 				% (type_compound)
 			`]],
@@ -380,15 +368,9 @@ test.suite('Decorator', () => {
 				% (capture__ref)
 			`]],
 
-			['Decorate(ExpressionCompound<Block, Break, Return> > PropertyAccessor<Break, Return> ::= INTEGER) -> SemanticIndex', [AST.Index, `
+			['Decorate(ExpressionCompound<Block, Break, Return> > PropertyAccessor<Break, Return> ::= WHOLE_DIGITS) -> SemanticIndex', [AST.Index, `
 				{
 					v.1;
-				}
-				% (property_accessor)
-			`]],
-			['Decorate(ExpressionCompound<Block, Break, Return> > PropertyAccessor<Break, Return> ::= NATURAL) -> SemanticIndex', [AST.Index, `
-				{
-					v.+1;
 				}
 				% (property_accessor)
 			`]],
@@ -405,15 +387,9 @@ test.suite('Decorator', () => {
 				% (property_accessor)
 			`]],
 
-			['Decorate(Assignee<Break, Return> > PropertyAccessor<Break, Return> ::= INTEGER) -> SemanticIndex', [AST.Index, `
+			['Decorate(Assignee<Break, Return> > PropertyAccessor<Break, Return> ::= WHOLE_DIGITS) -> SemanticIndex', [AST.Index, `
 				{
 					set v.1 = false;
-				}
-				% (property_accessor)
-			`]],
-			['Decorate(Assignee<Break, Return> > PropertyAccessor<Break, Return> ::= NATURAL) -> SemanticIndex', [AST.Index, `
-				{
-					set v.-1 = false;
 				}
 				% (property_accessor)
 			`]],
@@ -535,7 +511,7 @@ test.suite('Decorator', () => {
 				}
 				% (expression_compound)
 			`]],
-			['expectFailure: Decorate(ExpressionCompound<Block, Break, Return> ::= ExpressionCompound<?Block><?Break><?Return> "!." PropertyAccessor<?Break><?Return>) -> SemanticExpressionAccess', [AST.EXPR.Access, `
+			['Decorate(ExpressionCompound<Block, Break, Return> ::= ExpressionCompound<?Block><?Break><?Return> "!." PropertyAccessor<?Break><?Return>) -> SemanticExpressionAccess', [AST.EXPR.Access, `
 				{
 					v!.p;
 				}
@@ -1284,19 +1260,6 @@ test.suite('Decorator', () => {
 					instance = decorator.decorate(parsenode);
 				}
 				return assert_instanceof(instance, klass, `\`${parsenode.text}\` should be an instance of ${klass.name}.`);
-			});
-		});
-		['!.'].forEach((op) => {
-			['1', '_', 'p', '[a + b]'].forEach((accessor) => {
-				test.suite(`Decorate(ExpressionCompound<Block> ::= ExpressionCompound<?Block> "${op}" PropertyAccessor) -> SemanticExpressionAccess`, () => {
-					test.test(`operator \`${op}\` is not yet supported.`, () => {
-						assert.throws(() => new Decorator().decorate(captureParseNode(`
-							{
-								v${op}${accessor};
-							}
-						`, '(expression_compound)')), /not yet supported/);
-					});
-				});
 			});
 		});
 	});

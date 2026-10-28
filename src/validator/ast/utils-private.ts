@@ -21,8 +21,6 @@ import {
 } from '../../parser/index.ts';
 import {
 	Operator,
-	type ValidTypeAccessOperator,
-	type ValidAccessOperator,
 	Validator,
 } from '../index.ts';
 import {
@@ -389,13 +387,9 @@ function decombine(t: TYPE.Type): TYPE.Type[] {
 }
 
 export function get_entry_info(base_type: TYPE.Type, access: AST_TYPE.Access | EXPR.Access, is_writing: boolean = false): EntryType {
-	const accessor_maybe: boolean = access.kind === Operator.DOT_MAYBE;
+	const accessor_maybe: boolean = access instanceof EXPR.Access && access.kind === Operator.DOT_MAYBE;
 	if (base_type.isBottomType) {
 		return {type: TYPE.NOTHING, optional: accessor_maybe};
-	}
-	if (base_type instanceof TYPE.Maybe && accessor_maybe) {
-		const info: EntryType = get_entry_info(base_type.typearg, access, is_writing);
-		return {...info, type: new TYPE.Maybe(info.type)};
 	}
 	if (base_type instanceof TYPE.Combinable) {
 		const constituents: readonly TYPE.Type[] = decombine(base_type);
@@ -506,24 +500,4 @@ export function get_entry_info(base_type: TYPE.Type, access: AST_TYPE.Access | E
 			}
 		}
 	}
-}
-
-
-
-export function access_type(
-	access_kind: ValidTypeAccessOperator | ValidAccessOperator,
-	base_type:   TYPE.Type,
-	entry:       EntryType,
-	access:      AST_TYPE.Access | EXPR.Access,
-): TYPE.Type {
-	if (
-		access_kind === Operator.DOT     && entry.optional ||
-		access_kind === Operator.DOT_MAYBE && !entry.optional && !(base_type instanceof TYPE.Maybe)
-	) {
-		throw new TypeErrorInvalidOperation(access);
-	}
-	if (access_kind === Operator.DOT_RESULT) {
-		throw new Error('Operator `!.` not yet supported.');
-	}
-	return entry.optional ? new TYPE.Maybe(entry.type) : entry.type;
 }

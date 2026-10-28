@@ -17,6 +17,8 @@ export * from './MapNew.ts';
 export * from './ExcpNew.ts';
 export * from './MaybeNew.ts';
 export * from './ResultNew.ts';
+export * from './TupleHas.ts';
+export * from './RecordHas.ts';
 export * from './TupleGet.ts';
 export * from './RecordGet.ts';
 export * from './CollectionDynamicGet.ts';

@@ -20,6 +20,8 @@ import {
 	DictNew,
 	MapNew,
 	MaybeNew,
+	TupleHas,
+	RecordHas,
 	TupleGet,
 	RecordGet,
 	CollectionDynamicGet,
@@ -48,6 +50,8 @@ export abstract class ValueVisitor<T> {
 	public visitDictNew              (val: DictNew):              T { return this.defaultVisit(val); }
 	public visitMapNew               (val: MapNew):               T { return this.defaultVisit(val); }
 	public visitMaybeNew             (val: MaybeNew):             T { return this.defaultVisit(val); }
+	public visitTupleHas             (val: TupleHas):             T { return this.defaultVisit(val); }
+	public visitRecordHas            (val: RecordHas):            T { return this.defaultVisit(val); }
 	public visitTupleGet             (val: TupleGet):             T { return this.defaultVisit(val); }
 	public visitRecordGet            (val: RecordGet):            T { return this.defaultVisit(val); }
 	public visitCollectionDynamicGet (val: CollectionDynamicGet): T { return this.defaultVisit(val); }
@@ -72,6 +76,8 @@ export abstract class ValueVisitor<T> {
 			case DictNew:              { return this.visitDictNew              (val as DictNew); }
 			case MapNew:               { return this.visitMapNew               (val as MapNew); }
 			case MaybeNew:             { return this.visitMaybeNew             (val as MaybeNew); }
+			case TupleHas:             { return this.visitTupleHas             (val as TupleHas); }
+			case RecordHas:            { return this.visitRecordHas            (val as RecordHas); }
 			case TupleGet:             { return this.visitTupleGet             (val as TupleGet); }
 			case RecordGet:            { return this.visitRecordGet            (val as RecordGet); }
 			case CollectionDynamicGet: { return this.visitCollectionDynamicGet (val as CollectionDynamicGet); }
@@ -99,6 +105,8 @@ export abstract class ValueVisitor<T> {
  * - ExcpNew
  * - MaybeNew
  * - ResultNew
+ * - TupleHas
+ * - RecordHas
  * - TupleGet
  * - RecordGet
  * - CollectionDynamicGet

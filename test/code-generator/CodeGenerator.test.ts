@@ -261,7 +261,7 @@ test.suite('CodeGenerator', () => {
 		});
 
 		test.test('#codegenException', () => {
-			const message:   binaryen.ExpressionRef /* (ref $String) */    = wasm.ref.cast(cg.vm.Value.field(genConst(cg, 'message')).composite, cg.vm.reftype.String);
+			const message:   binaryen.ExpressionRef /* (ref $String) */    = cg.vm.Value.cast(genConst(cg, 'message'), cg.vm.reftype.String);
 			const expected1: binaryen.ExpressionRef /* (ref $Exception) */ = wasm.struct.new([
 				cg.vm.Object.ctrPlusPlus(),
 				message,
@@ -299,7 +299,7 @@ test.suite('CodeGenerator', () => {
 		});
 
 		test.test('#codegenResult', () => {
-			const excp:  binaryen.ExpressionRef /* (ref $Exception) */ = cg.codegenException(wasm.ref.cast(cg.vm.Value.field(genConst(cg, 'message')).composite, cg.vm.reftype.String));
+			const excp:  binaryen.ExpressionRef /* (ref $Exception) */ = cg.codegenException(cg.vm.Value.cast(genConst(cg, 'message'), cg.vm.reftype.String));
 			const value: binaryen.ExpressionRef /* (ref $Value) */     = genConst(cg, 42);
 			assertEqualBins(
 				cg.codegenResult(false, excp),
