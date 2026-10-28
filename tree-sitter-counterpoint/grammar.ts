@@ -479,6 +479,14 @@ module.exports = grammar({
 			);
 		},
 
+		...parameterize('arguments_function', ({break: brk, return: rtn}) => $ => {
+			const LIST_ARG_NAM: SeqRule = repCom1(call($, 'property', {break: brk}, {return: rtn}));
+			return choice(
+				seq(OPT_COM, repCom1(call($, '_expression', 'block', {break: brk}, {return: rtn})), optional(seq(',', LIST_ARG_NAM)), OPT_COM),
+				seq(OPT_COM,                                                                                          LIST_ARG_NAM,   OPT_COM),
+			);
+		}, 'break', 'return'),
+
 		...parameterize('capture', ({ref}) => $ => seq(...iff(ref, optional(field('ref_0', 'ref'))), field('identifier_0', $.identifier)), 'ref'),
 
 		...parameterize('_capture_clause', ({ref}) => $ => seq('with', '(', OPT_COM, repCom1(call($, 'capture', {ref})), OPT_COM, ')'), 'ref'),
@@ -492,7 +500,6 @@ module.exports = grammar({
 		...parameterize('expression_dict_literal',   ({break: brk, return: rtn}) => $ => seq('[',              OPT_COM, repCom1(call($, 'property',             {break: brk}, {return: rtn})), OPT_COM,   ']'), 'break', 'return'),
 		...parameterize('expression_set_literal',    ({break: brk, return: rtn}) => $ => seq('{', optional(seq(OPT_COM, repCom1(call($, '_expression', 'block', {break: brk}, {return: rtn})), OPT_COM)), '}'), 'break', 'return'),
 		...parameterize('expression_map_literal',    ({break: brk, return: rtn}) => $ => seq('{',              OPT_COM, repCom1(call($, 'case_map',             {break: brk}, {return: rtn})), OPT_COM,   '}'), 'break', 'return'),
-		...parameterize('function_arguments',        ({break: brk, return: rtn}) => $ => seq('(', optional(seq(OPT_COM, repCom1(call($, '_expression', 'block', {break: brk}, {return: rtn})), OPT_COM)), ')'), 'break', 'return'),
 
 		...parameterize('_expression_unit', ({block, break: brk, return: rtn}) => $ => choice(
 			$.identifier,
@@ -512,7 +519,7 @@ module.exports = grammar({
 			'~?',
 			'~!',
 			seq(choice('.', '?.', '!.'), field('property_accessor_0', call($, 'property_accessor', {break: brk}, {return: rtn}))),
-			seq('.',                     optional(field('generic_arguments_0', $.generic_arguments)), field('function_arguments_0', call($, 'function_arguments', {break: brk}, {return: rtn}))),
+			seq('.',                     optional(field('generic_arguments_0', $.generic_arguments)), '(', optional(field('arguments_function_0', call($, 'arguments_function', {break: brk}, {return: rtn}))), ')'),
 		))), 'block', 'break', 'return'),
 
 		...parameterize('expression_unary_symbol', ({block, break: brk, return: rtn}) => $ => prec(9, seq(choice('!', '?', '+', '-'), call($, '_expression', {block}, {break: brk}, {return: rtn}))), 'block', 'break', 'return'),
@@ -685,6 +692,7 @@ module.exports = grammar({
 		[$.word, $._type_unit],
 		[$._parameters_type],
 		[$._parameters_function],
+		...familyNameAll('arguments_function', ['break', 'return']).map((rulename) => [$[rulename]]),
 	],
 
 	/**
