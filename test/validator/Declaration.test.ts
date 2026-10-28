@@ -494,16 +494,11 @@ test.suite('Declaration', () => {
 						);
 						val bob: Employee | Volunteer = ${BOB};
 					}`, (err) => {
-						const id_name:         bigint = Validator.cookTokenIdentifier('name');
-						const id_id:           bigint = Validator.cookTokenIdentifier('id');
-						const id_job_title:    bigint = Validator.cookTokenIdentifier('job_title');
-						const id_hours_worked: bigint = Validator.cookTokenIdentifier('hours_worked');
-						const id_agency:       bigint = Validator.cookTokenIdentifier('agency');
 						assertAssignable(err as Error, {
 							cons:   AggregateError,
 							errors: [
-								{cons: TypeErrorNotAssignable, message: `Expression \`${BOB}\` is not assignable to type \`(${id_name}: str, ${id_id}: int, ${id_job_title}: str, ${id_hours_worked}: float)\`.`},
-								{cons: TypeErrorNotAssignable, message: `Expression \`${BOB}\` is not assignable to type \`(${id_name}: str, ${id_agency}: str, ${id_hours_worked}: float)\`.`},
+								{cons: TypeErrorNotAssignable, message: `Expression \`${BOB}\` is not assignable to type \`(name: str, id: int, job_title: str, hours_worked: float)\`.`},
+								{cons: TypeErrorNotAssignable, message: `Expression \`${BOB}\` is not assignable to type \`(name: str, agency: str, hours_worked: float)\`.`},
 							],
 						});
 						return true;

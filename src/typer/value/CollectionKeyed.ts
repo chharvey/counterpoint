@@ -1,3 +1,4 @@
+import {Validator} from '../../index.ts';
 import {NULL} from './index.ts';
 import type {Value} from './Value.ts';
 import type {Null} from './Null.ts';
@@ -53,7 +54,7 @@ export abstract class CollectionKeyed<T extends Value = Value> extends Collectio
 	}
 
 	public override toString(): string {
-		return [...this.#properties].map(([key, value]) => `${key}n= ${value}`).join(', ');
+		return [...this.#properties].map(([key, value]) => `${Validator.unhashIdentifierId(key) || key}= ${value}`).join(', ');
 	}
 
 	/** @final */

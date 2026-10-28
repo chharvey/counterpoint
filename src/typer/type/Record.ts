@@ -1,6 +1,7 @@
 import * as assert from 'node:assert';
 import {
 	TypeErrorNoEntry,
+	Validator,
 	type AST,
 } from '../../index.ts';
 import type {EntryType} from '../utils-public.ts';
@@ -51,7 +52,7 @@ class TypeRecord extends ValueType {
 	}
 
 	public override toString(): string {
-		return `(${[...this.typeargs].map(([key, value]) => `${key}${value.optional ? '?:' : ':'} ${value.type}`).join(', ')})`;
+		return `(${[...this.typeargs].map(([key, value]) => `${Validator.unhashIdentifierId(key) || key}${value.optional ? '?:' : ':'} ${value.type}`).join(', ')})`;
 	}
 
 	@instanceOf(() => VALUE.Record)

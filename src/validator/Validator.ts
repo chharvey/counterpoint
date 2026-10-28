@@ -222,6 +222,11 @@ export class Validator {
 		return this.#hashStringMemo.get(s)!;
 	}
 
+	/** Try to find the identifier name(s) of the given hash value. */
+	public static unhashIdentifierId(i: bigint): string {
+		return [...this.#hashStringMemo].filter(([_, value]) => value === i - Validator.MIN_VALUE_IDENTIFIER).map(([key]) => key).join();
+	}
+
 	/**
 	 * Give the unique integer identifier of a reserved keyword token.
 	 * The id is determined by the language specification.
@@ -231,7 +236,7 @@ export class Validator {
 	public static cookTokenKeyword(source: Keyword): bigint {
 		const index: number = KEYWORDS.indexOf(source);
 		return (0 <= index && index < KEYWORDS.length)
-			? BigInt(index) + Validator.MIN_VALUE_KEYWORD
+			? Validator.MIN_VALUE_KEYWORD + BigInt(index)
 			: assert.fail(new RangeError(`Token \`${source}\` is not a valid keyword.`));
 	}
 
