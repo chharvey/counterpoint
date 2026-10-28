@@ -139,26 +139,22 @@ export function validate_callable_class_name(source: string): asserts source is 
 
 
 
-type GenericArgsSpec = readonly TYPE.Type[]; // TODO: intersect with `Readonly<Record<string, TYPE.Type>>` once we have named arguments
+type GenericArgsSpec = readonly TYPE.Type[]; // TODO: intersect with `ReadonlyMap<bigint, TYPE.Type>` once `AST.EXPR.Call#typeargs` has named generic arguments
 
 /**
  * A schema for a generic parameter.
- * @property positional    - Is the parameter positional (as opposed to named)? If true, this schema must not have a `name` property.
- * @property name          - Is the parameter named? If true, this schema must not have a `positional` property.
- * @property covariant     - The manner in which the parameter is covariant (in the `out` position).
- * @property contravariant - The manner in which the parameter is contravariant (in the `in` position).
- * @property constraint    - The type, if any, that the parameter is required to narrow or widen.
- * @property default       - The default value of the parameter, which is an optional parameter.
+ * @property name             - Is the parameter named? If true, this schema must not have a `positional` property.
+ * @property readonlyVariance - The variance when the object is read-only.
+ * @property mutableVariance  - The variance when the object is mutable.
+ * @property constraint       - The type, if any, that the parameter is required to narrow or widen.
+ * @property default          - The default value of the parameter, which is an optional parameter.
  */
-type GenericParameterSchema = (
-	& ({readonly positional: true}) // TODO: union with `{readonly name: string}` once we have named arguments
-	& {
-		readonly readonlyVariance?: 'bivariant' | 'covariant' | 'contravariant' | 'invariant', // defaults to 'invariant'
-		readonly mutableVariance?:  'bivariant' | 'covariant' | 'contravariant' | 'invariant', // defaults to the value of `readonlyVariance` if given, else 'invariant'
-		readonly constraint?:       {readonly direction: 'narrows' | 'widens', readonly type: (generic_params: GenericArgsSpec) => TYPE.Type},
-		readonly default?:          (generic_params: GenericArgsSpec) => TYPE.Type,
-	}
-);
+type GenericParameterSchema = {
+	readonly readonlyVariance?: 'bivariant' | 'covariant' | 'contravariant' | 'invariant', // defaults to 'invariant'
+	readonly mutableVariance?:  'bivariant' | 'covariant' | 'contravariant' | 'invariant', // defaults to the value of `readonlyVariance` if given, else 'invariant'
+	readonly constraint?:       {readonly direction: 'narrows' | 'widens', readonly type: (generic_params: GenericArgsSpec) => TYPE.Type},
+	readonly default?:          (generic_params: GenericArgsSpec) => TYPE.Type,
+};
 
 /**
  * A schema for a functional parameter.
@@ -171,6 +167,16 @@ type FunctionParameterSchema = (
 	& {readonly type: (generic_params: GenericArgsSpec) => TYPE.Type}
 	& ({readonly optional?: false} | {readonly optional: true, readonly default?: unknown})
 );
+
+/**
+ * A schema defining a class’s generic parameters.
+ * @property positional - an array of positional parameters
+ * @property named      - a map of named parameters, keyed by hash id
+ */
+type GenericSchema = {
+	readonly positional?: readonly GenericParameterSchema[],
+	readonly named?:      ReadonlyMap<bigint, GenericParameterSchema>,
+};
 
 /**
  * A schema defining a single constructor overload.
@@ -189,9 +195,9 @@ type OverloadSchema = {
  * @property returnType    - the return type of the constructor call, or type of the type call (they’re the same)
  */
 export type ConstructorSchema = {
-	readonly genericParams: readonly GenericParameterSchema[],
-	readonly overloads:     readonly OverloadSchema[],
-	readonly returnType:    (generic_params: GenericArgsSpec) => TYPE.Type,
+	readonly genericParams?: GenericSchema,
+	readonly overloads:      readonly OverloadSchema[],
+	readonly returnType:     (generic_params: GenericArgsSpec) => TYPE.Type,
 };
 
 /**
@@ -274,32 +280,27 @@ export type ConstructorSchema = {
  */
 export const CLASS_API = new Map<CallableInterfaceName | CallableClassName, ConstructorSchema>([
 	[IntrinsicName.BOOLEAN, {
-		genericParams: [],
-		overloads:     [{positional: [{type: () => TYPE.ANYTHING}]}],
-		returnType:    () => TYPE.BOOL,
+		overloads:  [{positional: [{type: () => TYPE.ANYTHING}]}],
+		returnType: () => TYPE.BOOL,
 	}],
 	[IntrinsicName.INTEGER, {
-		genericParams: [],
-		overloads:     [{positional: [{type: () => TYPE.NUMBER}]}],
-		returnType:    () => TYPE.INT,
+		overloads:  [{positional: [{type: () => TYPE.NUMBER}]}],
+		returnType: () => TYPE.INT,
 	}],
 	[IntrinsicName.NATURAL, {
-		genericParams: [],
-		overloads:     [{positional: [{type: () => TYPE.NUMBER}]}],
-		returnType:    () => TYPE.NAT,
+		overloads:  [{positional: [{type: () => TYPE.NUMBER}]}],
+		returnType: () => TYPE.NAT,
 	}],
 	[IntrinsicName.FLOAT, {
-		genericParams: [],
-		overloads:     [{positional: [{type: () => TYPE.NUMBER}]}],
-		returnType:    () => TYPE.FLOAT,
+		overloads:  [{positional: [{type: () => TYPE.NUMBER}]}],
+		returnType: () => TYPE.FLOAT,
 	}],
 	[IntrinsicName.STRING, {
-		genericParams: [],
-		overloads:     [{positional: [{type: () => TYPE.ANYTHING}]}],
-		returnType:    () => TYPE.STR,
+		overloads:  [{positional: [{type: () => TYPE.ANYTHING}]}],
+		returnType: () => TYPE.STR,
 	}],
 	[IntrinsicName.LIST, {
-		genericParams: [{positional: true, readonlyVariance: 'covariant', mutableVariance: 'invariant'}],
+		genericParams: {positional: [{readonlyVariance: 'covariant', mutableVariance: 'invariant'}]},
 		overloads:     [
 			{},
 			{positional: [{type: (generic_params) => new TYPE.List(generic_params[0])}]},
@@ -308,7 +309,7 @@ export const CLASS_API = new Map<CallableInterfaceName | CallableClassName, Cons
 		returnType: (generic_params) => new TYPE.List(generic_params[0]),
 	}],
 	[IntrinsicName.DICT, {
-		genericParams: [{positional: true, readonlyVariance: 'covariant', mutableVariance: 'invariant'}],
+		genericParams: {positional: [{readonlyVariance: 'covariant', mutableVariance: 'invariant'}]},
 		overloads:     [
 			{},
 			{positional: [{type: (generic_params) => new TYPE.List(TYPE.Tuple.fromTypes([TYPE.SYM, generic_params[0]]))}]},
@@ -319,7 +320,7 @@ export const CLASS_API = new Map<CallableInterfaceName | CallableClassName, Cons
 		returnType: (generic_params) => new TYPE.Dict(generic_params[0]),
 	}],
 	[IntrinsicName.SET, {
-		genericParams: [{positional: true, readonlyVariance: 'covariant', mutableVariance: 'invariant'}],
+		genericParams: {positional: [{readonlyVariance: 'covariant', mutableVariance: 'invariant'}]},
 		overloads:     [
 			{},
 			{positional: [{type: (generic_params) => new TYPE.List(generic_params[0])}]},
@@ -328,10 +329,12 @@ export const CLASS_API = new Map<CallableInterfaceName | CallableClassName, Cons
 		returnType: (generic_params) => new TYPE.Set(generic_params[0]),
 	}],
 	[IntrinsicName.MAP, {
-		genericParams: [
-			{positional: true, readonlyVariance: 'covariant', mutableVariance: 'invariant'},
-			{positional: true, readonlyVariance: 'covariant', mutableVariance: 'invariant', default: (generic_params) => generic_params[0]},
-		],
+		genericParams: {
+			positional: [
+				{readonlyVariance: 'covariant', mutableVariance: 'invariant'},
+				{readonlyVariance: 'covariant', mutableVariance: 'invariant', default: (generic_params) => generic_params[0]},
+			],
+		},
 		overloads: [
 			{},
 			{positional: [{type: (generic_params) => new TYPE.List(TYPE.Tuple.fromTypes([generic_params[0], generic_params[1]]))}]},
@@ -341,37 +344,36 @@ export const CLASS_API = new Map<CallableInterfaceName | CallableClassName, Cons
 		returnType: (generic_params) => new TYPE.Map(generic_params[0], generic_params[1]),
 	}],
 	[IntrinsicName.EXCEPTION, {
-		genericParams: [],
-		overloads:     [{positional: [{type: () => TYPE.STR}, {optional: true, type: () => TYPE.EXCP}]}],
-		returnType:    () => TYPE.EXCP,
+		overloads:  [{positional: [{type: () => TYPE.STR}, {optional: true, type: () => TYPE.EXCP}]}],
+		returnType: () => TYPE.EXCP,
 	}],
 	[IntrinsicName.MAYBE, {
-		genericParams: [{positional: true, readonlyVariance: 'covariant'}],
+		genericParams: {positional: [{readonlyVariance: 'covariant'}]},
 		overloads:     [],
 		returnType:    (generic_params) => new TYPE.Maybe(generic_params[0]),
 	}],
 	[IntrinsicName.NONE, {
-		genericParams: [{positional: true, readonlyVariance: 'covariant'}],
+		genericParams: {positional: [{readonlyVariance: 'covariant'}]},
 		overloads:     [{}],
 		returnType:    (generic_params) => new TYPE.None(generic_params[0]),
 	}],
 	[IntrinsicName.SOME, {
-		genericParams: [{positional: true, readonlyVariance: 'covariant'}],
+		genericParams: {positional: [{readonlyVariance: 'covariant'}]},
 		overloads:     [{positional: [{type: (generic_params) => generic_params[0]}]}],
 		returnType:    (generic_params) => new TYPE.Some(generic_params[0]),
 	}],
 	[IntrinsicName.RESULT, {
-		genericParams: [{positional: true, readonlyVariance: 'covariant'}, {positional: true, readonlyVariance: 'covariant', constraint: {direction: 'narrows', type: () => TYPE.EXCP}, default: () => TYPE.EXCP}],
+		genericParams: {positional: [{readonlyVariance: 'covariant'}, {readonlyVariance: 'covariant', constraint: {direction: 'narrows', type: () => TYPE.EXCP}, default: () => TYPE.EXCP}]},
 		overloads:     [],
 		returnType:    (generic_params) => new TYPE.Result(generic_params[0], generic_params[1]),
 	}],
 	[IntrinsicName.FAIL, {
-		genericParams: [{positional: true, readonlyVariance: 'covariant'}, {positional: true, readonlyVariance: 'covariant', constraint: {direction: 'narrows', type: () => TYPE.EXCP}, default: () => TYPE.EXCP}],
+		genericParams: {positional: [{readonlyVariance: 'covariant'}, {readonlyVariance: 'covariant', constraint: {direction: 'narrows', type: () => TYPE.EXCP}, default: () => TYPE.EXCP}]},
 		overloads:     [{positional: [{type: (generic_params) => generic_params[1]}]}],
 		returnType:    (generic_params) => new TYPE.Fail(generic_params[0], generic_params[1]),
 	}],
 	[IntrinsicName.OK, {
-		genericParams: [{positional: true, readonlyVariance: 'covariant'}, {positional: true, readonlyVariance: 'covariant', constraint: {direction: 'narrows', type: () => TYPE.EXCP}, default: () => TYPE.EXCP}],
+		genericParams: {positional: [{readonlyVariance: 'covariant'}, {readonlyVariance: 'covariant', constraint: {direction: 'narrows', type: () => TYPE.EXCP}, default: () => TYPE.EXCP}]},
 		overloads:     [{positional: [{type: (generic_params) => generic_params[0]}]}],
 		returnType:    (generic_params) => new TYPE.Ok(generic_params[0], generic_params[1]),
 	}],
