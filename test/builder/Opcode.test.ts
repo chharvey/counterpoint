@@ -1908,6 +1908,23 @@ test.suite('Opcode', () => {
 						wasm.drop(cg.vm.op.unwrapResult(wasm.local.get(3, cg.vm.reftype.Value))),
 					]);
 				});
+				test.test('RESULT.EXTRACT', () => {
+					const {stmts, builder, cg, wasm} = setupScript(`{
+						val x: int! = Fail.<int>(Exception.("42"));
+						val y: Result.<nat> = Ok.<nat>(+42);
+						val z: Result.<float, Exception> = Ok.<float>(4.2);
+						x;
+						y;
+						z;
+					}`);
+					const expr_visitor = new VisitorExprBuild(builder);
+					// there exists no syntax for Result extract, so constructing it manually
+					return assertEqualBins([3, 4, 5].map((i) => new OP.Unop(
+						OP.OpCode.RESULT_EXTRACT,
+						expr_visitor.visit((stmts[i] as AST.STMT.StatementExpression).expr!) as OP.Get,
+						TYPE.EXCP,
+					).codegen(cg)), [1, 2, 3].map((i) => cg.vm.op.extractResult(wasm.local.get(i, cg.vm.reftype.Value))));
+				});
 			});
 
 			test.suite('Instance', () => {

@@ -144,7 +144,7 @@ export class Unop extends Value {
 
 			case OpCode.MAYBE_UNWRAP:   { return op.unwrapMaybe(code); }
 			case OpCode.RESULT_UNWRAP:  { return op.unwrapResult(code); }
-			case OpCode.RESULT_EXTRACT: { throw new Error('not yet supported.'); }
+			case OpCode.RESULT_EXTRACT: { return op.extractResult(code); }
 		}
 	}
 
