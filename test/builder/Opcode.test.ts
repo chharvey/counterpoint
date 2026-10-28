@@ -1464,17 +1464,17 @@ test.suite('Opcode', () => {
 
 			test.test('ExcpNew', () => {
 				const cg = new CodeGenerator();
-				const {mod: {wasm}, vm: {reftype, Value: VmValue}} = cg;
+				const {vm: {reftype, Value: VmValue}} = cg;
 				const actual = new OP.ExcpNew(new OP.Const(new VALUE.String('hello')));
-				const expected: binaryen.ExpressionRef /* (ref $Value) */ = VmValue.newComposite(cg.codegenException(wasm.ref.cast(VmValue.field(genConst(cg, 'hello')).composite, reftype.String)));
+				const expected: binaryen.ExpressionRef /* (ref $Value) */ = VmValue.newComposite(cg.codegenException(VmValue.cast(genConst(cg, 'hello'), reftype.String)));
 				return assertEqualBins([
 					actual,
 					new OP.ExcpNew(new OP.Const(new VALUE.String('world')), actual),
 				].map((opcode) => opcode.codegen(cg)), [
 					expected,
 					VmValue.newComposite(cg.codegenException(
-						wasm.ref.cast(VmValue.field(genConst(cg, 'world')).composite, reftype.String),
-						wasm.ref.cast(VmValue.field(expected).composite, reftype.Exception),
+						VmValue.cast(genConst(cg, 'world'), reftype.String),
+						VmValue.cast(expected, reftype.Exception),
 					)),
 				]);
 			});
@@ -1492,15 +1492,16 @@ test.suite('Opcode', () => {
 
 			test.test('ResultNew', () => {
 				const cg = new CodeGenerator();
+				const {vm: {reftype, Value: VmValue}} = cg;
 				const excp = new OP.ExcpNew(new OP.Const(new VALUE.String('message')));
 				const value = new OP.Const(new VALUE.Integer(42n));
 				return assertEqualBins([
 					new OP.ResultNew(false, TYPE.INT, TYPE.EXCP, excp),
 					new OP.ResultNew(true,  TYPE.INT, TYPE.EXCP, value),
 				].map((opcode) => opcode.codegen(cg)), [
-					cg.codegenResult(false, cg.mod.wasm.ref.cast(cg.vm.Value.field(excp.codegen(cg)).composite, cg.vm.reftype.Exception)),
+					cg.codegenResult(false, VmValue.cast(excp.codegen(cg), reftype.Exception)),
 					cg.codegenResult(true, value.codegen(cg)),
-				].map((mab) => cg.vm.Value.newComposite(mab)));
+				].map((mab) => VmValue.newComposite(mab)));
 			});
 
 			test.test('TupleHas', () => {
@@ -1804,11 +1805,7 @@ test.suite('Opcode', () => {
 					const {Vect, Value, List} = cg.vm;
 					// there exists no syntax for List count, so constructing it manually
 					const list = new VisitorExprBuild(builder).visit((stmts[2] as AST.STMT.StatementExpression).expr!) as OP.Get;
-					const unop = new OP.Unop(
-						OP.OpCode.LIST_COUNT,
-						list,
-						TYPE.NAT,
-					);
+					const unop = new OP.Unop(OP.OpCode.LIST_COUNT, list, TYPE.NAT);
 					return assertEqualBins(
 						unop.codegen(cg),
 						Value.newPrimitive(Vect.newNat(wasm.i64.extend_i32_u(List.count(Value.cast(list.codegen(cg), cg.vm.reftype.List))))),
@@ -1823,11 +1820,7 @@ test.suite('Opcode', () => {
 					const {Vect, Value, Dict} = cg.vm;
 					// there exists no syntax for Dict count, so constructing it manually
 					const dict = new VisitorExprBuild(builder).visit((stmts[2] as AST.STMT.StatementExpression).expr!) as OP.Get;
-					const unop = new OP.Unop(
-						OP.OpCode.DICT_COUNT,
-						dict,
-						TYPE.NAT,
-					);
+					const unop = new OP.Unop(OP.OpCode.DICT_COUNT, dict, TYPE.NAT);
 					return assertEqualBins(
 						unop.codegen(cg),
 						Value.newPrimitive(Vect.newNat(wasm.i64.extend_i32_u(Dict.count(Value.cast(dict.codegen(cg), cg.vm.reftype.Dict))))),
@@ -1841,12 +1834,8 @@ test.suite('Opcode', () => {
 					}`);
 					const {Vect, Value, Map: VmMap} = cg.vm;
 					// there exists no syntax for Set count, so constructing it manually
-					const set = new VisitorExprBuild(builder).visit((stmts[2] as AST.STMT.StatementExpression).expr!) as OP.Get;
-					const unop = new OP.Unop(
-						OP.OpCode.SET_COUNT,
-						set,
-						TYPE.NAT,
-					);
+					const set  = new VisitorExprBuild(builder).visit((stmts[2] as AST.STMT.StatementExpression).expr!) as OP.Get;
+					const unop = new OP.Unop(OP.OpCode.SET_COUNT, set, TYPE.NAT);
 					return assertEqualBins(
 						unop.codegen(cg),
 						Value.newPrimitive(Vect.newNat(wasm.i64.extend_i32_u(VmMap.count(Value.cast(set.codegen(cg), cg.vm.reftype.Map))))),
@@ -1860,12 +1849,8 @@ test.suite('Opcode', () => {
 					}`);
 					const {Vect, Value, Map: VmMap} = cg.vm;
 					// there exists no syntax for Map count, so constructing it manually
-					const map = new VisitorExprBuild(builder).visit((stmts[2] as AST.STMT.StatementExpression).expr!) as OP.Get;
-					const unop = new OP.Unop(
-						OP.OpCode.MAP_COUNT,
-						map,
-						TYPE.NAT,
-					);
+					const map  = new VisitorExprBuild(builder).visit((stmts[2] as AST.STMT.StatementExpression).expr!) as OP.Get;
+					const unop = new OP.Unop(OP.OpCode.MAP_COUNT, map, TYPE.NAT);
 					return assertEqualBins(
 						unop.codegen(cg),
 						Value.newPrimitive(Vect.newNat(wasm.i64.extend_i32_u(VmMap.count(Value.cast(map.codegen(cg), cg.vm.reftype.Map))))),
@@ -1896,16 +1881,14 @@ test.suite('Opcode', () => {
 						y~!;
 						z~!;
 					}`);
-					const {vm: {reftype, Value: VmValue}} = cg;
-					const excp: binaryen.ExpressionRef /* (ref $Value) */ = VmValue.newComposite(cg.codegenException(wasm.ref.cast(VmValue.field(genConst(cg, '42')).composite, reftype.String)));
+					const {vm: {reftype, op, Value: VmValue}} = cg;
+					const excp: binaryen.ExpressionRef /* (ref $Value) */ = VmValue.newComposite(cg.codegenException(VmValue.cast(genConst(cg, '42'), reftype.String)));
 					return assertEqualBins(builder.instructions.map((instr) => instr.codegen(cg)), [
 						wasm.local.set(0, excp),
-						wasm.local.set(1, cg.vm.Value.newComposite(cg.codegenResult(false, cg.mod.wasm.ref.cast(cg.vm.Value.field(wasm.local.get(0, reftype.Value)).composite, cg.vm.reftype.Exception)))),
-						wasm.local.set(2, cg.vm.Value.newComposite(cg.codegenResult(true, genConst(cg, 42n, 'nat')))),
-						wasm.local.set(3, cg.vm.Value.newComposite(cg.codegenResult(true, genConst(cg, 4.2)))),
-						wasm.drop(cg.vm.op.unwrapResult(wasm.local.get(1, cg.vm.reftype.Value))),
-						wasm.drop(cg.vm.op.unwrapResult(wasm.local.get(2, cg.vm.reftype.Value))),
-						wasm.drop(cg.vm.op.unwrapResult(wasm.local.get(3, cg.vm.reftype.Value))),
+						wasm.local.set(1, VmValue.newComposite(cg.codegenResult(false, VmValue.cast(wasm.local.get(0, reftype.Value), reftype.Exception)))),
+						wasm.local.set(2, VmValue.newComposite(cg.codegenResult(true, genConst(cg, 42n, 'nat')))),
+						wasm.local.set(3, VmValue.newComposite(cg.codegenResult(true, genConst(cg, 4.2)))),
+						...[1, 2, 3].map((i) => wasm.drop(op.unwrapResult(wasm.local.get(i, reftype.Value)))),
 					]);
 				});
 				test.test('RESULT.EXTRACT', () => {

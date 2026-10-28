@@ -49,10 +49,11 @@ export class ResultNew extends Value {
 
 	@memoizeMethod
 	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
+		const {vm: {reftype, Value: VmValue}} = cg;
 		let argument: binaryen.ExpressionRef /* (ref $Value) */ = this.argument.codegen(cg);
 		if (!this.isOk) {
-			argument /* (ref $Exception) */ = cg.mod.wasm.ref.cast(cg.vm.Value.field(argument).composite, cg.vm.reftype.Exception);
+			argument /* (ref $Exception) */ = VmValue.cast(argument, reftype.Exception);
 		}
-		return cg.vm.Value.newComposite(cg.codegenResult(this.isOk, argument));
+		return VmValue.newComposite(cg.codegenResult(this.isOk, argument));
 	}
 }

@@ -53,10 +53,10 @@ export class ExcpNew extends Value {
 
 	@memoizeMethod
 	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
-		const {mod: {wasm}, vm: {reftype, Value: VmValue}} = cg;
+		const {vm: {reftype, Value: VmValue}} = cg;
 		return VmValue.newComposite(cg.codegenException(
-			wasm.ref.cast(VmValue.field(this.message.codegen(cg)).composite, reftype.String),
-			this.cause ? wasm.ref.cast(VmValue.field(this.cause.codegen(cg)).composite, reftype.Exception) : undefined,
+			VmValue.cast(this.message.codegen(cg), reftype.String),
+			this.cause ? VmValue.cast(this.cause.codegen(cg), reftype.Exception) : undefined,
 		));
 	}
 }
