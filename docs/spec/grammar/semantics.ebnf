@@ -153,7 +153,7 @@ SemanticExpressionAccess[kind: NORMAL | MAYBE | RESULT][isEntryOptional?: Boolea
 	::= SemanticExpression (SemanticIndex | SemanticKey | SemanticExpression);
 
 SemanticExpressionCall
-	::= SemanticExpression SemanticType* SemanticExpression*;
+	::= SemanticExpression SemanticType* SemanticExpression* SemanticProperty*;
 
 SemanticExpressionClaim[force: Boolean]
 	::= SemanticExpression SemanticType;

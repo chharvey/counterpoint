@@ -24,6 +24,7 @@ import {
 } from '../utils-private.ts';
 import {typecheck_assign} from '../AstNode.ts';
 import * as AST_TYPE from '../type/index.ts';
+import type {Property} from '../Property.ts';
 import {Expression} from './Expression.ts';
 import {Variable} from './Variable.ts';
 import {Tuple as ExpressionTuple} from './Tuple.ts';
@@ -40,11 +41,12 @@ export class Call extends Expression {
 
 	public constructor(
 		start_node: SyntaxNodeType<'expression_compound'>,
-		public readonly base:     Expression,
-		public readonly typeargs: readonly AST_TYPE.Type[],
-		public readonly exprargs: readonly Expression[],
+		public  readonly base:          Expression,
+		public  readonly typeargs:      readonly AST_TYPE.Type[],
+		public  readonly exprargs:      readonly Expression[], // TODO: rename to `exprargsPosit`
+		private readonly exprargsNamed: readonly Property[],
 	) {
-		super(start_node, {}, [base, ...typeargs, ...exprargs]);
+		super(start_node, {}, [base, ...typeargs, ...exprargs, ...exprargsNamed]);
 	}
 
 	public override varCheck(): void {
