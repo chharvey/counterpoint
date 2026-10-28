@@ -1353,14 +1353,18 @@ test.suite('Opcode', () => {
 
 			test.test('ExcpNew', () => {
 				const cg = new CodeGenerator();
+				const {mod: {wasm}, vm: {reftype, Value: VmValue}} = cg;
 				const actual = new OP.ExcpNew(new OP.Const(new VALUE.String('hello')));
-				const expected: binaryen.ExpressionRef = cg.vm.Value.newComposite(cg.codegenException(genConst(cg, 'hello')));
+				const expected: binaryen.ExpressionRef /* (ref $Value) */ = VmValue.newComposite(cg.codegenException(wasm.ref.cast(VmValue.field(genConst(cg, 'hello')).composite, reftype.String)));
 				return assertEqualBins([
 					actual,
 					new OP.ExcpNew(new OP.Const(new VALUE.String('world')), actual),
 				].map((opcode) => opcode.codegen(cg)), [
 					expected,
-					cg.vm.Value.newComposite(cg.codegenException(genConst(cg, 'world'), expected)),
+					VmValue.newComposite(cg.codegenException(
+						wasm.ref.cast(VmValue.field(genConst(cg, 'world')).composite, reftype.String),
+						wasm.ref.cast(VmValue.field(expected).composite, reftype.Exception),
+					)),
 				]);
 			});
 

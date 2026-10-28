@@ -129,14 +129,14 @@ Codegen((MAP.NEW `pairs`)) := (call $Value.new-composite
 Codegen((EXCP.NEW `message`)) := (call $Value.new-newComposite
 	(struct.new $Exception
 		(call $Object.ctr-plus-plus)
-		`Codegen(message)`
+		(ref.cast (ref $String) (struct.get $Value $composite `Codegen(message)`))
 	)
 );
 Codegen((EXCP.NEW `message` `cause`)) := (call $Value.new-newComposite
 	(struct.new $Exception
 		(call $Object.ctr-plus-plus)
-		`Codegen(message)`
-		`Codegen(cause)`
+		(ref.cast (ref $String)    (struct.get $Value $composite `Codegen(message)`))
+		(ref.cast (ref $Exception) (struct.get $Value $composite `Codegen(cause)`))
 	)
 );
 

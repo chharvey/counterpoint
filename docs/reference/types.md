@@ -1131,6 +1131,29 @@ bases?.[a]; % produces the consequent if it exists, else `null`
 ## Control Abstraction Types
 
 
+### Exceptions
+Exceptions are used to convey information about exceptional circumstances.
+Exceptions can be returned directly, wrapped in [Results](#results),
+sent by a function that panics.
+
+Exceptions must contain a string message, and may optionally contain a “cause”,
+which is another Exception that serves as the reason the current Exception
+is being raised.
+
+When an Exception is returned (or wrapped in a Result and returned) by a function,
+the caller is expected to handle it. This is the conventionanl control flow for recoverable operations.
+For example, a function that attempts to locate a file by name might not find that file;
+in that case, the function should convey that information back to its caller.
+
+When a truly unrecoverable situation occurs, a function may **panic** with an Exception.
+```cpl
+panic Exception("Error: memory out of bounds.");
+```
+The function’s caller has no way of handling a panic. The Exception propegates up the call stack,
+reaching the top level of the program, which logs its message and halts execution.
+Some debugging tools can be useful in inspecting panicked Exceptions.
+
+
 ### Maybes
 Maybe objects are containers of possible values.
 The Maybe type is an abstract type with exactly two concrete subtypes: Some, which contains a value, and None, which contains no value.
@@ -1149,30 +1172,6 @@ A shorthand for the generic syntax `Maybe[T]` is `T?`.
 ```cpl
 val mut x: int? = Some[int](42);
 set x = None[int]();
-```
-
-`None` objects are considered falsy (and thus empty), and therefore return `true` when operated on by the
-[logical negation `!` and emptiness `?` operators](./expressions-operators.md#logical-negation-emptiness).
-```cpl
-val mut x: str? = Some[str]("hello");
-!x; %== false
-?x; %== false
-
-set x = None[str]();
-!x; %== true
-?x; %== true
-```
-Likewise, a `None` behaves like a falsy value in the
-[logical conjunction `&&`](./expressions-operators.md#conjunctive) and
-[logical disjunction `||`](./expressions-operators.md#disjunctive) operators.
-```cpl
-None[anything]() && "hello"; %== None()
-None[anything]() || "hello"; %== "hello"
-```
-A `Some` object is always truthy, regardless of its held value (even if that value itself is falsy).
-```cpl
-Some[bool](false) && "hello"; %== "hello"
-Some[bool](false) || "hello"; %== Some[bool](false)
 ```
 
 The [maybe access operator](./expressions-operators.md#maybe-access) works very well with the Maybe type.
