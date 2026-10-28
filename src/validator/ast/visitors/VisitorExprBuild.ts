@@ -153,7 +153,7 @@ export class VisitorExprBuild extends EXPR.ExprVisitor<OP.Value> {
 		if (false) { // eslint-disable-line no-constant-condition, @typescript-eslint/no-unnecessary-condition
 			return new OP.Call(
 				this.visit(expr.base).asTac(this.builder),
-				expr.exprargs.map((arg) => this.visit(arg).asTac(this.builder)),
+				expr.exprargsPosit.map((arg) => this.visit(arg).asTac(this.builder)),
 				expr.type(),
 			);
 		}
@@ -171,7 +171,7 @@ export class VisitorExprBuild extends EXPR.ExprVisitor<OP.Value> {
 					[IntrinsicName.NATURAL, OP.OpCode.NAT_FROM],
 					[IntrinsicName.FLOAT,   OP.OpCode.FLOAT_FROM],
 					[IntrinsicName.STRING,  OP.OpCode.STR_FROM],
-				]).get(base_source)!, this.visit(expr.exprargs[0]).asTac(this.builder), expr.type());
+				]).get(base_source)!, this.visit(expr.exprargsPosit[0]).asTac(this.builder), expr.type());
 			}
 			case IntrinsicName.LIST:
 			case IntrinsicName.DICT:
@@ -184,22 +184,22 @@ export class VisitorExprBuild extends EXPR.ExprVisitor<OP.Value> {
 					[IntrinsicName.MAP,  [OP.TypeName.MAP,  () => new OP.MapNew  (new Map(), expr.type())]],
 				]).get(base_source)!;
 				const new_obj: OP.Value = ctor();
-				if (!expr.exprargs.length) {
+				if (!expr.exprargsPosit.length) {
 					return new_obj;
 				}
 				const dest: OP.ValueTac = new_obj.asTac(this.builder);
-				this.builder.pushInstruction(new OP.CollectionDynamicCopy(name, dest, this.visit(expr.exprargs[0]).asTac(this.builder)));
+				this.builder.pushInstruction(new OP.CollectionDynamicCopy(name, dest, this.visit(expr.exprargsPosit[0]).asTac(this.builder)));
 				return dest;
 			}
 			case IntrinsicName.EXCEPTION: {
 				return new OP.ExcpNew(
-					this.visit(expr.exprargs[0]).asTac(this.builder),
-					expr.exprargs[1] ? this.visit(expr.exprargs[1]).asTac(this.builder) : undefined,
+					this.visit(expr.exprargsPosit[0]).asTac(this.builder),
+					expr.exprargsPosit[1] ? this.visit(expr.exprargsPosit[1]).asTac(this.builder) : undefined,
 				);
 			}
 			case IntrinsicName.NONE:
 			case IntrinsicName.SOME: {
-				return new OP.MaybeNew(expr.typeargs[0].eval(), expr.exprargs[0] ? this.visit(expr.exprargs[0]).asTac(this.builder) : undefined);
+				return new OP.MaybeNew(expr.typeargs[0].eval(), expr.exprargsPosit[0] ? this.visit(expr.exprargsPosit[0]).asTac(this.builder) : undefined);
 			}
 			case IntrinsicName.FAIL:
 			case IntrinsicName.OK: {
@@ -207,7 +207,7 @@ export class VisitorExprBuild extends EXPR.ExprVisitor<OP.Value> {
 					base_source === IntrinsicName.OK,
 					expr.typeargs[0].eval(),
 					expr.typeargs[1]?.eval() ?? TYPE.EXCP,
-					this.visit(expr.exprargs[0]).asTac(this.builder),
+					this.visit(expr.exprargsPosit[0]).asTac(this.builder),
 				);
 			}
 		}

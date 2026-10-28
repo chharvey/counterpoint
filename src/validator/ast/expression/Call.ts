@@ -43,10 +43,10 @@ export class Call extends Expression {
 		start_node: SyntaxNodeType<'expression_compound'>,
 		public  readonly base:          Expression,
 		public  readonly typeargs:      readonly AST_TYPE.Type[],
-		public  readonly exprargs:      readonly Expression[], // TODO: rename to `exprargsPosit`
+		public  readonly exprargsPosit: readonly Expression[],
 		private readonly exprargsNamed: readonly Property[],
 	) {
-		super(start_node, {}, [base, ...typeargs, ...exprargs, ...exprargsNamed]);
+		super(start_node, {}, [base, ...typeargs, ...exprargsPosit, ...exprargsNamed]);
 	}
 
 	public override varCheck(): void {
@@ -55,7 +55,7 @@ export class Call extends Expression {
 		validate_callable_class_name(this.base.source);
 		return xjs.Array.forEachAggregated([
 			...this.typeargs,
-			...this.exprargs,
+			...this.exprargsPosit,
 		], (arg) => arg.varCheck());
 	}
 
@@ -64,7 +64,7 @@ export class Call extends Expression {
 		// (`this.base.source` must be a `CallableClassName`)
 		xjs.Array.forEachAggregated([
 			...this.typeargs,
-			...this.exprargs,
+			...this.exprargsPosit,
 		], (arg) => arg.typeCheck());
 		this.type(); // assert does not throw
 	}
@@ -74,7 +74,7 @@ export class Call extends Expression {
 		if (!(this.base instanceof Variable)) {
 			throw new TypeErrorNotCallable(this.base.type(), this.base);
 		}
-		if (this.exprargs.some((arg) => arg.type().isBottomType)) {
+		if (this.exprargsPosit.some((arg) => arg.type().isBottomType)) {
 			return TYPE.NOTHING;
 		}
 		const constructor_schema:    ConstructorSchema = CLASS_API.get(this.base.source as CallableClassName)!;
@@ -92,7 +92,7 @@ export class Call extends Expression {
 				case IntrinsicName.LIST: {
 					// If function overload checking failed, `arg` is either a tuple literal or an expression with a tuple type.
 					const itemtype: TYPE.Type  = this.typeargs[0].eval();
-					const arg:      Expression = this.exprargs[0];
+					const arg:      Expression = this.exprargsPosit[0];
 					if (arg instanceof ExpressionTuple) {
 						xjs.Array.forEachAggregated(arg.children, (item) => typecheck_assign(item, itemtype, item));
 					} else {
@@ -112,7 +112,7 @@ export class Call extends Expression {
 					// If function overload checking failed, `arg` is either a tuple/record literal or an expression with a tuple/record type.
 					const valuetype: TYPE.Type  = this.typeargs[0].eval();
 					const entrytype: TYPE.Tuple = TYPE.Tuple.fromTypes([TYPE.SYM, valuetype]);
-					const arg:       Expression = this.exprargs[0];
+					const arg:       Expression = this.exprargsPosit[0];
 					if (arg instanceof ExpressionTuple) {
 						xjs.Array.forEachAggregated(arg.children, (item) => typecheck_assign(item, entrytype, item));
 					} else if (arg instanceof ExpressionRecord) {
@@ -138,7 +138,7 @@ export class Call extends Expression {
 				case IntrinsicName.SET: {
 					// If function overload checking failed, `arg` is either a tuple literal or an expression with a tuple type.
 					const eltype: TYPE.Type  = this.typeargs[0].eval();
-					const arg:    Expression = this.exprargs[0];
+					const arg:    Expression = this.exprargsPosit[0];
 					if (arg instanceof ExpressionTuple) {
 						xjs.Array.forEachAggregated(arg.children, (item) => typecheck_assign(item, eltype, item));
 					} else {
@@ -159,7 +159,7 @@ export class Call extends Expression {
 					const anttype:   TYPE.Type  = this.typeargs[0].eval();
 					const contype:   TYPE.Type  = this.typeargs[1]?.eval() ?? anttype;
 					const entrytype: TYPE.Tuple = TYPE.Tuple.fromTypes([anttype, contype]);
-					const arg:       Expression = this.exprargs[0];
+					const arg:       Expression = this.exprargsPosit[0];
 					if (arg instanceof ExpressionTuple) {
 						xjs.Array.forEachAggregated(arg.children, (item) => typecheck_assign(item, entrytype, item));
 					} else {
@@ -204,7 +204,7 @@ export class Call extends Expression {
 				min: BigInt(func_params.filter((param) => !param.optional).length),
 				max: BigInt(func_params.length),
 			} as const;
-			const actual_function: bigint = BigInt(this.exprargs.length);
+			const actual_function: bigint = BigInt(this.exprargsPosit.length);
 			// TODO: throw AggregateError if both
 			if (actual_function < expected_function.min) {
 				throw new TypeErrorArgCount(actual_function, expected_function.min, false, this);
@@ -215,10 +215,10 @@ export class Call extends Expression {
 
 			/* Argument Typing. Handles optionality and default values. Also checks if each argument matches the constraints given. */
 			func_params.forEach((param, i) => {
-				if (!this.exprargs.at(i)) {
+				if (!this.exprargsPosit.at(i)) {
 					assert.ok(param.optional); // we can assert this due to argument counting above
 				}
-				const argnode: Expression | undefined = this.exprargs.at(i);
+				const argnode: Expression | undefined = this.exprargsPosit.at(i);
 				if (argnode) {
 					typecheck_assign(argnode, param.type.call(null, resolved_generic_args), this);
 				}
