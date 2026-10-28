@@ -156,6 +156,37 @@ test.suite('Opcode', () => {
 				]);
 			});
 
+			test.test('ResultNew', () => {
+				const interp = new Interpreter();
+				return assert_equal_values([
+					new OP.ResultNew(false, TYPE.INT, TYPE.EXCP, new OP.ExcpNew(new OP.Const(new VALUE.String('message')))),
+					new OP.ResultNew(true,  TYPE.INT, TYPE.EXCP, new OP.Const(new VALUE.Integer(42n))),
+				].map((opcode) => opcode.interpret(interp)), [
+					new VALUE.Result(false, new VALUE.Exception(new VALUE.String('message'))),
+					new VALUE.Result(true, new VALUE.Integer(42n)),
+				]);
+			});
+
+			test.test('TupleHas', () => {
+				// there exists no syntax for Tuple has, so constructing it manually
+				const tuple  = new VisitorExprBuild(new Builder()).visit(AST.EXPR.Tuple.fromSource('(10, 20)'));
+				const interp = new Interpreter();
+				return assert_equal_values(new Map<VALUE.Boolean, VALUE.Boolean>([
+					[new OP.TupleHas(tuple, 1n).interpret(interp), VALUE.TRUE],
+					[new OP.TupleHas(tuple, 2n).interpret(interp), VALUE.FALSE],
+				]));
+			});
+
+			test.test('RecordHas', () => {
+				// there exists no syntax for Record has, so constructing it manually
+				const record = new VisitorExprBuild(new Builder()).visit(AST.EXPR.Record.fromSource('(a= 10, c= 20)'));
+				const interp = new Interpreter();
+				return assert_equal_values(new Map<VALUE.Boolean, VALUE.Boolean>([
+					[new OP.RecordHas(record, {keyid: Validator.cookTokenIdentifier('a'), keysrc: 'a'}).interpret(interp), VALUE.TRUE],
+					[new OP.RecordHas(record, {keyid: Validator.cookTokenIdentifier('b'), keysrc: 'b'}).interpret(interp), VALUE.FALSE],
+				]));
+			});
+
 			test.test('TupleGet, RecordGet', () => {
 				assert_equal_values(interpret_extracted_drops(`{
 					val     tup_fixed:   (int, float, str) = (1, 2.0, "three");
@@ -405,6 +436,60 @@ test.suite('Opcode', () => {
 						}`), [new VALUE.String('hello')]);
 					});
 				});
+				test.suite('[operator=RESULT_UNWRAP]', () => {
+					test.test('throws when operand is a Fail.', () => {
+						const instrs: readonly OP.Instruction[] = setupScript(`{
+							val x: int! = Fail.<int>(Exception.("42"));
+							x~!;
+						}`, {codegen: false}).builder.instructions;
+						const interp = new Interpreter();
+						instrs[0].interpret(interp);
+						instrs[1].interpret(interp);
+						return assert.throws(() => instrs[2].interpret(interp), /Unwrapped a Fail value/);
+					});
+					test.test('returns the value when operand is an Ok.', () => {
+						assert_equal_values(interpret_extracted_drops(`{
+							val y: Result.<nat> = Ok.<nat>(+42);
+							val z: Result.<float, Exception> = Ok.<float>(4.2);
+							y~!;
+							z~!;
+						}`), [
+							new VALUE.Natural(42n),
+							new VALUE.Float(4.2),
+						]);
+					});
+				});
+				test.suite('[operator=RESULT_EXTRACT]', () => {
+					test.test('throws when operand is an Ok.', () => {
+						const builder = new Builder();
+						const interp  = new Interpreter();
+						builder.pushInstruction(new OP.Drop(new OP.Unop(
+							OP.OpCode.RESULT_EXTRACT,
+							new OP.ResultNew(true, TYPE.INT, TYPE.EXCP, new OP.Const(VALUE.INT_1)).asTac(builder),
+							TYPE.EXCP,
+						)));
+						assert.strictEqual(builder.instructions.length, 2);
+						builder.instructions[0].interpret(interp);
+						return assert.throws(() => builder.instructions[1].interpret(interp), /Extracted from an Ok value/);
+					});
+					test.test('returns the reason when operand is a Fail.', () => {
+						const builder = new Builder();
+						const interp  = new Interpreter();
+						const message = new VALUE.String('message');
+						builder.pushInstruction(new OP.Drop(new OP.Unop(
+							OP.OpCode.RESULT_EXTRACT,
+							new OP.ResultNew(
+								false,
+								TYPE.INT,
+								TYPE.EXCP,
+								new OP.ExcpNew(new OP.Const(message)).asTac(builder),
+							).asTac(builder),
+							TYPE.EXCP,
+						)));
+						builder.instructions.forEach((instr) => instr.interpret(interp));
+						return assert_equal_values(interp.drops, [new VALUE.Exception(message)]);
+					});
+				});
 			});
 
 			test.suite('Instance', () => {
@@ -441,7 +526,7 @@ test.suite('Opcode', () => {
 					expecteds = interp.drops;
 				});
 				test.suite('INSTANCEOF', () => {
-					test.suite('non-Maybes.', () => {
+					test.suite('non-Maybes/Results.', () => {
 						([
 							IntrinsicName.SYMBOL,
 							IntrinsicName.INTEGER,
@@ -516,6 +601,32 @@ test.suite('Opcode', () => {
 									repeat(VALUE.TRUE, 3),
 									[VALUE.TRUE,  ...repeat(VALUE.FALSE, 2)],
 									[VALUE.FALSE, ...repeat(VALUE.TRUE, 2)],
+								][i]);
+							});
+						});
+					});
+					test.suite('Results.', () => {
+						([
+							IntrinsicName.RESULT,
+							IntrinsicName.FAIL,
+							IntrinsicName.OK,
+						] as const).forEach((name, i) => {
+							test.test(name, () => {
+								const builder = new Builder();
+								const interp  = new Interpreter();
+								[
+									new OP.ResultNew(false, TYPE.INT, TYPE.EXCP, new OP.ExcpNew(new OP.Const(new VALUE.String('message')))),
+									new OP.ResultNew(true,  TYPE.INT, TYPE.EXCP, new OP.Const(new VALUE.Integer(42n))),
+								].forEach((irval) => builder.pushInstruction(new OP.Drop(new OP.Instance(
+									OP.OpCode.INSTANCEOF,
+									name,
+									irval.asTac(builder),
+								))));
+								builder.instructions.forEach((instr) => instr.interpret(interp));
+								return assert_equal_values(interp.drops, [
+									repeat(VALUE.TRUE, 2),
+									[VALUE.TRUE,  VALUE.FALSE],
+									[VALUE.FALSE, VALUE.TRUE],
 								][i]);
 							});
 						});
@@ -1353,17 +1464,17 @@ test.suite('Opcode', () => {
 
 			test.test('ExcpNew', () => {
 				const cg = new CodeGenerator();
-				const {mod: {wasm}, vm: {reftype, Value: VmValue}} = cg;
+				const {vm: {reftype, Value: VmValue}} = cg;
 				const actual = new OP.ExcpNew(new OP.Const(new VALUE.String('hello')));
-				const expected: binaryen.ExpressionRef /* (ref $Value) */ = VmValue.newComposite(cg.codegenException(wasm.ref.cast(VmValue.field(genConst(cg, 'hello')).composite, reftype.String)));
+				const expected: binaryen.ExpressionRef /* (ref $Value) */ = VmValue.newComposite(cg.codegenException(VmValue.cast(genConst(cg, 'hello'), reftype.String)));
 				return assertEqualBins([
 					actual,
 					new OP.ExcpNew(new OP.Const(new VALUE.String('world')), actual),
 				].map((opcode) => opcode.codegen(cg)), [
 					expected,
 					VmValue.newComposite(cg.codegenException(
-						wasm.ref.cast(VmValue.field(genConst(cg, 'world')).composite, reftype.String),
-						wasm.ref.cast(VmValue.field(expected).composite, reftype.Exception),
+						VmValue.cast(genConst(cg, 'world'), reftype.String),
+						VmValue.cast(expected, reftype.Exception),
 					)),
 				]);
 			});
@@ -1377,6 +1488,51 @@ test.suite('Opcode', () => {
 					cg.codegenMaybe(),
 					cg.codegenMaybe(new VALUE.String('hello').codegen(cg)),
 				].map((mab) => cg.vm.Value.newComposite(mab)));
+			});
+
+			test.test('ResultNew', () => {
+				const cg = new CodeGenerator();
+				const {vm: {reftype, Value: VmValue}} = cg;
+				const excp = new OP.ExcpNew(new OP.Const(new VALUE.String('message')));
+				const value = new OP.Const(new VALUE.Integer(42n));
+				return assertEqualBins([
+					new OP.ResultNew(false, TYPE.INT, TYPE.EXCP, excp),
+					new OP.ResultNew(true,  TYPE.INT, TYPE.EXCP, value),
+				].map((opcode) => opcode.codegen(cg)), [
+					cg.codegenResult(false, VmValue.cast(excp.codegen(cg), reftype.Exception)),
+					cg.codegenResult(true, value.codegen(cg)),
+				].map((mab) => VmValue.newComposite(mab)));
+			});
+
+			test.test('TupleHas', () => {
+				// there exists no syntax for Tuple has, so constructing it manually
+				const tuple = new VisitorExprBuild(new Builder()).visit(AST.EXPR.Tuple.fromSource('(10, 20)'));
+				const cg    = new CodeGenerator();
+				const {vm: {reftype, Value: VmValue}, mod: {wasm}} = cg;
+				xjs.Array.forEachAggregated([1n, 2n], (idx) => assertEqualBins(
+					new OP.TupleHas(tuple, idx).codegen(cg),
+					VmValue.boolFromI32(wasm.i32.lt_u(
+						wasm.i32.const(Number(idx)),
+						wasm.array.len(VmValue.cast(tuple.codegen(cg), reftype.Tuple)),
+					)),
+				));
+			});
+
+			test.test('RecordHas', () => {
+				// there exists no syntax for Record has, so constructing it manually
+				const record = new VisitorExprBuild(new Builder()).visit(AST.EXPR.Record.fromSource('(a= 10, c= 20)'));
+				const cg     = new CodeGenerator();
+				const {vm: {reftype, Value: VmValue, Record}, mod: {wasm}} = cg;
+				return xjs.Array.forEachAggregated(['a', 'b'], (keysrc) => {
+					const keyid: bigint = Validator.cookTokenIdentifier(keysrc);
+					return assertEqualBins(
+						new OP.RecordHas(record, {keyid, keysrc}).codegen(cg),
+						VmValue.boolFromI32(Record.hasKey(
+							VmValue.cast(record.codegen(cg), reftype.Record),
+							wasm.i64.const(keyid),
+						)),
+					);
+				});
 			});
 
 			test.test('TupleGet returns (array.get).', () => {
@@ -1649,11 +1805,7 @@ test.suite('Opcode', () => {
 					const {Vect, Value, List} = cg.vm;
 					// there exists no syntax for List count, so constructing it manually
 					const list = new VisitorExprBuild(builder).visit((stmts[2] as AST.STMT.StatementExpression).expr!) as OP.Get;
-					const unop = new OP.Unop(
-						OP.OpCode.LIST_COUNT,
-						list,
-						TYPE.NAT,
-					);
+					const unop = new OP.Unop(OP.OpCode.LIST_COUNT, list, TYPE.NAT);
 					return assertEqualBins(
 						unop.codegen(cg),
 						Value.newPrimitive(Vect.newNat(wasm.i64.extend_i32_u(List.count(Value.cast(list.codegen(cg), cg.vm.reftype.List))))),
@@ -1668,11 +1820,7 @@ test.suite('Opcode', () => {
 					const {Vect, Value, Dict} = cg.vm;
 					// there exists no syntax for Dict count, so constructing it manually
 					const dict = new VisitorExprBuild(builder).visit((stmts[2] as AST.STMT.StatementExpression).expr!) as OP.Get;
-					const unop = new OP.Unop(
-						OP.OpCode.DICT_COUNT,
-						dict,
-						TYPE.NAT,
-					);
+					const unop = new OP.Unop(OP.OpCode.DICT_COUNT, dict, TYPE.NAT);
 					return assertEqualBins(
 						unop.codegen(cg),
 						Value.newPrimitive(Vect.newNat(wasm.i64.extend_i32_u(Dict.count(Value.cast(dict.codegen(cg), cg.vm.reftype.Dict))))),
@@ -1686,12 +1834,8 @@ test.suite('Opcode', () => {
 					}`);
 					const {Vect, Value, Map: VmMap} = cg.vm;
 					// there exists no syntax for Set count, so constructing it manually
-					const set = new VisitorExprBuild(builder).visit((stmts[2] as AST.STMT.StatementExpression).expr!) as OP.Get;
-					const unop = new OP.Unop(
-						OP.OpCode.SET_COUNT,
-						set,
-						TYPE.NAT,
-					);
+					const set  = new VisitorExprBuild(builder).visit((stmts[2] as AST.STMT.StatementExpression).expr!) as OP.Get;
+					const unop = new OP.Unop(OP.OpCode.SET_COUNT, set, TYPE.NAT);
 					return assertEqualBins(
 						unop.codegen(cg),
 						Value.newPrimitive(Vect.newNat(wasm.i64.extend_i32_u(VmMap.count(Value.cast(set.codegen(cg), cg.vm.reftype.Map))))),
@@ -1705,12 +1849,8 @@ test.suite('Opcode', () => {
 					}`);
 					const {Vect, Value, Map: VmMap} = cg.vm;
 					// there exists no syntax for Map count, so constructing it manually
-					const map = new VisitorExprBuild(builder).visit((stmts[2] as AST.STMT.StatementExpression).expr!) as OP.Get;
-					const unop = new OP.Unop(
-						OP.OpCode.MAP_COUNT,
-						map,
-						TYPE.NAT,
-					);
+					const map  = new VisitorExprBuild(builder).visit((stmts[2] as AST.STMT.StatementExpression).expr!) as OP.Get;
+					const unop = new OP.Unop(OP.OpCode.MAP_COUNT, map, TYPE.NAT);
 					return assertEqualBins(
 						unop.codegen(cg),
 						Value.newPrimitive(Vect.newNat(wasm.i64.extend_i32_u(VmMap.count(Value.cast(map.codegen(cg), cg.vm.reftype.Map))))),
@@ -1731,6 +1871,42 @@ test.suite('Opcode', () => {
 						wasm.drop(cg.vm.op.unwrapMaybe(wasm.local.get(0, cg.vm.reftype.Value))),
 						wasm.drop(cg.vm.op.unwrapMaybe(wasm.local.get(1, cg.vm.reftype.Value))),
 					]);
+				});
+				test.test('RESULT.UNWRAP', () => {
+					const {builder, cg, wasm} = setupScript(`{
+						val x: int! = Fail.<int>(Exception.("42"));
+						val y: Result.<nat> = Ok.<nat>(+42);
+						val z: Result.<float, Exception> = Ok.<float>(4.2);
+						x~!;
+						y~!;
+						z~!;
+					}`);
+					const {vm: {reftype, op, Value: VmValue}} = cg;
+					const excp: binaryen.ExpressionRef /* (ref $Value) */ = VmValue.newComposite(cg.codegenException(VmValue.cast(genConst(cg, '42'), reftype.String)));
+					return assertEqualBins(builder.instructions.map((instr) => instr.codegen(cg)), [
+						wasm.local.set(0, excp),
+						wasm.local.set(1, VmValue.newComposite(cg.codegenResult(false, VmValue.cast(wasm.local.get(0, reftype.Value), reftype.Exception)))),
+						wasm.local.set(2, VmValue.newComposite(cg.codegenResult(true, genConst(cg, 42n, 'nat')))),
+						wasm.local.set(3, VmValue.newComposite(cg.codegenResult(true, genConst(cg, 4.2)))),
+						...[1, 2, 3].map((i) => wasm.drop(op.unwrapResult(wasm.local.get(i, reftype.Value)))),
+					]);
+				});
+				test.test('RESULT.EXTRACT', () => {
+					const {stmts, builder, cg, wasm} = setupScript(`{
+						val x: int! = Fail.<int>(Exception.("42"));
+						val y: Result.<nat> = Ok.<nat>(+42);
+						val z: Result.<float, Exception> = Ok.<float>(4.2);
+						x;
+						y;
+						z;
+					}`);
+					const expr_visitor = new VisitorExprBuild(builder);
+					// there exists no syntax for Result extract, so constructing it manually
+					return assertEqualBins([3, 4, 5].map((i) => new OP.Unop(
+						OP.OpCode.RESULT_EXTRACT,
+						expr_visitor.visit((stmts[i] as AST.STMT.StatementExpression).expr!) as OP.Get,
+						TYPE.EXCP,
+					).codegen(cg)), [1, 2, 3].map((i) => cg.vm.op.extractResult(wasm.local.get(i, cg.vm.reftype.Value))));
 				});
 			});
 
@@ -1755,6 +1931,9 @@ test.suite('Opcode', () => {
 						cg.vm.op.isMaybe(operand),
 						cg.vm.op.isNone(operand),
 						cg.vm.op.isSome(operand),
+						cg.vm.op.isResult(operand),
+						cg.vm.op.isFail(operand),
+						cg.vm.op.isOk(operand),
 						cg.vm.op.isFunction(operand),
 					].map((expr) => wasm.drop(expr)));
 				});
@@ -1780,6 +1959,9 @@ test.suite('Opcode', () => {
 						cg.vm.op.asMaybe(operand),
 						cg.vm.op.asNone(operand),
 						cg.vm.op.asSome(operand),
+						cg.vm.op.asResult(operand),
+						cg.vm.op.asFail(operand),
+						cg.vm.op.asOk(operand),
 						cg.vm.op.asFunction(operand),
 					].map((expr) => wasm.drop(expr)));
 				});

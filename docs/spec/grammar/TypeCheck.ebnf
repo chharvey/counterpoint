@@ -99,7 +99,7 @@ Nil! TypeCheck(SemanticExpressionCall expr) :=
 		1. *Note:* The result of this step is not used; it is only performed to rethrow any TypeErrors.
 ;
 
-Nil! TypeCheck(SemanticExpressionOperation[operator: IS | CAST | MAYBE | RESULT] ::= SemanticExpression__0 SemanticExpression__1[type: Class]) :=
+Nil! TypeCheck(SemanticExpressionOperation[operator: IS | CAST | MAYBE] ::= SemanticExpression__0 SemanticExpression__1[type: Class]) :=
 	1. *Perform:* *Unwrap:* `TypeCheck(SemanticExpression__0)`.
 	2. *Note:* Skip type-checking of `SemanticExpression__1` for now, as semantics is determined by syntax.
 	3. *Perform:* *Unwrap:* `TypeOf(SemanticExpressionOperation)`.

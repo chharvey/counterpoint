@@ -342,7 +342,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 							'type_0',
 							'type_compound',
 							f('type_0', 'identifier'),
-							f('property_accessor_type_0', 'property_accessor_type', s('integer')),
+							f('property_accessor_type_0', 'property_accessor_type', s('whole_digits')),
 						),
 					),
 					s(
@@ -392,7 +392,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 							'type_0',
 							'type_compound',
 							f('type_0', 'identifier'),
-							f('property_accessor_type_0', 'property_accessor_type', s('integer')),
+							f('property_accessor_type_0', 'property_accessor_type', s('whole_digits')),
 						),
 					),
 					s(
@@ -475,13 +475,10 @@ function sourceExpressions(...expressions: readonly string[]): string {
 			xjs.String.dedent`
 				{
 					type T = TupleType.0;
-					type T = TupleType.-1;
-					type T = TupleType.+1;
+					type T = TupleType.\\b0;
+					type T = TupleType.\\d0;
 					type T = RecordType.prop;
 					type T = RecordType._;
-					type T = TupleType?.0;
-					type T = RecordType?.prop;
-					type T = RecordType?._;
 					type T = Set.<T>;
 					type T = SomeType.type;
 					type T = SomeType.bool;
@@ -493,32 +490,17 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				s(
 					'type_compound',
 					f('type_0', 'identifier'),
-					f('property_accessor_type_0', 'property_accessor_type', s('integer')),
+					f('property_accessor_type_0', 'property_accessor_type', s('whole_digits')),
 				),
 				s(
 					'type_compound',
 					f('type_0', 'identifier'),
-					f('property_accessor_type_0', 'property_accessor_type', s('integer')),
+					f('property_accessor_type_0', 'property_accessor_type', s('whole_digits')),
 				),
 				s(
 					'type_compound',
 					f('type_0', 'identifier'),
-					f('property_accessor_type_0', 'property_accessor_type', s('natural')),
-				),
-				s(
-					'type_compound',
-					f('type_0', 'identifier'),
-					f('property_accessor_type_0', 'property_accessor_type', s('word', s('identifier'))),
-				),
-				s(
-					'type_compound',
-					f('type_0', 'identifier'),
-					f('property_accessor_type_0', 'property_accessor_type', s('word')),
-				),
-				s(
-					'type_compound',
-					f('type_0', 'identifier'),
-					f('property_accessor_type_0', 'property_accessor_type', s('integer')),
+					f('property_accessor_type_0', 'property_accessor_type', s('whole_digits')),
 				),
 				s(
 					'type_compound',
@@ -949,8 +931,8 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					maybe~?;
 					result~!;
 					tuple.0;
-					tuple.-1;
-					tuple.+1;
+					tuple.\\b0;
+					tuple.\\d0;
 					tuple?.0;
 					tuple!.0;
 					record.prop;
@@ -990,27 +972,27 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				s(
 					'expression_compound',
 					f('expression_0', 'identifier'),
-					f('property_accessor_0', 'property_accessor', s('integer')),
+					f('property_accessor_0', 'property_accessor', s('whole_digits')),
 				),
 				s(
 					'expression_compound',
 					f('expression_0', 'identifier'),
-					f('property_accessor_0', 'property_accessor', s('integer')),
+					f('property_accessor_0', 'property_accessor', s('whole_digits')),
 				),
 				s(
 					'expression_compound',
 					f('expression_0', 'identifier'),
-					f('property_accessor_0', 'property_accessor', s('natural')),
+					f('property_accessor_0', 'property_accessor', s('whole_digits')),
 				),
 				s(
 					'expression_compound',
 					f('expression_0', 'identifier'),
-					f('property_accessor_0', 'property_accessor', s('integer')),
+					f('property_accessor_0', 'property_accessor', s('whole_digits')),
 				),
 				s(
 					'expression_compound',
 					f('expression_0', 'identifier'),
-					f('property_accessor_0', 'property_accessor', s('integer')),
+					f('property_accessor_0', 'property_accessor', s('whole_digits')),
 				),
 				s(
 					'expression_compound',
@@ -1547,7 +1529,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					s(
 						'assignee',
 						f('expression_0', 'identifier'),
-						f('property_accessor_0', 'property_accessor', s('integer')),
+						f('property_accessor_0', 'property_accessor', s('whole_digits')),
 					),
 					s('identifier'),
 				),
@@ -1635,7 +1617,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					s(
 						'assignee',
 						f('expression_0', 'identifier'),
-						f('property_accessor_0', 'property_accessor', s('integer')),
+						f('property_accessor_0', 'property_accessor', s('whole_digits')),
 					),
 					s('identifier'),
 				),
@@ -1722,7 +1704,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					s(
 						'assignee',
 						f('expression_0', 'identifier'),
-						f('property_accessor_0', 'property_accessor', s('integer')),
+						f('property_accessor_0', 'property_accessor', s('whole_digits')),
 					),
 				),
 				s(

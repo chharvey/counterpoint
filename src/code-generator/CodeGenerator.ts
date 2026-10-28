@@ -378,6 +378,27 @@ export class CodeGenerator {
 	}
 
 	/**
+	 * Return a new `$Result` from a given value or reason.
+	 * If a success value  is given (`is_ok` is true),  `(ref.null $Exception)` is set to the reason field.
+	 * If a failure reason is given (`is_ok` is false), `(ref.null $Value)`     is set to the value  field.
+	 * @param is_ok    whether to construct an Ok or Fail
+	 * @param argument the success value or failure reason
+	 * @return         `(struct.new $Result <value?> <reason?>)`
+	 */
+	public codegenResult(is_ok: boolean, argument: binaryen.ExpressionRef /* (ref $Value) | (ref $Exception) */): binaryen.ExpressionRef /* (ref $Result) */ {
+		const {vm: {heaptype, Object: VmObject}, mod: {wasm}} = this;
+		return wasm.struct.new(is_ok ? [
+			VmObject.ctrPlusPlus(),
+			argument,
+			wasm.ref.null(heaptype.Exception),
+		] : [
+			VmObject.ctrPlusPlus(),
+			wasm.ref.null(heaptype.Value),
+			argument,
+		], heaptype.Result);
+	}
+
+	/**
 	 * Return a new `$Function`.
 	 * @param arity the number of functional arguments
 	 * @return      `(struct.new $Function <arity>)`
@@ -416,6 +437,7 @@ export class CodeGenerator {
 			this.vm.Map       .funcImportDataMap,
 			this.vm.Exception .funcImportDataMap,
 			this.vm.Maybe     .funcImportDataMap,
+			this.vm.Result    .funcImportDataMap,
 		].forEach((datamap) => datamap.forEach((data, export_name) => (
 			mod.imports.addFunction(data.name, extern_mod_name, export_name, data.param, data.result)
 		)));

@@ -23,6 +23,7 @@ export * from './Map.ts';
 
 export * from './Exception.ts';
 export * from './Maybe.ts';
+export * from './Result.ts';
 
 export * from './Function.ts';
 

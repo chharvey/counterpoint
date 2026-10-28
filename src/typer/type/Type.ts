@@ -15,6 +15,8 @@ import {
 	Unit,
 	None,
 	Some,
+	Fail,
+	Ok,
 	NOTHING,
 	ANYTHING,
 	SYM,
@@ -511,6 +513,8 @@ export abstract class Type {
 			Unit,
 			None,
 			Some,
+			Fail,
+			Ok,
 		].some((klass) => t instanceof klass)) {
 			return t.isDisjointWith(this);
 		}

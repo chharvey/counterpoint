@@ -96,7 +96,7 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 		</tr>
 		<tr>
 			<th rowspan="4">5</th>
-			<td rowspan="3">Type Cast</td>
+			<td rowspan="2">Type Cast</td>
 			<td rowspan="4">binary infix</td>
 			<td rowspan="4">left-to-right</td>
 			<td><code>… as …</code></td>
@@ -105,11 +105,11 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… as? …</code></td>
 		</tr>
 		<tr>
-			<td><code>… as! …</code></td>
+			<td rowspan="2">Type Claim</td>
+			<td><code>… as : … :</code></td>
 		</tr>
 		<tr>
-			<td>Type Claim</td>
-			<td><code>… as : … :</code></td>
+			<td><code>… as! : … :</code></td>
 		</tr>
 		<tr>
 			<th>6</th>
@@ -352,15 +352,15 @@ This table highlights some exceptional cases.
 
 ### Property Access
 ```
-<Tuple>  `.` int-literal
+<Tuple>  `.` whole-digits
 <Record> `.` word
 <Object> `.` `[` <Object> `]`
 
-<Tuple>  `?.` int-literal
+<Tuple>  `?.` whole-digits
 <Record> `?.` word
 <Object> `?.` `[` <Object> `]`
 
-<Tuple>  `!.` int-literal
+<Tuple>  `!.` whole-digits
 <Record> `!.` word
 <Object> `!.` `[` <Object> `]`
 ```
@@ -378,28 +378,22 @@ such as an operation of expressions, e.g., `map.[expr]`.
 The expression in the brackets evaluates to an index, key, element, or antecedent
 of the binding object and must be of the correct type.
 
+When an optional entry is accessed, a `Maybe` object is returned.
+For example, given a record `record` of type `(a: bool, b?: int)`, with an optional property `b`,
+the expression `record.b` will produce a `Some` containing the value at `record.b` if it exists,
+but otherwise will produce a `None`. The type of `record.b` is `Maybe[int]`.
+
 More information about property access when used on collections
 can be found in the [Types](./types.md) chapter.
 
 #### Maybe Access
-The **maybe access** syntax is almost the same as property access, except that
-the operator always produces a `Maybe` object — a `None` object if and when there is no such bound property
-on the binding object at runtime, else a `Some` object containing the accesssed value.
-This operator is designed to work with optional entries on types, such as optional properties on a record type, as well as
-[the `Maybe` algeraic sum type](./types.md#maybes).
+The **maybe access** syntax is almost the same as property access, except that the operator always produces a `Maybe` object.
+This operator is designed to work with [the `Maybe` algeraic sum type](./types.md#maybes).
 
-Given a record `record` of type `(a: bool, b?: int)`,
-the expression `record.b` would result in a crash if there’s no actual value at that location,
-so the compiler raises an error when using that syntax.
-Using the maybe access operator though, `record?.b` will produce a `Some` containing the value at `record.b`
-if it exists, but otherwise will produce a `None` and avoid the crash.
-An equivalent syntax exists for dynamic access: `map?.[expr]`, etc.
-
-Conversely, maybe access syntax is not allowed for required properties: `record?.a` would raise a compiler error.
-
-If the *binding object is a `Maybe`*, then the maybe access operator produces another `Maybe`.
+If the binding object is a `Maybe`, then the maybe access operator produces another `Maybe`.
 For example, `None[T]().property` is a type error, but `None[T]()?.property` will simply produce a new `None[U]`
 (and not the same `None[T]` reference object).
+Likewise, `Some[T](obj)?.property` unwraps the value `obj`, accesses `.property` on it, and returns the accessed value in a new `Some`.
 This facet makes maybe access safe to use when chained.
 
 When the maybe access operator is chained, it should be chained down the line,
@@ -409,16 +403,6 @@ and will result in a type-error if `z` is not a property of `Maybe`.
 
 **Type-Checking Note:**
 
-For static types (e.g., tuples and records),
-either the normal or maybe access operator is allowed, corresponding to the optionality of the entry being accessed.
-When the maybe access operator is used for an optional entry, the entry type is wrapped in a `Maybe`.
-```cpl
-claim record: (required: bool, optional?: int);
-record.required;  %: bool
-record?.required; %> TypeErrorInvalidOperation
-record.optional;  %> TypeErrorInvalidOperation
-record?.optional; %: int?
-```
 For dynamic types (e.g., lists and dicts),
 both normal and maybe access operators are allowed.
 The normal access operator treats all entries as required (does not wrap the declared type in `Maybe`), and
@@ -447,10 +431,36 @@ rec_maybe~?.item; % unwraps `rec_maybe` to `(item: int)`; returns type `int`; bu
 ```
 
 #### Result Access
-// TODO:
+The **result access** syntax is almost the same as property access, except that the operator always produces a `Result` object.
+This operator is designed to work with [the `Result` algeraic sum type](./types.md#results).
+
+If the binding object is a `Result`, then the result access operator produces another `Result`.
+For example, `Fail[T]().property` is a type error, but `Fail[T]()!.property` will simply produce a new `Fail[U]`
+(and not the same `Fail[T]` reference object).
+Likewise, `Ok[T](obj)!.property` unwraps the value `obj`, accesses `.property` on it, and returns the accessed value in a new `Ok`.
+This facet makes maybe access safe to use when chained.
+
+When the result access operator is chained, it should be chained down the line,
+e.g., `x!.y!.z` is equivalent to `(x!.y)!.z`.
+However, `x!.y.z` (which can be thought of as `(x!.y).z`) is not the same,
+and will result in a type-error if `z` is not a property of `Result`.
 
 #### Result Unwrapper
-// TODO:
+The **result unwrapping** operator `~!`, if the operand is a `Result[T]` type, ‘unwraps’ the value of the Result, returning type `T`.
+Additionally, if the value is actually a `Fail` at runtime, the `~!` operator panics with that `Fail`’s reason.
+```cpl
+claim rec_result: Result[(item: int)];
+
+val rec: (item: int) = rec_result;   %> TypeError
+val rec: (item: int) = rec_result~!; % no TypeError, but unsafe!
+if rec_result is Ok then {
+	val rec: (item: int) = rec_result~!; % no TypeError, and safe
+};
+
+rec_result.item;   %> TypeErrorNoEntry
+rec_result!.item;  % result access: returns type `Result[int]`
+rec_result~!.item; % unwraps `rec_result` to `(item: int)`; returns type `int`; but panics at runtime if `rec_result` is a `Fail`
+```
 
 
 ### Logical Negation, Emptiness
@@ -580,19 +590,13 @@ cat.meow();                   % calls `meow` on the `Cat` instance
 val dog: Dog = animal as Dog; % panic: `Cat` cannot be converted to `Dog`
 dog.woof();                   % unreachable
 ```
-The `as?` and `as!` casts can be useful in tandem with maybe/result access respectively.
+The `as?` cast can be useful in tandem with maybe access.
 ```cpl
-val cat_m: Maybe[Cat] = animal as? Cat; %== Some.<Cat>
+val cat_m: Maybe[Cat] = animal as? Cat; %== Some[Cat]
 cat_m?.meow();                          % calls `meow`
 
 val dog_m: Maybe[Dog] = animal as? Dog; %== None
 dog_m?.woof();                          %== None
-
-val cat_r: Result[Cat] = animal as! Cat; %== Ok.<Cat>
-cat_r!.meow();                           % calls `meow`
-
-val dog_r: Result[Dog] = animal as! Dog; %== Fail
-dog_r?.woof();                           %== Fail
 ```
 
 A compile-time claim (`expr as :Klass:`) *claims* to the type-checker that `expr` is already of type `Klass`,
@@ -1031,27 +1035,15 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… . …</code></td>
 		</tr>
 		<tr>
-			<th rowspan="5">3</th>
-			<td>Nullish</td>
-			<td rowspan="5">unary postfix</td>
-			<td rowspan="5">left-to-right</td>
+			<th rowspan="2">3</th>
+			<td>To-Maybe</td>
+			<td rowspan="2">unary postfix</td>
+			<td rowspan="2">left-to-right</td>
 			<td><code>… ?</code></td>
 		</tr>
 		<tr>
-			<td>TBA</td>
+			<td>To-Result</td>
 			<td><code>… !</code></td>
-		</tr>
-		<tr>
-			<td>List</td>
-			<td><code>… []</code></td>
-		</tr>
-		<tr>
-			<td>Tuple</td>
-			<td><code>… […]</code></td>
-		</tr>
-		<tr>
-			<td>Set</td>
-			<td><code>… {}</code></td>
 		</tr>
 		<tr>
 			<th>4</th>
@@ -1084,22 +1076,18 @@ Read about Tuples, Records, Lists, Dicts, Sets, and Maps in the [Types](./types.
 
 ### Type Property Access
 ```
-<Type> `.`  int-literal
-<Type> `.`  word
-<Type> `?.` int-literal
-<Type> `?.` word
+<Type> `.` whole-digits
+<Type> `.` word
 ```
 The **type property accesss** syntax for types is analogous to the property access syntax of values.
 It accesses the index or key of a tuple or record type respectively.
 ```
 type T = (bool, int, str);
 type T1 = T.1;             %== int
-type T_1 = T.-1;           %== str
 type T3 = T.3;             %> TypeError
 
 type R = (a: bool, b?: int, c: str);
 type Ra = R.a;                       %== bool
-type Rc = R?.b;                      %== int | null
 type Rd = R.d;                       %> TypeError
 ```
 
@@ -1114,11 +1102,15 @@ type T = int?; % equivalent to `type T = Maybe[int];`
 ```
 
 
-### TBA
+### To-Result
 ```
 <Type> `!`
 ```
-To be announced.
+The **to-result** operator creates a new [Result type](./types.md#results) containing the operand.
+```cpl
+type T = int!; % equivalent to `type T = Result[int];`
+```
+Note that the second generic argument of `Result` defaults to `Exception`.
 
 
 ### Mutable

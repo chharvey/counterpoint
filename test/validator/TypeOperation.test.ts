@@ -23,8 +23,11 @@ test.suite('TypeOperation', () => {
 		});
 
 
-		test.test.todo('TypeOperationUnary[operator=RESULT]', () => {
-			assert.ok('TODO:');
+		test.test('TypeOperationUnary[operator=RESULT]', () => {
+			assertEqualTypes(
+				AST.TYPE.OperationUnary.fromSource('int!').eval(),
+				new TYPE.Result(TYPE.INT),
+			);
 		});
 
 

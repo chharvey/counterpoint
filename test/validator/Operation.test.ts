@@ -43,7 +43,7 @@ test.suite('Operation', () => {
 	test.suite('#type', () => {
 		test.suite('OperationUnary', () => {
 			test.test('[operator=UN_MAYBE]', () => {
-				assert.deepStrictEqual(setupScript(`{
+				assertEqualTypes(setupScript(`{
 					val mut x?: int;
 					val mut y?: nat;
 					val mut z?: float;
@@ -60,6 +60,27 @@ test.suite('Operation', () => {
 					new TYPE.Maybe(TYPE.INT),
 					new TYPE.Maybe(TYPE.NAT),
 					new TYPE.Maybe(TYPE.FLOAT),
+					TYPE.INT,
+					TYPE.NAT,
+					TYPE.FLOAT,
+				]);
+			});
+
+			test.test('[operator=UN_RESULT]', () => {
+				assertEqualTypes(setupScript(`{
+					val x: int! = Fail.<int>(Exception.("42"));
+					val y: Result.<nat> = Ok.<nat>(+42);
+					val z: Result.<float, Exception> = Ok.<float>(4.2);
+					x;
+					y;
+					z;
+					x~!;
+					y~!;
+					z~!;
+				}`, {build: false}).stmts.slice(3).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()), [
+					new TYPE.Result(TYPE.INT),
+					new TYPE.Result(TYPE.NAT),
+					new TYPE.Result(TYPE.FLOAT, TYPE.EXCP),
 					TYPE.INT,
 					TYPE.NAT,
 					TYPE.FLOAT,
@@ -107,7 +128,7 @@ test.suite('Operation', () => {
 						val n: null = null;
 						${INTRINSICS.map((t) => `n is ${t};`).join('\n')}
 					}`, {build: false}).stmts.slice(1).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()),
-					repeat(TYPE.BOOL, 17),
+					repeat(TYPE.BOOL, 20),
 				);
 			});
 
@@ -135,6 +156,9 @@ test.suite('Operation', () => {
 							new TYPE.Maybe(TYPE.ANYTHING),
 							new TYPE.None(TYPE.ANYTHING),
 							new TYPE.Some(TYPE.ANYTHING),
+							new TYPE.Result(TYPE.ANYTHING),
+							new TYPE.Fail(TYPE.ANYTHING),
+							new TYPE.Ok(TYPE.ANYTHING),
 							new TYPE.Function(undefined, undefined, TYPE.ANYTHING),
 						],
 					);
@@ -173,6 +197,9 @@ test.suite('Operation', () => {
 							new TYPE.Maybe(new TYPE.Maybe(TYPE.ANYTHING)),
 							new TYPE.Maybe(new TYPE.None(TYPE.ANYTHING)),
 							new TYPE.Maybe(new TYPE.Some(TYPE.ANYTHING)),
+							new TYPE.Maybe(new TYPE.Result(TYPE.ANYTHING)),
+							new TYPE.Maybe(new TYPE.Fail(TYPE.ANYTHING)),
+							new TYPE.Maybe(new TYPE.Ok(TYPE.ANYTHING)),
 							new TYPE.Maybe(new TYPE.Function(undefined, undefined, TYPE.ANYTHING)),
 						],
 					);
@@ -186,8 +213,6 @@ test.suite('Operation', () => {
 					return assert.throws(() => stmts[1].typeCheck(), TypeErrorNotNarrow);
 				});
 			});
-
-			test.test.todo('[operator=RESULT');
 		});
 
 

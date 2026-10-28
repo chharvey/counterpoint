@@ -45,6 +45,9 @@ test.suite('Validator', () => {
 				'Maybe',
 				'None',
 				'Some',
+				'Result',
+				'Fail',
+				'Ok',
 			];
 			return assert.deepStrictEqual(
 				intrinsics.map((s) => Validator.cookTokenIdentifier(s)),

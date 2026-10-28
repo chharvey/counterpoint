@@ -409,6 +409,10 @@ Maps have a dynamic size, are unordered<sup>&lowast;</sup>, and are indexable by
 
 ### Control Abstraction Types
 
+- [Exception Types](#exception-types)
+- [Maybe Types](#maybe-types)
+- [Result Types](#result-types)
+
 #### Exception Types
 An **Exception** is used when the program encounters an exceptional circumstance.
 Exceptions contain messages, call stacks, and possibly other Exception causes,
@@ -423,6 +427,14 @@ The objects that any given Maybe type describes are `Maybe` objects whose
 value, if it exists, is assignable to the type argument of the Maybe type.
 The **Maybe** class is abstract and enumerated by two concrete subclasses:
 **Some**, which holds a value, and **None**, which does not.
+
+#### Result Types
+A **Result** type describes instances of [`Result`](./intrinsics.md#result) and is parameterized by two types,
+called *type arguments*, representing its success value or failure reason, respectively.
+The objects that any given Result type describes are `Result` objects whose
+success value and failure reason are respectively assignable to the type argument of the Result type.
+The **Result** class is abstract and enumerated by two concrete subclasses:
+**Ok**, which holds a success value, and **Fail**, which holds a failure reason.
 
 
 ### Callable Types
@@ -705,7 +717,7 @@ Boolean Subtype(Type a, Type b) :=
 				1. *If* `sch_a[k]` is not set *or* `sch_a[k].optional` is `true`:
 					1. *Return:* `false`.
 			2. *If* `sch_a[k]` is set:
-				1. *If* *UchAffirm:* `Subtype(sch_a[k].type, sch_b[k].type)` is `false`:
+				1. *If* *UnwrapAffirm:* `Subtype(sch_a[k].type, sch_b[k].type)` is `false`:
 					1. *Return:* `false`.
 		7. *Return:* `true`.
 	11. *If* `a` is a List type *and* `b` is a List type:

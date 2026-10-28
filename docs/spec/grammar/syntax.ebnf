@@ -1,4 +1,5 @@
 // IDENTIFIER      ::= [./lexicon.ebnf#Identifier];
+// WHOLE_DIGITS    ::= [./lexicon.ebnf#WholeDigits]
 // INTEGER         ::= [./lexicon.ebnf#Integer];
 // NATURAL         ::= [./lexicon.ebnf#Natural];
 // FLOAT           ::= [./lexicon.ebnf#Float];
@@ -101,7 +102,7 @@ ParametersType ::=
 ;
 
 PropertyAccessorType
-	::= INTEGER | NATURAL | Word;
+	::= WHOLE_DIGITS | Word;
 
 TypeGrouped       ::= "(" Type             ")";
 TypeTupleLiteral  ::= "(" ItemsType?       ")";
@@ -127,10 +128,7 @@ TypeUnit ::=
 
 TypeCompound ::=
 	| TypeUnit
-	| TypeCompound (
-		| ("." | "?.") PropertyAccessorType
-		|  "."         GenericArguments
-	)
+	| TypeCompound "." (PropertyAccessorType | GenericArguments)
 ;
 
 TypeUnarySymbol  ::= TypeCompound    | TypeUnarySymbol ("?" | "!");
@@ -181,7 +179,7 @@ CaptureClause<Ref>
 	::= "with" "(" ","? Capture<?Ref># ","? ")";
 
 PropertyAccessor<Break, Return>
-	::= INTEGER | NATURAL | Word | "[" Expression<+Block><?Break><?Return> "]";
+	::= WHOLE_DIGITS | Word | "[" Expression<+Block><?Break><?Return> "]";
 
 ExpressionGrouped       <Break, Return> ::= "("       Expression <+Block><?Break><?Return>         ")";
 ExpressionTupleLiteral  <Break, Return> ::= "("       Items              <?Break><?Return>?        ")";

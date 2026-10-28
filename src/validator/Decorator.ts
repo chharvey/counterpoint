@@ -20,7 +20,6 @@ import {
 } from './utils-private.ts';
 import {
 	Operator,
-	type ValidTypeAccessOperator,
 	type ValidAccessOperator,
 	type ValidTypeOperator,
 	type ValidOperatorUnary,
@@ -124,7 +123,6 @@ export class Decorator {
 	public decorate(syntaxnode: SyntaxNodeFamily<'expression_set_literal',    ['break', 'return']>):       AST.EXPR.Set;
 	public decorate(syntaxnode: SyntaxNodeFamily<'expression_map_literal',    ['break', 'return']>):       AST.EXPR.Map;
 	public decorate(syntaxnode: SyntaxNodeType<'expression_block'>):                                       AST.EXPR.ExpressionBlock;
-	public decorate(syntaxnode: SyntaxNodeType<'property_assign'>):                                        AST.Index | AST.Key | AST.EXPR.Expression;
 	public decorate(syntaxnode: SyntaxNodeType<'expression_compound'>):                                    AST.EXPR.Access | AST.EXPR.Call | AST.EXPR.OperationUnary;
 	public decorate(syntaxnode: SyntaxNodeType<'expression_unary_symbol'>):                                AST.EXPR.Expression | AST.EXPR.OperationUnary;
 	public decorate(syntaxnode: SyntaxNodeType<'expression_cast'>):                                        AST.EXPR.OperationBinaryCast | AST.EXPR.Claim;
@@ -192,7 +190,7 @@ export class Decorator {
 			}],
 
 			['property_accessor_type', (node) => (
-				isSyntaxNodeType(node.firstNamedChild, /integer|natural/) ? new AST.Index(node.firstNamedChild as SyntaxNodeType<'integer' | 'natural'>) :
+				isSyntaxNodeType(node.firstNamedChild, 'whole_digits') ? new AST.Index(node.firstNamedChild) :
 				this.decorate(node.firstNamedChild as SyntaxNodeType<'word'>)
 			)],
 
@@ -234,7 +232,6 @@ export class Decorator {
 				const property_accessor_type_0 = node.childForFieldName('property_accessor_type_0') as SyntaxNodeType<'property_accessor_type'> | null;
 				return property_accessor_type_0 ? new AST.TYPE.Access(
 					node as SyntaxNodeType<'type_compound'>,
-					Decorator.ACCESSORS.get(node.children[1].type as Punctuator) as ValidTypeAccessOperator,
 					this.decorateTypeNode(type_0),
 					this.decorate(property_accessor_type_0),
 				) : new AST.TYPE.Call(
@@ -327,8 +324,8 @@ export class Decorator {
 			)],
 
 			[/^property_accessor(__break)?(__return)?$/, (node) => (
-				isSyntaxNodeType(node.firstNamedChild, /integer|natural/) ? new AST.Index(node.firstNamedChild as SyntaxNodeType<'integer' | 'natural'>) :
-				isSyntaxNodeType(node.firstNamedChild, 'word')            ? this.decorate(node.firstNamedChild) :
+				isSyntaxNodeType(node.firstNamedChild, 'whole_digits') ? new AST.Index(node.firstNamedChild) :
+				isSyntaxNodeType(node.firstNamedChild, 'word')         ? this.decorate(node.firstNamedChild) :
 				this.decorateExprNode(node.firstNamedChild as SyntaxNodeSupertype<'expression'>)
 			)],
 

@@ -10,6 +10,8 @@ import {
 	DictNew,
 	MapNew,
 	MaybeNew,
+	TupleHas,
+	RecordHas,
 	TupleGet,
 	RecordGet,
 	CollectionDynamicGet,
@@ -60,6 +62,10 @@ export enum OpCode {
 	MAP_NEW,
 	EXCP_NEW,
 	MAYBE_NEW,
+	RESULT_NEW,
+
+	TUPLE_HAS,
+	RECORD_HAS,
 
 	TUPLE_GET,
 	RECORD_GET,
@@ -86,6 +92,8 @@ export enum OpCode {
 	MAP_COUNT,
 
 	MAYBE_UNWRAP,
+	RESULT_UNWRAP,
+	RESULT_EXTRACT,
 
 	INSTANCEOF,
 	CAST,
@@ -153,6 +161,8 @@ export abstract class OpcodeVisitor<T> {
 	public visitDictNew              (val: DictNew):              T { return this.defaultVisit(val); }
 	public visitMapNew               (val: MapNew):               T { return this.defaultVisit(val); }
 	public visitMaybeNew             (val: MaybeNew):             T { return this.defaultVisit(val); }
+	public visitTupleHas             (val: TupleHas):             T { return this.defaultVisit(val); }
+	public visitRecordHas            (val: RecordHas):            T { return this.defaultVisit(val); }
 	public visitTupleGet             (val: TupleGet):             T { return this.defaultVisit(val); }
 	public visitRecordGet            (val: RecordGet):            T { return this.defaultVisit(val); }
 	public visitCollectionDynamicGet (val: CollectionDynamicGet): T { return this.defaultVisit(val); }
@@ -191,6 +201,8 @@ export abstract class OpcodeVisitor<T> {
 			case DictNew:               { return this.visitDictNew              (op as DictNew); }
 			case MapNew:                { return this.visitMapNew               (op as MapNew); }
 			case MaybeNew:              { return this.visitMaybeNew             (op as MaybeNew); }
+			case TupleHas:              { return this.visitTupleHas             (op as TupleHas); }
+			case RecordHas:             { return this.visitRecordHas            (op as RecordHas); }
 			case TupleGet:              { return this.visitTupleGet             (op as TupleGet); }
 			case RecordGet:             { return this.visitRecordGet            (op as RecordGet); }
 			case CollectionDynamicGet:  { return this.visitCollectionDynamicGet (op as CollectionDynamicGet); }

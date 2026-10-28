@@ -1,12 +1,17 @@
+import {TypeErrorInvalidOperation} from '../../../index.ts';
 import {
 	assert_instanceof,
 	memoizeMethod,
+	memoizeGetter,
 } from '../../../lib/index.ts';
 import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../../core/index.ts';
-import {TYPE} from '../../../typer/index.ts';
+import {
+	type EntryType,
+	TYPE,
+} from '../../../typer/index.ts';
 import type {
 	SyntaxNodeType,
 	SyntaxNodeFamily,
@@ -15,10 +20,7 @@ import {
 	Operator,
 	type ValidAccessOperator,
 } from '../../Operator.ts';
-import {
-	get_entry_info,
-	access_type,
-} from '../utils-private.ts';
+import {get_entry_info} from '../utils-private.ts';
 import type {Index} from '../Index-.ts';
 import type {Key} from '../Key.ts';
 import {Expression} from './Expression.ts';
@@ -33,6 +35,9 @@ export class Access extends Expression implements Reassignable {
 		return expression;
 	}
 
+	#isEntryOptional?: boolean;
+
+
 	public constructor(
 		start_node:
 			| SyntaxNodeType<'expression_compound'>
@@ -43,10 +48,15 @@ export class Access extends Expression implements Reassignable {
 		public readonly accessor: Index | Key | Expression,
 	) {
 		super(start_node, {kind}, [base, accessor]);
-		if (this.kind === Operator.DOT_RESULT) {
-			throw new TypeError(`Operator ${this.kind} not yet supported.`);
-		}
 	}
+
+
+	@memoizeGetter
+	public get isEntryOptional(): boolean {
+		this.type();
+		return this.#isEntryOptional!;
+	}
+
 
 	@memoizeMethod
 	public override type(): TYPE.Type {
@@ -54,7 +64,27 @@ export class Access extends Expression implements Reassignable {
 		if (base_type.isBottomType) {
 			return TYPE.NOTHING;
 		}
-		return access_type(this.kind, base_type, get_entry_info(base_type, this), this);
+		if (this.kind === Operator.DOT_MAYBE) {
+			if (base_type instanceof TYPE.Maybe) {
+				const entry: EntryType = get_entry_info(base_type.typearg, this);
+				this.#isEntryOptional = entry.optional;
+				return new TYPE.Maybe(entry.optional ? new TYPE.Maybe(entry.type) : entry.type);
+			} else if (!(this.accessor instanceof Expression)) { // TODO: remove expression access
+				throw new TypeErrorInvalidOperation(this);
+			}
+		}
+		if (this.kind === Operator.DOT_RESULT) {
+			if (base_type instanceof TYPE.Result) {
+				const entry: EntryType = get_entry_info(base_type.typeargSuccess, this);
+				this.#isEntryOptional = entry.optional;
+				return new TYPE.Result(entry.optional ? new TYPE.Maybe(entry.type) : entry.type, base_type.typeargFailure);
+			} else {
+				throw new TypeErrorInvalidOperation(this);
+			}
+		}
+		const entry: EntryType = get_entry_info(base_type, this);
+		this.#isEntryOptional = entry.optional;
+		return entry.optional ? new TYPE.Maybe(entry.type) : entry.type;
 	}
 
 	/**

@@ -35,6 +35,10 @@ test.suite('Call', () => {
 		'Exception.("message")',
 		'None.<int>()',
 		'Some.<int>(42)',
+		'Fail.<int>(Exception.("message"))',
+		'Ok.<int>(42)',
+		'Fail.<int, Exception>(Exception.("message"))',
+		'Ok.<int, Exception>(42)',
 	] as const;
 	const BOOL_CONS = [
 		'Boolean.(null)',
@@ -233,6 +237,10 @@ test.suite('Call', () => {
 					TYPE.EXCP,
 					new TYPE.None(TYPE.INT),
 					new TYPE.Some(TYPE.INT),
+					new TYPE.Fail(TYPE.INT),
+					new TYPE.Ok(TYPE.INT),
+					new TYPE.Fail(TYPE.INT),
+					new TYPE.Ok(TYPE.INT),
 				],
 			);
 		});
@@ -296,10 +304,12 @@ test.suite('Call', () => {
 				repeat(TYPE.EXCP, EXCEPTION_CONS.length),
 			);
 		});
-		test.test('`Maybe.()` throws.', () => {
+		test.test('`Maybe.()` and `Result.()` throw.', () => {
 			xjs.Array.forEachAggregated([
 				'Maybe.<int>()',
 				'Maybe.<int>(42)',
+				'Result.<int>(42)',
+				'Result.<int>(Exception.("message"))',
 			], (src) => {
 				const call: AST.EXPR.Call = AST.EXPR.Call.fromSource(src);
 				return assert.throws(() => call.type(), TypeErrorNotCallable);

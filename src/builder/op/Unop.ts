@@ -37,6 +37,8 @@ export type OpCodeUn = (
 	| OpCode.MAP_COUNT
 
 	| OpCode.MAYBE_UNWRAP
+	| OpCode.RESULT_UNWRAP
+	| OpCode.RESULT_EXTRACT
 );
 
 
@@ -85,6 +87,14 @@ export class Unop extends Value {
 				assert_instanceof(this.operand.type, TYPE.Maybe);
 				return assert.ok(this.type.isSubtypeOf(this.operand.type.typearg));
 			}
+			case OpCode.RESULT_UNWRAP: {
+				assert_instanceof(this.operand.type, TYPE.Result);
+				return assert.ok(this.type.isSubtypeOf(this.operand.type.typeargSuccess));
+			}
+			case OpCode.RESULT_EXTRACT: {
+				assert_instanceof(this.operand.type, TYPE.Result);
+				return assert.ok(this.type.isSubtypeOf(this.operand.type.typeargFailure));
+			}
 		}
 	}
 
@@ -106,7 +116,9 @@ export class Unop extends Value {
 			case OpCode.SET_COUNT:  { return new VALUE.Natural((operand as VALUE.Set).count); }
 			case OpCode.MAP_COUNT:  { return new VALUE.Natural((operand as VALUE.Map).count); }
 
-			case OpCode.MAYBE_UNWRAP: { return (operand as VALUE.Maybe).value ?? assert.fail(new Error('Unwrapped a None value.')); }
+			case OpCode.MAYBE_UNWRAP:   { return (operand as VALUE.Maybe).value ?? assert.fail(new TypeError('Unwrapped a None value.')); }
+			case OpCode.RESULT_UNWRAP:  { return  (operand as VALUE.Result).isOk ? (operand as VALUE.Result).argument : assert.fail(new TypeError('Unwrapped a Fail value.')); }
+			case OpCode.RESULT_EXTRACT: { return !(operand as VALUE.Result).isOk ? (operand as VALUE.Result).argument : assert.fail(new TypeError('Extracted from an Ok value.')); }
 		}
 	}
 
@@ -130,7 +142,9 @@ export class Unop extends Value {
 			case OpCode.SET_COUNT:  { return VmValue.newPrimitive(Vect.newNat(wasm.i64.extend_i32_u(VmMap.count(VmValue.cast(code, reftype.Map))))); }
 			case OpCode.MAP_COUNT:  { return VmValue.newPrimitive(Vect.newNat(wasm.i64.extend_i32_u(VmMap.count(VmValue.cast(code, reftype.Map))))); }
 
-			case OpCode.MAYBE_UNWRAP: { return op.unwrapMaybe(code); }
+			case OpCode.MAYBE_UNWRAP:   { return op.unwrapMaybe(code); }
+			case OpCode.RESULT_UNWRAP:  { return op.unwrapResult(code); }
+			case OpCode.RESULT_EXTRACT: { return op.extractResult(code); }
 		}
 	}
 

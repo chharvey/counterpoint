@@ -134,10 +134,8 @@ Decorate(ParametersType ::= ","? EntryType<-Named><-Optional># "," EntryType<-Na
 
 
 
-Decorate(PropertyAccessorType ::= INTEGER) -> SemanticIndex
-	:= (SemanticIndex[index=TokenWorth(INTEGER)]);
-Decorate(PropertyAccessorType ::= NATURAL) -> SemanticIndex
-	:= (SemanticIndex[index=TokenWorth(NATURAL)]);
+Decorate(PropertyAccessorType ::= WHOLE_DIGITS) -> SemanticIndex
+	:= (SemanticIndex[index=TokenWorth(WHOLE_DIGITS)]);
 Decorate(PropertyAccessorType ::= Word) -> SemanticKey
 	:= Decorate(Word);
 
@@ -210,12 +208,7 @@ Decorate(TypeUnit ::= TypeMapLiteral) -> SemanticTypeMap
 Decorate(TypeCompound ::= TypeUnit) -> SemanticType
 	:= Decorate(TypeUnit);
 Decorate(TypeCompound ::= TypeCompound "." PropertyAccessorType) -> SemanticTypeAccess
-	:= (SemanticTypeAccess[kind=NORMAL]
-		Decorate(TypeCompound)
-		Decorate(PropertyAccessorType)
-	);
-Decorate(TypeCompound ::= TypeCompound "?." PropertyAccessorType) -> SemanticTypeAccess
-	:= (SemanticTypeAccess[kind=MAYBE]
+	:= (SemanticTypeAccess
 		Decorate(TypeCompound)
 		Decorate(PropertyAccessorType)
 	);
@@ -529,10 +522,8 @@ Decorate(CaptureClause<Ref> ::= "with" "(" ","? Capture<?Ref># ","? ")") -> Sequ
 
 
 
-Decorate(PropertyAccessor<Break, Return> ::= INTEGER) -> SemanticIndex
-	:= (SemanticIndex[index=TokenWorth(INTEGER)]);
-Decorate(PropertyAccessor<Break, Return> ::= NATURAL) -> SemanticIndex
-	:= (SemanticIndex[index=TokenWorth(NATURAL)]);
+Decorate(PropertyAccessor<Break, Return> ::= WHOLE_DIGITS) -> SemanticIndex
+	:= (SemanticIndex[index=TokenWorth(WHOLE_DIGITS)]);
 Decorate(PropertyAccessor<Break, Return> ::= Word) -> SemanticKey
 	:= Decorate(Word);
 Decorate(PropertyAccessor<Break, Return> ::= "[" Expression<+Block><?Break><?Return> "]") -> SemanticExpression
@@ -620,17 +611,17 @@ Decorate(ExpressionCompound<Block, Break, Return> ::= ExpressionCompound<?Block>
 		Decorate(ExpressionCompound<?Block><?Break><?Return>)
 	);
 Decorate(ExpressionCompound<Block, Break, Return> ::= ExpressionCompound<?Block><?Break><?Return> "." PropertyAccessor<?Break><?Return>) -> SemanticExpressionAccess
-	:= (SemanticExpressionAccess[kind=NORMAL]
+	:= (SemanticExpressionAccess[kind=NORMAL][isEntryOptional=*nil*]
 		Decorate(ExpressionCompound<?Block><?Break><?Return>)
 		Decorate(PropertyAccessor<?Break><?Return>)
 	);
 Decorate(ExpressionCompound<Block, Break, Return> ::= ExpressionCompound<?Block><?Break><?Return> "?." PropertyAccessor<?Break><?Return>) -> SemanticExpressionAccess
-	:= (SemanticExpressionAccess[kind=MAYBE]
+	:= (SemanticExpressionAccess[kind=MAYBE][isEntryOptional=*nil*]
 		Decorate(ExpressionCompound<?Block><?Break><?Return>)
 		Decorate(PropertyAccessor<?Break><?Return>)
 	);
 Decorate(ExpressionCompound<Block, Break, Return> ::= ExpressionCompound<?Block><?Break><?Return> "!." PropertyAccessor<?Break><?Return>) -> SemanticExpressionAccess
-	:= (SemanticExpressionAccess[kind=RESULT]
+	:= (SemanticExpressionAccess[kind=RESULT][isEntryOptional=*nil*]
 		Decorate(ExpressionCompound<?Block><?Break><?Return>)
 		Decorate(PropertyAccessor<?Break><?Return>)
 	);
@@ -974,7 +965,7 @@ Decorate(Expression<Block, Break, Return> ::= ExpressionFunction) -> SemanticExp
 Decorate(Assignee<Break, Return> ::= IDENTIFIER) -> SemanticExpressionVariable
 	:= (SemanticExpressionVariable[id=TokenWorth(IDENTIFIER)]);
 Decorate(Assignee<Break, Return> ::= ExpressionCompound<+Block><?Break><?Return> "." PropertyAccessor<?Break><?Return>) -> SemanticExpressionAccess
-	:= (SemanticExpressionAccess[kind=NORMAL]
+	:= (SemanticExpressionAccess[kind=NORMAL][isEntryOptional=*nil*]
 		Decorate(ExpressionCompound<+Block><?Break><?Return>)
 		Decorate(PropertyAccessor<?Break><?Return>)
 	);

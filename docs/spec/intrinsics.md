@@ -111,6 +111,12 @@ instantiated respectively by the subclasses `Some` and `None`.
 The values in Somes are Counterpoint Language Values.
 
 
+### `Result`
+`Result` objects either hold a success value or a failure reason,
+instantiated respectively by the subclasses `Ok` and `Fail`.
+The success values and failure reasons in Results are Counterpoint Language Values.
+
+
 ### `Function`
 `Function` objects encapsulate parameterized Counterpoint code closed over a lexical environment
 and support the dynamic execution of that code.

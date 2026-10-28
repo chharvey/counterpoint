@@ -21,8 +21,6 @@ import {
 } from '../../parser/index.ts';
 import {
 	Operator,
-	type ValidTypeAccessOperator,
-	type ValidAccessOperator,
 	Validator,
 } from '../index.ts';
 import {
@@ -78,6 +76,9 @@ export type CallableInterfaceName = (
 	| IntrinsicName.MAYBE
 	| IntrinsicName.NONE
 	| IntrinsicName.SOME
+	| IntrinsicName.RESULT
+	| IntrinsicName.FAIL
+	| IntrinsicName.OK
 );
 const CALLABLE_INTERFACES: readonly string[] = [
 	IntrinsicName.LIST,
@@ -87,6 +88,9 @@ const CALLABLE_INTERFACES: readonly string[] = [
 	IntrinsicName.MAYBE,
 	IntrinsicName.NONE,
 	IntrinsicName.SOME,
+	IntrinsicName.RESULT,
+	IntrinsicName.FAIL,
+	IntrinsicName.OK,
 ];
 export function validate_callable_interface_name(source: string): asserts source is CallableInterfaceName {
 	if (!CALLABLE_INTERFACES.includes(source)) {
@@ -108,6 +112,8 @@ export type CallableClassName = (
 	| IntrinsicName.EXCEPTION
 	| IntrinsicName.NONE
 	| IntrinsicName.SOME
+	| IntrinsicName.FAIL
+	| IntrinsicName.OK
 );
 const CALLABLE_CLASSES: readonly string[] = [
 	IntrinsicName.BOOLEAN,
@@ -122,6 +128,8 @@ const CALLABLE_CLASSES: readonly string[] = [
 	IntrinsicName.EXCEPTION,
 	IntrinsicName.NONE,
 	IntrinsicName.SOME,
+	IntrinsicName.FAIL,
+	IntrinsicName.OK,
 ];
 export function validate_callable_class_name(source: string): asserts source is CallableClassName {
 	if (!CALLABLE_CLASSES.includes(source)) {
@@ -247,6 +255,13 @@ export type ConstructorSchema = {
  * declare class Some<out T> extends Maybe.<T> {
  * 	new (value: T);
  * }
+ * declare abstract class Result<out T, out E narrows Exception = Exception> extends Object {}
+ * declare class Fail<out T, out E narrows Exception = Exception> extends Result.<T, E> {
+ * 	new (reason: E);
+ * }
+ * declare class Ok<out T, out E narrows Exception = Exception> extends Result.<T, E> {
+ * 	new (value: T);
+ * }
  * ```
  */
 export const CLASS_API = new Map<CallableInterfaceName | CallableClassName, ConstructorSchema>([
@@ -337,6 +352,21 @@ export const CLASS_API = new Map<CallableInterfaceName | CallableClassName, Cons
 		overloads:     [[{positional: true, type: (generic_params) => generic_params[0]}]],
 		returnType:    (generic_params) => new TYPE.Some(generic_params[0]),
 	}],
+	[IntrinsicName.RESULT, {
+		genericParams: [{positional: true, readonlyVariance: 'covariant'}, {positional: true, readonlyVariance: 'covariant', constraint: {direction: 'narrows', type: () => TYPE.EXCP}, default: () => TYPE.EXCP}],
+		overloads:     [],
+		returnType:    (generic_params) => new TYPE.Result(generic_params[0], generic_params[1]),
+	}],
+	[IntrinsicName.FAIL, {
+		genericParams: [{positional: true, readonlyVariance: 'covariant'}, {positional: true, readonlyVariance: 'covariant', constraint: {direction: 'narrows', type: () => TYPE.EXCP}, default: () => TYPE.EXCP}],
+		overloads:     [[{positional: true, type: (generic_params) => generic_params[1]}]],
+		returnType:    (generic_params) => new TYPE.Fail(generic_params[0], generic_params[1]),
+	}],
+	[IntrinsicName.OK, {
+		genericParams: [{positional: true, readonlyVariance: 'covariant'}, {positional: true, readonlyVariance: 'covariant', constraint: {direction: 'narrows', type: () => TYPE.EXCP}, default: () => TYPE.EXCP}],
+		overloads:     [[{positional: true, type: (generic_params) => generic_params[0]}]],
+		returnType:    (generic_params) => new TYPE.Ok(generic_params[0], generic_params[1]),
+	}],
 ]);
 
 
@@ -357,13 +387,9 @@ function decombine(t: TYPE.Type): TYPE.Type[] {
 }
 
 export function get_entry_info(base_type: TYPE.Type, access: AST_TYPE.Access | EXPR.Access, is_writing: boolean = false): EntryType {
-	const accessor_maybe: boolean = access.kind === Operator.DOT_MAYBE;
+	const accessor_maybe: boolean = access instanceof EXPR.Access && access.kind === Operator.DOT_MAYBE;
 	if (base_type.isBottomType) {
 		return {type: TYPE.NOTHING, optional: accessor_maybe};
-	}
-	if (base_type instanceof TYPE.Maybe && accessor_maybe) {
-		const info: EntryType = get_entry_info(base_type.typearg, access, is_writing);
-		return {...info, type: new TYPE.Maybe(info.type)};
 	}
 	if (base_type instanceof TYPE.Combinable) {
 		const constituents: readonly TYPE.Type[] = decombine(base_type);
@@ -474,24 +500,4 @@ export function get_entry_info(base_type: TYPE.Type, access: AST_TYPE.Access | E
 			}
 		}
 	}
-}
-
-
-
-export function access_type(
-	access_kind: ValidTypeAccessOperator | ValidAccessOperator,
-	base_type:   TYPE.Type,
-	entry:       EntryType,
-	access:      AST_TYPE.Access | EXPR.Access,
-): TYPE.Type {
-	if (
-		access_kind === Operator.DOT     && entry.optional ||
-		access_kind === Operator.DOT_MAYBE && !entry.optional && !(base_type instanceof TYPE.Maybe)
-	) {
-		throw new TypeErrorInvalidOperation(access);
-	}
-	if (access_kind === Operator.DOT_RESULT) {
-		throw new Error('Operator `!.` not yet supported.');
-	}
-	return entry.optional ? new TYPE.Maybe(entry.type) : entry.type;
 }

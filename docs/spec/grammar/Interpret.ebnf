@@ -81,14 +81,6 @@ Map! Interpret((MAP.NEW `pairs`)) :=
 	2. *Return:* a new Map containing the pairs in `data`.
 ;
 
-Maybe! Interpret((MAYBE.NEW)) :=
-	1. *Return:* a new Maybe containing no value.
-;
-Maybe! Interpret((MAYBE.NEW `value`)) :=
-	1. *Let* `mval` be *Unwrap:* `Interpret(value)`.
-	2. *Return:* a new Maybe containing the value `mval`.
-;
-
 Exception! Interpret((EXCP.NEW `message`)) :=
 	1. *Set* `message` to *Unwrap:* `Interpret(message)`.
 	2. *Return:* a new Exception containing the message `message`.
@@ -97,6 +89,41 @@ Exception! Interpret((EXCP.NEW `message` `cause`)) :=
 	1. *Set* `message` to *Unwrap:* `Interpret(message)`.
 	2. *Set* `cause` to *Unwrap:* `Interpret(cause)`.
 	3. *Return:* a new Exception containing the message `message` and the cause `cause`.
+;
+
+Maybe! Interpret((MAYBE.NEW)) :=
+	1. *Return:* a new Maybe containing no value.
+;
+Maybe! Interpret((MAYBE.NEW `value`)) :=
+	1. *Set* `value` to *Unwrap:* `Interpret(value)`.
+	2. *Return:* a new Maybe containing the value `value`.
+;
+
+Maybe! Interpret((RESULT.NEW nil `excp`)) :=
+	1. *Set* `excp` to *Unwrap:* `Interpret(excp)`.
+	2. *Return:* a new Result containing the failure reason `excp`.
+;
+Maybe! Interpret((RESULT.NEW `value` nil)) :=
+	1. *Set* `value` to *Unwrap:* `Interpret(value)`.
+	2. *Return:* a new Result containing the success value `value`.
+;
+
+Value! Interpret((TUPLE.HAS `index` `obj`)) :=
+	1. *Let* `base` be *Unwrap:* `Interpret(obj)`.
+	2. *Assert:* `base` is an instance of `Tuple`.
+	3. *If* `index` is an index in `base`:
+		1. *Return:* `true`.
+	4. *Else:*
+		1. *Return:* `false`.
+;
+
+Value! Interpret((RECORD.HAS `key` `obj`)) :=
+	1. *Let* `base` be *Unwrap:* `Interpret(obj)`.
+	2. *Assert:* `base` is an instance of `Record`.
+	3. *If* `key` is a key in `base`:
+		1. *Return:* `true`.
+	4. *Else:*
+		1. *Return:* `false`.
 ;
 
 Value! Interpret((TUPLE.GET `index` `obj`)) :=
@@ -277,6 +304,24 @@ Value! Interpret((MAYBE.UNWRAP `obj`)) :=
 		1. *Return:* the value contained in `obj`.
 ;
 
+Value! Interpret((RESULT.UNWRAP `obj`)) :=
+	1. *Set* `obj` to *Unwrap:* `Interpret(obj)`.
+	2. *Assert:* `obj` is instance of `Result`.
+	3. *If* `obj` does not have a success value:
+		1. *Throw:* a new Error "Unwrapped a Fail value.".
+	4. *Else:*
+		1. *Return:* the success value contained in `obj`.
+;
+
+Exception! Interpret((RESULT.EXTRACT `obj`)) :=
+	1. *Set* `obj` to *Unwrap:* `Interpret(obj)`.
+	2. *Assert:* `obj` is instance of `Result`.
+	3. *If* `obj` does not have a failure reason:
+		1. *Throw:* a new Error "Extracted from an Ok value.".
+	4. *Else:*
+		1. *Return:* the failure reason contained in `obj`.
+;
+
 Boolean! Interpret((INSTANCEOF `src` `v`)) :=
 	1. *Set* `v` to *Unwrap:* `Interpret(v)`;
 	2. *If* any of the following conditions is `true`:
@@ -292,6 +337,7 @@ Boolean! Interpret((INSTANCEOF `src` `v`)) :=
 		- `src` is "Map"       *and* `v` is an instance of `Map`
 		- `src` is "Exception" *and* `v` is an instance of `Exception`
 		- `src` is "Maybe"     *and* `v` is an instance of `Maybe`
+		- `src` is "Result"    *and* `v` is an instance of `Result`
 		- `src` is "Function"  *and* `v` is an instance of `Function`
 		1. *Return:* `true`.
 	3. *Else If* `src` is "None" *and* `v` is an instance of `Maybe`:
@@ -304,7 +350,17 @@ Boolean! Interpret((INSTANCEOF `src` `v`)) :=
 			1. *Return:* `true`.
 		2. *Else:*
 			1. *Return:* `false`.
-	5. *Else*:
+	5. *Else If* `src` is "Fail" *and* `v` is an instance of `Result`:
+		1. *If* `v` has a failure reason:
+			1. *Return:* `true`.
+		2. *Else:*
+			1. *Return:* `false`.
+	6. *Else If* `src` is "Ok" *and* `v` is an instance of `Result`:
+		1. *If* `v` has a success value:
+			1. *Return:* `true`.
+		2. *Else:*
+			1. *Return:* `false`.
+	7. *Else*:
 		1. *Return:* `false`.
 ;
 

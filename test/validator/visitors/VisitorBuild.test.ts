@@ -1,10 +1,7 @@
 import * as assert from 'node:assert';
 import * as test from 'node:test';
 import * as xjs from 'extrajs';
-import {
-	op_maybe_string,
-	setupScript,
-} from '../../utils.ts';
+import {setupScript} from '../../utils.ts';
 
 
 
@@ -62,7 +59,7 @@ test.suite('VisitorBuild#visit', () => {
 			"block-0":
 				(DROP (INT.CONST 42))
 				(DECL <int> assignee_a (INT.CONST 42))
-				(DECL <Maybe> assignee_b ${op_maybe_string()})
+				(DECL <Maybe> assignee_b (MAYBE.NEW))
 				(DECL <int> assignee_c (INT.CONST 42))
 				(DROP (GET assignee_c))
 				(DECL <int> assignee_d (GET assignee_c))
@@ -127,7 +124,7 @@ test.suite('VisitorBuild#visit', () => {
 				"block-1":
 					(DECL <int> foo)
 					(DECL <int> bar (INT.CONST 41))
-					(DECL <Maybe> qux ${op_maybe_string()})
+					(DECL <Maybe> qux (MAYBE.NEW))
 					(DROP (GET foo))
 					(GOTO "caller")
 				"unreachable-3":
@@ -277,7 +274,7 @@ test.suite('VisitorBuild#visit', () => {
 			stmts.slice(1).forEach((stmt) => visitor_build.visit(stmt));
 			return assert.strictEqual(builder.print(), xjs.String.dedent`
 				"block-0":
-					(SET x ${op_maybe_string('(INT.CONST 42)')})
+					(SET x (MAYBE.NEW (INT.CONST 42)))
 			`.trim());
 		});
 		test.test('deletion: pushes (SET) with an empty (MAYBE.NEW).', () => {
@@ -288,7 +285,7 @@ test.suite('VisitorBuild#visit', () => {
 			stmts.slice(1).forEach((stmt) => visitor_build.visit(stmt));
 			return assert.strictEqual(builder.print(), xjs.String.dedent`
 				"block-0":
-					(SET x ${op_maybe_string()})
+					(SET x (MAYBE.NEW))
 			`.trim());
 		});
 		test.test('for collections: pushes OP.CollectionDynamicSet.', () => {
@@ -432,8 +429,8 @@ test.suite('VisitorBuild#visit', () => {
 				};
 			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
-					(DECL <Maybe> cond ${op_maybe_string()})
-					(SET cond ${op_maybe_string('(BOOL.CONST true)')})
+					(DECL <Maybe> cond (MAYBE.NEW))
+					(SET cond (MAYBE.NEW (BOOL.CONST true)))
 					(GOTO.IF (EQ (GET cond) (BOOL.CONST true)) "block-1" "block-2")
 				"block-1":
 					(DROP (INT.CONST 10))

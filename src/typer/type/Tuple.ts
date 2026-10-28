@@ -79,7 +79,7 @@ class TypeTuple extends ValueType {
 	}
 
 	public get(index: bigint, accessor: AST.Index): EntryType {
-		return this.isIndexCanonical(index)
+		return 0 <= index && index < this.typeargs.length
 			? this.typeargs.at(Number(index))!
 			: assert.fail(new TypeErrorNoEntry('index', this, accessor));
 	}
@@ -96,10 +96,6 @@ class TypeTuple extends ValueType {
 
 	public itemTypes(): Type {
 		return Union.all(...this.typeargs.map((t) => t.type));
-	}
-
-	public isIndexCanonical(index: bigint): boolean {
-		return 0 <= index && index < this.typeargs.length;
 	}
 }
 export {TypeTuple as Tuple};
