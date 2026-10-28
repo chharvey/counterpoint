@@ -49,7 +49,7 @@
 	)))
 
 	;; precursor to the `List` class
-	(type $List (sub $Object (struct
+	(type $List (sub final $Object (struct
 		;; --- inherited ---
 		;; unique id for hashing
 		(field $id i64)
@@ -62,7 +62,7 @@
 	)))
 
 	;; precursor to the `Dict` class
-	(type $Dict (sub $Object (struct
+	(type $Dict (sub final $Object (struct
 		;; --- inherited ---
 		;; unique id for hashing
 		(field $id i64)
@@ -75,7 +75,7 @@
 	)))
 
 	;; precursor to the `Map` class
-	(type $Map (sub $Object (struct
+	(type $Map (sub final $Object (struct
 		;; --- inherited ---
 		;; unique id for hashing
 		(field $id i64)
@@ -88,7 +88,7 @@
 	)))
 
 	;; precursor to the `Exception` class
-	(type $Exception (sub $Object (struct
+	(type $Exception (sub final $Object (struct
 		;; --- inherited ---
 		;; unique id for hashing
 		(field $id i64)

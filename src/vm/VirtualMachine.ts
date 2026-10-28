@@ -191,7 +191,6 @@ const TYPES: {
 	]);
 	// @ts-expect-error --- incorrect `setSubType` signature
 	tb.setSubType(i_list, tb.getTempHeapType(i_object));
-	tb.setOpen(i_list);
 
 	/* (type $Dict ...) */
 	const i_dict: number = tb.getSize();
@@ -203,7 +202,6 @@ const TYPES: {
 	]);
 	// @ts-expect-error --- incorrect `setSubType` signature
 	tb.setSubType(i_dict, tb.getTempHeapType(i_object));
-	tb.setOpen(i_dict);
 
 	/* (type $Map ...) */
 	const i_map: number = tb.getSize();
@@ -215,7 +213,6 @@ const TYPES: {
 	]);
 	// @ts-expect-error --- incorrect `setSubType` signature
 	tb.setSubType(i_map, tb.getTempHeapType(i_object));
-	tb.setOpen(i_map);
 
 	/* (type $Exception ...) */
 	const i_exception: number = tb.getSize();
@@ -227,7 +224,6 @@ const TYPES: {
 	]);
 	// @ts-expect-error --- incorrect `setSubType` signature
 	tb.setSubType(i_exception, tb.getTempHeapType(i_object));
-	tb.setOpen(i_exception);
 
 	/* (type $Maybe ...) */
 	const i_maybe: number = tb.getSize();
@@ -238,7 +234,6 @@ const TYPES: {
 	]);
 	// @ts-expect-error --- incorrect `setSubType` signature
 	tb.setSubType(i_maybe, tb.getTempHeapType(i_object));
-	// `$Maybe` is final
 
 	/* (type $Result ...) */
 	const i_result: number = tb.getSize();
@@ -250,7 +245,6 @@ const TYPES: {
 	]);
 	// @ts-expect-error --- incorrect `setSubType` signature
 	tb.setSubType(i_result, tb.getTempHeapType(i_object));
-	// `$Result` is final
 
 	/* (type $Function ...) */
 	const i_function: number = tb.getSize();
@@ -261,7 +255,6 @@ const TYPES: {
 	]);
 	// @ts-expect-error --- incorrect `setSubType` signature
 	tb.setSubType(i_function, tb.getTempHeapType(i_object));
-	// `$Function` is final
 
 	const heaptypes: readonly binaryen.HeapType[] = tb.buildAndDispose();
 
