@@ -521,7 +521,7 @@ This is important to mention because it could also affect how we write
 <Object>   `as`  <Class>
 <Object>   `as?` <Class>
 <anything> `as`  `:` <Type> `:`
-<Object>   `as!` `:` <Type> `:`
+<anything> `as!` `:` <Type> `:`
 ```
 The expression `expr as Klass` explicitly **casts** the `expr` into a `Klass`.
 This means that at compile time, `expr` is treated as type `Klass` within its containing expression,
