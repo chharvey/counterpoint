@@ -11,7 +11,7 @@
   "main": "dist/main.js",
   "type": "module",
   "bin": {
-    "cplc": "bin/cplc.js"
+    "cplc": "bin/cplc.mjs"
   },
   "repository": {
     "type": "git",
