@@ -88,13 +88,14 @@
 	(unreachable)
 )
 (func $!op:is-empty/composite (param $composite (ref eq)) (result i32)
+	(if (ref.test (ref $String) (local.get $composite)) (then (return (i32.eqz     (array.len                (ref.cast (ref $String) (local.get $composite)))))))
 	(if (ref.test (ref $Tuple)  (local.get $composite)) (then (return (i32.eqz     (array.len                (ref.cast (ref $Tuple)  (local.get $composite)))))))
 	(if (ref.test (ref $Record) (local.get $composite)) (then (return (i32.eqz     (array.len                (ref.cast (ref $Record) (local.get $composite)))))))
 	(if (ref.test (ref $List)   (local.get $composite)) (then (return (i32.eqz     (struct.get $List  $size  (ref.cast (ref $List)   (local.get $composite)))))))
 	(if (ref.test (ref $Dict)   (local.get $composite)) (then (return (i32.eqz     (struct.get $Dict  $size  (ref.cast (ref $Dict)   (local.get $composite)))))))
 	(if (ref.test (ref $Map)    (local.get $composite)) (then (return (i32.eqz     (struct.get $Map   $size  (ref.cast (ref $Map)    (local.get $composite)))))))
 	(if (ref.test (ref $Maybe)  (local.get $composite)) (then (return (ref.is_null (struct.get $Maybe $value (ref.cast (ref $Maybe)  (local.get $composite)))))))
-	(unreachable)
+	(i32.const 0)
 )
 
 
@@ -904,12 +905,32 @@
 		)
 		(if
 			(i32.and
+				(ref.test (ref $Exception) (local.get $ref0))
+				(ref.test (ref $Exception) (local.get $ref1))
+			)
+			(then (br $exit (call $!Exception.equal
+				(ref.cast (ref $Exception) (local.get $ref0))
+				(ref.cast (ref $Exception) (local.get $ref1))
+			)))
+		)
+		(if
+			(i32.and
 				(ref.test (ref $Maybe) (local.get $ref0))
 				(ref.test (ref $Maybe) (local.get $ref1))
 			)
 			(then (br $exit (call $!Maybe.equal
 				(ref.cast (ref $Maybe) (local.get $ref0))
 				(ref.cast (ref $Maybe) (local.get $ref1))
+			)))
+		)
+		(if
+			(i32.and
+				(ref.test (ref $Result) (local.get $ref0))
+				(ref.test (ref $Result) (local.get $ref1))
+			)
+			(then (br $exit (call $!Result.equal
+				(ref.cast (ref $Result) (local.get $ref0))
+				(ref.cast (ref $Result) (local.get $ref1))
 			)))
 		)
 		(i32.const 0)
@@ -1175,6 +1196,56 @@
 	)
 	(i32.const 1)
 )
+;; Returns whether two Exceptions are equal —
+;; whether they have equal messages and equal causes.
+(func $!Exception.equal (param $excp0 (ref $Exception)) (param $excp1 (ref $Exception)) (result i32)
+	(local $message0 (ref $String))
+	(local $message1 (ref $String))
+	(local $cause0   (ref null $Exception))
+	(local $cause1   (ref null $Exception))
+
+	;; Exceptions that are identical are always equal
+	(if
+		(ref.eq (local.get $excp0) (local.get $excp1))
+		(then (return (i32.const 1)))
+	)
+
+	(local.set $message0 (struct.get $Exception $message (local.get $excp0)))
+	(local.set $message1 (struct.get $Exception $message (local.get $excp1)))
+	(local.set $cause0   (struct.get $Exception $cause   (local.get $excp0)))
+	(local.set $cause1   (struct.get $Exception $cause   (local.get $excp1)))
+
+	;; if messages are unequal, return false
+	(if
+		(i32.eqz (call $!String.equal
+			(local.get $message0)
+			(local.get $message1)
+		))
+		(then (return (i32.const 0)))
+	)
+
+	;; if both lack causes, return true; else if any lacks a cause, return false; else continue
+	(if
+		(i32.and
+			(ref.is_null (local.get $cause0))
+			(ref.is_null (local.get $cause1))
+		)
+		(then (return (i32.const 1)))
+		(else (if
+			(i32.or
+				(ref.is_null (local.get $cause0))
+				(ref.is_null (local.get $cause1))
+			)
+			(then (return (i32.const 0)))
+		))
+	)
+
+	;; return whether causes are equal
+	(call $!Exception.equal
+		(ref.as_non_null (local.get $cause0))
+		(ref.as_non_null (local.get $cause1))
+	)
+)
 ;; Returns whether two Maybes are equal —
 ;; whether they are both None, or are both Some with equal values.
 (func $!Maybe.equal (param $maybe0 (ref $Maybe)) (param $maybe1 (ref $Maybe)) (result i32)
@@ -1197,6 +1268,50 @@
 			(ref.is_null (local.get $value1))
 		)
 		(then (return (i32.const 1)))
+		(else (if
+			(i32.or
+				(ref.is_null (local.get $value0))
+				(ref.is_null (local.get $value1))
+			)
+			(then (return (i32.const 0)))
+		))
+	)
+
+	;; return whether values are equal
+	(call $Value.bool-to-i32 (call $op:eq
+		(ref.as_non_null (local.get $value0))
+		(ref.as_non_null (local.get $value1))
+	))
+)
+;; Returns whether two Results are equal —
+;; whether they are both Fail with equal reasons, or are both Ok with equal values.
+(func $!Result.equal (param $result0 (ref $Result)) (param $result1 (ref $Result)) (result i32)
+	(local $value0  (ref null $Value))
+	(local $value1  (ref null $Value))
+	(local $reason0 (ref null $Exception))
+	(local $reason1 (ref null $Exception))
+
+	;; Results that are identical are always equal
+	(if
+		(ref.eq (local.get $result0) (local.get $result1))
+		(then (return (i32.const 1)))
+	)
+
+	(local.set $value0  (struct.get $Result $value  (local.get $result0)))
+	(local.set $value1  (struct.get $Result $value  (local.get $result1)))
+	(local.set $reason0 (struct.get $Result $reason (local.get $result0)))
+	(local.set $reason1 (struct.get $Result $reason (local.get $result1)))
+
+	;; if both are Fail, return equal reasons; else if any is Fail, return false; else continue
+	(if
+		(i32.and
+			(ref.is_null (local.get $value0))
+			(ref.is_null (local.get $value1))
+		)
+		(then (return_call $!Exception.equal
+			(ref.as_non_null (local.get $reason0))
+			(ref.as_non_null (local.get $reason1))
+		))
 		(else (if
 			(i32.or
 				(ref.is_null (local.get $value0))
