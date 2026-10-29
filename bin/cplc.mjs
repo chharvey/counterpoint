@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// this file must have `.mjs` extension because it gets distributed to consumers
 import PACKAGE from '../package.json' with {type: 'json'};
 import {
 	Cli,
@@ -7,7 +8,7 @@ import {
 
 
 
-(async () => {
+try {
 	const cli = new Cli(process.argv);
 	switch (cli.command) {
 		case Command.HELP: {
@@ -42,11 +43,11 @@ import {
 			break;
 		}
 	}
-})().catch((err) => {
+} catch (err) {
 	if (err instanceof AggregateError) {
 		err.errors.forEach((er) => console.error(er));
 	} else {
 		console.error(err);
 	}
 	process.exit(1);
-});
+}
