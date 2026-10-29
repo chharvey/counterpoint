@@ -237,7 +237,7 @@ export class CodeGenerator {
 	 * @return      `(array.new_fixed $String <...items>)`
 	 */
 	public codegenString(units: readonly (binaryen.ExpressionRef /* i32 */)[] = []): binaryen.ExpressionRef /* (ref $String) */ {
-		return this.mod.wasm.array.new_fixed(this.vm.heaptype.String, units);
+		return this.mod.wasm.struct.new([this.mod.wasm.array.new_fixed(this.vm.heaptype.StringInternal, units)], this.vm.heaptype.String);
 	}
 
 	/**
@@ -246,7 +246,7 @@ export class CodeGenerator {
 	 * @return      `(array.new_fixed $Tuple <...items>)`
 	 */
 	public codegenTuple(items: readonly (binaryen.ExpressionRef /* (ref $Value) */)[] = []): binaryen.ExpressionRef /* (ref $Tuple) */ {
-		return this.mod.wasm.array.new_fixed(this.vm.heaptype.Tuple, items);
+		return this.mod.wasm.struct.new([this.mod.wasm.array.new_fixed(this.vm.heaptype.TupleInternal, items)], this.vm.heaptype.Tuple);
 	}
 
 	/**
@@ -258,7 +258,7 @@ export class CodeGenerator {
 	public codegenRecord(props: ReadonlyMap<bigint, binaryen.ExpressionRef /* (ref $Property) */> = new Map()): binaryen.ExpressionRef /* (ref $Record) */ {
 		const entries = new Array<binaryen.ExpressionRef | undefined>(props.size);
 		props.forEach((code, id) => insert_entry(entries, Number(id) % entries.length, code));
-		return this.mod.wasm.array.new_fixed(this.vm.heaptype.Record, entries as binaryen.ExpressionRef[]);
+		return this.mod.wasm.struct.new([this.mod.wasm.array.new_fixed(this.vm.heaptype.RecordInternal, entries as binaryen.ExpressionRef[])], this.vm.heaptype.Record);
 	}
 
 	/**
@@ -430,6 +430,8 @@ export class CodeGenerator {
 			this.vm.Value     .funcImportDataMap,
 			this.vm.Property  .funcImportDataMap,
 			this.vm.Case      .funcImportDataMap,
+			this.vm.String    .funcImportDataMap,
+			this.vm.Tuple     .funcImportDataMap,
 			this.vm.Record    .funcImportDataMap,
 			this.vm.Object    .funcImportDataMap,
 			this.vm.List      .funcImportDataMap,
@@ -452,7 +454,7 @@ export class CodeGenerator {
 		);
 		mod.exports.addFunction(fn_name, fn_name);
 		if (!mod.validate()) {
-			throw new Error('Invalid WebAssembly module.');
+			throw new Error('Invalid WebAssembly module in CodeGenerator.');
 		}
 	}
 }

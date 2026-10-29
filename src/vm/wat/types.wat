@@ -1,6 +1,5 @@
-;; # Types
 (rec
-	;; dynamic operation types
+	;; # Dynamic Operation Types
 	(type $i64.relop (func (param i64 i64) (result i32)))
 	(type $f64.relop (func (param f64 f64) (result i32)))
 
@@ -25,14 +24,12 @@
 
 
 
-	;; ## Compound Value Types
-	(type $String (array (mut i8))) ;; mutable to allow construction of templates
-	(type $Tuple  (array (ref $Value)))
-	(type $Record (array (ref $Property)))
+	;; # Compound Internals: storage of data
+	(type $StringInternal (array (mut i32))) ;; mutable to allow construction of templates
+	(type $TupleInternal  (array (ref $Value)))
+	(type $RecordInternal (array (ref $Property)))
 
-
-
-	;; ## Collection Internals: storage of items/properties
+	;; # Collection Internals: storage of items/properties
 	;; mutable to allow reassigning array entries, nullable because array can be sparse
 	(type $ListInternal (array (mut (ref null $Value))))
 	(type $DictInternal (array (mut (ref null $Property))))
@@ -40,7 +37,14 @@
 
 
 
-	;; ## Counterpoint Classes
+	;; # Compound Value Types
+	(type $String (struct (field $internal (ref $StringInternal))))
+	(type $Tuple  (struct (field $internal (ref $TupleInternal))))
+	(type $Record (struct (field $internal (ref $RecordInternal))))
+
+
+
+	;; # Counterpoint Classes
 
 	;; a Counterpoint object; precursor to the `Object` root class
 	(type $Object (sub (struct

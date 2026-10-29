@@ -77,19 +77,21 @@
 ;; [SEED, ...$string.codeunits].reduce((a, b) => (a xor i64.extend_i32_u(b)) * PRIME);
 ;; ```
 (func $!String.hash (param $string (ref $String)) (result i64)
-	(local $result i64)
-	(local $i      i32)
+	(local $internal (ref $StringInternal))
+	(local $result   i64)
+	(local $i        i32)
 
-	(local.set $result (global.get $SEED))
+	(local.set $internal (struct.get $String $internal (local.get $string)))
+	(local.set $result   (global.get $SEED))
 
 	(block $exit
 		(local.set $i (i32.const 0))
 		(loop $repeat
-			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $string))))
+			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $internal))))
 			(local.set $result (i64.mul
 				(i64.xor
 					(local.get $result)
-					(i64.extend_i32_u (array.get_u $String (local.get $string) (local.get $i)))
+					(i64.extend_i32_u (array.get_u $StringInternal (local.get $internal) (local.get $i)))
 				)
 				(global.get $PRIME)
 			))
@@ -107,19 +109,21 @@
 ;; [SEED, ...$tuple.values()].reduce((a, b) => (a xor hash(b)) * PRIME);
 ;; ```
 (func $!Tuple.hash (param $tuple (ref $Tuple)) (result i64)
-	(local $result i64)
-	(local $i      i32)
+	(local $internal (ref $TupleInternal))
+	(local $result   i64)
+	(local $i        i32)
 
-	(local.set $result (global.get $SEED))
+	(local.set $internal (struct.get $Tuple $internal (local.get $tuple)))
+	(local.set $result   (global.get $SEED))
 
 	(block $exit
 		(local.set $i (i32.const 0))
 		(loop $repeat
-			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $tuple))))
+			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $internal))))
 			(local.set $result (i64.mul
 				(i64.xor
 					(local.get $result)
-					(call $Value.hash (array.get $Tuple (local.get $tuple) (local.get $i)))
+					(call $Value.hash (array.get $TupleInternal (local.get $internal) (local.get $i)))
 				)
 				(global.get $PRIME)
 			))
@@ -140,18 +144,20 @@
 ;; [SEED, ...$record.entries()].reduce((a, b) => a xor hash(b)) * PRIME;
 ;; ```
 (func $!Record.hash (param $record (ref $Record)) (result i64)
-	(local $result i64)
-	(local $i      i32)
+	(local $internal (ref $RecordInternal))
+	(local $result   i64)
+	(local $i        i32)
 
-	(local.set $result (global.get $SEED))
+	(local.set $internal (struct.get $Record $internal (local.get $record)))
+	(local.set $result   (global.get $SEED))
 
 	(block $exit
 		(local.set $i (i32.const 0))
 		(loop $repeat
-			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $record))))
+			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $internal))))
 			(local.set $result (i64.xor
 				(local.get $result)
-				(call $!Property.hash (array.get $Record (local.get $record) (local.get $i)))
+				(call $!Property.hash (array.get $RecordInternal (local.get $internal) (local.get $i)))
 			))
 			(local.set $i (i32.add (local.get $i) (i32.const 1)))
 			(br $repeat)
