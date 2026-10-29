@@ -220,7 +220,7 @@
 	))
 )
 (func $op:is-none (export "op::isNone") (param $value (ref $Value)) (result (ref $Value))
-	(local $composite (ref null eq))
+	(local $composite (ref null $Composite))
 	(local.set $composite (struct.get $Value $composite (local.get $value)))
 	(call $Value.bool-from-i32 (i32.and
 		(call $Value.is-composite (local.get $value))
@@ -232,7 +232,7 @@
 	))
 )
 (func $op:is-some (export "op::isSome") (param $value (ref $Value)) (result (ref $Value))
-	(local $composite (ref null eq))
+	(local $composite (ref null $Composite))
 	(local.set $composite (struct.get $Value $composite (local.get $value)))
 	(call $Value.bool-from-i32 (i32.and
 		(call $Value.is-composite (local.get $value))
@@ -250,7 +250,7 @@
 	))
 )
 (func $op:is-fail (export "op::isFail") (param $value (ref $Value)) (result (ref $Value))
-	(local $composite (ref null eq))
+	(local $composite (ref null $Composite))
 	(local.set $composite (struct.get $Value $composite (local.get $value)))
 	(call $Value.bool-from-i32 (i32.and
 		(call $Value.is-composite (local.get $value))
@@ -262,7 +262,7 @@
 	))
 )
 (func $op:is-ok (export "op::isOk") (param $value (ref $Value)) (result (ref $Value))
-	(local $composite (ref null eq))
+	(local $composite (ref null $Composite))
 	(local.set $composite (struct.get $Value $composite (local.get $value)))
 	(call $Value.bool-from-i32 (i32.and
 		(call $Value.is-composite (local.get $value))
@@ -615,8 +615,8 @@
 (func $op:id (export "op::id") (param (ref $Value) (ref $Value)) (result (ref $Value))
 	(local $vect0 v128)
 	(local $vect1 v128)
-	(local $ref0 (ref null eq))
-	(local $ref1 (ref null eq))
+	(local $ref0 (ref null $Composite))
+	(local $ref1 (ref null $Composite))
 	(local.set $vect0 (struct.get $Value $primitive (local.get 0)))
 	(local.set $vect1 (struct.get $Value $primitive (local.get 1)))
 	(local.set $ref0  (struct.get $Value $composite (local.get 0)))
@@ -823,8 +823,8 @@
 (func $op:eq (export "op::eq") (param (ref $Value) (ref $Value)) (result (ref $Value))
 	(local $vect0 v128)
 	(local $vect1 v128)
-	(local $ref0 (ref null eq))
-	(local $ref1 (ref null eq))
+	(local $ref0 (ref null $Composite))
+	(local $ref1 (ref null $Composite))
 
 	;; identical values are necessarily equal
 	(if

@@ -9,7 +9,7 @@
 	(type $Value (struct
 		(field $tag       i8) ;; 1 = primitive, 2 = composite
 		(field $primitive v128)
-		(field $composite (ref null eq))
+		(field $composite (ref null $Composite))
 	))
 	;; type of entry in records/Dicts
 	(type $Property (struct
@@ -37,17 +37,22 @@
 
 
 
+	;; abstract root of all non-primitives. the type of `$Value.$composite`
+	(type $Composite (sub (struct)))
+
+
+
 	;; # Compound Value Types
-	(type $String (struct (field $internal (ref $StringInternal))))
-	(type $Tuple  (struct (field $internal (ref $TupleInternal))))
-	(type $Record (struct (field $internal (ref $RecordInternal))))
+	(type $String (sub final $Composite (struct (field $internal (ref $StringInternal)))))
+	(type $Tuple  (sub final $Composite (struct (field $internal (ref $TupleInternal)))))
+	(type $Record (sub final $Composite (struct (field $internal (ref $RecordInternal)))))
 
 
 
 	;; # Counterpoint Classes
 
 	;; a Counterpoint object; precursor to the `Object` root class
-	(type $Object (sub (struct
+	(type $Object (sub $Composite (struct
 		;; unique id for hashing
 		(field $id i64)
 	)))

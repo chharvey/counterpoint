@@ -30,6 +30,7 @@ type TypeKey = (
 	| 'ListInternal'
 	| 'DictInternal'
 	| 'MapInternal'
+	| 'Composite'
 	| 'String'
 	| 'Tuple'
 	| 'Record'
@@ -48,7 +49,7 @@ type TypeKey = (
 type HeaptypeRegistry = Readonly<Record<TypeKey, binaryen.HeapType>>;
 type ReftypeRegistry  = Readonly<Record<TypeKey, binaryen.Type>>;
 
-type ReftypeNullRegistry = Readonly<Record<TypeKey & ('Value' | 'Property' | 'Case' | 'Exception'), binaryen.Type>>;
+type ReftypeNullRegistry = Readonly<Record<TypeKey & ('Value' | 'Property' | 'Case' | 'Composite' | 'Exception'), binaryen.Type>>;
 
 
 
@@ -87,13 +88,19 @@ const TYPES: {
 } = (() => {
 	const tb = new binaryen.TypeBuilder();
 
+	/* (type $Composite ...) */
+	const i_composite: number = tb.getSize();
+	tb.grow(1);
+	tb.setStructType(i_composite, []);
+	tb.setOpen(i_composite);
+
 	/* (type $Value ...) */
 	const i_value: number = tb.getSize();
 	tb.grow(1);
 	tb.setStructType(i_value, [
 		/* $tag */       TypeBuilder_makeField(binaryen.Type.i32, 'i8'),
 		/* $primitive */ TypeBuilder_makeField(binaryen.Type.v128),
-		/* $composite */ TypeBuilder_makeField(binaryen.Type.eqref),
+		/* $composite */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_composite), true)),
 	]);
 
 	/* (type $Property ...) */
@@ -184,6 +191,8 @@ const TYPES: {
 	tb.setStructType(i_string, [
 		/* $internal */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_string_internal), false)),
 	]);
+	// @ts-expect-error --- incorrect `setSubType` signature
+	tb.setSubType(i_string, tb.getTempHeapType(i_composite));
 
 	/* (type $Tuple ...) */
 	const i_tuple: number = tb.getSize();
@@ -191,6 +200,8 @@ const TYPES: {
 	tb.setStructType(i_tuple, [
 		/* $internal */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_tuple_internal), false)),
 	]);
+	// @ts-expect-error --- incorrect `setSubType` signature
+	tb.setSubType(i_tuple, tb.getTempHeapType(i_composite));
 
 	/* (type $Record ...) */
 	const i_record: number = tb.getSize();
@@ -198,6 +209,8 @@ const TYPES: {
 	tb.setStructType(i_record, [
 		/* $internal */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_record_internal), false)),
 	]);
+	// @ts-expect-error --- incorrect `setSubType` signature
+	tb.setSubType(i_record, tb.getTempHeapType(i_composite));
 
 	/* (type $Object ...) */
 	const i_object: number = tb.getSize();
@@ -205,6 +218,8 @@ const TYPES: {
 	tb.setStructType(i_object, [
 		/* $id */ TypeBuilder_makeField(binaryen.Type.i64),
 	]);
+	// @ts-expect-error --- incorrect `setSubType` signature
+	tb.setSubType(i_object, tb.getTempHeapType(i_composite));
 	tb.setOpen(i_object);
 
 	/* (type $List ...) */
@@ -295,6 +310,7 @@ const TYPES: {
 			ListInternal:   heaptypes[i_list_internal],
 			DictInternal:   heaptypes[i_dict_internal],
 			MapInternal:    heaptypes[i_map_internal],
+			Composite:      heaptypes[i_composite],
 			String:         heaptypes[i_string],
 			Tuple:          heaptypes[i_tuple],
 			Record:         heaptypes[i_record],
@@ -318,6 +334,7 @@ const TYPES: {
 			ListInternal:   binaryen.getTypeFromHeapType(heaptypes[i_list_internal],   false),
 			DictInternal:   binaryen.getTypeFromHeapType(heaptypes[i_dict_internal],   false),
 			MapInternal:    binaryen.getTypeFromHeapType(heaptypes[i_map_internal],    false),
+			Composite:      binaryen.getTypeFromHeapType(heaptypes[i_composite],       false),
 			String:         binaryen.getTypeFromHeapType(heaptypes[i_string],          false),
 			Tuple:          binaryen.getTypeFromHeapType(heaptypes[i_tuple],           false),
 			Record:         binaryen.getTypeFromHeapType(heaptypes[i_record],          false),
@@ -335,6 +352,7 @@ const TYPES: {
 			Value:     binaryen.getTypeFromHeapType(heaptypes[i_value],     true), // only used as the fields of `$ListInternal` and `$Maybe`
 			Property:  binaryen.getTypeFromHeapType(heaptypes[i_property],  true), // only used as the fields of `$DictInternal`
 			Case:      binaryen.getTypeFromHeapType(heaptypes[i_case],      true), // only used as the fields of `$MapInternal`
+			Composite: binaryen.getTypeFromHeapType(heaptypes[i_composite], true), // only used as the fields of `$Value`
 			Exception: binaryen.getTypeFromHeapType(heaptypes[i_exception], true), // only used as the fields of `$Exception` and `$Result`
 		},
 	};
