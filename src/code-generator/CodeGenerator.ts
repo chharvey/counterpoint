@@ -417,11 +417,9 @@ export class CodeGenerator {
 	 * @param body the body of the main function
 	 */
 	public setupMain(body: binaryen.ExpressionRef): void {
-		const {mod} = this;
-
 		const extern_mod_name: string = 'wat';
 		this.vm.globalImportDataMap.forEach((data, export_name) => (
-			mod.imports.addGlobal(data.name, extern_mod_name, export_name, data.type, false)
+			this.mod.imports.addGlobal(data.name, extern_mod_name, export_name, data.type, false)
 		));
 		[
 			this.vm.util      .funcImportDataMap,
@@ -441,19 +439,19 @@ export class CodeGenerator {
 			this.vm.Maybe     .funcImportDataMap,
 			this.vm.Result    .funcImportDataMap,
 		].forEach((datamap) => datamap.forEach((data, export_name) => (
-			mod.imports.addFunction(data.name, extern_mod_name, export_name, data.param, data.result)
+			this.mod.imports.addFunction(data.name, extern_mod_name, export_name, data.param, data.result)
 		)));
 
 		const fn_name: string = 'main';
-		mod.functions.add(
+		this.mod.functions.add(
 			fn_name,
 			binaryen.Type.none,
 			binaryen.Type.none,
 			this.getAllLocals().map((local) => local.type),
 			body,
 		);
-		mod.exports.addFunction(fn_name, fn_name);
-		if (!mod.validate()) {
+		this.mod.exports.addFunction(fn_name, fn_name);
+		if (!this.mod.validate()) {
 			throw new Error('Invalid WebAssembly module in CodeGenerator.');
 		}
 	}

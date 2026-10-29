@@ -108,30 +108,30 @@ export class CollectionDynamicSet extends Instruction {
 
 	@memoizeMethod
 	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
-		const {vm: {Vect, Value, List, Dict, Map: VmMap}, mod: {wasm}} = cg;
+		const {vm: {reftype, Vect, Value, List, Dict, Map: VmMap}, mod: {wasm}} = cg;
 
 		const collection: binaryen.ExpressionRef = this.collection.codegen(cg);
 		const accessor:   binaryen.ExpressionRef = this.accessor.codegen(cg);
 		const value:      binaryen.ExpressionRef = this.value.codegen(cg);
-		const cast_collection = (reftype: binaryen.Type): binaryen.ExpressionRef => Value.cast(collection, reftype);
+		const cast_collection = (rt: binaryen.Type): binaryen.ExpressionRef => Value.cast(collection, rt);
 		switch (this.name) {
 			case TypeName.LIST: {
 				return List.set(
-					cast_collection(cg.vm.reftype.List),
+					cast_collection(reftype.List),
 					wasm.i32.wrap_i64(Vect.asInt(Value.field(accessor).primitive)),
 					value,
 				);
 			}
 			case TypeName.DICT: {
 				return Dict.set(
-					cast_collection(cg.vm.reftype.Dict),
+					cast_collection(reftype.Dict),
 					Vect.asNat(Value.field(accessor).primitive),
 					value,
 				);
 			}
 			case TypeName.SET: {
-				const base: Local = cg.newLocal(cast_collection(cg.vm.reftype.Map));
-				const xsor: Local = cg.newLocal(accessor, cg.vm.reftype.Value);
+				const base: Local = cg.newLocal(cast_collection(reftype.Map));
+				const xsor: Local = cg.newLocal(accessor, reftype.Value);
 				return wasm.block(null, [
 					base.set(),
 					xsor.set(),
@@ -151,7 +151,7 @@ export class CollectionDynamicSet extends Instruction {
 			}
 			case TypeName.MAP: {
 				return VmMap.set(
-					cast_collection(cg.vm.reftype.Map),
+					cast_collection(reftype.Map),
 					accessor,
 					value,
 				);

@@ -361,6 +361,9 @@ const TYPES: {
 
 
 export class VirtualMachine {
+	/** The Binaryen module that holds static types and functions, independent of any source program. */
+	public readonly mod: binaryen.Module = binaryen.parseText(MODULE_TEXT);
+
 	/** A lookup table for heap types created by a Binaryen TypeBuilder. */
 	public readonly heaptype: HeaptypeRegistry;
 
@@ -369,9 +372,6 @@ export class VirtualMachine {
 
 	/** A registry of reference-null types. */
 	public readonly reftypeNull: ReftypeNullRegistry;
-
-	/** The Binaryen module that holds static types and functions, independent of any source program. */
-	public readonly mod: binaryen.Module = binaryen.parseText(MODULE_TEXT);
 
 	public readonly globalImportDataMap: ReadonlyMap<string, {readonly name: string, readonly type: binaryen.Type}> = new Map([
 		['Vect#NULL',  {name: 'Vect.NULL',  type: binaryen.Type.v128}],

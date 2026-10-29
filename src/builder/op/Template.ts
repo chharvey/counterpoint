@@ -45,7 +45,7 @@ export class Template extends Value {
 		const strings: readonly Local[]                  = this.items.map((item) => cg.newLocal(VmString.field(VmValue.cast(item.codegen(cg), reftype.String)).internal));
 		const lengths: readonly binaryen.ExpressionRef[] = strings.map((strarr) => wasm.array.len(strarr.get()));
 
-		const result: Local = cg.newLocal(wasm.array.new_default(cg.vm.heaptype.StringInternal, lengths.reduce((a, b) => wasm.i32.add(a, b))));
+		const result: Local = cg.newLocal(wasm.array.new_default(heaptype.StringInternal, lengths.reduce((a, b) => wasm.i32.add(a, b))));
 		const offset: Local = cg.newLocal(wasm.i32.const(0));
 
 		return VmValue.newComposite(wasm.block(null, [
