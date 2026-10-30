@@ -18,7 +18,7 @@ import {IntrinsicName} from '../../../parser/index.ts';
 import type {SyntaxNodeType} from '../../utils-private.ts';
 import {
 	type CallableClassName,
-	validate_callable_class_name,
+	CALLABLE_CLASS_NAMES,
 	type ConstructorSchema,
 	CLASS_API,
 } from '../utils-private.ts';
@@ -39,6 +39,10 @@ export class Call extends Expression {
 		return expression;
 	}
 
+
+	public readonly isCallableClassName: boolean;
+
+
 	public constructor(
 		start_node: SyntaxNodeType<'expression_compound'>,
 		public  readonly base:          Expression,
@@ -47,12 +51,13 @@ export class Call extends Expression {
 		private readonly exprargsNamed: readonly Property[],
 	) {
 		super(start_node, {}, [base, ...typeargs, ...exprargsPosit, ...exprargsNamed]);
+		this.isCallableClassName = (CALLABLE_CLASS_NAMES as readonly string[]).includes(this.base.source);
 	}
 
 	public override varCheck(): void {
-		// NOTE: ignore var-checking `this.base` for now, as semantics is determined by syntax.
-		// (`this.base.source` must be a `CallableClassName`)
-		validate_callable_class_name(this.base.source);
+		if (!this.isCallableClassName) {
+			this.base.varCheck();
+		}
 		return xjs.Array.forEachAggregated([
 			...this.typeargs,
 			...this.exprargsPosit,

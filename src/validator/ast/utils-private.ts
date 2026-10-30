@@ -115,7 +115,7 @@ export type CallableClassName = (
 	| IntrinsicName.FAIL
 	| IntrinsicName.OK
 );
-const CALLABLE_CLASSES: readonly string[] = [
+export const CALLABLE_CLASS_NAMES: readonly CallableClassName[] = [
 	IntrinsicName.BOOLEAN,
 	IntrinsicName.INTEGER,
 	IntrinsicName.NATURAL,
@@ -131,11 +131,6 @@ const CALLABLE_CLASSES: readonly string[] = [
 	IntrinsicName.FAIL,
 	IntrinsicName.OK,
 ];
-export function validate_callable_class_name(source: string): asserts source is CallableClassName {
-	if (!CALLABLE_CLASSES.includes(source)) {
-		throw new SyntaxError(`Unexpected token: \`${source}\`; expected \`${CALLABLE_CLASSES.join(' | ')}\`.`);
-	}
-}
 
 
 

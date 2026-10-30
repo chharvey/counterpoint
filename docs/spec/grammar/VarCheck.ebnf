@@ -158,11 +158,9 @@ Nil! VarCheck(SemanticExpressionVariable var) :=
 
 
 
-Nil! VarCheck(SemanticExpressionCall call) :=
-	1. *Note:* Skip var-checking of `call.children.0` for now, as semantics is determined by syntax.
-	2. *If* `call.children.0.source` is not a Callable Class Name:
-		1. *Throw:* a new SyntaxError.
-	3. *For each* `it` in `call.children[1..]`:
+Nil! VarCheck(SemanticExpressionCall ::= SemanticExpression__0 SemanticType* SemanticExpression__1* SemanticProperty*) :=
+	1. *Perform:* *Unwrap:* `VarCheck(SemanticExpression__0)`.
+	2. *For each* `it` in `[SemanticType*, SemanticExpression__1*, SemanticProperty*]`:
 		1. *Perform:* *Unwrap:* `VarCheck(it)`.
 ;
 

@@ -210,16 +210,6 @@ test.suite('Call', () => {
 	] as const;
 
 
-	test.suite('#varCheck', () => {
-		test.test('throws if base is not one of the allowed strings.', () => {
-			xjs.Array.forEachAggregated(extract_lines`
-				SET.<str>()
-				Mapping.<bool>()
-			`, (src) => assert.throws(() => AST.EXPR.Call.fromSource(src).varCheck(), SyntaxError));
-		});
-	});
-
-
 	test.suite('#type', () => {
 		test.test('evaluates Callable Class Names.', () => {
 			assertEqualTypes(
