@@ -237,7 +237,7 @@ export class CodeGenerator {
 	 * @return      `(array.new_fixed $String <...items>)`
 	 */
 	public codegenString(units: readonly (binaryen.ExpressionRef /* i32 */)[] = []): binaryen.ExpressionRef /* (ref $String) */ {
-		return this.mod.wasm.array.new_fixed(this.vm.heaptype.String, units);
+		return this.mod.wasm.struct.new([this.mod.wasm.array.new_fixed(this.vm.heaptype.StringInternal, units)], this.vm.heaptype.String);
 	}
 
 	/**
@@ -246,7 +246,7 @@ export class CodeGenerator {
 	 * @return      `(array.new_fixed $Tuple <...items>)`
 	 */
 	public codegenTuple(items: readonly (binaryen.ExpressionRef /* (ref $Value) */)[] = []): binaryen.ExpressionRef /* (ref $Tuple) */ {
-		return this.mod.wasm.array.new_fixed(this.vm.heaptype.Tuple, items);
+		return this.mod.wasm.struct.new([this.mod.wasm.array.new_fixed(this.vm.heaptype.TupleInternal, items)], this.vm.heaptype.Tuple);
 	}
 
 	/**
@@ -258,7 +258,7 @@ export class CodeGenerator {
 	public codegenRecord(props: ReadonlyMap<bigint, binaryen.ExpressionRef /* (ref $Property) */> = new Map()): binaryen.ExpressionRef /* (ref $Record) */ {
 		const entries = new Array<binaryen.ExpressionRef | undefined>(props.size);
 		props.forEach((code, id) => insert_entry(entries, Number(id) % entries.length, code));
-		return this.mod.wasm.array.new_fixed(this.vm.heaptype.Record, entries as binaryen.ExpressionRef[]);
+		return this.mod.wasm.struct.new([this.mod.wasm.array.new_fixed(this.vm.heaptype.RecordInternal, entries as binaryen.ExpressionRef[])], this.vm.heaptype.Record);
 	}
 
 	/**
@@ -417,11 +417,9 @@ export class CodeGenerator {
 	 * @param body the body of the main function
 	 */
 	public setupMain(body: binaryen.ExpressionRef): void {
-		const {mod} = this;
-
 		const extern_mod_name: string = 'wat';
 		this.vm.globalImportDataMap.forEach((data, export_name) => (
-			mod.imports.addGlobal(data.name, extern_mod_name, export_name, data.type, false)
+			this.mod.imports.addGlobal(data.name, extern_mod_name, export_name, data.type, false)
 		));
 		[
 			this.vm.util      .funcImportDataMap,
@@ -430,6 +428,8 @@ export class CodeGenerator {
 			this.vm.Value     .funcImportDataMap,
 			this.vm.Property  .funcImportDataMap,
 			this.vm.Case      .funcImportDataMap,
+			this.vm.String    .funcImportDataMap,
+			this.vm.Tuple     .funcImportDataMap,
 			this.vm.Record    .funcImportDataMap,
 			this.vm.Object    .funcImportDataMap,
 			this.vm.List      .funcImportDataMap,
@@ -439,20 +439,20 @@ export class CodeGenerator {
 			this.vm.Maybe     .funcImportDataMap,
 			this.vm.Result    .funcImportDataMap,
 		].forEach((datamap) => datamap.forEach((data, export_name) => (
-			mod.imports.addFunction(data.name, extern_mod_name, export_name, data.param, data.result)
+			this.mod.imports.addFunction(data.name, extern_mod_name, export_name, data.param, data.result)
 		)));
 
 		const fn_name: string = 'main';
-		mod.functions.add(
+		this.mod.functions.add(
 			fn_name,
 			binaryen.Type.none,
 			binaryen.Type.none,
 			this.getAllLocals().map((local) => local.type),
 			body,
 		);
-		mod.exports.addFunction(fn_name, fn_name);
-		if (!mod.validate()) {
-			throw new Error('Invalid WebAssembly module.');
+		this.mod.exports.addFunction(fn_name, fn_name);
+		if (!this.mod.validate()) {
+			throw new Error('Invalid WebAssembly module in CodeGenerator.');
 		}
 	}
 }

@@ -1,6 +1,5 @@
-;; # Types
 (rec
-	;; dynamic operation types
+	;; # Dynamic Operation Types
 	(type $i64.relop (func (param i64 i64) (result i32)))
 	(type $f64.relop (func (param f64 f64) (result i32)))
 
@@ -10,7 +9,7 @@
 	(type $Value (struct
 		(field $tag       i8) ;; 1 = primitive, 2 = composite
 		(field $primitive v128)
-		(field $composite (ref null eq))
+		(field $composite (ref null $Composite))
 	))
 	;; type of entry in records/Dicts
 	(type $Property (struct
@@ -25,14 +24,12 @@
 
 
 
-	;; ## Compound Value Types
-	(type $String (array (mut i8))) ;; mutable to allow construction of templates
-	(type $Tuple  (array (ref $Value)))
-	(type $Record (array (ref $Property)))
+	;; # Compound Internals: storage of data
+	(type $StringInternal (array (mut i32))) ;; mutable to allow construction of templates
+	(type $TupleInternal  (array (ref $Value)))
+	(type $RecordInternal (array (ref $Property)))
 
-
-
-	;; ## Collection Internals: storage of items/properties
+	;; # Collection Internals: storage of items/properties
 	;; mutable to allow reassigning array entries, nullable because array can be sparse
 	(type $ListInternal (array (mut (ref null $Value))))
 	(type $DictInternal (array (mut (ref null $Property))))
@@ -40,16 +37,28 @@
 
 
 
-	;; ## Counterpoint Classes
+	;; abstract root of all non-primitives. the type of `$Value.$composite`
+	(type $Composite (sub (struct)))
+
+
+
+	;; # Compound Value Types
+	(type $String (sub final $Composite (struct (field $internal (ref $StringInternal)))))
+	(type $Tuple  (sub final $Composite (struct (field $internal (ref $TupleInternal)))))
+	(type $Record (sub final $Composite (struct (field $internal (ref $RecordInternal)))))
+
+
+
+	;; # Counterpoint Classes
 
 	;; a Counterpoint object; precursor to the `Object` root class
-	(type $Object (sub (struct
+	(type $Object (sub $Composite (struct
 		;; unique id for hashing
 		(field $id i64)
 	)))
 
 	;; precursor to the `List` class
-	(type $List (sub $Object (struct
+	(type $List (sub final $Object (struct
 		;; --- inherited ---
 		;; unique id for hashing
 		(field $id i64)
@@ -62,7 +71,7 @@
 	)))
 
 	;; precursor to the `Dict` class
-	(type $Dict (sub $Object (struct
+	(type $Dict (sub final $Object (struct
 		;; --- inherited ---
 		;; unique id for hashing
 		(field $id i64)
@@ -75,7 +84,7 @@
 	)))
 
 	;; precursor to the `Map` class
-	(type $Map (sub $Object (struct
+	(type $Map (sub final $Object (struct
 		;; --- inherited ---
 		;; unique id for hashing
 		(field $id i64)
@@ -88,7 +97,7 @@
 	)))
 
 	;; precursor to the `Exception` class
-	(type $Exception (sub $Object (struct
+	(type $Exception (sub final $Object (struct
 		;; --- inherited ---
 		;; unique id for hashing
 		(field $id i64)

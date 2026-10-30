@@ -2,13 +2,13 @@
 	(struct.new $Value
 		(i32.const 1)
 		(local.get $primitive)
-		(ref.null eq)
+		(ref.null $Composite)
 	)
 )
 
 
 
-(func $Value.new-composite (export "Value#newComposite") (param $composite (ref eq)) (result (ref $Value))
+(func $Value.new-composite (export "Value#newComposite") (param $composite (ref $Composite)) (result (ref $Value))
 	(struct.new $Value
 		(i32.const 2)
 		(global.get $Vect.VOID)

@@ -8,6 +8,11 @@ import type {
 
 
 
+/** Struct field constant indices. */
+const FIELD = {/** `$Record.$internal` */ INTERNAL: 0} as const;
+
+
+
 class VmRecord implements HasFuncData {
 	public constructor(private readonly vm: VirtualMachine) {}
 
@@ -29,6 +34,11 @@ class VmRecord implements HasFuncData {
 		]);
 	}
 
+
+	public field(ref: binaryen.ExpressionRef /* (ref null $Record) */): {/** @return `(struct.get $Record $internal <ref>)` */ readonly internal: binaryen.ExpressionRef /* (ref $RecordInternal) */} {
+		const {mod: {wasm}, reftype} = this.vm;
+		return {get internal() { return wasm.struct.get(FIELD.INTERNAL, ref, reftype.RecordInternal); }};
+	}
 
 	/** Return whether the given record has a property amongst its entries with the given key. */
 	public hasKey(record: binaryen.ExpressionRef /* (ref $Record) */, key: binaryen.ExpressionRef /* i64 */): binaryen.ExpressionRef /* i32 */ {
