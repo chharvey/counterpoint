@@ -28,7 +28,7 @@ export class Value implements HasFuncData {
 		const {reftype} = this.vm;
 		return new Map<string, FuncImportData>([
 			['Value#newPrimitive', {name: 'Value.new-primitive', param: binaryen.Type.v128,  result: reftype.Value}],
-			['Value#newComposite', {name: 'Value.new-composite', param: binaryen.Type.eqref, result: reftype.Value}], // FIXME: `(ref eq)` (non-null)
+			['Value#newComposite', {name: 'Value.new-composite', param: reftype.Composite,   result: reftype.Value}],
 			['Value#isPrimitive',  {name: 'Value.is-primitive',  param: reftype.Value,       result: binaryen.Type.i32}],
 			['Value#isComposite',  {name: 'Value.is-composite',  param: reftype.Value,       result: binaryen.Type.i32}],
 			['Value#boolToI32',    {name: 'Value.bool-to-i32',   param: reftype.Value,       result: binaryen.Type.i32}],
@@ -41,13 +41,13 @@ export class Value implements HasFuncData {
 	public field(ref: binaryen.ExpressionRef /* (ref null $Value) */): {
 		/** @return `(struct.get $Value $tag       <ref>)` */ readonly tag:       binaryen.ExpressionRef /* i32 */,
 		/** @return `(struct.get $Value $primitive <ref>)` */ readonly primitive: binaryen.ExpressionRef /* v128 */,
-		/** @return `(struct.get $Value $primitive <ref>)` */ readonly composite: binaryen.ExpressionRef /* (ref null eq) */,
+		/** @return `(struct.get $Value $primitive <ref>)` */ readonly composite: binaryen.ExpressionRef /* (ref null $Composite) */,
 	} {
-		const {wasm} = this.vm.mod;
+		const {mod: {wasm}, reftypeNull} = this.vm;
 		return {
 			get tag()       { return wasm.struct.get(FIELD.TAG,       ref, binaryen.Type.i32, false); },
 			get primitive() { return wasm.struct.get(FIELD.PRIMITIVE, ref, binaryen.Type.v128); },
-			get composite() { return wasm.struct.get(FIELD.COMPOSITE, ref, binaryen.Type.eqref); },
+			get composite() { return wasm.struct.get(FIELD.COMPOSITE, ref, reftypeNull.Composite); },
 		};
 	}
 
@@ -73,7 +73,7 @@ export class Value implements HasFuncData {
 	}
 
 	/** Creates a new Value struct storing the given reference in its composite slot. */
-	public newComposite(composite: binaryen.ExpressionRef /* (ref eq) */): binaryen.ExpressionRef /* (ref $Value) */ {
+	public newComposite(composite: binaryen.ExpressionRef /* (ref $Composite) */): binaryen.ExpressionRef /* (ref $Value) */ {
 		return this.vm.mod.wasm.call('Value.new-composite', [composite], this.vm.reftype.Value);
 	}
 

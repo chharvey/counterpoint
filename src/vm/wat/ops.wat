@@ -87,14 +87,15 @@
 	(if (call $Vect.is-float (local.get $primitive)) (then (return (f64.eq (call $Vect.as-float (local.get $primitive)) (f64.const 0.0))))) ;; also takes care of -0.0
 	(unreachable)
 )
-(func $!op:is-empty/composite (param $composite (ref eq)) (result i32)
-	(if (ref.test (ref $Tuple)  (local.get $composite)) (then (return (i32.eqz     (array.len                (ref.cast (ref $Tuple)  (local.get $composite)))))))
-	(if (ref.test (ref $Record) (local.get $composite)) (then (return (i32.eqz     (array.len                (ref.cast (ref $Record) (local.get $composite)))))))
-	(if (ref.test (ref $List)   (local.get $composite)) (then (return (i32.eqz     (struct.get $List  $size  (ref.cast (ref $List)   (local.get $composite)))))))
-	(if (ref.test (ref $Dict)   (local.get $composite)) (then (return (i32.eqz     (struct.get $Dict  $size  (ref.cast (ref $Dict)   (local.get $composite)))))))
-	(if (ref.test (ref $Map)    (local.get $composite)) (then (return (i32.eqz     (struct.get $Map   $size  (ref.cast (ref $Map)    (local.get $composite)))))))
-	(if (ref.test (ref $Maybe)  (local.get $composite)) (then (return (ref.is_null (struct.get $Maybe $value (ref.cast (ref $Maybe)  (local.get $composite)))))))
-	(unreachable)
+(func $!op:is-empty/composite (param $composite (ref $Composite)) (result i32)
+	(if (ref.test (ref $String) (local.get $composite)) (then (return (i32.eqz     (array.len (struct.get $String $internal (ref.cast (ref $String) (local.get $composite))))))))
+	(if (ref.test (ref $Tuple)  (local.get $composite)) (then (return (i32.eqz     (array.len (struct.get $Tuple  $internal (ref.cast (ref $Tuple)  (local.get $composite))))))))
+	(if (ref.test (ref $Record) (local.get $composite)) (then (return (i32.eqz     (array.len (struct.get $Record $internal (ref.cast (ref $Record) (local.get $composite))))))))
+	(if (ref.test (ref $List)   (local.get $composite)) (then (return (i32.eqz     (struct.get $List  $size  (ref.cast (ref $List)  (local.get $composite)))))))
+	(if (ref.test (ref $Dict)   (local.get $composite)) (then (return (i32.eqz     (struct.get $Dict  $size  (ref.cast (ref $Dict)  (local.get $composite)))))))
+	(if (ref.test (ref $Map)    (local.get $composite)) (then (return (i32.eqz     (struct.get $Map   $size  (ref.cast (ref $Map)   (local.get $composite)))))))
+	(if (ref.test (ref $Maybe)  (local.get $composite)) (then (return (ref.is_null (struct.get $Maybe $value (ref.cast (ref $Maybe) (local.get $composite)))))))
+	(i32.const 0)
 )
 
 
@@ -219,7 +220,7 @@
 	))
 )
 (func $op:is-none (export "op::isNone") (param $value (ref $Value)) (result (ref $Value))
-	(local $composite (ref null eq))
+	(local $composite (ref null $Composite))
 	(local.set $composite (struct.get $Value $composite (local.get $value)))
 	(call $Value.bool-from-i32 (i32.and
 		(call $Value.is-composite (local.get $value))
@@ -231,7 +232,7 @@
 	))
 )
 (func $op:is-some (export "op::isSome") (param $value (ref $Value)) (result (ref $Value))
-	(local $composite (ref null eq))
+	(local $composite (ref null $Composite))
 	(local.set $composite (struct.get $Value $composite (local.get $value)))
 	(call $Value.bool-from-i32 (i32.and
 		(call $Value.is-composite (local.get $value))
@@ -249,7 +250,7 @@
 	))
 )
 (func $op:is-fail (export "op::isFail") (param $value (ref $Value)) (result (ref $Value))
-	(local $composite (ref null eq))
+	(local $composite (ref null $Composite))
 	(local.set $composite (struct.get $Value $composite (local.get $value)))
 	(call $Value.bool-from-i32 (i32.and
 		(call $Value.is-composite (local.get $value))
@@ -261,7 +262,7 @@
 	))
 )
 (func $op:is-ok (export "op::isOk") (param $value (ref $Value)) (result (ref $Value))
-	(local $composite (ref null eq))
+	(local $composite (ref null $Composite))
 	(local.set $composite (struct.get $Value $composite (local.get $value)))
 	(call $Value.bool-from-i32 (i32.and
 		(call $Value.is-composite (local.get $value))
@@ -614,8 +615,8 @@
 (func $op:id (export "op::id") (param (ref $Value) (ref $Value)) (result (ref $Value))
 	(local $vect0 v128)
 	(local $vect1 v128)
-	(local $ref0 (ref null eq))
-	(local $ref1 (ref null eq))
+	(local $ref0 (ref null $Composite))
+	(local $ref1 (ref null $Composite))
 	(local.set $vect0 (struct.get $Value $primitive (local.get 0)))
 	(local.set $vect1 (struct.get $Value $primitive (local.get 1)))
 	(local.set $ref0  (struct.get $Value $composite (local.get 0)))
@@ -715,21 +716,26 @@
 ;; Returns whether two strings are identical by value —
 ;; whether they contain the exact same sequence of code units.
 (func $!String.identical (param $string0 (ref $String)) (param $string1 (ref $String)) (result i32)
-	(local $i i32)
+	(local $internal0 (ref $StringInternal))
+	(local $internal1 (ref $StringInternal))
+	(local $i         i32)
+
+	(local.set $internal0 (struct.get $String $internal (local.get $string0)))
+	(local.set $internal1 (struct.get $String $internal (local.get $string1)))
 
 	(if
-		(i32.ne (array.len (local.get $string0)) (array.len (local.get $string1)))
+		(i32.ne (array.len (local.get $internal0)) (array.len (local.get $internal1)))
 		(then (return (i32.const 0)))
 	)
 
 	(block $exit
 		(local.set $i (i32.const 0))
 		(loop $repeat
-			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $string0))))
+			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $internal0))))
 			(if
 				(i32.ne
-					(array.get $String (local.get $string0) (local.get $i))
-					(array.get $String (local.get $string1) (local.get $i))
+					(array.get $StringInternal (local.get $internal0) (local.get $i))
+					(array.get $StringInternal (local.get $internal1) (local.get $i))
 				)
 				(then (return (i32.const 0)))
 			)
@@ -742,21 +748,26 @@
 ;; Returns whether two tuples are identical by value —
 ;; whether they have identical items at the same indices.
 (func $!Tuple.identical (param $tuple0 (ref $Tuple)) (param $tuple1 (ref $Tuple)) (result i32)
-	(local $i i32)
+	(local $internal0 (ref $TupleInternal))
+	(local $internal1 (ref $TupleInternal))
+	(local $i         i32)
+
+	(local.set $internal0 (struct.get $Tuple $internal (local.get $tuple0)))
+	(local.set $internal1 (struct.get $Tuple $internal (local.get $tuple1)))
 
 	(if
-		(i32.ne (array.len (local.get $tuple0)) (array.len (local.get $tuple1)))
+		(i32.ne (array.len (local.get $internal0)) (array.len (local.get $internal1)))
 		(then (return (i32.const 0)))
 	)
 
 	(block $exit
 		(local.set $i (i32.const 0))
 		(loop $repeat
-			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $tuple0))))
+			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $internal0))))
 			(if
 				(i32.eqz (call $Value.bool-to-i32 (call $op:id
-					(array.get $Tuple (local.get $tuple0) (local.get $i))
-					(array.get $Tuple (local.get $tuple1) (local.get $i))
+					(array.get $TupleInternal (local.get $internal0) (local.get $i))
+					(array.get $TupleInternal (local.get $internal1) (local.get $i))
 				)))
 				(then (return (i32.const 0)))
 			)
@@ -769,20 +780,25 @@
 ;; Returns whether two records are identical by value —
 ;; whether they have identical values at the same keys.
 (func $!Record.identical (param $record0 (ref $Record)) (param $record1 (ref $Record)) (result i32)
-	(local $i    i32)
-	(local $prop (ref $Property))
-	(local $key  i64)
+	(local $internal0 (ref $RecordInternal))
+	(local $internal1 (ref $RecordInternal))
+	(local $i         i32)
+	(local $prop      (ref $Property))
+	(local $key       i64)
+
+	(local.set $internal0 (struct.get $Record $internal (local.get $record0)))
+	(local.set $internal1 (struct.get $Record $internal (local.get $record1)))
 
 	(if
-		(i32.ne (array.len (local.get $record0)) (array.len (local.get $record1)))
+		(i32.ne (array.len (local.get $internal0)) (array.len (local.get $internal1)))
 		(then (return (i32.const 0)))
 	)
 
 	(block $exit
 		(local.set $i (i32.const 0))
 		(loop $repeat
-			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $record0))))
-			(local.set $prop (array.get $Record (local.get $record0) (local.get $i)))
+			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $internal0))))
+			(local.set $prop (array.get $RecordInternal (local.get $internal0) (local.get $i)))
 			(local.set $key  (struct.get $Property $key (local.get $prop)))
 			(if
 				(i32.eqz (call $Record.has-key (local.get $record1) (local.get $key)))
@@ -807,8 +823,8 @@
 (func $op:eq (export "op::eq") (param (ref $Value) (ref $Value)) (result (ref $Value))
 	(local $vect0 v128)
 	(local $vect1 v128)
-	(local $ref0 (ref null eq))
-	(local $ref1 (ref null eq))
+	(local $ref0 (ref null $Composite))
+	(local $ref1 (ref null $Composite))
 
 	;; identical values are necessarily equal
 	(if
@@ -904,12 +920,32 @@
 		)
 		(if
 			(i32.and
+				(ref.test (ref $Exception) (local.get $ref0))
+				(ref.test (ref $Exception) (local.get $ref1))
+			)
+			(then (br $exit (call $!Exception.equal
+				(ref.cast (ref $Exception) (local.get $ref0))
+				(ref.cast (ref $Exception) (local.get $ref1))
+			)))
+		)
+		(if
+			(i32.and
 				(ref.test (ref $Maybe) (local.get $ref0))
 				(ref.test (ref $Maybe) (local.get $ref1))
 			)
 			(then (br $exit (call $!Maybe.equal
 				(ref.cast (ref $Maybe) (local.get $ref0))
 				(ref.cast (ref $Maybe) (local.get $ref1))
+			)))
+		)
+		(if
+			(i32.and
+				(ref.test (ref $Result) (local.get $ref0))
+				(ref.test (ref $Result) (local.get $ref1))
+			)
+			(then (br $exit (call $!Result.equal
+				(ref.cast (ref $Result) (local.get $ref0))
+				(ref.cast (ref $Result) (local.get $ref1))
 			)))
 		)
 		(i32.const 0)
@@ -923,21 +959,26 @@
 ;; Returns whether two tuples are equal —
 ;; whether they have equal items at the same indices.
 (func $!Tuple.equal (param $tuple0 (ref $Tuple)) (param $tuple1 (ref $Tuple)) (result i32)
-	(local $i i32)
+	(local $internal0 (ref $TupleInternal))
+	(local $internal1 (ref $TupleInternal))
+	(local $i         i32)
+
+	(local.set $internal0 (struct.get $Tuple $internal (local.get $tuple0)))
+	(local.set $internal1 (struct.get $Tuple $internal (local.get $tuple1)))
 
 	(if
-		(i32.ne (array.len (local.get $tuple0)) (array.len (local.get $tuple1)))
+		(i32.ne (array.len (local.get $internal0)) (array.len (local.get $internal1)))
 		(then (return (i32.const 0)))
 	)
 
 	(block $exit
 		(local.set $i (i32.const 0))
 		(loop $repeat
-			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $tuple0))))
+			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $internal0))))
 			(if
 				(i32.eqz (call $Value.bool-to-i32 (call $op:eq
-					(array.get $Tuple (local.get $tuple0) (local.get $i))
-					(array.get $Tuple (local.get $tuple1) (local.get $i))
+					(array.get $TupleInternal (local.get $internal0) (local.get $i))
+					(array.get $TupleInternal (local.get $internal1) (local.get $i))
 				)))
 				(then (return (i32.const 0)))
 			)
@@ -950,20 +991,25 @@
 ;; Returns whether two records are equal —
 ;; whether they have equal values at the same keys.
 (func $!Record.equal (param $record0 (ref $Record)) (param $record1 (ref $Record)) (result i32)
-	(local $i    i32)
-	(local $prop (ref $Property))
-	(local $key  i64)
+	(local $internal0 (ref $RecordInternal))
+	(local $internal1 (ref $RecordInternal))
+	(local $i         i32)
+	(local $prop      (ref $Property))
+	(local $key       i64)
+
+	(local.set $internal0 (struct.get $Record $internal (local.get $record0)))
+	(local.set $internal1 (struct.get $Record $internal (local.get $record1)))
 
 	(if
-		(i32.ne (array.len (local.get $record0)) (array.len (local.get $record1)))
+		(i32.ne (array.len (local.get $internal0)) (array.len (local.get $internal1)))
 		(then (return (i32.const 0)))
 	)
 
 	(block $exit
 		(local.set $i (i32.const 0))
 		(loop $repeat
-			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $record0))))
-			(local.set $prop (array.get $Record (local.get $record0) (local.get $i)))
+			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $internal0))))
+			(local.set $prop (array.get $RecordInternal (local.get $internal0) (local.get $i)))
 			(local.set $key  (struct.get $Property $key (local.get $prop)))
 			(if
 				(i32.eqz (call $Record.has-key (local.get $record1) (local.get $key)))
@@ -1175,6 +1221,56 @@
 	)
 	(i32.const 1)
 )
+;; Returns whether two Exceptions are equal —
+;; whether they have equal messages and equal causes.
+(func $!Exception.equal (param $excp0 (ref $Exception)) (param $excp1 (ref $Exception)) (result i32)
+	(local $message0 (ref $String))
+	(local $message1 (ref $String))
+	(local $cause0   (ref null $Exception))
+	(local $cause1   (ref null $Exception))
+
+	;; Exceptions that are identical are always equal
+	(if
+		(ref.eq (local.get $excp0) (local.get $excp1))
+		(then (return (i32.const 1)))
+	)
+
+	(local.set $message0 (struct.get $Exception $message (local.get $excp0)))
+	(local.set $message1 (struct.get $Exception $message (local.get $excp1)))
+	(local.set $cause0   (struct.get $Exception $cause   (local.get $excp0)))
+	(local.set $cause1   (struct.get $Exception $cause   (local.get $excp1)))
+
+	;; if messages are unequal, return false
+	(if
+		(i32.eqz (call $!String.equal
+			(local.get $message0)
+			(local.get $message1)
+		))
+		(then (return (i32.const 0)))
+	)
+
+	;; if both lack causes, return true; else if any lacks a cause, return false; else continue
+	(if
+		(i32.and
+			(ref.is_null (local.get $cause0))
+			(ref.is_null (local.get $cause1))
+		)
+		(then (return (i32.const 1)))
+		(else (if
+			(i32.or
+				(ref.is_null (local.get $cause0))
+				(ref.is_null (local.get $cause1))
+			)
+			(then (return (i32.const 0)))
+		))
+	)
+
+	;; return whether causes are equal
+	(call $!Exception.equal
+		(ref.as_non_null (local.get $cause0))
+		(ref.as_non_null (local.get $cause1))
+	)
+)
 ;; Returns whether two Maybes are equal —
 ;; whether they are both None, or are both Some with equal values.
 (func $!Maybe.equal (param $maybe0 (ref $Maybe)) (param $maybe1 (ref $Maybe)) (result i32)
@@ -1197,6 +1293,50 @@
 			(ref.is_null (local.get $value1))
 		)
 		(then (return (i32.const 1)))
+		(else (if
+			(i32.or
+				(ref.is_null (local.get $value0))
+				(ref.is_null (local.get $value1))
+			)
+			(then (return (i32.const 0)))
+		))
+	)
+
+	;; return whether values are equal
+	(call $Value.bool-to-i32 (call $op:eq
+		(ref.as_non_null (local.get $value0))
+		(ref.as_non_null (local.get $value1))
+	))
+)
+;; Returns whether two Results are equal —
+;; whether they are both Fail with equal reasons, or are both Ok with equal values.
+(func $!Result.equal (param $result0 (ref $Result)) (param $result1 (ref $Result)) (result i32)
+	(local $value0  (ref null $Value))
+	(local $value1  (ref null $Value))
+	(local $reason0 (ref null $Exception))
+	(local $reason1 (ref null $Exception))
+
+	;; Results that are identical are always equal
+	(if
+		(ref.eq (local.get $result0) (local.get $result1))
+		(then (return (i32.const 1)))
+	)
+
+	(local.set $value0  (struct.get $Result $value  (local.get $result0)))
+	(local.set $value1  (struct.get $Result $value  (local.get $result1)))
+	(local.set $reason0 (struct.get $Result $reason (local.get $result0)))
+	(local.set $reason1 (struct.get $Result $reason (local.get $result1)))
+
+	;; if both are Fail, return equal reasons; else if any is Fail, return false; else continue
+	(if
+		(i32.and
+			(ref.is_null (local.get $value0))
+			(ref.is_null (local.get $value1))
+		)
+		(then (return_call $!Exception.equal
+			(ref.as_non_null (local.get $reason0))
+			(ref.as_non_null (local.get $reason1))
+		))
 		(else (if
 			(i32.or
 				(ref.is_null (local.get $value0))
