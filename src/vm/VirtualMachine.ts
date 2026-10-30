@@ -67,24 +67,7 @@ function TypeBuilder_makeField(typ: binaryen.Type, packedType: 'notPacked' | 'i8
 
 
 
-const IMPORTS = await Promise.all([
-	'./wat/types.wat',
-	'./wat/utils/mod.wat',
-	'./wat/utils/capacity-needed.wat',
-	'./wat/utils/compare-numbers.wat',
-	'./wat/utils/stringify.wat',
-	'./wat/utils/hash.wat',
-	'./wat/ops.wat',
-	'./wat/classes/Vect.wat',
-	'./wat/classes/Value.wat',
-	'./wat/classes/Property.wat',
-	'./wat/classes/Case.wat',
-	'./wat/classes/Record.wat',
-	'./wat/classes/Object.wat',
-	'./wat/classes/List.wat',
-	'./wat/classes/Dict.wat',
-	'./wat/classes/Map.wat',
-].map((filename) => fs.promises.readFile(path.join(import.meta.dirname, filename), 'utf8')));
+const MODULE_TEXT: string = await fs.promises.readFile(path.join(import.meta.dirname, '../../dist/vm/module.wat'), 'utf8');
 
 /**
  * An object of registries for all the common types.
@@ -345,11 +328,7 @@ export class VirtualMachine {
 	public readonly reftypeNull: ReftypeNullRegistry;
 
 	/** The Binaryen module that holds static types and functions, independent of any source program. */
-	public readonly mod: binaryen.Module = binaryen.parseText(`
-		(module $wat
-			${IMPORTS.join('')}
-		)
-	`);
+	public readonly mod: binaryen.Module = binaryen.parseText(MODULE_TEXT);
 
 	public readonly globalImportDataMap: ReadonlyMap<string, {readonly name: string, readonly type: binaryen.Type}> = new Map([
 		['Vect#NULL',  {name: 'Vect.NULL',  type: binaryen.Type.v128}],
@@ -376,14 +355,13 @@ export class VirtualMachine {
 
 	public constructor() {
 		this.mod.features = (
-			/* eslint-disable @stylistic/operator-linebreak */
-			binaryen.Feature.NontrappingFPToInt |
-			binaryen.Feature.SIMD128 |
-			binaryen.Feature.TailCall |
-			binaryen.Feature.ReferenceTypes |
-			binaryen.Feature.Multivalue |
-			binaryen.Feature.GC
-			/* eslint-enable @stylistic/operator-linebreak */
+			0
+			| binaryen.Feature.NontrappingFPToInt
+			| binaryen.Feature.SIMD128
+			| binaryen.Feature.TailCall
+			| binaryen.Feature.ReferenceTypes
+			| binaryen.Feature.Multivalue
+			| binaryen.Feature.GC
 		);
 		if (!this.mod.validate()) {
 			throw new Error('Invalid WebAssembly module in VirtualMachine.');
