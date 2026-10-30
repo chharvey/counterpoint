@@ -1,4 +1,5 @@
 import * as assert from 'node:assert';
+import {TypeErrorAmbiguousOverload} from '../../../index.ts';
 import {assert_instanceof} from '../../../lib/index.ts';
 import {
 	type CplConfig,
@@ -71,7 +72,7 @@ export class DeclarationFunction extends Statement implements Functionlike {
 			const schema = this.validator.getSymbol(this.id!) as SymbolSchemaFunc;
 			if (schema.types.includes(fn_type) || schema.types.find((t) => t instanceof TYPE.Function && t.isMoreSpecificThan(fn_type) && fn_type.isMoreSpecificThan(t))) {
 				// if there exists an identically-typed overload, as static dispatch won’t know which one to choose
-				throw new TypeError(`Identical function overload type: \`${fn_type}\`.`); // TODO: new error type
+				throw new TypeErrorAmbiguousOverload(this);
 			} else {
 				schema.types.push(fn_type);
 			}

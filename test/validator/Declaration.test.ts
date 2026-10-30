@@ -13,6 +13,7 @@ import {
 	AssignmentErrorDuplicateDeclaration,
 	AssignmentErrorMissingType,
 	TypeErrorNotAssignable,
+	TypeErrorAmbiguousOverload,
 } from '../../src/index.ts';
 import {
 	extract_lines,
@@ -677,7 +678,7 @@ test.suite('Declaration', () => {
 					func f(b: int): void { "2"; return; }
 				}`, {typeCheck: false});
 				stmts[0].typeCheck(); // assert does not throw
-				return assert.throws(() => stmts[1].typeCheck(), /Identical function overload type/);
+				return assert.throws(() => stmts[1].typeCheck(), TypeErrorAmbiguousOverload);
 			});
 		});
 	});
