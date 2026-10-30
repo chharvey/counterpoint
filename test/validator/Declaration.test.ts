@@ -201,7 +201,7 @@ test.suite('Declaration', () => {
 			test.test('allows self-reference, but not self-shadowing.', () => {
 				setupScript(`{
 					func f(): void {
-						f;
+						f.();
 						return;
 					};
 				}`, {typeCheck: false}); // assert does not throw
@@ -221,12 +221,12 @@ test.suite('Declaration', () => {
 			});
 			test.test('hoists function name.', () => {
 				setupScript(`{
-					f;
+					f.();
 					func f(): void { return; };
 				}`, {typeCheck: false});
 				setupScript(`{
-					func f(): void { g; return; };
-					func g(): void { f; return; };
+					func f(): void { g.(); return; };
+					func g(): void { f.(); return; };
 				}`, {typeCheck: false});
 			});
 		});

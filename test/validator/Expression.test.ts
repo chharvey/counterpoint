@@ -308,6 +308,14 @@ test.suite('Expression', () => {
 					42 || FOO;
 				}`, {typeCheck: false}), ReferenceErrorKind);
 			});
+			test.test('throws if it was declared as a function.', () => {
+				const {stmts} = setupScript(`{
+					func inc(x: int): int => x + 1;
+					inc;
+				}`, {varCheck: false});
+				stmts[0].varCheck();
+				return assert.throws(() => (stmts[1] as AST.STMT.StatementExpression).expr!.varCheck(), ReferenceErrorKind);
+			});
 			test.test('iteration variable of `for` loop is scoped only to the block.', () => {
 				setupScript(`{
 					for it: float in [1.1, 2.2, 3.3] do {

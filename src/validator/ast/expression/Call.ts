@@ -1,6 +1,7 @@
 import * as assert from 'node:assert';
 import * as xjs from 'extrajs';
 import {
+	ReferenceErrorKind,
 	TypeErrorNotNarrow,
 	TypeErrorNotCallable,
 	TypeErrorArgCount,
@@ -56,7 +57,16 @@ export class Call extends Expression {
 
 	public override varCheck(): void {
 		if (!this.isCallableClassName) {
-			this.base.varCheck();
+			try {
+				this.base.varCheck();
+			} catch (err) {
+				if (!(this.base instanceof Variable &&
+					err instanceof ReferenceErrorKind &&
+					err.message.includes('refers to a function')
+				)) {
+					throw err;
+				}
+			}
 		}
 		return xjs.Array.forEachAggregated([
 			...this.typeargs,

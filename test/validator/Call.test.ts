@@ -4,6 +4,7 @@ import * as xjs from 'extrajs';
 import {
 	AST,
 	TYPE,
+	ReferenceErrorKind,
 	TypeErrorNotAssignable,
 	TypeErrorNotCallable,
 	TypeErrorArgCount,
@@ -13,6 +14,7 @@ import {
 	repeat,
 	assertAssignable,
 	assertEqualTypes,
+	setupScript,
 } from '../utils.ts';
 
 
@@ -208,6 +210,26 @@ test.suite('Call', () => {
 		'Exception.("message")',
 		'Exception.("message", Exception.("cause"))',
 	] as const;
+
+
+	test.suite('#varCheck', () => {
+		test.test('catches ReferenceErrorKind thrown by `Variable#varCheck`.', () => {
+			setupScript(`{
+				func inc(x: int): int => x + 1;
+				inc.(42);
+			}`, {typeCheck: false}); // assert does not throw
+			const {stmts} = setupScript(`{
+				func inc1(x: int): int => x + 1;
+				val inc2: \\(int) => int = \\(x: int): int => x + 2;
+				inc2;
+				(inc1 || inc2).(42);
+			}`, {varCheck: false});
+			stmts[0].varCheck();
+			stmts[1].varCheck();
+			stmts[2].varCheck();
+			return assert.throws(() => (stmts[3] as AST.STMT.StatementExpression).expr!.varCheck(), ReferenceErrorKind);
+		});
+	});
 
 
 	test.suite('#type', () => {

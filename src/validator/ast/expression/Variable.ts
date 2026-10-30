@@ -46,9 +46,13 @@ export class Variable extends Expression implements Reassignable {
 		if (!this.validator.hasSymbol(this.id)) {
 			throw new ReferenceErrorUndeclared(this);
 		}
-		if (this.validator.getSymbol(this.id) instanceof SymbolSchemaType) {
+		const symbol: SymbolSchema = this.validator.getSymbol(this.id)!;
+		if (symbol instanceof SymbolSchemaType) {
 			throw new ReferenceErrorKind(this, SymbolKind.TYPE, SymbolKind.VALUE);
 			// TODO: When Type objects are allowed as runtime values, this should be removed and checked by the type checker (`this#typeCheck`).
+		}
+		if (symbol instanceof SymbolSchemaFunc) {
+			throw new ReferenceErrorKind(this, SymbolKind.FUNC, SymbolKind.VALUE);
 		}
 	}
 

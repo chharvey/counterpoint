@@ -173,16 +173,16 @@ test.suite('AstNode', () => {
 						func f(): void { return; }
 						\\(): void {
 							val x: T = 42;
-							f;
+							f.();
 							return;
 						};
-						\\(): void => f as <T>;
+						\\(): void => f.() as <T>;
 						func g(): void {
 							val x: T = 42;
-							f;
+							f.();
 							return;
 						}
-						func h(): void => f as <T>;
+						func h(): void => f.() as <T>;
 					}`, {typeCheck: false}); // assert does not throw
 				});
 				test.test('allows explicit variable captures.', () => {

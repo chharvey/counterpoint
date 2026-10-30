@@ -154,13 +154,23 @@ Nil! VarCheck(SemanticExpressionVariable var) :=
 	// TODO: Throw a ReferenceErrorDeadZone if the variable is declared further down in source.
 	2. *If* `symbol` is an instance of `SymbolSchemaType`:
 		1. *Throw:* a new ReferenceErrorKind.
+	3. *If* `symbol` is an instance of `SymbolSchemaFunc`:
+		1. *Throw:* a new ReferenceErrorKind.
 ;
 
 
 
 Nil! VarCheck(SemanticExpressionCall ::= SemanticExpression__0 SemanticType* SemanticExpression__1* SemanticProperty*) :=
-	1. *Perform:* *Unwrap:* `VarCheck(SemanticExpression__0)`.
-	2. *For each* `it` in `[SemanticType*, SemanticExpression__1*, SemanticProperty*]`:
+	1. *Let* `check_base` be `VarCheck(SemanticExpression__0)`.
+	2. *If* `check_base` is an abrupt completion:
+		1. *If* `SemanticExpression__0` is a `SemanticExpressionVariable` *and*
+			`check_base` is a result of the step «*If* `symbol` is an instance of `SymbolSchemaFunc`» in «VarCheck(SemanticExpressionVariable»:
+			1. Fall through.
+		2. *Else:*
+			1. *Return:* `check_base`.
+	3. *Else:*
+		1. Fall through.
+	4. *For each* `it` in `[SemanticType*, SemanticExpression__1*, SemanticProperty*]`:
 		1. *Perform:* *Unwrap:* `VarCheck(it)`.
 ;
 
