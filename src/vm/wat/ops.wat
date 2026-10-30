@@ -87,7 +87,7 @@
 	(if (call $Vect.is-float (local.get $primitive)) (then (return (f64.eq (call $Vect.as-float (local.get $primitive)) (f64.const 0.0))))) ;; also takes care of -0.0
 	(unreachable)
 )
-(func $!op:is-empty/composite (param $composite (ref eq)) (result i32)
+(func $!op:is-empty/composite (param $composite (ref $Composite)) (result i32)
 	(if (ref.test (ref $String) (local.get $composite)) (then (return (i32.eqz     (array.len (struct.get $String $internal (ref.cast (ref $String) (local.get $composite))))))))
 	(if (ref.test (ref $Tuple)  (local.get $composite)) (then (return (i32.eqz     (array.len (struct.get $Tuple  $internal (ref.cast (ref $Tuple)  (local.get $composite))))))))
 	(if (ref.test (ref $Record) (local.get $composite)) (then (return (i32.eqz     (array.len (struct.get $Record $internal (ref.cast (ref $Record) (local.get $composite))))))))
