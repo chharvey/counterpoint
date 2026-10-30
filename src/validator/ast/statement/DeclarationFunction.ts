@@ -51,13 +51,14 @@ export class DeclarationFunction extends Statement implements Functionlike {
 	public hoist(): void {
 		if (this.identifier) {
 			if (this.validator.hasSymbol(this.id!)) {
-				assert.ok(this.validator.getSymbol(this.id!) instanceof SymbolSchemaFunc, 'Only function names should be hoisted.');
+				return assert.ok(this.validator.getSymbol(this.id!) instanceof SymbolSchemaFunc, 'Only function names should be hoisted.');
 			}
 			this.validator.addSymbol(new SymbolSchemaFunc(this.id!, this.identifier));
 		}
 	}
 
 	public override varCheck(): void {
+		this.hoist();
 		return Functionlike_varCheck.call(this);
 	}
 
