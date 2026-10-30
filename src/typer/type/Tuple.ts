@@ -68,11 +68,9 @@ class TypeTuple extends ValueType {
 			this.minCount >= (t as TypeTuple).minCount &&
 			(t as TypeTuple).typeargs.every((thattype, i) => {
 				const thistype: EntryType | undefined = this.typeargs.at(i);
-				if (!thattype.optional) {
-					/* NOTE: We can assert `thistype` exists and is not optional because of item ordering.
-						We cannot do so with record types since properties are not ordered. */
-					assert.strictEqual(thistype?.optional, false, `${thistype!.type} should exist and not be optional.`);
-				}
+				/* NOTE: We can assert `thistype` exists and is not optional because of item ordering.
+					We cannot do so with record types since properties are not ordered. */
+				thattype.optional || assert.strictEqual(thistype?.optional, false, `${thistype!.type} should exist and not be optional.`);
 				return thistype?.type.isSubtypeOf(thattype.type) ?? true; // Covariance for tuples: `A <: B --> Tuple.<A> <: Tuple.<B>`.
 			})
 		);

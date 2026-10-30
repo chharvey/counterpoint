@@ -9,10 +9,7 @@ import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../../core/index.ts';
-import {
-	type EntryType,
-	TYPE,
-} from '../../../typer/index.ts';
+import {TYPE} from '../../../typer/index.ts';
 import type {SyntaxNodeFamily} from '../../utils-private.ts';
 import {check_unique_keys} from '../utils-private.ts';
 import {typecheck_assign} from '../AstNode.ts';
@@ -62,18 +59,14 @@ class ExpressionRecord extends Collection {
 			if (this.children.length < assignee.minCount) {
 				throw err;
 			}
-			assignee.typeargs.forEach((entry, key) => { // using `Array#forEach` instead of `xjs.Array.forEach` to short-circuit
+			return xjs.Map.forEachAggregated(assignee.typeargs, (entry, key) => {
+				const prop: Property | undefined = this.children.find((p) => p.key.id === key);
 				/* NOTE: We *cannot* assert the property exists since properties are not ordered.
 					We can however make the assertion in tuples because of item ordering. */
-				if (!entry.optional && !this.children.find((prop) => prop.key.id === key)) {
+				if (!entry.optional && !prop) {
 					throw err;
 				}
-			});
-			return xjs.Array.forEachAggregated(this.children, (prop) => {
-				const thattype: EntryType | undefined = assignee.typeargs.get(prop.key.id);
-				if (thattype) {
-					return typecheck_assign(prop.val, thattype.type, prop);
-				}
+				return prop && typecheck_assign(prop.val, entry.type, prop);
 			});
 		}
 		throw err;
