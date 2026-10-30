@@ -17,6 +17,10 @@ import {
 } from '../../../core/index.ts';
 import {TYPE} from '../../../typer/index.ts';
 import {IntrinsicName} from '../../../parser/index.ts';
+import {
+	type SymbolSchema,
+	SymbolSchemaFunc,
+} from '../../index.ts';
 import type {SyntaxNodeType} from '../../utils-private.ts';
 import {
 	only_errors_of_type,
@@ -79,7 +83,16 @@ export class Call extends Expression {
 
 	public override typeCheck(): void {
 		if (!this.isCallableClassName) {
-			return super.typeCheck();
+			try {
+				this.base.varCheck();
+			} catch (err) {
+				if (!(this.base instanceof Variable &&
+					err instanceof ReferenceErrorKind &&
+					err.message.includes('refers to a function')
+				)) {
+					return this.base.typeCheck();
+				}
+			}
 		}
 		xjs.Array.forEachAggregated([
 			...this.typeargs,
@@ -91,10 +104,11 @@ export class Call extends Expression {
 
 	@memoizeMethod
 	public override type(): TYPE.Type {
-		let base_type: TYPE.Type;
+		let base_types: readonly TYPE.Type[] = [];
 		if (!this.isCallableClassName) {
-			base_type = this.base.type();
-			if (base_type.isBottomType) {
+			const symbol: SymbolSchema | undefined = this.base instanceof Variable ? this.validator.getSymbol(this.base.id) : undefined;
+			base_types = symbol instanceof SymbolSchemaFunc ? symbol.types : [this.base.type()];
+			if (base_types.some((t) => t.isBottomType)) {
 				return TYPE.NOTHING;
 			}
 		}
@@ -105,38 +119,28 @@ export class Call extends Expression {
 			return TYPE.NOTHING;
 		}
 		if (!this.isCallableClassName) {
-			assert.ok(base_type!);
-			if (base_type instanceof TYPE.Maybe || base_type instanceof TYPE.Result) {
+			if (base_types.find((t) => t instanceof TYPE.Maybe || t instanceof TYPE.Result)) {
 				throw new Error('Maybe/Result calls are not yet supported.');
 			}
-			if (base_type instanceof TYPE.Intersection) {
-				/* Function overloads are represented as intersection types.
-				Throw and aggregate if any overload is not a function;
-				otherwise, map to return types or TypeErrors as a result of type-checking. */
-				const overload_calls: readonly (TYPE.Type | Error)[] = xjs.Array.mapAggregated(base_type.operands, (t) => {
-					if (t instanceof TYPE.Function) {
-						return this.typeFunctionCall(t);
-					} else {
-						throw new TypeErrorNotCallable(t, this.base);
-					}
-				});
-				/* Find any passing overload and return it;
-				otherwise, aggregate all failing overloads and throw. */
-				const success: TYPE.Type | undefined = overload_calls.find((it) => it instanceof TYPE.Type);
-				if (success) {
-					return success;
+			assert.ok(base_types.length);
+			/* Throw and aggregate if any overload is not a function;
+			otherwise, map to return types or errors as a result of type-checking. */
+			const overload_calls: readonly (TYPE.Type | Error)[] = xjs.Array.mapAggregated(base_types, (t) => {
+				if (t instanceof TYPE.Function) {
+					return this.typeFunctionCall(t);
 				} else {
-					throw new AggregateError(overload_calls.filter((it) => it instanceof Error));
+					throw new TypeErrorNotCallable(t, this.base);
 				}
-			} else if (base_type instanceof TYPE.Function) {
-				const result: TYPE.Type | Error = this.typeFunctionCall(base_type);
-				if (result instanceof TYPE.Type) {
-					return result;
-				} else {
-					throw result;
-				}
+			});
+			/* Find any passing overload and return it;
+			otherwise, aggregate all failing overloads and throw. */
+			const success: TYPE.Type | undefined = overload_calls.find((it) => it instanceof TYPE.Type);
+			const errors:  readonly Error[]      = overload_calls.filter((it) => it instanceof Error);
+			if (success) {
+				return success;
 			} else {
-				throw new TypeErrorNotCallable(base_type, this.base);
+				assert.ok(errors.length);
+				throw errors.length > 1 ? new AggregateError(errors) : errors[0];
 			}
 		}
 		const constructor_schema:    ConstructorSchema = CLASS_API.get(this.base.source as CallableClassName)!;
