@@ -82,6 +82,7 @@ An assignment error is raised when the compiler detects an illegal declaration o
 1. [2210](#2210-assignmenterrorreassignment)         — A reassignment of a read-only variable was attempted.
 1. [2211](#2211-assignmenterrordeletion)             — A deletion of a non-optional variable was attempted.
 1. [2220](#2220-assignmenterrormissingtype)          — A symbol was declared without a type annotation and initialized to a value ineligible for type inference.
+1. [2230](#2230-assignmenterrorfunctionexit)         — A function was declared without a proper exit.
 
 #### 2201: AssignmentErrorDuplicateDeclaration
 Cause: A duplicate declaration was encountered.
@@ -131,6 +132,18 @@ class Foo {
 }
 ```
 Solution(s): Add an explicit type annotation, update the symbol’s initializer to be eligible for type inference, or remove the declaration.
+
+#### 2230: AssignmentErrorFunctionExit
+Cause: Not every control route in a function body exits the function.
+```cpl
+func f(b: bool): str {
+	if b then {
+		return "true";
+	};
+	% AssignmentErrorFunctionExit: Function does not exit in every control route.
+}
+```
+Solution(s): Ensure every code path contains an explicit return or panic statement.
 
 
 ### Type Errors (23xx)
@@ -196,18 +209,6 @@ func x(y: int): int => y + 42;
 x.(2, 4);                      % TypeErrorArgCount: Got 2 arguments, but expected 1.
 ```
 Solution(s): Pass in an expected number of arguments.
-
-#### 2307: TypeErrorFunctionExit
-Cause: Not every control route in a function body exits the function.
-```cpl
-func f(b: bool): str {
-	if b then {
-		return "true";
-	};
-	% TypeErrorFunctionExit: Function does not exit in every control route.
-}
-```
-Solution(s): Ensure every code path contains an explicit return or panic statement.
 
 
 ### Mutability Errors (24xx)

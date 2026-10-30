@@ -1,7 +1,7 @@
 import * as assert from 'node:assert';
 import * as xjs from 'extrajs';
 import {
-	TypeErrorFunctionExit,
+	AssignmentErrorFunctionExit,
 	VisitorCompletion,
 } from '../../index.ts';
 import {
@@ -93,7 +93,7 @@ export class Block extends AstNode {
 	public override typeCheck(): void {
 		super.typeCheck();
 		if (!!this.parent && is_Functionlike(this.parent) && this.completion !== CompletionKind.RETURN_OR_PANIC) {
-			throw new TypeErrorFunctionExit(this.parent);
+			throw new AssignmentErrorFunctionExit(this.parent);
 		}
 	}
 }
