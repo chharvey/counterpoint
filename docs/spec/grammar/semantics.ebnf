@@ -124,7 +124,7 @@ SemanticExpressionConstant[value: Null | Boolean | Symbol | Number | String]
 SemanticExpressionTemplate
 	::= (SemanticExpressionConstant SemanticExpression?)* SemanticExpressionConstant;
 
-SemanticExpressionVariable[id: RealNumber]
+SemanticExpressionVariable[id: RealNumber][isFuncRef: Boolean]
 	::= ();
 
 SemanticExpressionTemplatePartial

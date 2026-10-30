@@ -513,9 +513,9 @@ Decorate(ParametersFunction ::= ","? ParameterFunction<-Named><-Optional># "," P
 
 
 Decorate(Capture<Ref> ::= IDENTIFIER) -> SemanticCapture
-	:= (SemanticCapture[ref=false] SemanticExpressionVariable[id=TokenWorth(IDENTIFIER)]);
+	:= (SemanticCapture[ref=false] SemanticExpressionVariable[id=TokenWorth(IDENTIFIER)][isFuncRef=false]);
 Decorate(Capture<Ref> ::= "ref" IDENTIFIER) -> SemanticCapture
-	:= (SemanticCapture[ref=true] SemanticExpressionVariable[id=TokenWorth(IDENTIFIER)]);
+	:= (SemanticCapture[ref=true] SemanticExpressionVariable[id=TokenWorth(IDENTIFIER)][isFuncRef=false]);
 
 Decorate(CaptureClause<Ref> ::= "with" "(" ","? Capture<?Ref># ","? ")") -> Sequence<SemanticCapture>
 	:= ParseList(Capture<?Ref>, SemanticCapture);
@@ -589,7 +589,7 @@ Decorate(ArgumentsFunction<Break, Return> ::= ","? Expression<+Block><?Break><?R
 
 
 Decorate(ExpressionUnit<Block, Break, Return> ::= IDENTIFIER) -> SemanticExpressionVariable
-	:= (SemanticExpressionVariable[id=TokenWorth(IDENTIFIER)]);
+	:= (SemanticExpressionVariable[id=TokenWorth(IDENTIFIER)][isFuncRef=false]);
 Decorate(ExpressionUnit<Block, Break, Return> ::= PrimitiveLiteral) -> SemanticExpressionConstant
 	:= Decorate(PrimitiveLiteral);
 Decorate(ExpressionUnit<Block, Break, Return> ::= StringTemplate<?Break><?Return>) -> SemanticExpressionTemplate
@@ -985,7 +985,7 @@ Decorate(Expression<Block, Break, Return> ::= ExpressionFunction) -> SemanticExp
 
 
 Decorate(Assignee<Break, Return> ::= IDENTIFIER) -> SemanticExpressionVariable
-	:= (SemanticExpressionVariable[id=TokenWorth(IDENTIFIER)]);
+	:= (SemanticExpressionVariable[id=TokenWorth(IDENTIFIER)][isFuncRef=false]);
 Decorate(Assignee<Break, Return> ::= ExpressionCompound<+Block><?Break><?Return> "." PropertyAccessor<?Break><?Return>) -> SemanticExpressionAccess
 	:= (SemanticExpressionAccess[kind=NORMAL][isEntryOptional=*nil*]
 		Decorate(ExpressionCompound<+Block><?Break><?Return>)

@@ -1,7 +1,6 @@
 import * as assert from 'node:assert';
 import * as xjs from 'extrajs';
 import {
-	ReferenceErrorKind,
 	TypeError as CplTypeError,
 	TypeErrorNotNarrow,
 	TypeErrorNotCallable,
@@ -66,10 +65,7 @@ export class Call extends Expression {
 			try {
 				this.base.varCheck();
 			} catch (err) {
-				if (!(this.base instanceof Variable &&
-					err instanceof ReferenceErrorKind &&
-					err.message.includes('refers to a function')
-				)) {
+				if (!(this.base instanceof Variable && this.base.isFuncRef)) {
 					throw err;
 				}
 			}
@@ -82,17 +78,8 @@ export class Call extends Expression {
 	}
 
 	public override typeCheck(): void {
-		if (!this.isCallableClassName) {
-			try {
-				this.base.varCheck();
-			} catch (err) {
-				if (!(this.base instanceof Variable &&
-					err instanceof ReferenceErrorKind &&
-					err.message.includes('refers to a function')
-				)) {
-					return this.base.typeCheck();
-				}
-			}
+		if (!this.isCallableClassName && !(this.base instanceof Variable && this.base.isFuncRef)) {
+			return this.base.typeCheck();
 		}
 		xjs.Array.forEachAggregated([
 			...this.typeargs,

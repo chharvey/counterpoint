@@ -34,11 +34,18 @@ export class Variable extends Expression implements Reassignable {
 	}
 
 
+	#isFuncRef: boolean = false;
+
 	public readonly id: bigint = Validator.cookTokenIdentifier(this.start_node.text);
 
 
 	public constructor(start_node: SyntaxNodeType<'identifier'>) {
 		super(start_node);
+	}
+
+
+	public get isFuncRef(): boolean {
+		return this.#isFuncRef;
 	}
 
 
@@ -52,6 +59,7 @@ export class Variable extends Expression implements Reassignable {
 			// TODO: When Type objects are allowed as runtime values, this should be removed and checked by the type checker (`this#typeCheck`).
 		}
 		if (symbol instanceof SymbolSchemaFunc) {
+			this.#isFuncRef = true;
 			throw new ReferenceErrorKind(this, SymbolKind.FUNC, SymbolKind.VALUE);
 		}
 	}

@@ -155,7 +155,8 @@ Nil! VarCheck(SemanticExpressionVariable var) :=
 	2. *If* `symbol` is an instance of `SymbolSchemaType`:
 		1. *Throw:* a new ReferenceErrorKind.
 	3. *If* `symbol` is an instance of `SymbolSchemaFunc`:
-		1. *Throw:* a new ReferenceErrorKind.
+		1. *Set* `var.isFuncRef` to `true`.
+		2. *Throw:* a new ReferenceErrorKind.
 ;
 
 
@@ -163,8 +164,7 @@ Nil! VarCheck(SemanticExpressionVariable var) :=
 Nil! VarCheck(SemanticExpressionCall ::= SemanticExpression__0 SemanticType* SemanticExpression__1* SemanticProperty*) :=
 	1. *Let* `check_base` be `VarCheck(SemanticExpression__0)`.
 	2. *If* `check_base` is an abrupt completion:
-		1. *If* `SemanticExpression__0` is a `SemanticExpressionVariable` *and*
-			`check_base` is a result of the step «*If* `symbol` is an instance of `SymbolSchemaFunc`» in «VarCheck(SemanticExpressionVariable»:
+		1. *If* `SemanticExpression__0` is a `SemanticExpressionVariable` *and* `SemanticExpression__0.isFuncRef` is `true`:
 			1. Fall through.
 		2. *Else:*
 			1. *Return:* `check_base`.
