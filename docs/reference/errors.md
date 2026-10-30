@@ -149,13 +149,14 @@ Solution(s): Ensure every code path contains an explicit return or panic stateme
 ### Type Errors (23xx)
 A type error is raised when the compiler recognizes a type mismatch.
 
-1.  2300                                   — A general type error not covered by one of the following cases.
-1. [2301](#2301-typeerrorinvalidoperation) — The validator encountered an operation with an invalid operand.
-1. [2302](#2302-typeerrornotnarrow)        — One type is expected to be a subtype of another, but is not.
-1. [2303](#2303-typeerrornotassignable)    — An expression was assigned to a type to which it is not assignable.
-1. [2304](#2304-typeerrornoentry)          — The validator encountered a non-existent index/property/argument access.
-1. [2305](#2305-typeerrornotcallable)      — The validator encountered an attempt to call a non-callable object.
-1. [2306](#2306-typeerrorargcount)         — An incorrect number of arguments was passed to a callable object.
+1.  2300                                    — A general type error not covered by one of the following cases.
+1. [2301](#2301-typeerrorinvalidoperation)  — The validator encountered an operation with an invalid operand.
+1. [2302](#2302-typeerrornotnarrow)         — One type is expected to be a subtype of another, but is not.
+1. [2303](#2303-typeerrornotassignable)     — An expression was assigned to a type to which it is not assignable.
+1. [2304](#2304-typeerrornoentry)           — The validator encountered a non-existent index/property/argument access.
+1. [2305](#2305-typeerrornotcallable)       — The validator encountered an attempt to call a non-callable object.
+1. [2306](#2306-typeerrorargcount)          — An incorrect number of arguments was passed to a callable object.
+1. [2307](#2307-typeerroramgiguousoverload) — Function overloads are incompatible.
 
 #### 2301: TypeErrorInvalidOperation
 Cause: An invalid operation was performed.
@@ -198,6 +199,23 @@ val x: int = 42;
 x.(24);          % TypeErrorNotCallable: Type `int` is not callable.
 ```
 Solution(s): Callable objects are limited to functions, generic type aliases, and generic type functions.
+
+#### 2306: TypeErrorAmbiguousOverload
+Cause: Identical function overloads were declared.
+```cpl
+func f(s: str): bool => true;
+func f(s: str): int  => 42; % TypeErrorAmbiguousOverload: Duplicate function overload declared.
+```
+Solution(s): Ensure that function parameter types differ in some way.
+
+Cause: A function call is not compatible with any declared function overloads,
+or is compatible with several.
+```cpl
+func g(a: Animal, b: Cat): void { return; }
+func g(a: Cat, b: Animal): void { return; }
+g(Cat(), Cat()); % TypeErrorAmbiguousOverload: No overload matches this call.
+```
+Solution(s): Arguments to a function call must match exactly one overload.
 
 #### 2306: TypeErrorArgCount
 Cause: A function or generic call was given an incorrect number of arguments.
