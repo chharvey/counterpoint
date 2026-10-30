@@ -38,7 +38,7 @@ function throwWrongSubtypeError(accessor: EXPR.Expression, supertype: TYPE.Type)
 
 
 
-function only_errors_of_type<E extends Error = Error>(err: unknown, types: readonly ConstructorType<E>[]): boolean {
+export function only_errors_of_type<E extends Error = Error>(err: Error, types: readonly ConstructorType<E>[]): boolean {
 	return (
 		types.some((typ) => err instanceof typ) ||
 		err instanceof AggregateError && err.errors.every((suberr) => only_errors_of_type<E>(suberr, types))
@@ -407,7 +407,7 @@ export function get_entry_info(base_type: TYPE.Type, access: AST_TYPE.Access | E
 			try {
 				return get_entry_info(comp, access, is_writing);
 			} catch (error) {
-				if (only_errors_of_type(error, [TypeErrorNoEntry, TypeErrorNotNarrow])) {
+				if (only_errors_of_type(error as Error, [TypeErrorNoEntry, TypeErrorNotNarrow])) {
 					return error as TypeErrorNoEntry | TypeErrorNotNarrow;
 				}
 				throw error;

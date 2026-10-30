@@ -26,12 +26,12 @@ class TypeFunction extends ReferenceType {
 	 * Construct a new TypeFunction object.
 	 * @param typeargParamsPosit the types of the positional parameters
 	 * @param typeargParamsNamed the types of the named parameters
-	 * @param typearg_return     the return type
+	 * @param typeargReturn      the return type
 	 */
 	public constructor(
-		private readonly typeargParamsPosit: Tuple  = new Tuple(),
-		private readonly typeargParamsNamed: Record = new Record(),
-		private readonly typearg_return?: Type,
+		public readonly typeargParamsPosit: Tuple  = new Tuple(),
+		public readonly typeargParamsNamed: Record = new Record(),
+		public readonly typeargReturn?: Type,
 	) {
 		super();
 	}
@@ -51,7 +51,7 @@ class TypeFunction extends ReferenceType {
 		const named_params: string = this.typeargParamsNamed.typeargs.size
 			? this.typeargParamsNamed.toString().slice(1, -1)
 			: '';
-		return `\\(${[posit_params, named_params].filter((p) => !!p).join(', ')}) => ${this.typearg_return ?? 'void'}`;
+		return `\\(${[posit_params, named_params].filter((p) => !!p).join(', ')}) => ${this.typeargReturn ?? 'void'}`;
 	}
 
 	@instanceOf(() => VALUE.Function)
@@ -67,8 +67,8 @@ class TypeFunction extends ReferenceType {
 	public override isSubtypeOf(t: Type): boolean {
 		// Contravariance for parameter types: `A >: B --> \(A) => R <: \(B) => R`.
 		// Covariance     for return type:     `A <: B --> \(P) => A <: \(P) => B`.
-		const this_return: Type | undefined = this.typearg_return;
-		const that_return: Type | undefined = (t as TypeFunction).typearg_return;
+		const this_return: Type | undefined = this.typeargReturn;
+		const that_return: Type | undefined = (t as TypeFunction).typeargReturn;
 		return (
 			(t as TypeFunction).typeargParamsPosit.isSubtypeOf(this.typeargParamsPosit) &&
 			(t as TypeFunction).typeargParamsNamed.isSubtypeOf(this.typeargParamsNamed) &&

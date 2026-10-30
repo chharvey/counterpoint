@@ -169,11 +169,59 @@ Type! TypeOf(SemanticExpressionAccess[kind=RESULT] ::= SemanticExpression__0 (Se
 
 
 
-Type! TypeOf(SemanticExpressionCall ::= SemanticExpression__0 SemanticType* SemanticExpression__1*) :=
-	1. *If* `SemanticExpression__0` is not a SemanticExpressionVariable:
-		1. *Note:* Currently, the only allowed calls are Callable Class Names.
-		2. *Throw:* a new TypeErrorNotCallable.
-	2. See Class API.
+Type! TypeOf(SemanticExpressionCall ::= SemanticExpression__0 SemanticType* SemanticExpression__1* SemanticProperty*) :=
+	1. Let `base_type` be *Unwrap:* `TypeOf(SemanticExpression__0)`.
+	2. *If* *UnwrapAffirm:* `IsBottomType(base_type)` is `true`:
+		1. *Return:* `Nothing`.
+	3. *Else:*
+		1. Fall through.
+	4. *For each* `it` in `SemanticExpression__1*`:
+		1. *Let:* `arg_type` be *Unwrap:* `TypeOf(it)`.
+		2. *If* *UnwrapAffirm:* `IsBottomType(arg_type)` is `true`:
+			1. *Return:* `Nothing`.
+		3. *Else:*
+			1. Fall through.
+	5. *For each* `it ::= SemanticKey SemanticExpression__2` in `SemanticProperty*`:
+		1. *Let:* `arg_type` be *Unwrap:* `TypeOf(SemanticExpression__2)`.
+		2. *If* *UnwrapAffirm:* `IsBottomType(arg_type)` is `true`:
+			1. *Return:* `Nothing`.
+		3. *Else:*
+			1. Fall through.
+	6. *If* `base_type` is an intersection of Function types:
+		1. *Note:* This represents several function overloads.
+		2. *Let* `failures` be an empty Sequence.
+		3. *Let* `success` be *nil*.
+		4. *For each* `overload` in the intersection:
+			1. *Perform:* the steps listed under «*Else If* `base_type` is a Function type:», replacing `base_type` with `overload`.
+			2. *If* the result is a normal completion `t`:
+				1. *Set* `success` to `t`.
+			5. *Else:*
+				1. Push the abrupt completion `e` to `failures`.
+		5. *If* `success` is not *nil*:
+			1. *Return:* `success`.
+		6. *Else:*
+			1. *Throw:* an AggregateError containing `failures`.
+	7. *Else If* `base_type` is a Function type:
+		1. *Let* `paramsPosit` be a Sequence of the positional parameter types in `base_type`.
+		2. *Let* `paramsNamed` be a Schema of the named parameter types in `base_type`.
+		3. *If* `SemanticExpression__1*.count` is less than the number of required positional parameters:
+			1. *Throw:* a new TypeErrorArgCount.
+		4. *Else If* `SemanticExpression__1*.count` is greater than the number of total positional parameters:
+			1. *Throw:* a new TypeErrorArgCount.
+		5. *Else:*
+			1. Fall through.
+		6. *Let* `argsPosit` be a new SemanticExpressionTuple containing `SemanticExpression__1*`.
+		7. *Let* `tupleType` be a new Tuple type containing `paramsPosit`.
+		8. *Perform:* *Unwrap:* `AssignTo(argsPosit, tupleType)`.
+		9. *Let* `argsNamed` be a new SemanticExpressionRecord containing `SemanticProperty*`.
+		10. *Let* `recordType` be a new Record type containing `paramsNamed`.
+		11. *Perform:* *Unwrap:* `AssignTo(argsNamed, recordType)`.
+		12. *If* `base_type` has a return type:
+			1. *Return:* the return type of `base_type`.
+		13. *Else:*
+			1. *Throw:* a new Error "Void function return types are not yet supported.".
+	8. *Else:*
+		1. *Throw:* a new TypeErrorNotCallable.
 ;
 
 

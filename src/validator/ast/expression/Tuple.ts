@@ -28,6 +28,19 @@ class ExpressionTuple extends Collection {
 		return expression;
 	}
 
+	public static assignExprsToTupleType(expressions: readonly Expression[], assignee: TYPE.Tuple): void {
+		assignee.typeargs.forEach((entry, i) => { // using `Array#forEach` instead of `xjs.Array.forEachAggregated` to short-circuit
+			/* NOTE: We can assert the item exists because of item ordering.
+				We cannot do so with records since properties are not ordered. */
+			entry.optional || assert.ok(expressions[i]);
+		});
+		return xjs.Array.forEachAggregated(expressions, (expr, i) => {
+			const thatentry: EntryType | undefined = assignee.typeargs.at(i);
+			return thatentry && typecheck_assign(expr, thatentry.type, expr);
+		});
+	}
+
+
 	public constructor(
 		start_node: SyntaxNodeFamily<'expression_tuple_literal', ['break', 'return']>,
 		public override readonly children: readonly Expression[],
@@ -50,17 +63,7 @@ class ExpressionTuple extends Collection {
 			if (this.children.length < assignee.minCount) {
 				throw err;
 			}
-			assignee.typeargs.forEach((entry, i) => { // using `Array#forEach` instead of `xjs.Array.forEach` to short-circuit
-				/* NOTE: We can assert the item exists because of item ordering.
-					We cannot do so with records since properties are not ordered. */
-				entry.optional || assert.ok(this.children[i], err);
-			});
-			return xjs.Array.forEachAggregated(this.children, (expr, i) => {
-				const thattype: EntryType | undefined = assignee.typeargs.at(i);
-				if (thattype) {
-					return typecheck_assign(expr, thattype.type, expr);
-				}
-			});
+			return ExpressionTuple.assignExprsToTupleType(this.children, assignee);
 		}
 		throw err;
 	}

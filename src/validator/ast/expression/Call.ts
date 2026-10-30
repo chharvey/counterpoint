@@ -2,6 +2,7 @@ import * as assert from 'node:assert';
 import * as xjs from 'extrajs';
 import {
 	ReferenceErrorKind,
+	TypeError as CplTypeError,
 	TypeErrorNotNarrow,
 	TypeErrorNotCallable,
 	TypeErrorArgCount,
@@ -18,6 +19,7 @@ import {TYPE} from '../../../typer/index.ts';
 import {IntrinsicName} from '../../../parser/index.ts';
 import type {SyntaxNodeType} from '../../utils-private.ts';
 import {
+	only_errors_of_type,
 	type CallableClassName,
 	CALLABLE_CLASS_NAMES,
 	type ConstructorSchema,
@@ -76,8 +78,9 @@ export class Call extends Expression {
 	}
 
 	public override typeCheck(): void {
-		// NOTE: ignore type-checking `this.base` for now, as semantics is determined by syntax.
-		// (`this.base.source` must be a `CallableClassName`)
+		if (!this.isCallableClassName) {
+			return super.typeCheck();
+		}
 		xjs.Array.forEachAggregated([
 			...this.typeargs,
 			...this.exprargsPosit,
@@ -88,14 +91,53 @@ export class Call extends Expression {
 
 	@memoizeMethod
 	public override type(): TYPE.Type {
-		if (!(this.base instanceof Variable)) {
-			throw new TypeErrorNotCallable(this.base.type(), this.base);
+		let base_type: TYPE.Type;
+		if (!this.isCallableClassName) {
+			base_type = this.base.type();
+			if (base_type.isBottomType) {
+				return TYPE.NOTHING;
+			}
 		}
 		if (
 			this.exprargsPosit.some((arg) => arg.type().isBottomType) ||
 			this.exprargsNamed.some((arg) => arg.val.type().isBottomType)
 		) {
 			return TYPE.NOTHING;
+		}
+		if (!this.isCallableClassName) {
+			assert.ok(base_type!);
+			if (base_type instanceof TYPE.Maybe || base_type instanceof TYPE.Result) {
+				throw new Error('Maybe/Result calls are not yet supported.');
+			}
+			if (base_type instanceof TYPE.Intersection) {
+				/* Function overloads are represented as intersection types.
+				Throw and aggregate if any overload is not a function;
+				otherwise, map to return types or TypeErrors as a result of type-checking. */
+				const overload_calls: readonly (TYPE.Type | Error)[] = xjs.Array.mapAggregated(base_type.operands, (t) => {
+					if (t instanceof TYPE.Function) {
+						return this.typeFunctionCall(t);
+					} else {
+						throw new TypeErrorNotCallable(t, this.base);
+					}
+				});
+				/* Find any passing overload and return it;
+				otherwise, aggregate all failing overloads and throw. */
+				const success: TYPE.Type | undefined = overload_calls.find((it) => it instanceof TYPE.Type);
+				if (success) {
+					return success;
+				} else {
+					throw new AggregateError(overload_calls.filter((it) => it instanceof Error));
+				}
+			} else if (base_type instanceof TYPE.Function) {
+				const result: TYPE.Type | Error = this.typeFunctionCall(base_type);
+				if (result instanceof TYPE.Type) {
+					return result;
+				} else {
+					throw result;
+				}
+			} else {
+				throw new TypeErrorNotCallable(base_type, this.base);
+			}
 		}
 		const constructor_schema:    ConstructorSchema = CLASS_API.get(this.base.source as CallableClassName)!;
 		const resolved_generic_args: TYPE.Type[]       = AST_TYPE.Call.checkGenericArgs(constructor_schema, this.typeargs, this);
@@ -204,6 +246,31 @@ export class Call extends Expression {
 		return return_type instanceof TYPE.ReferenceType ? return_type.mutableOf() : return_type;
 	}
 
+	private typeFunctionCall(t: TYPE.Function): TYPE.Type | Error {
+		const expected_function = {
+			min: t.typeargParamsPosit.minCount,
+			max: BigInt(t.typeargParamsPosit.typeargs.length),
+		} as const;
+		const actual_function: bigint = BigInt(this.exprargsPosit.length);
+		const too_few_err = new TypeErrorArgCount(actual_function, expected_function.min, false, this);
+		if (actual_function < expected_function.min) {
+			return too_few_err;
+		} else if (actual_function > expected_function.max) {
+			return new TypeErrorArgCount(actual_function, expected_function.max, false, this);
+		}
+		try {
+			ExpressionTuple.assignExprsToTupleType(this.exprargsPosit, t.typeargParamsPosit);
+			ExpressionRecord.assignPropsToRecordType(this.exprargsNamed, t.typeargParamsNamed, too_few_err);
+		} catch (err) {
+			if (only_errors_of_type(err as Error, [CplTypeError])) {
+				return err as Error;
+			} else {
+				throw err;
+			}
+		}
+		return t.typeargReturn ?? assert.fail(new Error('Void function return types are not yet supported.'));
+	}
+
 	/**
 	 * Type-checks assignment of function arguments to a constructor call.
 	 * @param constructor_schema    the name of the class constructor’s schema
@@ -212,8 +279,6 @@ export class Call extends Expression {
 	private checkFunctionArgs(constructor_schema: ConstructorSchema, resolved_generic_args: readonly TYPE.Type[]): void {
 		if (!constructor_schema.overloads.length) {
 			throw new TypeErrorNotCallable(
-				this.base.source === IntrinsicName.MAYBE ? new TYPE.Maybe(resolved_generic_args[0]) :
-				this.base.source === IntrinsicName.RESULT ? new TYPE.Result(resolved_generic_args[0], resolved_generic_args[1]) :
 				this.base.type(),
 				this.base,
 			);

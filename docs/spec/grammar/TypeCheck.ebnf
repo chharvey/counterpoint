@@ -91,14 +91,6 @@ Nil! TypeCheck(SemanticExpression expr) :=
 		1. *Note:* The result of this step is not used; it is only performed to rethrow any TypeErrors.
 ;
 
-Nil! TypeCheck(SemanticExpressionCall expr) :=
-	1. *Note:* Skip type-checking of `expr.children.0` for now, as semantics is determined by syntax.
-	2. *For each* `it` in `expr.children[1..]`:
-		1. *Perform:* *Unwrap:* `TypeCheck(it)`.
-	3. *Perform:* *Unwrap:* `TypeOf(expr)`.
-		1. *Note:* The result of this step is not used; it is only performed to rethrow any TypeErrors.
-;
-
 Nil! TypeCheck(SemanticExpressionOperation[operator: IS | CAST | MAYBE] ::= SemanticExpression__0 SemanticExpression__1[type: Class]) :=
 	1. *Perform:* *Unwrap:* `TypeCheck(SemanticExpression__0)`.
 	2. *Note:* Skip type-checking of `SemanticExpression__1` for now, as semantics is determined by syntax.

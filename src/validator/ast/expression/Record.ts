@@ -1,5 +1,8 @@
 import * as xjs from 'extrajs';
-import {TypeErrorNotAssignable} from '../../../index.ts';
+import {
+	type TypeError as CplTypeError,
+	TypeErrorNotAssignable,
+} from '../../../index.ts';
 import {
 	type NonemptyArray,
 	assert_instanceof,
@@ -32,6 +35,21 @@ class ExpressionRecord extends Collection {
 		return expression;
 	}
 
+	public static assignPropsToRecordType(properties: readonly Property[], assignee: TYPE.Record, err: CplTypeError): void {
+		assignee.typeargs.forEach((entry, key) => { // using `Array#forEach` instead of `xjs.Array.forEachAggregated` to short-circuit
+			/* NOTE: We *cannot* assert the property exists since properties are not ordered.
+				We can however make the assertion in tuples because of item ordering. */
+			if (!entry.optional && !properties.find((prop) => prop.key.id === key)) {
+				throw err;
+			}
+		});
+		return xjs.Array.forEachAggregated(properties, (prop) => {
+			const thatentry: EntryType | undefined = assignee.typeargs.get(prop.key.id);
+			return thatentry && typecheck_assign(prop.val, thatentry.type, prop);
+		});
+	}
+
+
 	public constructor(
 		start_node: SyntaxNodeFamily<'expression_record_literal', ['break', 'return']>,
 		public override readonly children: Readonly<NonemptyArray<Property>>,
@@ -62,19 +80,7 @@ class ExpressionRecord extends Collection {
 			if (this.children.length < assignee.minCount) {
 				throw err;
 			}
-			assignee.typeargs.forEach((entry, key) => { // using `Array#forEach` instead of `xjs.Array.forEach` to short-circuit
-				/* NOTE: We *cannot* assert the property exists since properties are not ordered.
-					We can however make the assertion in tuples because of item ordering. */
-				if (!entry.optional && !this.children.find((prop) => prop.key.id === key)) {
-					throw err;
-				}
-			});
-			return xjs.Array.forEachAggregated(this.children, (prop) => {
-				const thattype: EntryType | undefined = assignee.typeargs.get(prop.key.id);
-				if (thattype) {
-					return typecheck_assign(prop.val, thattype.type, prop);
-				}
-			});
+			return ExpressionRecord.assignPropsToRecordType(this.children, assignee, err);
 		}
 		throw err;
 	}

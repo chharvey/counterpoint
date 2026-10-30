@@ -316,17 +316,6 @@ test.suite('Call', () => {
 				repeat(TYPE.EXCP, EXCEPTION_CONS.length),
 			);
 		});
-		test.test('`Maybe.()` and `Result.()` throw.', () => {
-			xjs.Array.forEachAggregated([
-				'Maybe.<int>()',
-				'Maybe.<int>(42)',
-				'Result.<int>(42)',
-				'Result.<int>(Exception.("message"))',
-			], (src) => {
-				const call: AST.EXPR.Call = AST.EXPR.Call.fromSource(src);
-				return assert.throws(() => call.type(), TypeErrorNotCallable);
-			});
-		});
 		test.test('bypasses invariance for generic arguments.', () => {
 			extract_lines`
 				List.<mut {int}>((   {42},))
@@ -342,13 +331,39 @@ test.suite('Call', () => {
 				new TYPE.Map(TYPE.INT, TYPE.INT, true),
 			);
 		});
-		test.test('throws if base is not a Variable.', () => {
+		test.test('evaluates custom functions.', () => {
+			setupScript(`{
+				func inc(x: int): int => x + 1;
+				inc.(42);
+			}`, {build: false});
+		});
+		test.test('allows compound base.', () => {
+			setupScript(`{
+				val inc1: \\(int) => int = \\(x: int): int => x + 1;
+				val inc2: \\(int) => int = \\(x: int): int => x + 2;
+				(inc1 || inc2).(42);
+			}`, {build: false});
+		});
+		test.test('throws if base is not a function type.', () => {
 			xjs.Array.forEachAggregated(extract_lines`
 				null.()
 				(42 || 43).<bool>()
 			`, (src) => assert.throws(() => AST.EXPR.Call.fromSource(src).type(), TypeErrorNotCallable));
 		});
-		test.test('throws when providing incorrect number of arguments.', () => {
+		test.test('throws when providing incorrect number (or names) of arguments.', () => {
+			const {stmts} = setupScript(`{
+				func inc1(x: int): int => x + 1;
+				func inc2($x: int): int => x + 2;
+				inc1.();
+				inc1.(2, 3);
+				inc1.(x= 4);
+				inc2.();
+				inc2.(5);
+				inc2.(y= 6);
+			}`, {typeCheck: false});
+			stmts[0].typeCheck();
+			stmts[1].typeCheck();
+			xjs.Array.forEachAggregated(stmts.slice(2), (stmt) => assert.throws(() => (stmt as AST.STMT.StatementExpression).expr!.typeCheck(), TypeErrorArgCount));
 			xjs.Array.forEachAggregated(extract_lines`
 				Integer.()
 				Integer.(1, 2)
@@ -367,6 +382,15 @@ test.suite('Call', () => {
 			`, (src) => assert.throws(() => AST.EXPR.Call.fromSource(src).type(), TypeErrorArgCount));
 		});
 		test.test('throws when providing incorrect type of arguments.', () => {
+			const {stmts} = setupScript(`{
+				func inc1(x: int): int => x + 1;
+				func inc2($x: int): int => x + 2;
+				inc1.("3");
+				inc2.(x= "4");
+			}`, {typeCheck: false});
+			stmts[0].typeCheck();
+			stmts[1].typeCheck();
+			xjs.Array.forEachAggregated(stmts.slice(2), (stmt) => assert.throws(() => (stmt as AST.STMT.StatementExpression).expr!.typeCheck(), TypeErrorNotAssignable));
 			// API overload checks
 			xjs.Map.forEachAggregated(new Map<string, readonly [string, readonly string[]]>(['Integer', 'Natural', 'Float'].flatMap((basesrc) => ['()', '[]', '{}'].map((argsrc) => (
 				[`${basesrc}.(${argsrc})`, [argsrc, ['int', 'nat', 'float']]] as const
@@ -409,6 +433,18 @@ test.suite('Call', () => {
 				Map.<int>(((42, "42"),))
 				Some.<int>(4.2)
 			`, (src) => assert.throws(() => AST.EXPR.Call.fromSource(src).type(), TypeErrorNotAssignable));
+		});
+		test.test('return type.', () => {
+			assertEqualTypes((setupScript(`{
+				func inc(x: int): int => x + 1;
+				inc.(42);
+			}`, {build: false}).stmts[1] as AST.STMT.StatementExpression).expr!.type(), TYPE.INT);
+		});
+		test.test('void functions have no return type.', {expectFailure: true}, () => {
+			assert.strictEqual((setupScript(`{
+				func inc(x: int): void { return; }
+				inc.(42);
+			}`, {build: false}).stmts[1] as AST.STMT.StatementExpression).expr!.type(), null);
 		});
 	});
 });
