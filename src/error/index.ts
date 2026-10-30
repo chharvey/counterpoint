@@ -15,7 +15,7 @@ export * from './AssignmentErrorDuplicateKey.ts';
 export * from './AssignmentErrorReassignment.ts';
 export * from './AssignmentErrorDeletion.ts';
 export * from './AssignmentErrorMissingType.ts';
-export * from './TypeErrorFunctionExit.ts';
+export * from './AssignmentErrorFunctionExit.ts';
 export * from './TypeError.ts';
 export * from './TypeErrorInvalidOperation.ts';
 export * from './TypeErrorNotNarrow.ts';
