@@ -13,3 +13,18 @@ export function memoizePerNode<ProtoThis extends object, Param extends AstNode, 
 		return memomap.get(arg)!;
 	};
 }
+
+
+
+export function runOncePerNode<ProtoThis extends object, Param extends AstNode>(
+	method:   (this: ProtoThis, arg: Param) => void,
+	_context: ClassMethodDecoratorContext<ProtoThis, typeof method>,
+): typeof method {
+	const memoset = new WeakSet<Param>();
+	return function (arg) {
+		if (!memoset.has(arg)) {
+			memoset.add(arg);
+			return method.call(this, arg);
+		}
+	};
+}

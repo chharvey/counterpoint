@@ -22,22 +22,8 @@ import type {Goal} from '../Goal.ts';
 import * as EXPR from '../expression/index.ts';
 import type * as STMT from '../statement/index.ts';
 import {StatementBreakable} from '../statement/StatementBreakable.ts';
+import {runOncePerNode} from './decorators.ts';
 import {ExprVisitorBuild} from './ExprVisitorBuild.ts';
-
-
-
-function runOncePerNode<ProtoThis extends object, Param extends AstNode>(
-	method:   (this: ProtoThis, arg: Param) => void,
-	_context: ClassMethodDecoratorContext<ProtoThis, typeof method>,
-): typeof method {
-	const memoset = new WeakSet<Param>();
-	return function (arg) {
-		if (!memoset.has(arg)) {
-			memoset.add(arg);
-			return method.call(this, arg);
-		}
-	};
-}
 
 
 
