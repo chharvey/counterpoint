@@ -111,24 +111,34 @@ export class Call extends Expression {
 				throw new Error('Maybe/Result calls are not yet supported.');
 			}
 			assert.ok(base_types.length);
+
 			/* Throw and aggregate if any overload is not a function;
 			otherwise, map to return types or errors as a result of type-checking. */
-			const overload_calls: readonly (TYPE.Type | Error)[] = xjs.Array.mapAggregated(base_types, (t) => {
+			const overload_calls: readonly [TYPE.Function, TYPE.Type | Error][] = xjs.Array.mapAggregated(base_types, (t) => {
 				if (t instanceof TYPE.Function) {
-					return this.typeFunctionCall(t);
+					return [t, this.typeFunctionCall(t)];
 				} else {
 					throw new TypeErrorNotCallable(t, this.base);
 				}
 			});
-			/* Find any passing overload and return it;
-			otherwise, aggregate all failing overloads and throw. */
-			const success: TYPE.Type | undefined = overload_calls.find((it) => it instanceof TYPE.Type);
-			const errors:  readonly Error[]      = overload_calls.filter((it) => it instanceof Error);
-			if (success) {
-				return success;
+			const successes = overload_calls.filter(([_, result]) => result instanceof TYPE.Type) as readonly [TYPE.Function, TYPE.Type][];
+			const errors: readonly Error[] = overload_calls.map(([_, result]) => result).filter((result) => result instanceof Error);
+
+			/* If multiple overloads match: if a maximally specific overload is found, return it; else throw a TypeErrorAmbiguousOverload.
+			Else if there are multiple failures, throw a TypeErrorAmbiguousOverload containing the failures.
+			Else return a single failure. */
+			if (successes.length) {
+				const maximally_specific: readonly [TYPE.Function, TYPE.Type][] = successes.filter(([ovl1]) => successes.every(([ovl2]) => ovl1 === ovl2 || ovl1.isMoreSpecificThan(ovl2)));
+				if (maximally_specific.length === 1) {
+					return maximally_specific[0][1];
+				} else {
+					throw new TypeErrorAmbiguousOverload(this);
+				}
+			} else if (errors.length > 1) {
+				throw new TypeErrorAmbiguousOverload(this, new AggregateError(errors));
 			} else {
 				assert.ok(errors.length);
-				throw errors.length > 1 ? new TypeErrorAmbiguousOverload(this, new AggregateError(errors)) : errors[0];
+				throw errors[0];
 			}
 		}
 		const constructor_schema:    ConstructorSchema = CLASS_API.get(this.base.source as CallableClassName)!;

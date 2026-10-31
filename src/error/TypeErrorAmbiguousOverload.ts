@@ -26,7 +26,7 @@ export class TypeErrorAmbiguousOverload extends CplTypeError {
 		super(
 			node instanceof AST.STMT.DeclarationFunction
 				? 'Duplciate function overload declared.'
-				: `No overload matches this call.${cause ? `\n${cause.message}` : ''}`,
+				: `No unique overload matches this call.${cause ? `\n${cause.message}` : ''}`,
 			CplTypeError.CODES.get(TypeErrorAmbiguousOverload),
 			node.line_index,
 			node.col_index,

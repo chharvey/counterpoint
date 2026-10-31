@@ -228,7 +228,11 @@ Type! TypeOf(SemanticExpressionCall ::= SemanticExpression__0 SemanticType* Sema
 		3. *Else:*
 			1. Push the result to `failures`.
 	14. *If* `successes.count` is greater than *0*:
-		1. *Return:* `success.0`.
+		1. *Let* `maximal` be the unique maximally specific overload, if it exists.
+		2. *If* `maximal` is not *nil*:
+			1. *Return:* the corresponding item in `successes`.
+		3. *Else:*
+			1. *Throw:* a new TypeErrorAmbiguousOverload.
 	15. *Else If* `failures.count` is greater than *1*:
 		1. *Throw:* a new TypeErrorAmbiguousOverload.
 	16. *Else:*

@@ -435,16 +435,6 @@ test.suite('Call', () => {
 				Some.<int>(4.2)
 			`, (src) => assert.throws(() => AST.EXPR.Call.fromSource(src).type(), TypeErrorNotAssignable));
 		});
-		test.test('throws when no overload matches.', {expectFailure: true}, () => {
-			const {stmts} = setupScript(`{
-				func overload_test(a: (int,), b: (int, int)): bool => true;
-				func overload_test(a: (int, int), b: (int,)): bool => true;
-				overload_test.((1, 2), (3, 4));
-			}`, {typeCheck: false});
-			stmts[0].typeCheck();
-			stmts[1].typeCheck();
-			assert.throws(() => (stmts[2] as AST.STMT.StatementExpression).expr!.type(), TypeErrorAmbiguousOverload);
-		});
 		test.test('return type.', () => {
 			assertEqualTypes((setupScript(`{
 				func inc(x: int): int => x + 1;
@@ -456,6 +446,35 @@ test.suite('Call', () => {
 				func inc(x: int): void { return; }
 				inc.(42);
 			}`, {build: false}).stmts[1] as AST.STMT.StatementExpression).expr!.type(), null);
+		});
+		test.suite('function overloads.', () => {
+			test.test('when multiple overloads match and one is most specific, returns type of that overload.', () => {
+				assertEqualTypes((setupScript(`{
+					func overload_test(a: (int), b: (int,)): float => 4.2;
+					func overload_test(a: (int, int), b: (int, int)): str => "hello";
+					overload_test.((1, 2), (3, 4)); % matches both overloads, but 2nd is chosen; returns type \`str\`
+				}`, {build: false}).stmts[2] as AST.STMT.StatementExpression).expr!.type(), TYPE.STR);
+			});
+			test.test('throws when multiple overloads match and none is most specific.', () => {
+				const {stmts} = setupScript(`{
+					func overload_test(a: (int,), b: (int, int)): bool => true;
+					func overload_test(a: (int, int), b: (int,)): bool => true;
+					overload_test.((1, 2), (3, 4)); % TypeErrorAmbiguousOverload: matches both overloads
+				}`, {typeCheck: false});
+				stmts[0].typeCheck();
+				stmts[1].typeCheck();
+				return assert.throws(() => (stmts[2] as AST.STMT.StatementExpression).expr!.type(), TypeErrorAmbiguousOverload);
+			});
+			test.test('throws when no overloads match.', () => {
+				const {stmts} = setupScript(`{
+					func overload_test(a: (int,), b: (int, int)): bool => true;
+					func overload_test(a: (int, int), b: (int,)): bool => true;
+					overload_test.((a= 1, b= 2), (c= 3, d= 4)); % TypeErrorAmbiguousOverload: matches neither overload
+				}`, {typeCheck: false});
+				stmts[0].typeCheck();
+				stmts[1].typeCheck();
+				return assert.throws(() => (stmts[2] as AST.STMT.StatementExpression).expr!.type(), TypeErrorAmbiguousOverload);
+			});
 		});
 	});
 });
