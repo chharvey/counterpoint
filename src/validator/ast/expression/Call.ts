@@ -5,6 +5,7 @@ import {
 	TypeErrorNotNarrow,
 	TypeErrorNotCallable,
 	TypeErrorArgCount,
+	TypeErrorAmbiguousOverload,
 } from '../../../index.ts';
 import {
 	assert_instanceof,
@@ -127,7 +128,7 @@ export class Call extends Expression {
 				return success;
 			} else {
 				assert.ok(errors.length);
-				throw errors.length > 1 ? new AggregateError(errors) : errors[0];
+				throw errors.length > 1 ? new TypeErrorAmbiguousOverload(this, new AggregateError(errors)) : errors[0];
 			}
 		}
 		const constructor_schema:    ConstructorSchema = CLASS_API.get(this.base.source as CallableClassName)!;

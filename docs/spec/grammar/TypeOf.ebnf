@@ -230,7 +230,7 @@ Type! TypeOf(SemanticExpressionCall ::= SemanticExpression__0 SemanticType* Sema
 	14. *If* `successes.count` is greater than *0*:
 		1. *Return:* `success.0`.
 	15. *Else If* `failures.count` is greater than *1*:
-		1. *Throw:* a new AggregateError containing `failures`.
+		1. *Throw:* a new TypeErrorAmbiguousOverload.
 	16. *Else:*
 		1. *Assert*: `failures.count` is *1*.
 		2. *Throw:* `failures.0`.

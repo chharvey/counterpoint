@@ -17,16 +17,20 @@ import {TypeError as CplTypeError} from './TypeError.ts';
 export class TypeErrorAmbiguousOverload extends CplTypeError {
 	/**
 	 * Construct a new TypeErrorAmbiguousOverload object.
-	 * @param node - the function declaration node or call node
+	 * @param node  - the function declaration node or call node
+	 * @param cause - any sub-error providing more details
 	 */
-	public constructor(node: AST.STMT.DeclarationFunction | AST.EXPR.Call) {
+	public constructor(node: AST.STMT.DeclarationFunction);
+	public constructor(node: AST.EXPR.Call, cause?: Error);
+	public constructor(node: AST.STMT.DeclarationFunction | AST.EXPR.Call, cause?: Error) {
 		super(
 			node instanceof AST.STMT.DeclarationFunction
 				? 'Duplciate function overload declared.'
-				: 'No overload matches this call.',
+				: `No overload matches this call.${cause ? `\n${cause.message}` : ''}`,
 			CplTypeError.CODES.get(TypeErrorAmbiguousOverload),
 			node.line_index,
 			node.col_index,
 		);
+		this.cause = cause;
 	}
 }

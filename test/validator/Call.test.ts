@@ -8,6 +8,7 @@ import {
 	TypeErrorNotAssignable,
 	TypeErrorNotCallable,
 	TypeErrorArgCount,
+	TypeErrorAmbiguousOverload,
 } from '../../src/index.ts';
 import {
 	extract_lines,
@@ -433,6 +434,16 @@ test.suite('Call', () => {
 				Map.<int>(((42, "42"),))
 				Some.<int>(4.2)
 			`, (src) => assert.throws(() => AST.EXPR.Call.fromSource(src).type(), TypeErrorNotAssignable));
+		});
+		test.test('throws when no overload matches.', {expectFailure: true}, () => {
+			const {stmts} = setupScript(`{
+				func overload_test(a: (int,), b: (int, int)): bool => true;
+				func overload_test(a: (int, int), b: (int,)): bool => true;
+				overload_test.((1, 2), (3, 4));
+			}`, {typeCheck: false});
+			stmts[0].typeCheck();
+			stmts[1].typeCheck();
+			assert.throws(() => (stmts[2] as AST.STMT.StatementExpression).expr!.type(), TypeErrorAmbiguousOverload);
 		});
 		test.test('return type.', () => {
 			assertEqualTypes((setupScript(`{
