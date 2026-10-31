@@ -90,6 +90,8 @@ class TypeFunction extends ReferenceType {
 	 * @param t the function type to check
 	 * @return  true if this is “more specific than” the argument
 	 */
+	@strictEqual
+	@memoizeBinOp()
 	public isMoreSpecificThan(t: TypeFunction): boolean {
 		return (
 			this.typeargParamsPosit.isSubtypeOf(t.typeargParamsPosit) &&

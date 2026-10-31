@@ -70,7 +70,7 @@ export class DeclarationFunction extends Statement implements Functionlike {
 		if (this.identifier) {
 			assert.ok(this.validator.hasSymbol(this.id!), `The validator symbol table should include ${this.id}.`);
 			const schema = this.validator.getSymbol(this.id!) as SymbolSchemaFunc;
-			if (schema.types.includes(fn_type) || schema.types.find((t) => t instanceof TYPE.Function && t.isMoreSpecificThan(fn_type) && fn_type.isMoreSpecificThan(t))) {
+			if (schema.types.find((t) => fn_type === t || t instanceof TYPE.Function && fn_type.isMoreSpecificThan(t) && t.isMoreSpecificThan(fn_type))) {
 				// if there exists an identically-typed overload, as static dispatch won’t know which one to choose
 				throw new TypeErrorAmbiguousOverload(this);
 			} else {
