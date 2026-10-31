@@ -23,7 +23,7 @@ import {
 	bothFloats,
 } from './utils.ts';
 import {memoizePerExpr} from './decorators.ts';
-import {AstNodeVisitorBuild} from './VisitorBuild.ts';
+import {AstNodeVisitorBuild} from './AstNodeVisitorBuild.ts';
 
 
 

@@ -15,7 +15,7 @@ export * as TYPE from './type/index.ts';
 export * as EXPR from './expression/index.ts';
 export * as STMT from './statement/index.ts';
 
-export {AstNodeVisitorCompletion} from './visitors/VisitorCompletion.ts';
-export {AstNodeVisitorBuild} from './visitors/VisitorBuild.ts';
-export {ExprVisitorType} from './visitors/VisitorExprType.ts';
-export {ExprVisitorBuild} from './visitors/VisitorExprBuild.ts';
+export {AstNodeVisitorCompletion} from './visitors/AstNodeVisitorCompletion.ts';
+export {AstNodeVisitorBuild} from './visitors/AstNodeVisitorBuild.ts';
+export {ExprVisitorType} from './visitors/ExprVisitorType.ts';
+export {ExprVisitorBuild} from './visitors/ExprVisitorBuild.ts';

@@ -22,7 +22,7 @@ import type {Goal} from '../Goal.ts';
 import * as EXPR from '../expression/index.ts';
 import type * as STMT from '../statement/index.ts';
 import {StatementBreakable} from '../statement/StatementBreakable.ts';
-import {ExprVisitorBuild} from './VisitorExprBuild.ts';
+import {ExprVisitorBuild} from './ExprVisitorBuild.ts';
 
 
 
