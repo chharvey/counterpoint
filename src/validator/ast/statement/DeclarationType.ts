@@ -1,11 +1,9 @@
-import * as assert from 'node:assert';
 import {AssignmentErrorDuplicateDeclaration} from '../../../index.ts';
 import {assert_instanceof} from '../../../lib/index.ts';
 import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../../core/index.ts';
-import type {TYPE} from '../../../typer/index.ts';
 import type {Serializable} from '../../../parser/index.ts';
 import {SymbolSchemaType} from '../../index.ts';
 import type {SyntaxNodeType} from '../../utils-private.ts';
@@ -23,13 +21,13 @@ export class DeclarationType extends Statement {
 	}
 
 
-	private readonly id?: bigint;
+	public readonly id?: bigint;
 
 
 	public constructor(
 		start_node: SyntaxNodeType<'declaration_type'>,
-		private readonly assignee: Serializable | null,
-		public  readonly assigned: AST_TYPE.Type,
+		public readonly assignee: Serializable | null,
+		public readonly assigned: AST_TYPE.Type,
 	) {
 		super(start_node, {}, [assigned]);
 		if (this.assignee) {
@@ -45,15 +43,6 @@ export class DeclarationType extends Statement {
 				throw new AssignmentErrorDuplicateDeclaration(this.assignee);
 			}
 			this.validator.addSymbol(new SymbolSchemaType(this.id!, this.assignee));
-		}
-	}
-
-	public override typeCheck(): void {
-		const typevalue: TYPE.Type = this.assigned.eval(); // evaluate first before checking, to rethrow any errors
-		if (this.assignee) {
-			assert.ok(this.validator.hasSymbol(this.id!), `The validator symbol table should include ${this.id}.`);
-			const symbol = this.validator.getSymbol(this.id!) as SymbolSchemaType;
-			symbol.typevalue = typevalue;
 		}
 	}
 }

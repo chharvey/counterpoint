@@ -22,32 +22,18 @@ import type {Goal} from '../Goal.ts';
 import * as EXPR from '../expression/index.ts';
 import type * as STMT from '../statement/index.ts';
 import {StatementBreakable} from '../statement/StatementBreakable.ts';
-import {VisitorExprBuild} from './VisitorExprBuild.ts';
+import {runOncePerNode} from './decorators.ts';
+import {ExprVisitorBuild} from './ExprVisitorBuild.ts';
 
 
 
-function runOncePerNode<ProtoThis extends object, Param extends AstNode>(
-	method:   (this: ProtoThis, arg: Param) => void,
-	_context: ClassMethodDecoratorContext<ProtoThis, typeof method>,
-): typeof method {
-	const memoset = new WeakSet<Param>();
-	return function (arg) {
-		if (!memoset.has(arg)) {
-			memoset.add(arg);
-			return method.call(this, arg);
-		}
-	};
-}
-
-
-
-export class VisitorBuild extends AstNodeVisitor<void> {
-	private readonly exprVisitor: VisitorExprBuild;
+export class AstNodeVisitorBuild extends AstNodeVisitor<void> {
+	private readonly exprVisitor: ExprVisitorBuild;
 
 
 	public constructor(private readonly builder: Builder) {
 		super();
-		this.exprVisitor = new VisitorExprBuild(this.builder);
+		this.exprVisitor = new ExprVisitorBuild(this.builder);
 	}
 
 
@@ -82,7 +68,6 @@ export class VisitorBuild extends AstNodeVisitor<void> {
 		this.builder.terminateBlock(new OP.EndProgram());
 		return this.builder.validate();
 	}
-
 
 	@runOncePerNode
 	public override visitDeclVariable(stmt: STMT.DeclarationVariable): void {
@@ -278,7 +263,7 @@ export class VisitorBuild extends AstNodeVisitor<void> {
 		return this.builder.initiateBlock(this.builder.newLabel(true));
 	}
 
-	public override defaultVisit(_stmt: STMT.Statement): void {
+	public override defaultVisit(_node: AstNode): void {
 		return;
 	}
 }

@@ -1,18 +1,14 @@
 import {
 	AssignmentErrorReassignment,
 	AssignmentErrorDeletion,
-	TypeError as CplTypeError,
-	MutabilityError01,
 } from '../../../index.ts';
 import {assert_instanceof} from '../../../lib/index.ts';
 import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../../core/index.ts';
-import {TYPE} from '../../../typer/index.ts';
 import type {SymbolSchemaVar} from '../../index.ts';
 import type {SyntaxNodeFamily} from '../../utils-private.ts';
-import {typecheck_assign} from '../AstNode.ts';
 import * as EXPR from '../expression/index.ts';
 import {Statement} from './Statement.ts';
 
@@ -50,19 +46,5 @@ export class StatementReassignment extends Statement {
 				throw new AssignmentErrorDeletion(this.assignee);
 			}
 		}
-	}
-
-	public override typeCheck(): void {
-		super.typeCheck();
-		if (this.assignee instanceof EXPR.Access) {
-			const base_type: TYPE.Type = this.assignee.base.type();
-			if (!base_type.isMutable) {
-				throw new MutabilityError01(base_type, this);
-			}
-			if (!this.assigned && !(base_type instanceof TYPE.TypeInterface)) {
-				throw new CplTypeError('The `delete` statement is only applicable to interface types.');
-			}
-		}
-		this.assigned && typecheck_assign(this.assigned, this.assignee.writeType(), this);
 	}
 }

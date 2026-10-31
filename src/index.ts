@@ -7,5 +7,4 @@ export * from './validator/index.ts';
 export * from './builder/index.ts';
 export * from './code-generator/index.ts';
 export * from './error/index.ts';
-export * from './visitors.ts';
 export * from './cli/index.ts';

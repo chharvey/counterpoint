@@ -1,9 +1,4 @@
-import * as assert from 'node:assert';
-import {TypeErrorInvalidOperation} from '../../../index.ts';
-import {
-	assert_instanceof,
-	memoizeMethod,
-} from '../../../lib/index.ts';
+import {assert_instanceof} from '../../../lib/index.ts';
 import {
 	type CplConfig,
 	CONFIG_DEFAULT,
@@ -35,17 +30,5 @@ export class OperationBinaryComparative extends OperationBinary {
 		operand1: Expression,
 	) {
 		super(start_node, operator, operand0, operand1);
-	}
-
-	@memoizeMethod
-	public override type(): TYPE.Type {
-		const [t0, t1]: readonly TYPE.Type[] = this.children.map((operand) => operand.type());
-		if (t0.isBottomType || t1.isBottomType) {
-			return TYPE.NOTHING;
-		}
-		return (
-			bothNumbers(t0, t1) ? TYPE.BOOL :
-			assert.fail(new TypeErrorInvalidOperation(this))
-		);
 	}
 }

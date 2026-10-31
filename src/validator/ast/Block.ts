@@ -1,10 +1,6 @@
 import * as assert from 'node:assert';
 import * as xjs from 'extrajs';
 import {
-	AssignmentErrorFunctionExit,
-	VisitorCompletion,
-} from '../../index.ts';
-import {
 	type NonemptyArray,
 	memoizeGetter,
 } from '../../lib/index.ts';
@@ -23,7 +19,6 @@ import {
 	STMT,
 	EXPR,
 } from './index.ts';
-import {CompletionKind} from './CompletionKind.ts';
 import {AstNode} from './AstNode.ts';
 import {is_Functionlike} from './Functionlike.ts';
 
@@ -79,21 +74,8 @@ export class Block extends AstNode {
 		return v;
 	}
 
-	/** The kind of completion of evaluation of this block. */
-	@memoizeGetter
-	public get completion(): CompletionKind {
-		return new VisitorCompletion().visit(this);
-	}
-
 	public override varCheck(): void {
 		xjs.Array.forEachAggregated(this.children.filter((stmt) => stmt instanceof STMT.DeclarationFunction), (fn) => fn.hoist());
 		return super.varCheck();
-	}
-
-	public override typeCheck(): void {
-		super.typeCheck();
-		if (!!this.parent && is_Functionlike(this.parent) && this.completion !== CompletionKind.RETURN_OR_PANIC) {
-			throw new AssignmentErrorFunctionExit(this.parent);
-		}
 	}
 }

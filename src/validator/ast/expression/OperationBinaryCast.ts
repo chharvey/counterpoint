@@ -1,19 +1,10 @@
-import {TypeErrorNotNarrow} from '../../../index.ts';
-import {
-	assert_instanceof,
-	memoizeMethod,
-} from '../../../lib/index.ts';
+import {assert_instanceof} from '../../../lib/index.ts';
 import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../../core/index.ts';
-import {TYPE} from '../../../typer/index.ts';
-import {IntrinsicName} from '../../../parser/index.ts';
 import type {SyntaxNodeSupertype} from '../../utils-private.ts';
-import {
-	Operator,
-	type ValidOperatorCast,
-} from '../../Operator.ts';
+import type {ValidOperatorCast} from '../../Operator.ts';
 import {validate_intrinsic_name} from '../utils-private.ts';
 import {Expression} from './Expression.ts';
 import {OperationBinary} from './OperationBinary.ts';
@@ -41,61 +32,5 @@ export class OperationBinaryCast extends OperationBinary {
 		// (`this.operand1.source` must be an `IntrinsicName`)
 		this.operand0.varCheck();
 		return validate_intrinsic_name(this.operand1.source);
-	}
-
-	public override typeCheck(): void {
-		// NOTE: ignore type-checking `this.operand1` for now, as semantics is determined by syntax.
-		// (`this.operand1.source` must be an `IntrinsicName`)
-		this.operand0.typeCheck();
-		this.type(); // assert does not throw
-	}
-
-	@memoizeMethod
-	public override type(): TYPE.Type {
-		const t0: TYPE.Type = this.operand0.type();
-		if (t0.isBottomType) {
-			return TYPE.NOTHING;
-		}
-		const t1: TYPE.Type = new Map<IntrinsicName, TYPE.Type>([
-			[IntrinsicName.NULL,      TYPE.NULL],
-			[IntrinsicName.BOOLEAN,   TYPE.BOOL],
-			[IntrinsicName.SYMBOL,    TYPE.SYM],
-			[IntrinsicName.INTEGER,   TYPE.INT],
-			[IntrinsicName.NATURAL,   TYPE.NAT],
-			[IntrinsicName.FLOAT,     TYPE.FLOAT],
-			[IntrinsicName.STRING,    TYPE.STR],
-			[IntrinsicName.OBJECT,    TYPE.OBJ],
-			[IntrinsicName.LIST,      new TYPE.List(TYPE.ANYTHING)],
-			[IntrinsicName.DICT,      new TYPE.Dict(TYPE.ANYTHING)],
-			[IntrinsicName.SET,       new TYPE.Set(TYPE.ANYTHING)],
-			[IntrinsicName.MAP,       new TYPE.Map(TYPE.ANYTHING, TYPE.ANYTHING)],
-			[IntrinsicName.EXCEPTION, TYPE.EXCP],
-			[IntrinsicName.MAYBE,     new TYPE.Maybe(TYPE.ANYTHING)],
-			[IntrinsicName.NONE,      new TYPE.None(TYPE.ANYTHING)],
-			[IntrinsicName.SOME,      new TYPE.Some(TYPE.ANYTHING)],
-			[IntrinsicName.RESULT,    new TYPE.Result(TYPE.ANYTHING)],
-			[IntrinsicName.FAIL,      new TYPE.Fail(TYPE.ANYTHING)],
-			[IntrinsicName.OK,        new TYPE.Ok(TYPE.ANYTHING)],
-			[IntrinsicName.FUNCTION,  new TYPE.Function(undefined, undefined, TYPE.ANYTHING)],
-		]).get(this.operand1.source as IntrinsicName)!;
-		switch (this.operator) {
-			case Operator.IS: {
-				return TYPE.BOOL;
-			}
-			case Operator.CAST: {
-				if (t1.isSubtypeOf(t0)) {
-					return t1;
-				} else {
-					throw new TypeErrorNotNarrow(t1, t0, this.line_index, this.col_index);
-				}
-			}
-			case Operator.CAST_MAYBE: {
-				if (t1.isSubtypeOf(t0)) {
-					return new TYPE.Maybe(t1);
-				} else {
-					throw new TypeErrorNotNarrow(t1, t0, this.line_index, this.col_index);
-				}
-			}
-		}
 	}
 }

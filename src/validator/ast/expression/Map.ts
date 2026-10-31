@@ -3,7 +3,6 @@ import {TypeErrorNotAssignable} from '../../../index.ts';
 import {
 	type NonemptyArray,
 	assert_instanceof,
-	memoizeMethod,
 } from '../../../lib/index.ts';
 import {
 	type CplConfig,
@@ -33,18 +32,6 @@ class ExpressionMap extends Collection {
 		public override readonly children: Readonly<NonemptyArray<Case>>,
 	) {
 		super(start_node, children);
-	}
-
-	@memoizeMethod
-	public override type(): TYPE.Type {
-		if (this.children.some((c) => c.antecedents[0].type().isBottomType || c.consequent.type().isBottomType)) {
-			return TYPE.NOTHING;
-		}
-		return new TYPE.Map(
-			TYPE.Union.all(...this.children.map((c) => c.antecedents[0].type())),
-			TYPE.Union.all(...this.children.map((c) => c.consequent.type())),
-			true,
-		);
 	}
 
 	@assignToDeco

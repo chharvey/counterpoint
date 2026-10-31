@@ -3,7 +3,6 @@ import {TypeErrorNotAssignable} from '../../../index.ts';
 import {
 	type NonemptyArray,
 	assert_instanceof,
-	memoizeMethod,
 } from '../../../lib/index.ts';
 import {
 	type CplConfig,
@@ -39,17 +38,6 @@ export class Dict extends Collection {
 	public override varCheck(): void {
 		check_unique_keys(this.children.map((prop) => prop.key));
 		return super.varCheck();
-	}
-
-	@memoizeMethod
-	public override type(): TYPE.Type {
-		if (this.children.some((c) => c.val.type().isBottomType)) {
-			return TYPE.NOTHING;
-		}
-		return new TYPE.Dict(
-			TYPE.Union.all(...this.children.map((c) => c.val.type())),
-			true,
-		);
 	}
 
 	@assignToDeco
