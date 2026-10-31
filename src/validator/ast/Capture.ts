@@ -26,11 +26,4 @@ export class Capture extends AstNode {
 			schema.isUninitialized,
 		));
 	}
-
-	public override typeCheck(): void {
-		super.typeCheck();
-		if (!this.ref) {
-			((this.parent as Functionlike).block.validator.getSymbol(this.variable.id) as SymbolSchemaVar).type = this.variable.type();
-		}
-	}
 }

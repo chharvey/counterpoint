@@ -1,10 +1,7 @@
 import * as assert from 'node:assert';
 import * as xjs from 'extrajs';
 import {TypeErrorNotAssignable} from '../../../index.ts';
-import {
-	assert_instanceof,
-	memoizeMethod,
-} from '../../../lib/index.ts';
+import {assert_instanceof} from '../../../lib/index.ts';
 import {
 	type CplConfig,
 	CONFIG_DEFAULT,
@@ -43,14 +40,6 @@ class ExpressionTuple extends Collection {
 		public override readonly children: readonly Expression[],
 	) {
 		super(start_node, children);
-	}
-
-	@memoizeMethod
-	public override type(): TYPE.Type {
-		if (this.children.some((c) => c.type().isBottomType)) {
-			return TYPE.NOTHING;
-		}
-		return TYPE.Tuple.fromTypes(this.children.map((c) => c.type()));
 	}
 
 	@assignToDeco

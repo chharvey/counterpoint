@@ -10,7 +10,6 @@ import {
 	TYPE,
 	Builder,
 	CodeGenerator,
-	VisitorBuild,
 } from '../src/index.ts';
 
 
@@ -267,12 +266,12 @@ export function setupScript(
 	readonly builder:      Builder,
 	readonly cg:           CodeGenerator,
 	readonly wasm:         binaryen.ExpressionBuilder,
-	readonly visitorBuild: VisitorBuild,
+	readonly visitorBuild: AST.AstNodeVisitorBuild,
 } {
 	const goal: AST.Goal = AST.Goal.fromSource(source);
 	const builder        = new Builder();
 	const cg             = new CodeGenerator();
-	const visitor_build  = new VisitorBuild(builder);
+	const visitor_build  = new AST.AstNodeVisitorBuild(builder);
 	assert.ok(goal.block, 'Expected AST.Goal to contain a block.');
 	opts.varCheck  ??= true;
 	opts.typeCheck ??= true;

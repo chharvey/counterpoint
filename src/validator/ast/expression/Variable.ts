@@ -1,4 +1,3 @@
-import * as assert from 'node:assert';
 import {
 	ReferenceErrorUndeclared,
 	ReferenceErrorKind,
@@ -11,12 +10,12 @@ import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../../core/index.ts';
-import {TYPE} from '../../../typer/index.ts';
+import type {TYPE} from '../../../typer/index.ts';
 import {
 	SymbolKind,
 	type SymbolSchema,
 	SymbolSchemaType,
-	SymbolSchemaVar,
+	type SymbolSchemaVar,
 	SymbolSchemaFunc,
 } from '../../index.ts';
 import type {SyntaxNodeType} from '../../utils-private.ts';
@@ -62,14 +61,6 @@ export class Variable extends Expression implements Reassignable {
 			this.#isFuncRef = true;
 			throw new ReferenceErrorKind(this, SymbolKind.FUNC, SymbolKind.VALUE);
 		}
-	}
-
-	@memoizeMethod
-	public override type(): TYPE.Type {
-		assert.ok(this.validator.hasSymbol(this.id), `Expected ${this.source} (${this.id}) to be in the symbol table.`);
-		const symbol: SymbolSchema = this.validator.getSymbol(this.id)!;
-		assert_instanceof(symbol, SymbolSchemaVar);
-		return symbol.isUninitialized ? new TYPE.Maybe(symbol.type) : symbol.type;
 	}
 
 	/**

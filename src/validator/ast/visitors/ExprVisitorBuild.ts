@@ -17,36 +17,28 @@ import {Index} from '../Index-.ts';
 import {Key} from '../Key.ts';
 import * as EXPR from '../expression/index.ts';
 import type * as STMT from '../statement/index.ts';
-import {VisitorBuild} from './VisitorBuild.ts';
+import {
+	bothInts,
+	bothNats,
+	bothFloats,
+} from './utils.ts';
+import {memoizePerNode} from './decorators.ts';
+import {AstNodeVisitorBuild} from './AstNodeVisitorBuild.ts';
 
 
 
-function memoizePerExpr<ProtoThis extends object, Param extends EXPR.Expression, Return>(
-	method:   (this: ProtoThis, arg: Param) => Return,
-	_context: ClassMethodDecoratorContext<ProtoThis, typeof method>,
-): typeof method {
-	const memomap = new WeakMap<Param, Return>();
-	return function (arg) {
-		// TODO: Map#getOrInsertComputed
-		memomap.has(arg) || memomap.set(arg, method.call(this, arg));
-		return memomap.get(arg)!;
-	};
-}
-
-
-
-export class VisitorExprBuild extends EXPR.ExprVisitor<OP.Value> {
+export class ExprVisitorBuild extends EXPR.ExprVisitor<OP.Value> {
 	public constructor(private readonly builder: Builder) {
 		super();
 	}
 
 
-	@memoizePerExpr
+	@memoizePerNode
 	public override visitConstant(expr: EXPR.Constant): OP.Value {
 		return new OP.Const(expr.interpreterValue);
 	}
 
-	@memoizePerExpr
+	@memoizePerNode
 	public override visitTemplate(expr: EXPR.Template): OP.Value {
 		return new OP.Template(expr.children.map((c) => {
 			const build: OP.ValueTac = this.visit(c).asTac(this.builder);
@@ -56,18 +48,18 @@ export class VisitorExprBuild extends EXPR.ExprVisitor<OP.Value> {
 		}));
 	}
 
-	@memoizePerExpr
+	@memoizePerNode
 	public override visitVariable(expr: EXPR.Variable): OP.Value {
 		const symbol = expr.validator.getSymbol(expr.id) as SymbolSchemaVar;
 		return new OP.Get(symbol, symbol.irType);
 	}
 
-	@memoizePerExpr
+	@memoizePerNode
 	public override visitTuple(expr: EXPR.Tuple): OP.Value {
 		return new OP.CollectionLinearNew(OP.TypeName.TUPLE, expr.children.map((c) => this.visit(c).asTac(this.builder)), expr.type());
 	}
 
-	@memoizePerExpr
+	@memoizePerNode
 	public override visitRecord(expr: EXPR.Record): OP.Value {
 		return new OP.RecordNew(new Map(expr.children.map((c) => ([
 			c.key.id,
@@ -75,12 +67,12 @@ export class VisitorExprBuild extends EXPR.ExprVisitor<OP.Value> {
 		]))), expr.type());
 	}
 
-	@memoizePerExpr
+	@memoizePerNode
 	public override visitList(expr: EXPR.List): OP.Value {
 		return new OP.CollectionLinearNew(OP.TypeName.LIST, expr.children.map((c) => this.visit(c).asTac(this.builder)), expr.type());
 	}
 
-	@memoizePerExpr
+	@memoizePerNode
 	public override visitDict(expr: EXPR.Dict): OP.Value {
 		return new OP.DictNew(new Map(expr.children.map((c) => [
 			new VALUE.Symbol(c.key.id, c.key.source),
@@ -88,12 +80,12 @@ export class VisitorExprBuild extends EXPR.ExprVisitor<OP.Value> {
 		])), expr.type());
 	}
 
-	@memoizePerExpr
+	@memoizePerNode
 	public override visitSet(expr: EXPR.Set): OP.Value {
 		return new OP.CollectionLinearNew(OP.TypeName.SET, expr.children.map((c) => this.visit(c).asTac(this.builder)), expr.type());
 	}
 
-	@memoizePerExpr
+	@memoizePerNode
 	public override visitMap(expr: EXPR.Map): OP.Value {
 		return new OP.MapNew(new Map(expr.children.map((c) => [
 			this.visit(c.antecedents[0]) .asTac(this.builder),
@@ -101,14 +93,14 @@ export class VisitorExprBuild extends EXPR.ExprVisitor<OP.Value> {
 		])), expr.type());
 	}
 
-	@memoizePerExpr
+	@memoizePerNode
 	public override visitExprBlock(expr: EXPR.ExpressionBlock): OP.Value {
-		const node_visitor = new VisitorBuild(this.builder);
+		const node_visitor = new AstNodeVisitorBuild(this.builder);
 		expr.block.children.slice(0, -1).forEach((stmt) => node_visitor.visit(stmt));
 		return this.visit((expr.block.children.at(-1) as STMT.StatementExpression).expr!);
 	}
 
-	@memoizePerExpr
+	@memoizePerNode
 	public override visitAccess(expr: EXPR.Access): OP.Value {
 		const typ:        TYPE.Type   = expr.type();
 		const base_value: OP.ValueTac = this.visit(expr.base).asTac(this.builder);
@@ -144,7 +136,7 @@ export class VisitorExprBuild extends EXPR.ExprVisitor<OP.Value> {
 		return this.#buildUnwrappedGet(expr, base_value, typ);
 	}
 
-	@memoizePerExpr
+	@memoizePerNode
 	public override visitCall(expr: EXPR.Call): OP.Value {
 		/*
 		 * Note: Eventually, calls will be dynamic; all we’d need to return is a new `OP.Call` object.
@@ -213,12 +205,12 @@ export class VisitorExprBuild extends EXPR.ExprVisitor<OP.Value> {
 		}
 	}
 
-	@memoizePerExpr
+	@memoizePerNode
 	public override visitClaim(expr: EXPR.Claim): OP.Value {
 		return this.visit(expr.operand);
 	}
 
-	@memoizePerExpr
+	@memoizePerNode
 	public override visitOperationUnary(expr: EXPR.OperationUnary): OP.Value {
 		return new OP.Unop(new Map<Operator, OP.OpCodeUn>([
 			[Operator.UN_MAYBE,  OP.OpCode.MAYBE_UNWRAP],
@@ -229,7 +221,7 @@ export class VisitorExprBuild extends EXPR.ExprVisitor<OP.Value> {
 		]).get(expr.operator)!, this.visit(expr.operand).asTac(this.builder), expr.type());
 	}
 
-	@memoizePerExpr
+	@memoizePerNode
 	public override visitOperationBinaryCast(expr: EXPR.OperationBinaryCast): OP.Value {
 		const op0: OP.ValueTac = this.visit(expr.operand0).asTac(this.builder);
 		const op1_source = expr.operand1.source as IntrinsicName;
@@ -271,20 +263,8 @@ export class VisitorExprBuild extends EXPR.ExprVisitor<OP.Value> {
 		}
 	}
 
-	@memoizePerExpr
+	@memoizePerNode
 	public override visitOperationBinaryArithmetic(expr: EXPR.OperationBinaryArithmetic): OP.Value {
-		// TODO: move these functions to utils
-		function bothInts(t0: TYPE.Type, t1: TYPE.Type): boolean {
-			return t0.isSubtypeOf(TYPE.INT) && t1.isSubtypeOf(TYPE.INT);
-		}
-
-		function bothNats(t0: TYPE.Type, t1: TYPE.Type): boolean {
-			return t0.isSubtypeOf(TYPE.NAT) && t1.isSubtypeOf(TYPE.NAT);
-		}
-
-		function bothFloats(t0: TYPE.Type, t1: TYPE.Type): boolean {
-			return t0.isSubtypeOf(TYPE.FLOAT) && t1.isSubtypeOf(TYPE.FLOAT);
-		}
 		const typ: TYPE.Type = expr.type();
 		const [t0, t1] = [expr.operand0.type(),                          expr.operand1.type()];
 		const [v0, v1] = [this.visit(expr.operand0).asTac(this.builder), this.visit(expr.operand1).asTac(this.builder)];
@@ -313,7 +293,7 @@ export class VisitorExprBuild extends EXPR.ExprVisitor<OP.Value> {
 		);
 	}
 
-	@memoizePerExpr
+	@memoizePerNode
 	public override visitOperationBinaryComparative(expr: EXPR.OperationBinaryComparative): OP.Value {
 		return new OP.Binop(new Map<Operator, OP.OpCodeBin>([
 			[Operator.LT, OP.OpCode.LT],
@@ -323,7 +303,7 @@ export class VisitorExprBuild extends EXPR.ExprVisitor<OP.Value> {
 		]).get(expr.operator)!, this.visit(expr.operand0).asTac(this.builder), this.visit(expr.operand1).asTac(this.builder), expr.type());
 	}
 
-	@memoizePerExpr
+	@memoizePerNode
 	public override visitOperationBinaryEquality(expr: EXPR.OperationBinaryEquality): OP.Value {
 		return new OP.Binop(new Map<Operator, OP.OpCodeBin>([
 			[Operator.ID, OP.OpCode.ID],
@@ -331,7 +311,7 @@ export class VisitorExprBuild extends EXPR.ExprVisitor<OP.Value> {
 		]).get(expr.operator)!, this.visit(expr.operand0).asTac(this.builder), this.visit(expr.operand1).asTac(this.builder), expr.type());
 	}
 
-	@memoizePerExpr
+	@memoizePerNode
 	public override visitOperationBinaryLogical(expr: EXPR.OperationBinaryLogical): OP.Value {
 		/*
 		 * `‹v0› && ‹v1›` desugars to:
@@ -364,7 +344,7 @@ export class VisitorExprBuild extends EXPR.ExprVisitor<OP.Value> {
 		);
 	}
 
-	@memoizePerExpr
+	@memoizePerNode
 	public override visitOperationTernary(expr: EXPR.OperationTernary): OP.Value {
 		return OP.conditional_expression(
 			this.builder,
@@ -375,7 +355,7 @@ export class VisitorExprBuild extends EXPR.ExprVisitor<OP.Value> {
 		);
 	}
 
-	@memoizePerExpr
+	@memoizePerNode
 	public override visitSwitch(expr: EXPR.Switch): OP.Value {
 		if (!expr.cases.length) {
 			this.builder.pushInstruction(new OP.Drop(this.visit(expr.value)));
@@ -395,9 +375,9 @@ export class VisitorExprBuild extends EXPR.ExprVisitor<OP.Value> {
 		)();
 	}
 
-	@memoizePerExpr
+	@memoizePerNode
 	public override visitFunction(expr: EXPR.Function): OP.Value {
-		const node_visitor = new VisitorBuild(this.builder);
+		const node_visitor = new AstNodeVisitorBuild(this.builder);
 		const temp: Temp = this.builder.newTemp(expr.type());
 		return new OP.Function(temp.type as TYPE.Function, temp.name, expr.source.replaceAll(/\s+/g, ' '), () => {
 			expr.captures   .forEach((capt)  => node_visitor.visit(capt));

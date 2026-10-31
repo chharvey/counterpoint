@@ -5,7 +5,7 @@ import {setupScript} from '../../utils.ts';
 
 
 
-test.suite('VisitorBuild#visit', () => {
+test.suite('AstNodeVisitorBuild#visit', () => {
 	test.test('Goal builds each statement.', () => {
 		assert.strictEqual(setupScript(`{
 			val mut assignee_b?: int;

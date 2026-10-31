@@ -1,15 +1,8 @@
-import {
-	assert_instanceof,
-	memoizeMethod,
-} from '../../../lib/index.ts';
+import {assert_instanceof} from '../../../lib/index.ts';
 import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../../core/index.ts';
-import {
-	type EntryType,
-	TYPE,
-} from '../../../typer/index.ts';
 import type {SyntaxNodeType} from '../../utils-private.ts';
 import {
 	type Functionlike,
@@ -44,24 +37,6 @@ class ExpressionFunction extends Expression implements Functionlike {
 
 	public override varCheck(): void {
 		return Functionlike_varCheck.call(this);
-	}
-
-	@memoizeMethod
-	public override type(): TYPE.Function {
-		return new TYPE.Function(
-			new TYPE.Tuple(this.parameters.filter((param) => !param.named).map((param) => ({
-				type:     param.typenode.eval(),
-				optional: param.optional,
-			}))),
-			new TYPE.Record(new Map<bigint, EntryType>(this.parameters.filter((param) => param.named).map((param) => [
-				param.labelId!,
-				{
-					type:     param.typenode.eval(),
-					optional: param.optional,
-				},
-			]))),
-			this.returnType?.eval(),
-		);
 	}
 }
 export {ExpressionFunction as Function};
