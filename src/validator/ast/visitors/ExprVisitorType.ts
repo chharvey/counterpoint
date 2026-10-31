@@ -41,10 +41,14 @@ import {
 	bothNumbers,
 } from './utils.ts';
 import {memoizePerExpr} from './decorators.ts';
+import {AstNodeVisitorCompletion} from './AstNodeVisitorCompletion.ts';
 
 
 
 export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
+	private readonly astNodeVisitorCompletion = new AstNodeVisitorCompletion();
+
+
 	@memoizePerExpr
 	public override visitConstant(expr: EXPR.Constant): TYPE.Type {
 		return expr.interpreterValue.toType();
@@ -133,7 +137,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 
 	@memoizePerExpr
 	public override visitExprBlock(expr: EXPR.ExpressionBlock): TYPE.Type {
-		if (expr.block.completion !== CompletionKind.NORMAL) {
+		if (this.astNodeVisitorCompletion.visit(expr.block) !== CompletionKind.NORMAL) {
 			return TYPE.NOTHING;
 		}
 		assert.ok(expr.block.children.length, 'Expected Block to contain at least 1 statement.');

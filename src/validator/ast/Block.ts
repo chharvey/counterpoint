@@ -18,9 +18,7 @@ import {
 	Goal,
 	STMT,
 	EXPR,
-	AstNodeVisitorCompletion,
 } from './index.ts';
-import type {CompletionKind} from './CompletionKind.ts';
 import {AstNode} from './AstNode.ts';
 import {is_Functionlike} from './Functionlike.ts';
 
@@ -74,12 +72,6 @@ export class Block extends AstNode {
 			});
 		}
 		return v;
-	}
-
-	/** The kind of completion of evaluation of this block. */
-	@memoizeGetter
-	public get completion(): CompletionKind {
-		return new AstNodeVisitorCompletion().visit(this);
 	}
 
 	public override varCheck(): void {

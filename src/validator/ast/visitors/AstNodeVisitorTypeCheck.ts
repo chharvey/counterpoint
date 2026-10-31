@@ -37,12 +37,14 @@ import type {Block} from '../Block.ts';
 import type * as AST_TYPE from '../type/index.ts';
 import * as EXPR from '../expression/index.ts';
 import type * as STMT from '../statement/index.ts';
+import {AstNodeVisitorCompletion} from './AstNodeVisitorCompletion.ts';
 import {ExprVisitorType} from './ExprVisitorType.ts';
 
 
 
 export class AstNodeVisitorTypeCheck extends AstNodeVisitor<void> {
-	private readonly exprVisitorType: ExprVisitorType = new ExprVisitorType();
+	private readonly astNodeVisitorCompletion = new AstNodeVisitorCompletion();
+	private readonly exprVisitorType          = new ExprVisitorType();
 
 
 	public override visitParameterFunction(node: ParameterFunction): void {
@@ -65,7 +67,7 @@ export class AstNodeVisitorTypeCheck extends AstNodeVisitor<void> {
 
 	public override visitBlock(node: Block): void {
 		this.defaultVisit(node);
-		if (!!node.parent && is_Functionlike(node.parent) && node.completion !== CompletionKind.RETURN_OR_PANIC) {
+		if (!!node.parent && is_Functionlike(node.parent) && this.astNodeVisitorCompletion.visit(node) !== CompletionKind.RETURN_OR_PANIC) {
 			throw new AssignmentErrorFunctionExit(node.parent);
 		}
 	}
