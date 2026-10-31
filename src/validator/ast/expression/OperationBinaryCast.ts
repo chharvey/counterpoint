@@ -33,11 +33,4 @@ export class OperationBinaryCast extends OperationBinary {
 		this.operand0.varCheck();
 		return validate_intrinsic_name(this.operand1.source);
 	}
-
-	public override typeCheck(): void {
-		// NOTE: ignore type-checking `this.operand1` for now, as semantics is determined by syntax.
-		// (`this.operand1.source` must be an `IntrinsicName`)
-		this.operand0.typeCheck();
-		this.type(); // assert does not throw
-	}
 }

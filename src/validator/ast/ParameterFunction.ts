@@ -1,7 +1,5 @@
-import * as assert from 'node:assert';
 import {AssignmentErrorDuplicateDeclaration} from '../../index.ts';
 import type {Serializable} from '../../parser/index.ts';
-import type {TYPE} from '../../typer/index.ts';
 import {SymbolSchemaVar} from '../index.ts';
 import type {SyntaxNodeFamily} from '../utils-private.ts';
 import {Validator} from '../Validator.ts';
@@ -10,10 +8,7 @@ import type {
 	TYPE as AST_TYPE,
 	EXPR,
 } from './index.ts';
-import {
-	typecheck_assign,
-	AstNode,
-} from './AstNode.ts';
+import {AstNode} from './AstNode.ts';
 import type {Functionlike} from './Functionlike.ts';
 import type {Key} from './Key.ts';
 
@@ -57,17 +52,6 @@ export class ParameterFunction extends AstNode {
 				throw new AssignmentErrorDuplicateDeclaration(this.identifier);
 			}
 			block.validator.addSymbol(new SymbolSchemaVar(this.id!, this.identifier, this.writable, this.optional && !this.expr));
-		}
-	}
-
-	public override typeCheck(): void {
-		super.typeCheck();
-		const param_type: TYPE.Type = this.typenode.eval();
-		this.expr && typecheck_assign(this.expr, param_type, this);
-		if (this.identifier) {
-			const block: Block = (this.parent as Functionlike).block;
-			assert.ok(block.validator.hasSymbol(this.id!), `The validator symbol table should include ${this.id}.`);
-			(block.validator.getSymbol(this.id!) as SymbolSchemaVar).type = param_type;
 		}
 	}
 }

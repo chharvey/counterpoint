@@ -36,14 +36,4 @@ export class Call extends Expression {
 			...this.exprargs,
 		], (arg) => arg.varCheck());
 	}
-
-	public override typeCheck(): void {
-		// NOTE: ignore type-checking `this.base` for now, as semantics is determined by syntax.
-		// (`this.base.source` must be a `CallableClassName`)
-		xjs.Array.forEachAggregated([
-			...this.typeargs,
-			...this.exprargs,
-		], (arg) => arg.typeCheck());
-		this.type(); // assert does not throw
-	}
 }

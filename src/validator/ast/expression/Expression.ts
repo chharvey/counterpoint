@@ -131,14 +131,6 @@ export abstract class Expression extends AstNode {
 	}
 
 	/**
-	 * @final
-	 */
-	public override typeCheck(): void {
-		super.typeCheck();
-		this.type(); // assert does not throw
-	}
-
-	/**
 	 * The Type of this expression.
 	 * @return the compile-time type of this node
 	 * @final

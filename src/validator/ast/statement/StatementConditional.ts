@@ -1,10 +1,8 @@
-import {TypeErrorNotAssignable} from '../../../index.ts';
 import {assert_instanceof} from '../../../lib/index.ts';
 import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../../core/index.ts';
-import {TYPE} from '../../../typer/index.ts';
 import type {SyntaxNodeFamily} from '../../utils-private.ts';
 import type {Block} from '../Block.ts';
 import type * as EXPR from '../expression/index.ts';
@@ -27,13 +25,5 @@ export class StatementConditional extends Statement {
 		public readonly alternative?: Block | StatementConditional,
 	) {
 		super(start_node, {unless}, alternative ? [condition, consequent, alternative] : [condition, consequent]);
-	}
-
-
-	public override typeCheck(): void {
-		super.typeCheck();
-		if (!this.condition.type().isSubtypeOf(TYPE.BOOL)) {
-			throw new TypeErrorNotAssignable(this.condition, TYPE.BOOL);
-		}
 	}
 }

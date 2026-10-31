@@ -1,16 +1,10 @@
-import * as assert from 'node:assert';
 import * as xjs from 'extrajs';
-import {
-	AssignmentErrorDuplicateDeclaration,
-	TypeErrorNotNarrow,
-	TypeErrorNotAssignable,
-} from '../../../index.ts';
+import {AssignmentErrorDuplicateDeclaration} from '../../../index.ts';
 import {assert_instanceof} from '../../../lib/index.ts';
 import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../../core/index.ts';
-import {TYPE} from '../../../typer/index.ts';
 import type {Serializable} from '../../../parser/index.ts';
 import {SymbolSchemaVar} from '../../index.ts';
 import type {SyntaxNodeFamily} from '../../utils-private.ts';
@@ -35,10 +29,10 @@ export class StatementIteration extends StatementBreakable {
 
 	public constructor(
 		start_node: SyntaxNodeFamily<'statement_iteration', ['return']>,
-		public  readonly assignee: Serializable | null,
-		private readonly typenode: AST_TYPE.Type,
-		public  readonly iterable: EXPR.Expression,
-		public  readonly block:    Block,
+		public readonly assignee: Serializable | null,
+		public readonly typenode: AST_TYPE.Type,
+		public readonly iterable: EXPR.Expression,
+		public readonly block:    Block,
 	) {
 		super(start_node, {}, [typenode, iterable, block]);
 		if (this.assignee) {
@@ -62,22 +56,5 @@ export class StatementIteration extends StatementBreakable {
 			));
 		}
 		this.block.varCheck(); // must come after assignee checks, because assignee may be referenced inside block
-	}
-
-	public override typeCheck(): void {
-		const assignee_type: TYPE.Type = this.typenode.eval();
-		const iterable_type: TYPE.Type = this.iterable.type();
-		if (!(iterable_type instanceof TYPE.List)) {
-			throw new TypeErrorNotAssignable(this.iterable, new TYPE.List(TYPE.ANYTHING));
-		}
-		const item_type: TYPE.Type = iterable_type.typearg;
-		if (!item_type.isSubtypeOf(assignee_type)) {
-			throw new TypeErrorNotNarrow(item_type, assignee_type, this.line_index, this.col_index);
-		}
-		if (this.assignee) {
-			assert.ok(this.block.validator.hasSymbol(this.id!), `The validator symbol table should include ${this.id}.`);
-			(this.block.validator.getSymbol(this.id!) as SymbolSchemaVar).type = assignee_type;
-		}
-		this.block.typeCheck();
 	}
 }

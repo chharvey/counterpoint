@@ -23,6 +23,7 @@ import {
 	TYPE as AST_TYPE,
 	EXPR,
 	STMT,
+	AstNodeVisitorTypeCheck,
 } from './index.ts';
 
 
@@ -319,8 +320,10 @@ export class AstNode implements Serializable {
 
 	/**
 	 * Type-check the node as part of semantic analysis.
+	 * @final
+	 * @deprecated TODO: migrate to AstNodeVisitorTypeCheck
 	 */
 	public typeCheck(): void {
-		return xjs.Array.forEachAggregated(this.children, (c) => c.typeCheck());
+		return new AstNodeVisitorTypeCheck().visit(this);
 	}
 }
