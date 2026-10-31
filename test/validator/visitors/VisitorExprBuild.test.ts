@@ -17,10 +17,10 @@ import {
 
 
 
-test.suite('VisitorExprBuild#visit', () => {
+test.suite('ExprVisitorBuild#visit', () => {
 	test.test('Constant returns an OP.Const.', () => {
 		const value: AST.EXPR.Constant = AST.EXPR.Constant.fromSource('42');
-		return assert.deepStrictEqual(new AST.VisitorExprBuild(new Builder()).visit(value), new OP.Const(value.interpreterValue));
+		return assert.deepStrictEqual(new AST.ExprVisitorBuild(new Builder()).visit(value), new OP.Const(value.interpreterValue));
 	});
 
 
@@ -32,7 +32,7 @@ test.suite('VisitorExprBuild#visit', () => {
 		const expr = (stmts[1] as AST.STMT.StatementExpression).expr as AST.EXPR.Variable;
 		const symbol: SymbolSchema | undefined = expr.validator.getSymbol(expr.id);
 		assert_instanceof(symbol, SymbolSchemaVar);
-		return assert.deepStrictEqual(new AST.VisitorExprBuild(new Builder()).visit(expr), new OP.Get(symbol, typeUnit(42n)));
+		return assert.deepStrictEqual(new AST.ExprVisitorBuild(new Builder()).visit(expr), new OP.Get(symbol, typeUnit(42n)));
 	});
 
 
@@ -1346,7 +1346,7 @@ test.suite('VisitorExprBuild#visit', () => {
 			const {stmts, builder} = setupScript(`{
 				42 as <int>;
 			}`, {codegen: false});
-			const expr_visitor = new AST.VisitorExprBuild(builder);
+			const expr_visitor = new AST.ExprVisitorBuild(builder);
 			const expr = (stmts[0] as AST.STMT.StatementExpression).expr as AST.EXPR.Claim;
 			return assert.deepStrictEqual(expr_visitor.visit(expr), expr_visitor.visit(expr.operand));
 		});
@@ -1354,7 +1354,7 @@ test.suite('VisitorExprBuild#visit', () => {
 			const {stmts, builder} = setupScript(`{
 				(42 + 42 + 42) as <int | float>;
 			}`, {build: false});
-			const expr_visitor = new AST.VisitorExprBuild(builder);
+			const expr_visitor = new AST.ExprVisitorBuild(builder);
 			assert.strictEqual(builder.instructions.length, 0);
 			const expr = (stmts[0] as AST.STMT.StatementExpression).expr as AST.EXPR.Claim;
 			expr_visitor.visit(expr.operand);

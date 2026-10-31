@@ -23,11 +23,11 @@ import {
 	bothFloats,
 } from './utils.ts';
 import {memoizePerExpr} from './decorators.ts';
-import {VisitorBuild} from './VisitorBuild.ts';
+import {AstNodeVisitorBuild} from './VisitorBuild.ts';
 
 
 
-export class VisitorExprBuild extends EXPR.ExprVisitor<OP.Value> {
+export class ExprVisitorBuild extends EXPR.ExprVisitor<OP.Value> {
 	public constructor(private readonly builder: Builder) {
 		super();
 	}
@@ -95,7 +95,7 @@ export class VisitorExprBuild extends EXPR.ExprVisitor<OP.Value> {
 
 	@memoizePerExpr
 	public override visitExprBlock(expr: EXPR.ExpressionBlock): OP.Value {
-		const node_visitor = new VisitorBuild(this.builder);
+		const node_visitor = new AstNodeVisitorBuild(this.builder);
 		expr.block.children.slice(0, -1).forEach((stmt) => node_visitor.visit(stmt));
 		return this.visit((expr.block.children.at(-1) as STMT.StatementExpression).expr!);
 	}
@@ -377,7 +377,7 @@ export class VisitorExprBuild extends EXPR.ExprVisitor<OP.Value> {
 
 	@memoizePerExpr
 	public override visitFunction(expr: EXPR.Function): OP.Value {
-		const node_visitor = new VisitorBuild(this.builder);
+		const node_visitor = new AstNodeVisitorBuild(this.builder);
 		const temp: Temp = this.builder.newTemp(expr.type());
 		return new OP.Function(temp.type as TYPE.Function, temp.name, expr.source.replaceAll(/\s+/g, ' '), () => {
 			expr.captures   .forEach((capt)  => node_visitor.visit(capt));

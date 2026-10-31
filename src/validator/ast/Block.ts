@@ -19,7 +19,7 @@ import {
 	Goal,
 	STMT,
 	EXPR,
-	VisitorCompletion,
+	AstNodeVisitorCompletion,
 } from './index.ts';
 import {CompletionKind} from './CompletionKind.ts';
 import {AstNode} from './AstNode.ts';
@@ -80,7 +80,7 @@ export class Block extends AstNode {
 	/** The kind of completion of evaluation of this block. */
 	@memoizeGetter
 	public get completion(): CompletionKind {
-		return new VisitorCompletion().visit(this);
+		return new AstNodeVisitorCompletion().visit(this);
 	}
 
 	public override varCheck(): void {

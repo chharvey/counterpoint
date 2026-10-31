@@ -22,7 +22,7 @@ import type {Goal} from '../Goal.ts';
 import * as EXPR from '../expression/index.ts';
 import type * as STMT from '../statement/index.ts';
 import {StatementBreakable} from '../statement/StatementBreakable.ts';
-import {VisitorExprBuild} from './VisitorExprBuild.ts';
+import {ExprVisitorBuild} from './VisitorExprBuild.ts';
 
 
 
@@ -41,13 +41,13 @@ function runOncePerNode<ProtoThis extends object, Param extends AstNode>(
 
 
 
-export class VisitorBuild extends AstNodeVisitor<void> {
-	private readonly exprVisitor: VisitorExprBuild;
+export class AstNodeVisitorBuild extends AstNodeVisitor<void> {
+	private readonly exprVisitor: ExprVisitorBuild;
 
 
 	public constructor(private readonly builder: Builder) {
 		super();
-		this.exprVisitor = new VisitorExprBuild(this.builder);
+		this.exprVisitor = new ExprVisitorBuild(this.builder);
 	}
 
 

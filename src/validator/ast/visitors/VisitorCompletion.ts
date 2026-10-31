@@ -17,7 +17,7 @@ import type * as STMT from '../statement/index.ts';
 
 
 
-export class VisitorCompletion extends AstNodeVisitor<CompletionKind> {
+export class AstNodeVisitorCompletion extends AstNodeVisitor<CompletionKind> {
 	/* eslint-disable @stylistic/space-before-function-paren */
 	public override visitProperty(node: Property): CompletionKind {
 		return this.visit(node.val);

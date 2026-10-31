@@ -7,7 +7,7 @@ import {
 import type {TYPE} from '../../../typer/index.ts';
 import {
 	STMT,
-	VisitorExprType,
+	ExprVisitorType,
 } from '../index.ts';
 import {AstNode} from '../AstNode.ts';
 import {
@@ -142,10 +142,10 @@ export abstract class Expression extends AstNode {
 	 * The Type of this expression.
 	 * @return the compile-time type of this node
 	 * @final
-	 * @deprecated TODO: migrate to VisitorExprType
+	 * @deprecated TODO: migrate to ExprVisitorType
 	 */
 	@memoizeMethod
 	public type(): TYPE.Type {
-		return new VisitorExprType().visit(this);
+		return new ExprVisitorType().visit(this);
 	}
 }

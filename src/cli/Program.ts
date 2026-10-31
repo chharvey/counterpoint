@@ -31,7 +31,7 @@ export class Program {
 		const builder = new Builder();
 		this.#astGoal.varCheck();
 		this.#astGoal.typeCheck();
-		new AST.VisitorBuild(builder).visit(this.#astGoal);
+		new AST.AstNodeVisitorBuild(builder).visit(this.#astGoal);
 		return builder;
 	}
 

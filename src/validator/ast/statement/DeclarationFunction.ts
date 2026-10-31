@@ -10,7 +10,7 @@ import type {Serializable} from '../../../parser/index.ts';
 import {SymbolSchemaFunc} from '../../index.ts';
 import type {SyntaxNodeType} from '../../utils-private.ts';
 import {Validator} from '../../Validator.ts';
-import {VisitorExprType} from '../index.ts';
+import {ExprVisitorType} from '../index.ts';
 import {
 	type Functionlike,
 	Functionlike_varCheck,
@@ -65,7 +65,7 @@ export class DeclarationFunction extends Statement implements Functionlike {
 
 	public override typeCheck(): void {
 		super.typeCheck();
-		const fn_type: TYPE.Type = new VisitorExprType().visitFunctionlike(this);
+		const fn_type: TYPE.Type = new ExprVisitorType().visitFunctionlike(this);
 		assert_instanceof(fn_type, TYPE.Function);
 		if (this.identifier) {
 			assert.ok(this.validator.hasSymbol(this.id!), `The validator symbol table should include ${this.id}.`);

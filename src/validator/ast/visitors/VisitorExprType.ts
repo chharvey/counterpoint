@@ -44,7 +44,7 @@ import {memoizePerExpr} from './decorators.ts';
 
 
 
-export class VisitorExprType extends EXPR.ExprVisitor<TYPE.Type> {
+export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 	@memoizePerExpr
 	public override visitConstant(expr: EXPR.Constant): TYPE.Type {
 		return expr.interpreterValue.toType();

@@ -168,7 +168,7 @@ test.suite('Opcode', () => {
 
 			test.test('TupleHas', () => {
 				// there exists no syntax for Tuple has, so constructing it manually
-				const tuple  = new AST.VisitorExprBuild(new Builder()).visit(AST.EXPR.Tuple.fromSource('(10, 20)'));
+				const tuple  = new AST.ExprVisitorBuild(new Builder()).visit(AST.EXPR.Tuple.fromSource('(10, 20)'));
 				const interp = new Interpreter();
 				return assert_equal_values(new Map<VALUE.Boolean, VALUE.Boolean>([
 					[new OP.TupleHas(tuple, 1n).interpret(interp), VALUE.TRUE],
@@ -178,7 +178,7 @@ test.suite('Opcode', () => {
 
 			test.test('RecordHas', () => {
 				// there exists no syntax for Record has, so constructing it manually
-				const record = new AST.VisitorExprBuild(new Builder()).visit(AST.EXPR.Record.fromSource('(a= 10, c= 20)'));
+				const record = new AST.ExprVisitorBuild(new Builder()).visit(AST.EXPR.Record.fromSource('(a= 10, c= 20)'));
 				const interp = new Interpreter();
 				return assert_equal_values(new Map<VALUE.Boolean, VALUE.Boolean>([
 					[new OP.RecordHas(record, {keyid: Validator.cookTokenIdentifier('a'), keysrc: 'a'}).interpret(interp), VALUE.TRUE],
@@ -519,7 +519,7 @@ test.suite('Opcode', () => {
 				test.before(() => {
 					const builder      = new Builder();
 					const interp       = new Interpreter();
-					const expr_visitor = new AST.VisitorExprBuild(builder);
+					const expr_visitor = new AST.ExprVisitorBuild(builder);
 					srcs.forEach((src) => builder.pushInstruction(new OP.Drop(expr_visitor.visit(AST.EXPR.Expression.fromSource(src)).asTac(builder))));
 					builder.instructions.forEach((instr) => instr.interpret(interp));
 					expecteds = interp.drops;
@@ -542,7 +542,7 @@ test.suite('Opcode', () => {
 							test.test(name, () => {
 								const builder      = new Builder();
 								const interp       = new Interpreter();
-								const expr_visitor = new AST.VisitorExprBuild(builder);
+								const expr_visitor = new AST.ExprVisitorBuild(builder);
 								srcs.forEach((src) => builder.pushInstruction(new OP.Drop(new OP.Instance(
 									OP.OpCode.INSTANCEOF,
 									name,
@@ -567,7 +567,7 @@ test.suite('Opcode', () => {
 						test.test('"Object"', () => {
 							const builder      = new Builder();
 							const interp       = new Interpreter();
-							const expr_visitor = new AST.VisitorExprBuild(builder);
+							const expr_visitor = new AST.ExprVisitorBuild(builder);
 							srcs.forEach((src) => builder.pushInstruction(new OP.Drop(new OP.Instance(
 								OP.OpCode.INSTANCEOF,
 								IntrinsicName.OBJECT,
@@ -653,7 +653,7 @@ test.suite('Opcode', () => {
 						test.test(name, () => {
 							const builder      = new Builder();
 							const interp       = new Interpreter();
-							const expr_visitor = new AST.VisitorExprBuild(builder);
+							const expr_visitor = new AST.ExprVisitorBuild(builder);
 							srcs.forEach((src) => builder.pushInstruction(new OP.Drop(new OP.Instance(
 								OP.OpCode.CAST,
 								name,
@@ -1113,7 +1113,7 @@ test.suite('Opcode', () => {
 					4.2;
 					"hello";
 				}`, {codegen: false});
-				const expr_visitor = new AST.VisitorExprBuild(builder);
+				const expr_visitor = new AST.ExprVisitorBuild(builder);
 				return assertEqualBins(
 					stmts.map((stmt) => expr_visitor.visit((stmt as AST.STMT.StatementExpression).expr!).codegen(cg)),
 					[
@@ -1143,7 +1143,7 @@ test.suite('Opcode', () => {
 					e;
 					f;
 				}`);
-				const expr_visitor = new AST.VisitorExprBuild(builder);
+				const expr_visitor = new AST.ExprVisitorBuild(builder);
 				return assertEqualBins(
 					stmts.slice(6).map((stmt) => expr_visitor.visit((stmt as AST.STMT.StatementExpression).expr!).codegen(cg)),
 					[
@@ -1235,7 +1235,7 @@ test.suite('Opcode', () => {
 						();
 					}`);
 					return assertEqualBins(
-						new AST.VisitorExprBuild(builder).visit((stmts[0] as AST.STMT.StatementExpression).expr!).codegen(cg),
+						new AST.ExprVisitorBuild(builder).visit((stmts[0] as AST.STMT.StatementExpression).expr!).codegen(cg),
 						cg.vm.Value.newComposite(cg.codegenTuple()),
 					);
 				});
@@ -1245,7 +1245,7 @@ test.suite('Opcode', () => {
 						(x, 4.2, (null,));
 					}`);
 					return assertEqualBins(
-						new AST.VisitorExprBuild(builder).visit((stmts[1] as AST.STMT.StatementExpression).expr!).codegen(cg),
+						new AST.ExprVisitorBuild(builder).visit((stmts[1] as AST.STMT.StatementExpression).expr!).codegen(cg),
 						cg.vm.Value.newComposite(cg.codegenTuple([
 							wasm.local.get(0, cg.vm.reftype.Value),
 							genConst(cg, 4.2),
@@ -1258,7 +1258,7 @@ test.suite('Opcode', () => {
 						[];
 					}`);
 					return assertEqualBins(
-						new AST.VisitorExprBuild(builder).visit((stmts[0] as AST.STMT.StatementExpression).expr!).codegen(cg),
+						new AST.ExprVisitorBuild(builder).visit((stmts[0] as AST.STMT.StatementExpression).expr!).codegen(cg),
 						cg.vm.Value.newComposite(cg.codegenList()),
 					);
 				});
@@ -1268,7 +1268,7 @@ test.suite('Opcode', () => {
 						[x, 4.2, (null,), x/2, @e];
 					}`);
 					return assertEqualBins(
-						new AST.VisitorExprBuild(builder).visit((stmts[1] as AST.STMT.StatementExpression).expr!).codegen(cg),
+						new AST.ExprVisitorBuild(builder).visit((stmts[1] as AST.STMT.StatementExpression).expr!).codegen(cg),
 						cg.vm.Value.newComposite(cg.codegenList([
 							wasm.local.get(0, cg.vm.reftypeNull.Value),
 							genConst(cg, 4.2),
@@ -1283,7 +1283,7 @@ test.suite('Opcode', () => {
 						{};
 					}`);
 					return assert.strictEqual(
-						binaryen.emitText(new AST.VisitorExprBuild(builder).visit((stmts[0] as AST.STMT.StatementExpression).expr!).codegen(cg)),
+						binaryen.emitText(new AST.ExprVisitorBuild(builder).visit((stmts[0] as AST.STMT.StatementExpression).expr!).codegen(cg)),
 						binaryen.emitText(cg.vm.Value.newComposite(cg.codegenMap())).replaceAll('$1', '$0'),
 					);
 				});
@@ -1293,7 +1293,7 @@ test.suite('Opcode', () => {
 						{x, 4.2, (null,), x/2, @e};
 					}`);
 					return assert.strictEqual(
-						binaryen.emitText(new AST.VisitorExprBuild(builder).visit((stmts[1] as AST.STMT.StatementExpression).expr!).codegen(cg)),
+						binaryen.emitText(new AST.ExprVisitorBuild(builder).visit((stmts[1] as AST.STMT.StatementExpression).expr!).codegen(cg)),
 						binaryen.emitText(cg.vm.Value.newComposite(cg.codegenSet([
 							wasm.local.get(0, cg.vm.reftype.Value),
 							genConst(cg, 4.2),
@@ -1325,7 +1325,7 @@ test.suite('Opcode', () => {
 					const id_d: bigint = Validator.cookTokenIdentifier('d');
 					const id_e: bigint = Validator.cookTokenIdentifier('e');
 					return assertEqualBins(
-						new AST.VisitorExprBuild(builder).visit((stmts[1] as AST.STMT.StatementExpression).expr!).codegen(cg),
+						new AST.ExprVisitorBuild(builder).visit((stmts[1] as AST.STMT.StatementExpression).expr!).codegen(cg),
 						cg.vm.Value.newComposite(cg.codegenRecord(new Map([
 							[id_a, cg.newProperty(id_a, wasm.local.get(0, cg.vm.reftype.Value))],
 							[id_b, cg.newProperty(id_b, genConst(cg, 4.2))],
@@ -1341,7 +1341,7 @@ test.suite('Opcode', () => {
 						(aa= true, c= null, a= 42);
 						(b= 42, bb= 4.2, bbb= null);
 					}`);
-					const expr_visitor = new AST.VisitorExprBuild(builder);
+					const expr_visitor = new AST.ExprVisitorBuild(builder);
 					const id_b:   bigint = Validator.cookTokenIdentifier('b');
 					const id_c:   bigint = Validator.cookTokenIdentifier('c');
 					const id_a:   bigint = Validator.cookTokenIdentifier('a');
@@ -1387,7 +1387,7 @@ test.suite('Opcode', () => {
 					const id_d: bigint = Validator.cookTokenIdentifier('d');
 					const id_e: bigint = Validator.cookTokenIdentifier('e');
 					return assertEqualBins(
-						new AST.VisitorExprBuild(builder).visit((stmts[1] as AST.STMT.StatementExpression).expr!).codegen(cg),
+						new AST.ExprVisitorBuild(builder).visit((stmts[1] as AST.STMT.StatementExpression).expr!).codegen(cg),
 						cg.vm.Value.newComposite(cg.codegenDict(new Map([
 							[id_a, cg.newProperty(id_a, wasm.local.get(0, cg.vm.reftype.Value))],
 							[id_b, cg.newProperty(id_b, genConst(cg, 4.2))],
@@ -1403,7 +1403,7 @@ test.suite('Opcode', () => {
 						[aa= true, c= null, a= 42];
 						[b= 42, c= 4.2, aaa= null];
 					}`);
-					const expr_visitor = new AST.VisitorExprBuild(builder);
+					const expr_visitor = new AST.ExprVisitorBuild(builder);
 					const id_b:   bigint = Validator.cookTokenIdentifier('b');
 					const id_c:   bigint = Validator.cookTokenIdentifier('c');
 					const id_a:   bigint = Validator.cookTokenIdentifier('a');
@@ -1443,7 +1443,7 @@ test.suite('Opcode', () => {
 						{1.1 -> x, 2.2 -> 4.2, 3.3 -> (null,), 4.4 -> x/2, 5.5 -> @e};
 					}`);
 					return assert.strictEqual(
-						binaryen.emitText(new AST.VisitorExprBuild(builder).visit((stmts[1] as AST.STMT.StatementExpression).expr!).codegen(cg)),
+						binaryen.emitText(new AST.ExprVisitorBuild(builder).visit((stmts[1] as AST.STMT.StatementExpression).expr!).codegen(cg)),
 						binaryen.emitText(cg.vm.Value.newComposite(cg.codegenMap(new Map([
 							[genConst(cg, 1.1), wasm.local.get(0, cg.vm.reftype.Value)],
 							[genConst(cg, 2.2), genConst(cg, 4.2)],
@@ -1499,7 +1499,7 @@ test.suite('Opcode', () => {
 
 			test.test('TupleHas', () => {
 				// there exists no syntax for Tuple has, so constructing it manually
-				const tuple = new AST.VisitorExprBuild(new Builder()).visit(AST.EXPR.Tuple.fromSource('(10, 20)'));
+				const tuple = new AST.ExprVisitorBuild(new Builder()).visit(AST.EXPR.Tuple.fromSource('(10, 20)'));
 				const cg    = new CodeGenerator();
 				const {vm: {reftype, Value}, mod: {wasm}} = cg;
 				xjs.Array.forEachAggregated([1n, 2n], (idx) => assertEqualBins(
@@ -1513,7 +1513,7 @@ test.suite('Opcode', () => {
 
 			test.test('RecordHas', () => {
 				// there exists no syntax for Record has, so constructing it manually
-				const record = new AST.VisitorExprBuild(new Builder()).visit(AST.EXPR.Record.fromSource('(a= 10, c= 20)'));
+				const record = new AST.ExprVisitorBuild(new Builder()).visit(AST.EXPR.Record.fromSource('(a= 10, c= 20)'));
 				const cg     = new CodeGenerator();
 				const {vm: {reftype, Value, Record}, mod: {wasm}} = cg;
 				return xjs.Array.forEachAggregated(['a', 'b'], (keysrc) => {
@@ -1745,7 +1745,7 @@ test.suite('Opcode', () => {
 						-(4.2);
 					}`, {codegen: false});
 					const {Value} = cg.vm;
-					const expr_visitor = new AST.VisitorExprBuild(builder);
+					const expr_visitor = new AST.ExprVisitorBuild(builder);
 					const id_hello = Validator.cookTokenIdentifier('hello');
 					return assertEqualBins(
 						stmts.map((stmt) => expr_visitor.visit((stmt as AST.STMT.StatementExpression).expr!).codegen(cg)),
@@ -1798,7 +1798,7 @@ test.suite('Opcode', () => {
 					}`);
 					const {reftype, Vect, Value, List} = cg.vm;
 					// there exists no syntax for List count, so constructing it manually
-					const list = new AST.VisitorExprBuild(builder).visit((stmts[2] as AST.STMT.StatementExpression).expr!) as OP.Get;
+					const list = new AST.ExprVisitorBuild(builder).visit((stmts[2] as AST.STMT.StatementExpression).expr!) as OP.Get;
 					const unop = new OP.Unop(OP.OpCode.LIST_COUNT, list, TYPE.NAT);
 					return assertEqualBins(
 						unop.codegen(cg),
@@ -1813,7 +1813,7 @@ test.suite('Opcode', () => {
 					}`);
 					const {reftype, Vect, Value, Dict} = cg.vm;
 					// there exists no syntax for Dict count, so constructing it manually
-					const dict = new AST.VisitorExprBuild(builder).visit((stmts[2] as AST.STMT.StatementExpression).expr!) as OP.Get;
+					const dict = new AST.ExprVisitorBuild(builder).visit((stmts[2] as AST.STMT.StatementExpression).expr!) as OP.Get;
 					const unop = new OP.Unop(OP.OpCode.DICT_COUNT, dict, TYPE.NAT);
 					return assertEqualBins(
 						unop.codegen(cg),
@@ -1828,7 +1828,7 @@ test.suite('Opcode', () => {
 					}`);
 					const {reftype, Vect, Value, Map: VmMap} = cg.vm;
 					// there exists no syntax for Set count, so constructing it manually
-					const set  = new AST.VisitorExprBuild(builder).visit((stmts[2] as AST.STMT.StatementExpression).expr!) as OP.Get;
+					const set  = new AST.ExprVisitorBuild(builder).visit((stmts[2] as AST.STMT.StatementExpression).expr!) as OP.Get;
 					const unop = new OP.Unop(OP.OpCode.SET_COUNT, set, TYPE.NAT);
 					return assertEqualBins(
 						unop.codegen(cg),
@@ -1843,7 +1843,7 @@ test.suite('Opcode', () => {
 					}`);
 					const {reftype, Vect, Value, Map: VmMap} = cg.vm;
 					// there exists no syntax for Map count, so constructing it manually
-					const map  = new AST.VisitorExprBuild(builder).visit((stmts[2] as AST.STMT.StatementExpression).expr!) as OP.Get;
+					const map  = new AST.ExprVisitorBuild(builder).visit((stmts[2] as AST.STMT.StatementExpression).expr!) as OP.Get;
 					const unop = new OP.Unop(OP.OpCode.MAP_COUNT, map, TYPE.NAT);
 					return assertEqualBins(
 						unop.codegen(cg),
@@ -1896,7 +1896,7 @@ test.suite('Opcode', () => {
 						z;
 					}`);
 					const {reftype, op} = cg.vm;
-					const expr_visitor = new AST.VisitorExprBuild(builder);
+					const expr_visitor = new AST.ExprVisitorBuild(builder);
 					// there exists no syntax for Result extract, so constructing it manually
 					return assertEqualBins([3, 4, 5].map((i) => new OP.Unop(
 						OP.OpCode.RESULT_EXTRACT,
@@ -1991,7 +1991,7 @@ test.suite('Opcode', () => {
 					2.0 === 3;
 					2.0 ==  3;
 				}`, {codegen: false});
-				const expr_visitor = new AST.VisitorExprBuild(builder);
+				const expr_visitor = new AST.ExprVisitorBuild(builder);
 				return assertEqualBins(
 					stmts.map((stmt) => expr_visitor.visit((stmt as AST.STMT.StatementExpression).expr!).codegen(cg)),
 					[
@@ -2032,7 +2032,7 @@ test.suite('Opcode', () => {
 					};
 				}`);
 				return assertEqualBins(
-					new AST.VisitorExprBuild(builder).visit((stmts[0] as AST.STMT.StatementExpression).expr!).codegen(cg),
+					new AST.ExprVisitorBuild(builder).visit((stmts[0] as AST.STMT.StatementExpression).expr!).codegen(cg),
 					cg.vm.Value.newComposite(cg.codegenFunction(3n)),
 				);
 			});
