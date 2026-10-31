@@ -1,9 +1,6 @@
 import * as assert from 'node:assert';
 import * as xjs from 'extrajs';
-import {
-	AssignmentErrorFunctionExit,
-	VisitorCompletion,
-} from '../../index.ts';
+import {AssignmentErrorFunctionExit} from '../../index.ts';
 import {
 	type NonemptyArray,
 	memoizeGetter,
@@ -22,6 +19,7 @@ import {
 	Goal,
 	STMT,
 	EXPR,
+	VisitorCompletion,
 } from './index.ts';
 import {CompletionKind} from './CompletionKind.ts';
 import {AstNode} from './AstNode.ts';

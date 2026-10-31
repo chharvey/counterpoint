@@ -14,3 +14,7 @@ export * from './Goal.ts';
 export * as TYPE from './type/index.ts';
 export * as EXPR from './expression/index.ts';
 export * as STMT from './statement/index.ts';
+
+export {VisitorCompletion} from './visitors/VisitorCompletion.ts';
+export {VisitorBuild} from './visitors/VisitorBuild.ts';
+export {VisitorExprBuild} from './visitors/VisitorExprBuild.ts';
