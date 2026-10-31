@@ -1,8 +1,8 @@
-import type * as EXPR from '../expression/index.ts';
+import type {AstNode} from '../index.ts';
 
 
 
-export function memoizePerExpr<ProtoThis extends object, Param extends EXPR.Expression, Return>(
+export function memoizePerNode<ProtoThis extends object, Param extends AstNode, Return>(
 	method:   (this: ProtoThis, arg: Param) => Return,
 	_context: ClassMethodDecoratorContext<ProtoThis, typeof method>,
 ): typeof method {

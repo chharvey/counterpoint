@@ -40,7 +40,7 @@ import {
 	bothFloats,
 	bothNumbers,
 } from './utils.ts';
-import {memoizePerExpr} from './decorators.ts';
+import {memoizePerNode} from './decorators.ts';
 import {AstNodeVisitorCompletion} from './AstNodeVisitorCompletion.ts';
 
 
@@ -49,17 +49,17 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 	private readonly astNodeVisitorCompletion = new AstNodeVisitorCompletion();
 
 
-	@memoizePerExpr
+	@memoizePerNode
 	public override visitConstant(expr: EXPR.Constant): TYPE.Type {
 		return expr.interpreterValue.toType();
 	}
 
-	@noopMethod(memoizePerExpr)
+	@noopMethod(memoizePerNode)
 	public override visitTemplate(_expr: EXPR.Template): TYPE.Type {
 		return TYPE.STR;
 	}
 
-	@memoizePerExpr
+	@memoizePerNode
 	public override visitVariable(expr: EXPR.Variable): TYPE.Type {
 		assert.ok(expr.validator.hasSymbol(expr.id), `Expected ${expr.source} (${expr.id}) to be in the symbol table.`);
 		const symbol: SymbolSchema = expr.validator.getSymbol(expr.id)!;
@@ -71,7 +71,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 		}
 	}
 
-	@memoizePerExpr
+	@memoizePerNode
 	public override visitTuple(expr: EXPR.Tuple): TYPE.Type {
 		if (expr.children.some((c) => this.visit(c).isBottomType)) {
 			return TYPE.NOTHING;
@@ -79,7 +79,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 		return TYPE.Tuple.fromTypes(expr.children.map((c) => this.visit(c)));
 	}
 
-	@memoizePerExpr
+	@memoizePerNode
 	public override visitRecord(expr: EXPR.Record): TYPE.Type {
 		if (expr.children.some((c) => this.visit(c.val).isBottomType)) {
 			return TYPE.NOTHING;
@@ -90,7 +90,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 		])));
 	}
 
-	@memoizePerExpr
+	@memoizePerNode
 	public override visitList(expr: EXPR.List): TYPE.Type {
 		if (expr.children.some((c) => this.visit(c).isBottomType)) {
 			return TYPE.NOTHING;
@@ -101,7 +101,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 		);
 	}
 
-	@memoizePerExpr
+	@memoizePerNode
 	public override visitDict(expr: EXPR.Dict): TYPE.Type {
 		if (expr.children.some((c) => this.visit(c.val).isBottomType)) {
 			return TYPE.NOTHING;
@@ -112,7 +112,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 		);
 	}
 
-	@memoizePerExpr
+	@memoizePerNode
 	public override visitSet(expr: EXPR.Set): TYPE.Type {
 		if (expr.children.some((c) => this.visit(c).isBottomType)) {
 			return TYPE.NOTHING;
@@ -123,7 +123,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 		);
 	}
 
-	@memoizePerExpr
+	@memoizePerNode
 	public override visitMap(expr: EXPR.Map): TYPE.Type {
 		if (expr.children.some((c) => this.visit(c.antecedents[0]).isBottomType || this.visit(c.consequent).isBottomType)) {
 			return TYPE.NOTHING;
@@ -135,7 +135,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 		);
 	}
 
-	@memoizePerExpr
+	@memoizePerNode
 	public override visitExprBlock(expr: EXPR.ExpressionBlock): TYPE.Type {
 		if (this.astNodeVisitorCompletion.visit(expr.block) !== CompletionKind.NORMAL) {
 			return TYPE.NOTHING;
@@ -155,7 +155,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 		return this.visit(last_expr);
 	}
 
-	@memoizePerExpr
+	@memoizePerNode
 	public override visitAccess(expr: EXPR.Access): TYPE.Type {
 		const base_type: TYPE.Type = this.visit(expr.base);
 		if (base_type.isBottomType) {
@@ -184,7 +184,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 		return entry.optional ? new TYPE.Maybe(entry.type) : entry.type;
 	}
 
-	@memoizePerExpr
+	@memoizePerNode
 	public override visitCall(expr: EXPR.Call): TYPE.Type {
 		if (!(expr.base instanceof EXPR.Variable)) {
 			throw new TypeErrorNotCallable(this.visit(expr.base), expr.base);
@@ -299,7 +299,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 		return return_type instanceof TYPE.ReferenceType ? return_type.mutableOf() : return_type;
 	}
 
-	@memoizePerExpr
+	@memoizePerNode
 	public override visitClaim(expr: EXPR.Claim): TYPE.Type {
 		const computed_type: TYPE.Type = this.visit(expr.operand);
 		const claimed_type:  TYPE.Type = expr.claimed_type.eval();
@@ -315,7 +315,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 		return claimed_type;
 	}
 
-	@memoizePerExpr
+	@memoizePerNode
 	public override visitOperationUnary(expr: EXPR.OperationUnary): TYPE.Type {
 		const t: TYPE.Type = this.visit(expr.operand);
 		if (t.isBottomType) {
@@ -344,7 +344,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 		}
 	}
 
-	@memoizePerExpr
+	@memoizePerNode
 	public override visitOperationBinaryCast(expr: EXPR.OperationBinaryCast): TYPE.Type {
 		const t0: TYPE.Type = this.visit(expr.operand0);
 		if (t0.isBottomType) {
@@ -393,7 +393,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 		}
 	}
 
-	@memoizePerExpr
+	@memoizePerNode
 	public override visitOperationBinaryArithmetic(expr: EXPR.OperationBinaryArithmetic): TYPE.Type {
 		const [t0, t1]: readonly TYPE.Type[] = expr.children.map((operand) => this.visit(operand));
 		if (t0.isBottomType || t1.isBottomType) {
@@ -407,7 +407,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 		);
 	}
 
-	@memoizePerExpr
+	@memoizePerNode
 	public override visitOperationBinaryComparative(expr: EXPR.OperationBinaryComparative): TYPE.Type {
 		const [t0, t1]: readonly TYPE.Type[] = expr.children.map((operand) => this.visit(operand));
 		if (t0.isBottomType || t1.isBottomType) {
@@ -419,7 +419,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 		);
 	}
 
-	@memoizePerExpr
+	@memoizePerNode
 	public override visitOperationBinaryEquality(expr: EXPR.OperationBinaryEquality): TYPE.Type {
 		const [t0, t1]: readonly TYPE.Type[] = expr.children.map((operand) => this.visit(operand));
 		if (t0.isBottomType || t1.isBottomType) {
@@ -450,7 +450,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 		}
 	}
 
-	@memoizePerExpr
+	@memoizePerNode
 	public override visitOperationBinaryLogical(expr: EXPR.OperationBinaryLogical): TYPE.Type {
 		const [t0, t1]: readonly TYPE.Type[] = expr.children.map((operand) => this.visit(operand));
 		if (t0.isBottomType) {
@@ -474,7 +474,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 		}
 	}
 
-	@memoizePerExpr
+	@memoizePerNode
 	public override visitOperationTernary(expr: EXPR.OperationTernary): TYPE.Type {
 		const [t0, t1, t2]: readonly TYPE.Type[] = expr.children.map((operand) => this.visit(operand));
 		if (!t0.isSubtypeOf(TYPE.BOOL)) {
@@ -488,7 +488,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 		);
 	}
 
-	@memoizePerExpr
+	@memoizePerNode
 	public override visitSwitch(expr: EXPR.Switch): TYPE.Type {
 		return this.visit(expr.value).isBottomType
 			? TYPE.NOTHING
@@ -499,7 +499,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 	}
 
 
-	@memoizePerExpr
+	@memoizePerNode
 	public override visitFunction(expr: EXPR.Function): TYPE.Type {
 		return this.visitFunctionlike(expr);
 	}
