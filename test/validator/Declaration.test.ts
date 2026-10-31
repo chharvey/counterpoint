@@ -13,6 +13,7 @@ import {
 	AssignmentErrorDuplicateDeclaration,
 	AssignmentErrorMissingType,
 	TypeErrorNotAssignable,
+	TypeErrorAmbiguousOverload,
 } from '../../src/index.ts';
 import {
 	extract_lines,
@@ -181,16 +182,22 @@ test.suite('Declaration', () => {
 					func _(a: int): void { return; };
 				}`, {typeCheck: false}); // assert does not throw
 			});
-			test.test('does not var-check function names.', () => {
+			test.test('hoists function names.', () => {
+				const errmsg = /Only function names should be hoisted/;
 				const {stmts} = setupScript(`{
-					func f(): void { return; };
-					func f(a: int): void { return; };
+					func f(): void { return; }
+					func f(a: int): void { return; }
 					type T = \\(int) => void;
-					func T(a: int): void { return; };
+					func T(a: int): void { return; }
 					val x = \\(): void { return; };
-					func x(a: int): void { return; };
+					func x(a: int): void { return; }
 				}`, {varCheck: false});
-				xjs.Array.forEachAggregated(stmts, (stmt) => stmt.varCheck()); // assert does not throw
+				stmts[0].varCheck();
+				stmts[1].varCheck(); // allows overloads
+				stmts[2].varCheck();
+				assert.throws(() => stmts[3].varCheck(), errmsg);
+				stmts[4].varCheck();
+				return assert.throws(() => stmts[5].varCheck(), errmsg);
 			});
 			test.test('allows self-reference, but not self-shadowing.', () => {
 				setupScript(`{
@@ -671,7 +678,7 @@ test.suite('Declaration', () => {
 					func f(b: int): void { "2"; return; }
 				}`, {typeCheck: false});
 				stmts[0].typeCheck(); // assert does not throw
-				return assert.throws(() => stmts[1].typeCheck(), /Identical function overload type/);
+				return assert.throws(() => stmts[1].typeCheck(), TypeErrorAmbiguousOverload);
 			});
 		});
 	});

@@ -69,12 +69,10 @@ class TypeRecord extends ValueType {
 			this.minCount >= (t as TypeRecord).minCount &&
 			[...(t as TypeRecord).typeargs].every(([id, thattype]) => {
 				const thistype: EntryType | undefined = this.typeargs.get(id);
-				if (!thattype.optional) {
-					/* NOTE: We *cannot* assert `thistype` exists and is not optional since properties are not ordered.
-						We can however make the assertion in tuple types because of item ordering. */
-					if (thistype?.optional !== false) {
-						return false;
-					}
+				/* NOTE: We *cannot* assert `thistype` exists and is not optional since properties are not ordered.
+					We can however make the assertion in tuple types because of item ordering. */
+				if (!thattype.optional && thistype?.optional !== false) {
+					return false;
 				}
 				return thistype?.type.isSubtypeOf(thattype.type) ?? true; // Covariance for records: `A <: B --> Record.<A> <: Record.<B>`.
 			})

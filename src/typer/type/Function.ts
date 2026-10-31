@@ -70,8 +70,7 @@ class TypeFunction extends ReferenceType {
 		const this_return: Type | undefined = this.typearg_return;
 		const that_return: Type | undefined = (t as TypeFunction).typearg_return;
 		return (
-			(t as TypeFunction).typeargParamsPosit.isSubtypeOf(this.typeargParamsPosit) &&
-			(t as TypeFunction).typeargParamsNamed.isSubtypeOf(this.typeargParamsNamed) &&
+			(t as TypeFunction).isMoreSpecificThan(this) &&
 			(
 				!this_return && !that_return ||
 				!!that_return && !!this_return?.isSubtypeOf(that_return)
@@ -81,6 +80,23 @@ class TypeFunction extends ReferenceType {
 
 	public override mutableOf(): Type {
 		return this;
+	}
+
+	/**
+	 * A function type F1 is “more specific than” another function type F2 iff:
+	 * for every parameter entry `p2` in `F2`, there exists a corresponsding parameter entry `p1` in `F1`
+	 * such that `p1.type.isSubtypeOf(p2.type)`.
+	 * This is used when validating and dispatching function overloads.
+	 * @param t the function type to check
+	 * @return  true if this is “more specific than” the argument
+	 */
+	@strictEqual
+	@memoizeBinOp()
+	public isMoreSpecificThan(t: TypeFunction): boolean {
+		return (
+			this.typeargParamsPosit.isSubtypeOf(t.typeargParamsPosit) &&
+			this.typeargParamsNamed.isSubtypeOf(t.typeargParamsNamed)
+		);
 	}
 }
 export {TypeFunction as Function};

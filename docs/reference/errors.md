@@ -82,6 +82,7 @@ An assignment error is raised when the compiler detects an illegal declaration o
 1. [2210](#2210-assignmenterrorreassignment)         — A reassignment of a read-only variable was attempted.
 1. [2211](#2211-assignmenterrordeletion)             — A deletion of a non-optional variable was attempted.
 1. [2220](#2220-assignmenterrormissingtype)          — A symbol was declared without a type annotation and initialized to a value ineligible for type inference.
+1. [2230](#2230-assignmenterrorfunctionexit)         — A function was declared without a proper exit.
 
 #### 2201: AssignmentErrorDuplicateDeclaration
 Cause: A duplicate declaration was encountered.
@@ -132,17 +133,30 @@ class Foo {
 ```
 Solution(s): Add an explicit type annotation, update the symbol’s initializer to be eligible for type inference, or remove the declaration.
 
+#### 2230: AssignmentErrorFunctionExit
+Cause: Not every control route in a function body exits the function.
+```cpl
+func f(b: bool): str {
+	if b then {
+		return "true";
+	};
+	% AssignmentErrorFunctionExit: Function does not exit in every control route.
+}
+```
+Solution(s): Ensure every code path contains an explicit return or panic statement.
+
 
 ### Type Errors (23xx)
 A type error is raised when the compiler recognizes a type mismatch.
 
-1.  2300                                   — A general type error not covered by one of the following cases.
-1. [2301](#2301-typeerrorinvalidoperation) — The validator encountered an operation with an invalid operand.
-1. [2302](#2302-typeerrornotnarrow)        — One type is expected to be a subtype of another, but is not.
-1. [2303](#2303-typeerrornotassignable)    — An expression was assigned to a type to which it is not assignable.
-1. [2304](#2304-typeerrornoentry)          — The validator encountered a non-existent index/property/argument access.
-1. [2305](#2305-typeerrornotcallable)      — The validator encountered an attempt to call a non-callable object.
-1. [2306](#2306-typeerrorargcount)         — An incorrect number of arguments was passed to a callable object.
+1.  2300                                    — A general type error not covered by one of the following cases.
+1. [2301](#2301-typeerrorinvalidoperation)  — The validator encountered an operation with an invalid operand.
+1. [2302](#2302-typeerrornotnarrow)         — One type is expected to be a subtype of another, but is not.
+1. [2303](#2303-typeerrornotassignable)     — An expression was assigned to a type to which it is not assignable.
+1. [2304](#2304-typeerrornoentry)           — The validator encountered a non-existent index/property/argument access.
+1. [2305](#2305-typeerrornotcallable)       — The validator encountered an attempt to call a non-callable object.
+1. [2306](#2306-typeerrorargcount)          — An incorrect number of arguments was passed to a callable object.
+1. [2307](#2307-typeerroramgiguousoverload) — Function overloads are incompatible.
 
 #### 2301: TypeErrorInvalidOperation
 Cause: An invalid operation was performed.
@@ -186,6 +200,23 @@ x.(24);          % TypeErrorNotCallable: Type `int` is not callable.
 ```
 Solution(s): Callable objects are limited to functions, generic type aliases, and generic type functions.
 
+#### 2306: TypeErrorAmbiguousOverload
+Cause: Identical function overloads were declared.
+```cpl
+func f(s: str): bool => true;
+func f(s: str): int  => 42; % TypeErrorAmbiguousOverload: Duplicate function overload declared.
+```
+Solution(s): Ensure that function parameter types differ in some way.
+
+Cause: A function call is not compatible with any declared function overloads,
+or is compatible with several.
+```cpl
+func g(a: Animal, b: Cat): void { return; }
+func g(a: Cat, b: Animal): void { return; }
+g(Cat(), Cat()); % TypeErrorAmbiguousOverload: No overload matches this call.
+```
+Solution(s): Arguments to a function call must match exactly one overload.
+
 #### 2306: TypeErrorArgCount
 Cause: A function or generic call was given an incorrect number of arguments.
 ```cpl
@@ -196,18 +227,6 @@ func x(y: int): int => y + 42;
 x.(2, 4);                      % TypeErrorArgCount: Got 2 arguments, but expected 1.
 ```
 Solution(s): Pass in an expected number of arguments.
-
-#### 2307: TypeErrorFunctionExit
-Cause: Not every control route in a function body exits the function.
-```cpl
-func f(b: bool): str {
-	if b then {
-		return "true";
-	};
-	% TypeErrorFunctionExit: Function does not exit in every control route.
-}
-```
-Solution(s): Ensure every code path contains an explicit return or panic statement.
 
 
 ### Mutability Errors (24xx)
