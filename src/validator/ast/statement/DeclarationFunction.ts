@@ -1,10 +1,11 @@
 import * as assert from 'node:assert';
+import {TypeErrorAmbiguousOverload} from '../../../index.ts';
 import {assert_instanceof} from '../../../lib/index.ts';
 import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../../core/index.ts';
-import type {TYPE} from '../../../typer/index.ts';
+import {TYPE} from '../../../typer/index.ts';
 import type {Serializable} from '../../../parser/index.ts';
 import {SymbolSchemaFunc} from '../../index.ts';
 import type {SyntaxNodeType} from '../../utils-private.ts';
@@ -65,12 +66,13 @@ export class DeclarationFunction extends Statement implements Functionlike {
 	public override typeCheck(): void {
 		super.typeCheck();
 		const fn_type: TYPE.Type = EXPR.Function.prototype.type.call(this);
+		assert_instanceof(fn_type, TYPE.Function);
 		if (this.identifier) {
 			assert.ok(this.validator.hasSymbol(this.id!), `The validator symbol table should include ${this.id}.`);
 			const schema = this.validator.getSymbol(this.id!) as SymbolSchemaFunc;
-			if (schema.types.find((t) => t.equals(fn_type))) {
+			if (schema.types.find((t) => fn_type === t || t instanceof TYPE.Function && fn_type.isMoreSpecificThan(t) && t.isMoreSpecificThan(fn_type))) {
 				// if there exists an identically-typed overload, as static dispatch won’t know which one to choose
-				throw new TypeError(`Identical function overload type: \`${fn_type}\`.`); // TODO: new error type
+				throw new TypeErrorAmbiguousOverload(this);
 			} else {
 				schema.types.push(fn_type);
 			}

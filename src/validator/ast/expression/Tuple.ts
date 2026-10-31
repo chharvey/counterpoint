@@ -10,7 +10,6 @@ import {
 	CONFIG_DEFAULT,
 } from '../../../core/index.ts';
 import {TYPE} from '../../../typer/index.ts';
-import type {EntryType} from '../../../typer/index.ts';
 import type {SyntaxNodeFamily} from '../../utils-private.ts';
 import {typecheck_assign} from '../AstNode.ts';
 import {Expression} from './Expression.ts';
@@ -29,14 +28,12 @@ class ExpressionTuple extends Collection {
 	}
 
 	public static assignExprsToTupleType(expressions: readonly Expression[], assignee: TYPE.Tuple): void {
-		assignee.typeargs.forEach((entry, i) => { // using `Array#forEach` instead of `xjs.Array.forEachAggregated` to short-circuit
+		return xjs.Array.forEachAggregated(assignee.typeargs, (entry, i) => {
+			const expr: Expression | undefined = expressions.at(i);
 			/* NOTE: We can assert the item exists because of item ordering.
 				We cannot do so with records since properties are not ordered. */
-			entry.optional || assert.ok(expressions[i]);
-		});
-		return xjs.Array.forEachAggregated(expressions, (expr, i) => {
-			const thatentry: EntryType | undefined = assignee.typeargs.at(i);
-			return thatentry && typecheck_assign(expr, thatentry.type, expr);
+			entry.optional || assert.ok(expr);
+			return expr && typecheck_assign(expr, entry.type, expr);
 		});
 	}
 

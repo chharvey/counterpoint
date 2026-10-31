@@ -12,10 +12,7 @@ import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../../core/index.ts';
-import {
-	type EntryType,
-	TYPE,
-} from '../../../typer/index.ts';
+import {TYPE} from '../../../typer/index.ts';
 import type {SyntaxNodeFamily} from '../../utils-private.ts';
 import {check_unique_keys} from '../utils-private.ts';
 import {typecheck_assign} from '../AstNode.ts';
@@ -36,16 +33,14 @@ class ExpressionRecord extends Collection {
 	}
 
 	public static assignPropsToRecordType(properties: readonly Property[], assignee: TYPE.Record, err: CplTypeError): void {
-		assignee.typeargs.forEach((entry, key) => { // using `Array#forEach` instead of `xjs.Array.forEachAggregated` to short-circuit
+		return xjs.Map.forEachAggregated(assignee.typeargs, (entry, key) => {
+			const prop: Property | undefined = properties.find((p) => p.key.id === key);
 			/* NOTE: We *cannot* assert the property exists since properties are not ordered.
 				We can however make the assertion in tuples because of item ordering. */
-			if (!entry.optional && !properties.find((prop) => prop.key.id === key)) {
+			if (!entry.optional && !prop) {
 				throw err;
 			}
-		});
-		return xjs.Array.forEachAggregated(properties, (prop) => {
-			const thatentry: EntryType | undefined = assignee.typeargs.get(prop.key.id);
-			return thatentry && typecheck_assign(prop.val, thatentry.type, prop);
+			return prop && typecheck_assign(prop.val, entry.type, prop);
 		});
 	}
 

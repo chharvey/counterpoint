@@ -14,7 +14,7 @@ import {
 	AssignmentErrorReassignment,
 	TypeErrorInvalidOperation,
 	TypeErrorNotAssignable,
-	TypeErrorFunctionExit,
+	AssignmentErrorFunctionExit,
 } from '../../src/index.ts';
 import {
 	repeat,
@@ -336,11 +336,11 @@ test.suite('AstNode', () => {
 				const block0:  AST.Block = (stmts[0] as AST.STMT.DeclarationFunction).block;
 				const block1a: AST.Block = (fn1.block.children[0] as AST.STMT.StatementConditional).consequent;
 				const block1b: AST.Block = (fn1.block.children[0] as AST.STMT.StatementConditional).alternative as AST.Block;
-				assert.throws(() => block0.typeCheck(), TypeErrorFunctionExit);
+				assert.throws(() => block0.typeCheck(), AssignmentErrorFunctionExit);
 				xjs.Array.forEachAggregated(fn1.parameters, (p) => p.typeCheck());
 				block1a.typeCheck(); // assert does not throw
 				block1b.typeCheck(); // assert does not throw
-				return assert.throws(() => fn1.block.typeCheck(), TypeErrorFunctionExit);
+				return assert.throws(() => fn1.block.typeCheck(), AssignmentErrorFunctionExit);
 			});
 			test.test('throws when not all code paths return.', () => {
 				const {stmts} = setupScript(`{
@@ -396,7 +396,7 @@ test.suite('AstNode', () => {
 				return xjs.Array.forEachAggregated([
 					...stmts.slice(0, 5).map((stmt) => (stmt as AST.STMT.StatementExpression).expr as AST.EXPR.Function),
 					...stmts.slice(5).map((stmt) => stmt as AST.STMT.DeclarationFunction),
-				], (fn) => assert.throws(() => fn.typeCheck(), TypeErrorFunctionExit));
+				], (fn) => assert.throws(() => fn.typeCheck(), AssignmentErrorFunctionExit));
 			});
 		});
 	});
