@@ -1,10 +1,14 @@
 import * as assert from 'node:assert';
+import {memoizeMethod} from '../../../lib/index.ts';
 import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../../core/index.ts';
 import type {TYPE} from '../../../typer/index.ts';
-import {STMT} from '../index.ts';
+import {
+	STMT,
+	VisitorExprType,
+} from '../index.ts';
 import {AstNode} from '../AstNode.ts';
 import {
 	Constant,
@@ -137,6 +141,11 @@ export abstract class Expression extends AstNode {
 	/**
 	 * The Type of this expression.
 	 * @return the compile-time type of this node
+	 * @final
+	 * @deprecated TODO: migrate to VisitorExprType
 	 */
-	public abstract type(): TYPE.Type;
+	@memoizeMethod
+	public type(): TYPE.Type {
+		return new VisitorExprType().visit(this);
+	}
 }

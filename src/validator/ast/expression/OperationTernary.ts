@@ -1,13 +1,8 @@
-import {TypeErrorInvalidOperation} from '../../../index.ts';
-import {
-	assert_instanceof,
-	memoizeMethod,
-} from '../../../lib/index.ts';
+import {assert_instanceof} from '../../../lib/index.ts';
 import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../../core/index.ts';
-import {TYPE} from '../../../typer/index.ts';
 import type {SyntaxNodeFamily} from '../../utils-private.ts';
 import type {Operator} from '../../Operator.ts';
 import {Expression} from './Expression.ts';
@@ -30,19 +25,5 @@ export class OperationTernary extends Operation {
 		public readonly operand2: Expression,
 	) {
 		super(start_node, operator, [operand0, operand1, operand2]);
-	}
-
-	@memoizeMethod
-	public override type(): TYPE.Type {
-		const [t0, t1, t2]: readonly TYPE.Type[] = this.children.map((operand) => operand.type());
-		if (!t0.isSubtypeOf(TYPE.BOOL)) {
-			throw new TypeErrorInvalidOperation(this);
-		}
-		return (
-			t0.isBottomType       ? TYPE.NOTHING :
-			t0.equals(TYPE.FALSE) ? t2 : // If `typeof a` is `false`, then `typeof (if a then b else c)` is `typeof c`.
-			t0.equals(TYPE.TRUE)  ? t1 : // If `typeof a` is `true`,  then `typeof (if a then b else c)` is `typeof b`.
-			t1.union(t2)
-		);
 	}
 }

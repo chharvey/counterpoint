@@ -1,4 +1,3 @@
-import * as assert from 'node:assert';
 import {
 	ReferenceErrorUndeclared,
 	ReferenceErrorKind,
@@ -11,13 +10,11 @@ import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../../core/index.ts';
-import {TYPE} from '../../../typer/index.ts';
+import type {TYPE} from '../../../typer/index.ts';
 import {
 	SymbolKind,
-	type SymbolSchema,
 	SymbolSchemaType,
-	SymbolSchemaVar,
-	SymbolSchemaFunc,
+	type SymbolSchemaVar,
 } from '../../index.ts';
 import type {SyntaxNodeType} from '../../utils-private.ts';
 import {Validator} from '../../Validator.ts';
@@ -49,18 +46,6 @@ export class Variable extends Expression implements Reassignable {
 		if (this.validator.getSymbol(this.id) instanceof SymbolSchemaType) {
 			throw new ReferenceErrorKind(this, SymbolKind.TYPE, SymbolKind.VALUE);
 			// TODO: When Type objects are allowed as runtime values, this should be removed and checked by the type checker (`this#typeCheck`).
-		}
-	}
-
-	@memoizeMethod
-	public override type(): TYPE.Type {
-		assert.ok(this.validator.hasSymbol(this.id), `Expected ${this.source} (${this.id}) to be in the symbol table.`);
-		const symbol: SymbolSchema = this.validator.getSymbol(this.id)!;
-		if (symbol instanceof SymbolSchemaVar) {
-			return symbol.isUninitialized ? new TYPE.Maybe(symbol.type) : symbol.type;
-		} else {
-			assert_instanceof(symbol, SymbolSchemaFunc);
-			return TYPE.Intersection.all(...symbol.types);
 		}
 	}
 

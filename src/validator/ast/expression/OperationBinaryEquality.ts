@@ -1,17 +1,10 @@
-import {
-	assert_instanceof,
-	memoizeMethod,
-} from '../../../lib/index.ts';
+import {assert_instanceof} from '../../../lib/index.ts';
 import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../../core/index.ts';
-import {TYPE} from '../../../typer/index.ts';
 import type {SyntaxNodeSupertype} from '../../utils-private.ts';
-import {
-	Operator,
-	type ValidOperatorEquality,
-} from '../../Operator.ts';
+import type {ValidOperatorEquality} from '../../Operator.ts';
 import {Expression} from './Expression.ts';
 import {OperationBinary} from './OperationBinary.ts';
 
@@ -31,36 +24,5 @@ export class OperationBinaryEquality extends OperationBinary {
 		operand1: Expression,
 	) {
 		super(start_node, operator, operand0, operand1);
-	}
-
-	@memoizeMethod
-	public override type(): TYPE.Type {
-		const [t0, t1]: readonly TYPE.Type[] = this.children.map((operand) => operand.type());
-		if (t0.isBottomType || t1.isBottomType) {
-			return TYPE.NOTHING;
-		}
-		const DISJOINT_TYPES = t0.isDisjointWith(t1);
-		switch (this.operator) {
-			case Operator.ID: {
-				/*
-				 * Identity:
-				 * - If      the types of `a` and `b` are disjoint, then `a === b` will always evaluate to false.
-				 * - Else if the types of `a` and `b` intersect,    then `a === b` could evaluate to true.
-				 */
-				return DISJOINT_TYPES ? TYPE.FALSE : TYPE.BOOL;
-			}
-			case Operator.EQ: {
-				/*
-				 * Equality:
-				 * - If the types of `a` and `b` are disjoint,
-				 * 	*and* any of `a` or `b` is disjoint with the Number type (it cannot contain numbers),
-				 * 	then `a == b` will always evaluate to false.
-				 * - Else if the types of `a` and `b` intersect,
-				 * 	*or* both `a` and `b` intersect with the Number type (they both might contain numbers),
-				 * 	then `a == b` could evaluate to true.
-				 */
-				return DISJOINT_TYPES && [t0, t1].some((t) => t.isDisjointWith(TYPE.NUMBER)) ? TYPE.FALSE : TYPE.BOOL;
-			}
-		}
 	}
 }

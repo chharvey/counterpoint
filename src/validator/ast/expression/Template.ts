@@ -1,12 +1,8 @@
-import {
-	assert_instanceof,
-	memoizeMethod,
-} from '../../../lib/index.ts';
+import {assert_instanceof} from '../../../lib/index.ts';
 import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../../core/index.ts';
-import {TYPE} from '../../../typer/index.ts';
 import type {SyntaxNodeFamily} from '../../utils-private.ts';
 import {Expression} from './Expression.ts';
 import type {Constant} from './Constant.ts';
@@ -31,10 +27,5 @@ export class Template extends Expression {
 			| readonly Expression[],
 	) {
 		super(start_node, {}, children);
-	}
-
-	@memoizeMethod
-	public override type(): TYPE.Type {
-		return TYPE.STR;
 	}
 }
