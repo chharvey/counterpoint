@@ -83,7 +83,6 @@ export class VisitorBuild extends AstNodeVisitor<void> {
 		return this.builder.validate();
 	}
 
-
 	@runOncePerNode
 	public override visitDeclVariable(stmt: STMT.DeclarationVariable): void {
 		const symbol: SymbolSchemaVar | undefined = stmt.assignee ? stmt.validator.getSymbol(stmt.id!) as SymbolSchemaVar : undefined;
@@ -278,7 +277,7 @@ export class VisitorBuild extends AstNodeVisitor<void> {
 		return this.builder.initiateBlock(this.builder.newLabel(true));
 	}
 
-	public override defaultVisit(_stmt: STMT.Statement): void {
+	public override defaultVisit(_node: AstNode): void {
 		return;
 	}
 }

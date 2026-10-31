@@ -17,21 +17,13 @@ import {Index} from '../Index-.ts';
 import {Key} from '../Key.ts';
 import * as EXPR from '../expression/index.ts';
 import type * as STMT from '../statement/index.ts';
+import {
+	bothInts,
+	bothNats,
+	bothFloats,
+} from './utils.ts';
+import {memoizePerExpr} from './decorators.ts';
 import {VisitorBuild} from './VisitorBuild.ts';
-
-
-
-function memoizePerExpr<ProtoThis extends object, Param extends EXPR.Expression, Return>(
-	method:   (this: ProtoThis, arg: Param) => Return,
-	_context: ClassMethodDecoratorContext<ProtoThis, typeof method>,
-): typeof method {
-	const memomap = new WeakMap<Param, Return>();
-	return function (arg) {
-		// TODO: Map#getOrInsertComputed
-		memomap.has(arg) || memomap.set(arg, method.call(this, arg));
-		return memomap.get(arg)!;
-	};
-}
 
 
 
@@ -273,18 +265,6 @@ export class VisitorExprBuild extends EXPR.ExprVisitor<OP.Value> {
 
 	@memoizePerExpr
 	public override visitOperationBinaryArithmetic(expr: EXPR.OperationBinaryArithmetic): OP.Value {
-		// TODO: move these functions to utils
-		function bothInts(t0: TYPE.Type, t1: TYPE.Type): boolean {
-			return t0.isSubtypeOf(TYPE.INT) && t1.isSubtypeOf(TYPE.INT);
-		}
-
-		function bothNats(t0: TYPE.Type, t1: TYPE.Type): boolean {
-			return t0.isSubtypeOf(TYPE.NAT) && t1.isSubtypeOf(TYPE.NAT);
-		}
-
-		function bothFloats(t0: TYPE.Type, t1: TYPE.Type): boolean {
-			return t0.isSubtypeOf(TYPE.FLOAT) && t1.isSubtypeOf(TYPE.FLOAT);
-		}
 		const typ: TYPE.Type = expr.type();
 		const [t0, t1] = [expr.operand0.type(),                          expr.operand1.type()];
 		const [v0, v1] = [this.visit(expr.operand0).asTac(this.builder), this.visit(expr.operand1).asTac(this.builder)];
