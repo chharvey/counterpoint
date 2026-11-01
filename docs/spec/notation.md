@@ -433,11 +433,22 @@ the name of the algorithm in its header.
 If an algorithm outputs a normal CompletionSchema without a \`value\`,
 the output type is specified as [Nil](./types-values.md#nil).
 
-If an algorithm outputs an *abrupt* completion, its \`value\`, if it exists,
-though it is still included in the returned CompletionSchema, is *not* indicated in the output type,
-however, an exclamation point `!` is appended to the return type.
+When a question mark `?` is appended to an algorithm’s return type,
+it indcates that the algorithm may output normal completions sometimes with values and sometimes without.
+A completion without a value is equivalent to a completion with a value of *nil*.
+For example, an algorithm with return type `Boolean?` will return a normal completion with
+a \`value\` of type `Boolean`, or a *nil* \`value\` (or no \`value\` at all).
+
+When an exclamation point `!` is appended to an algorithm’s retun type,
+it indicates that the algorithm may output an *abrupt* completion.
+Its \`value\` (if it exists), though still included in the returned CompletionSchema,
+is *not* indicated in the output type.
 For example, an algorithm with return type `Boolean!` will return a normal completion with
 a \`value\` of type `Boolean`, or an abrupt completion.
+
+An algorithm’s return type `‹T›?!` indicates the algorithm may output
+normal completions with/without values of type `‹T›`, as well as abrupt completions.
+The notation `‹T›!?` is not used in this specification.
 
 Algorithm steps may include substeps, which are formatted by an additional indentation level.
 Substeps may include their own “subsubsteps”, and so on, with each level corresponding to a new indentation.

@@ -1088,7 +1088,7 @@ test.suite('Opcode', () => {
 						return;
 					};
 				}`, {codegen: false});
-				const typ: TYPE.Type = (stmts[0] as AST.STMT.StatementExpression).expr!.type;
+				const typ: TYPE.Type | null = (stmts[0] as AST.STMT.StatementExpression).expr!.type;
 				assert_instanceof(typ, TYPE.Function);
 				return assert.deepStrictEqual(
 					(builder.instructions[0] as OP.Drop).value.interpret(new Interpreter()),
