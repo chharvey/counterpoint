@@ -92,7 +92,6 @@ export class AstNodeVisitorBuild extends AstNodeVisitor<void> {
 			stmt.captures   .forEach((capt)  => this.visit(capt));
 			stmt.parameters .forEach((param) => this.visit(param));
 			this.visit(stmt.block);
-			this.builder.pushInstruction(new OP.Drop(new OP.Trap()));
 			this.builder.terminateBlock(new OP.EndProgram());
 			return this.builder.initiateBlock(label_endfunc);
 		}
@@ -256,8 +255,10 @@ export class AstNodeVisitorBuild extends AstNodeVisitor<void> {
 	@runOncePerNode
 	public override visitStmtReturn(stmt: STMT.StatementReturn): void {
 		if (stmt.expression) {
-			const expr_build: OP.ValueTac = this.#exprVisitorBuild.visit(stmt.expression).asTac(this.builder);
-			this.builder.pushInstruction(new OP.Return(!stmt.panic, expr_build));
+			this.builder.pushInstruction(new OP.Return(
+				!stmt.panic,
+				this.#exprVisitorBuild.visit(stmt.expression).asTac(this.builder),
+			));
 		}
 		this.builder.terminateBlock(new OP.Goto('caller'));
 		return this.builder.initiateBlock(this.builder.newLabel(true));
