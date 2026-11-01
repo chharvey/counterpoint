@@ -105,7 +105,6 @@ test.suite('AstNodeVisitorBuild#visit', () => {
 					(SET y (FLOAT.CONST 5.2))
 					(GOTO "caller")
 				"unreachable-3":
-					(DROP (TRAP))
 					(ENDPROGRAM)
 				"block-2":
 					(ENDPROGRAM)
@@ -129,7 +128,6 @@ test.suite('AstNodeVisitorBuild#visit', () => {
 					(GOTO "caller")
 				"unreachable-3":
 					(DROP (INT.CONST 42))
-					(DROP (TRAP))
 					(ENDPROGRAM)
 				"block-2":
 					(ENDPROGRAM)
@@ -166,7 +164,6 @@ test.suite('AstNodeVisitorBuild#visit', () => {
 					(GOTO "block-5")
 				"block-5":
 					(DROP (INT.CONST 46))
-					(DROP (TRAP))
 					(ENDPROGRAM)
 				"block-2":
 					(ENDPROGRAM)
@@ -206,7 +203,6 @@ test.suite('AstNodeVisitorBuild#visit', () => {
 					(GOTO "block-5")
 				"block-5":
 					(DROP (INT.CONST 46))
-					(DROP (TRAP))
 					(ENDPROGRAM)
 				"block-2":
 					(ENDPROGRAM)
