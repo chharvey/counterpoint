@@ -2744,7 +2744,7 @@ test.suite('Opcode', () => {
 			});
 
 			test.test('Return returns (return).', () => {
-				const {stmts, builder, cg, wasm, visitorBuild: visitor_build} = setupScript(`{
+				const {stmts, builder, cg, wasm, visitors} = setupScript(`{
 					\\(): anything => null;
 					\\(): anything => false;
 					\\(): anything => @hello;
@@ -2753,8 +2753,8 @@ test.suite('Opcode', () => {
 					panic Exception.("hello");
 				}`, {build: false});
 				const {heaptype, reftype} = cg.vm;
-				stmts.slice(0, 5).forEach((stmt) => visitor_build.visit(((stmt as AST.STMT.StatementExpression).expr as AST.EXPR.Function).block.children[0]));
-				visitor_build.visit(stmts[5]);
+				stmts.slice(0, 5).forEach((stmt) => visitors.build.visit(((stmt as AST.STMT.StatementExpression).expr as AST.EXPR.Function).block.children[0]));
+				visitors.build.visit(stmts[5]);
 				builder.instructions.map((instr) => instr.codegen(cg));
 				const ref_null_Exception: binaryen.ExpressionRef = wasm.ref.null(heaptype.Exception);
 				return assertEqualBins(

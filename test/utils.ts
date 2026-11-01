@@ -261,13 +261,15 @@ export function setupScript(
 	source: string,
 	opts:   {varCheck?: boolean, typeCheck?: boolean, build?: boolean, codegen?: boolean} = {},
 ): {
-	readonly goal:         AST.Goal,
-	readonly stmts:        AST.Block['children'],
-	readonly builder:      Builder,
-	readonly cg:           CodeGenerator,
-	readonly wasm:         binaryen.ExpressionBuilder,
-	readonly visitorBuild: AST.AstNodeVisitorBuild,
-	readonly visitors:     {readonly typeCheck: AST.AstNodeVisitorTypeCheck},
+	readonly goal:     AST.Goal,
+	readonly stmts:    AST.Block['children'],
+	readonly builder:  Builder,
+	readonly cg:       CodeGenerator,
+	readonly wasm:     binaryen.ExpressionBuilder,
+	readonly visitors: {
+		readonly typeCheck: AST.AstNodeVisitorTypeCheck,
+		readonly build:     AST.AstNodeVisitorBuild,
+	},
 } {
 	const goal: AST.Goal     = AST.Goal.fromSource(source);
 	const builder            = new Builder();
@@ -287,9 +289,11 @@ export function setupScript(
 		goal,
 		builder,
 		cg,
-		stmts:        goal.block.children,
-		wasm:         cg.mod.wasm,
-		visitorBuild: visitor_build,
-		visitors:     {typeCheck: visitor_type_check},
+		stmts:    goal.block.children,
+		wasm:     cg.mod.wasm,
+		visitors: {
+			typeCheck: visitor_type_check,
+			build:     visitor_build,
+		},
 	};
 }
