@@ -513,9 +513,9 @@ Decorate(ParametersFunction ::= ","? ParameterFunction<-Named><-Optional># "," P
 
 
 Decorate(Capture<Ref> ::= IDENTIFIER) -> SemanticCapture
-	:= (SemanticCapture[ref=false] SemanticExpressionVariable[id=TokenWorth(IDENTIFIER)]);
+	:= (SemanticCapture[ref=false] SemanticExpressionVariable[id=TokenWorth(IDENTIFIER)][isFuncRef=false]);
 Decorate(Capture<Ref> ::= "ref" IDENTIFIER) -> SemanticCapture
-	:= (SemanticCapture[ref=true] SemanticExpressionVariable[id=TokenWorth(IDENTIFIER)]);
+	:= (SemanticCapture[ref=true] SemanticExpressionVariable[id=TokenWorth(IDENTIFIER)][isFuncRef=false]);
 
 Decorate(CaptureClause<Ref> ::= "with" "(" ","? Capture<?Ref># ","? ")") -> Sequence<SemanticCapture>
 	:= ParseList(Capture<?Ref>, SemanticCapture);
@@ -570,13 +570,26 @@ Decorate(ExpressionMapLiteral<Break, Return> ::= "{" ","? CaseMap<?Break><?Retur
 		...ParseList(CaseMap<?Break><?Return>, SemanticCase)
 	);
 
-Decorate(FunctionArguments<Break, Return> ::= "(" (","? Expression<+Block><?Break><?Return># ","?)? ")") -> Sequence<SemanticExpression>
-	:= ParseList(Expression<+Block><?Break><?Return>, SemanticExpression);
+Decorate(ArgumentsFunction<Break, Return> ::= ","? Expression<+Block><?Break><?Return># ","?) -> Vector<Sequence<SemanticExpression>, Sequence<SemanticProperty>>
+	:= [
+		ParseList(Expression<+Block><?Break><?Return>, SemanticExpression),
+		[],
+	];
+Decorate(ArgumentsFunction<Break, Return> ::= ","? Property<?Break><?Return># ","?) -> Vector<Sequence<SemanticExpression>, Sequence<SemanticProperty>>
+	:= [
+		[],
+		ParseList(Property<?Break><?Return>, SemanticProperty),
+	];
+Decorate(ArgumentsFunction<Break, Return> ::= ","? Expression<+Block><?Break><?Return># "," Property<?Break><?Return># ","?) -> Vector<Sequence<SemanticExpression>, Sequence<SemanticProperty>>
+	:= [
+		ParseList(Expression<+Block><?Break><?Return>, SemanticExpression),
+		ParseList(Property<?Break><?Return>, SemanticProperty),
+	];
 
 
 
 Decorate(ExpressionUnit<Block, Break, Return> ::= IDENTIFIER) -> SemanticExpressionVariable
-	:= (SemanticExpressionVariable[id=TokenWorth(IDENTIFIER)]);
+	:= (SemanticExpressionVariable[id=TokenWorth(IDENTIFIER)][isFuncRef=false]);
 Decorate(ExpressionUnit<Block, Break, Return> ::= PrimitiveLiteral) -> SemanticExpressionConstant
 	:= Decorate(PrimitiveLiteral);
 Decorate(ExpressionUnit<Block, Break, Return> ::= StringTemplate<?Break><?Return>) -> SemanticExpressionTemplate
@@ -625,16 +638,25 @@ Decorate(ExpressionCompound<Block, Break, Return> ::= ExpressionCompound<?Block>
 		Decorate(ExpressionCompound<?Block><?Break><?Return>)
 		Decorate(PropertyAccessor<?Break><?Return>)
 	);
-Decorate(ExpressionCompound<Block, Break, Return> ::= ExpressionCompound<?Block><?Break><?Return> "." FunctionArguments<?Break><?Return>) -> SemanticExpressionCall
+Decorate(ExpressionCompound<Block, Break, Return> ::= ExpressionCompound<?Block><?Break><?Return> "." "(" ")") -> SemanticExpressionCall
+	:= (SemanticExpressionCall Decorate(ExpressionCompound<?Block><?Break><?Return>));
+Decorate(ExpressionCompound<Block, Break, Return> ::= ExpressionCompound<?Block><?Break><?Return> "." "(" ArgumentsFunction<?Break><?Return> ")") -> SemanticExpressionCall
 	:= (SemanticExpressionCall
 		Decorate(ExpressionCompound<?Block><?Break><?Return>)
-		...Decorate(FunctionArguments<?Break><?Return>)
+		...Decorate(ArgumentsFunction<?Break><?Return>).0
+		...Decorate(ArgumentsFunction<?Break><?Return>).1
 	);
-Decorate(ExpressionCompound<Block, Break, Return> ::= ExpressionCompound<?Block><?Break><?Return> "." GenericArguments FunctionArguments<?Break><?Return>) -> SemanticExpressionCall
+Decorate(ExpressionCompound<Block, Break, Return> ::= ExpressionCompound<?Block><?Break><?Return> "." GenericArguments "(" ")") -> SemanticExpressionCall
 	:= (SemanticExpressionCall
 		Decorate(ExpressionCompound<?Block><?Break><?Return>)
 		...Decorate(GenericArguments)
-		...Decorate(FunctionArguments<?Break><?Return>)
+	);
+Decorate(ExpressionCompound<Block, Break, Return> ::= ExpressionCompound<?Block><?Break><?Return> "." GenericArguments "(" ArgumentsFunction<?Break><?Return> ")") -> SemanticExpressionCall
+	:= (SemanticExpressionCall
+		Decorate(ExpressionCompound<?Block><?Break><?Return>)
+		...Decorate(GenericArguments)
+		...Decorate(ArgumentsFunction<?Break><?Return>).0
+		...Decorate(ArgumentsFunction<?Break><?Return>).1
 	);
 
 
@@ -963,7 +985,7 @@ Decorate(Expression<Block, Break, Return> ::= ExpressionFunction) -> SemanticExp
 
 
 Decorate(Assignee<Break, Return> ::= IDENTIFIER) -> SemanticExpressionVariable
-	:= (SemanticExpressionVariable[id=TokenWorth(IDENTIFIER)]);
+	:= (SemanticExpressionVariable[id=TokenWorth(IDENTIFIER)][isFuncRef=false]);
 Decorate(Assignee<Break, Return> ::= ExpressionCompound<+Block><?Break><?Return> "." PropertyAccessor<?Break><?Return>) -> SemanticExpressionAccess
 	:= (SemanticExpressionAccess[kind=NORMAL][isEntryOptional=*nil*]
 		Decorate(ExpressionCompound<+Block><?Break><?Return>)

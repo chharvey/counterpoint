@@ -517,15 +517,27 @@ test.suite('Decorator', () => {
 				}
 				% (expression_compound)
 			`]],
-			['Decorate(ExpressionCompound<Block, Break, Return> ::= ExpressionCompound<?Block><?Break><?Return> "." FunctionArguments<?Break><?Return>) -> SemanticExpressionCall', [AST.EXPR.Call, `
+			['Decorate(ExpressionCompound<Block, Break, Return> ::= ExpressionCompound<?Block><?Break><?Return> "." "(" ")") -> SemanticExpressionCall', [AST.EXPR.Call, `
 				{
 					List.();
 				}
 				% (expression_compound)
 			`]],
-			['Decorate(ExpressionCompound<Block, Break, Return> ::= ExpressionCompound<?Block><?Break><?Return> "." GenericArguments FunctionArguments<?Break><?Return>) -> SemanticExpressionCall', [AST.EXPR.Call, `
+			['Decorate(ExpressionCompound<Block, Break, Return> ::= ExpressionCompound<?Block><?Break><?Return> "." "(" ArgumentsFunction<?Break><?Return> ")") -> SemanticExpressionCall', [AST.EXPR.Call, `
+				{
+					List.(arg);
+				}
+				% (expression_compound)
+			`]],
+			['Decorate(ExpressionCompound<Block, Break, Return> ::= ExpressionCompound<?Block><?Break><?Return> "." GenericArguments "(" ")") -> SemanticExpressionCall', [AST.EXPR.Call, `
 				{
 					List.<T>();
+				}
+				% (expression_compound)
+			`]],
+			['Decorate(ExpressionCompound<Block, Break, Return> ::= ExpressionCompound<?Block><?Break><?Return> "." GenericArguments "(" ArgumentsFunction<?Break><?Return> ")") -> SemanticExpressionCall', [AST.EXPR.Call, `
+				{
+					List.<T>(arg);
 				}
 				% (expression_compound)
 			`]],

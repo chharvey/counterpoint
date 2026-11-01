@@ -5,9 +5,11 @@ import {
 	CONFIG_DEFAULT,
 } from '../../../core/index.ts';
 import type {SyntaxNodeType} from '../../utils-private.ts';
-import {validate_callable_class_name} from '../utils-private.ts';
+import {CALLABLE_CLASS_NAMES} from '../utils-private.ts';
 import type * as AST_TYPE from '../type/index.ts';
+import type {Property} from '../Property.ts';
 import {Expression} from './Expression.ts';
+import {Variable} from './Variable.ts';
 
 
 
@@ -18,22 +20,35 @@ export class Call extends Expression {
 		return expression;
 	}
 
+
+	public readonly isCallableClassName: boolean;
+
+
 	public constructor(
 		start_node: SyntaxNodeType<'expression_compound'>,
-		public readonly base:     Expression,
-		public readonly typeargs: readonly AST_TYPE.Type[],
-		public readonly exprargs: readonly Expression[],
+		public readonly base:          Expression,
+		public readonly typeargs:      readonly AST_TYPE.Type[],
+		public readonly exprargsPosit: readonly Expression[],
+		public readonly exprargsNamed: readonly Property[],
 	) {
-		super(start_node, {}, [base, ...typeargs, ...exprargs]);
+		super(start_node, {}, [base, ...typeargs, ...exprargsPosit, ...exprargsNamed]);
+		this.isCallableClassName = (CALLABLE_CLASS_NAMES as readonly string[]).includes(this.base.source);
 	}
 
 	public override varCheck(): void {
-		// NOTE: ignore var-checking `this.base` for now, as semantics is determined by syntax.
-		// (`this.base.source` must be a `CallableClassName`)
-		validate_callable_class_name(this.base.source);
+		if (!this.isCallableClassName) {
+			try {
+				this.base.varCheck();
+			} catch (err) {
+				if (!(this.base instanceof Variable && this.base.isFuncRef)) {
+					throw err;
+				}
+			}
+		}
 		return xjs.Array.forEachAggregated([
 			...this.typeargs,
-			...this.exprargs,
+			...this.exprargsPosit,
+			...this.exprargsNamed,
 		], (arg) => arg.varCheck());
 	}
 }

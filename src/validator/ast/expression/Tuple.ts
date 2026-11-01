@@ -25,6 +25,17 @@ class ExpressionTuple extends Collection {
 		return expression;
 	}
 
+	public static assignExprsToTupleType(visitor: ExprVisitorType, expressions: readonly Expression[], assignee: TYPE.Tuple): void {
+		return xjs.Array.forEachAggregated(assignee.typeargs, (entry, i) => {
+			const expr: Expression | undefined = expressions.at(i);
+			/* NOTE: We can assert the item exists because of item ordering.
+				We cannot do so with records since properties are not ordered. */
+			entry.optional || assert.ok(expr);
+			return expr && typecheck_assign(visitor, expr, entry.type, expr);
+		});
+	}
+
+
 	public constructor(
 		start_node: SyntaxNodeFamily<'expression_tuple_literal', ['break', 'return']>,
 		public override readonly children: readonly Expression[],
@@ -39,13 +50,7 @@ class ExpressionTuple extends Collection {
 			if (this.children.length < assignee.minCount) {
 				throw err;
 			}
-			return xjs.Array.forEachAggregated(assignee.typeargs, (entry, i) => {
-				const expr: Expression | undefined = this.children.at(i);
-				/* NOTE: We can assert the item exists because of item ordering.
-					We cannot do so with records since properties are not ordered. */
-				entry.optional || assert.ok(expr, err);
-				return expr && typecheck_assign(visitor, expr, entry.type, expr);
-			});
+			return ExpressionTuple.assignExprsToTupleType(visitor, this.children, assignee);
 		}
 		throw err;
 	}

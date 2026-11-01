@@ -1,5 +1,8 @@
 import * as xjs from 'extrajs';
-import {TypeErrorNotAssignable} from '../../../index.ts';
+import {
+	type TypeError as CplTypeError,
+	TypeErrorNotAssignable,
+} from '../../../index.ts';
 import {
 	type NonemptyArray,
 	assert_instanceof,
@@ -29,6 +32,19 @@ class ExpressionRecord extends Collection {
 		return expression;
 	}
 
+	public static assignPropsToRecordType(visitor: ExprVisitorType, properties: readonly Property[], assignee: TYPE.Record, err: CplTypeError): void {
+		return xjs.Map.forEachAggregated(assignee.typeargs, (entry, key) => {
+			const prop: Property | undefined = properties.find((p) => p.key.id === key);
+			/* NOTE: We *cannot* assert the property exists since properties are not ordered.
+				We can however make the assertion in tuples because of item ordering. */
+			if (!entry.optional && !prop) {
+				throw err;
+			}
+			return prop && typecheck_assign(visitor, prop.val, entry.type, prop);
+		});
+	}
+
+
 	public constructor(
 		start_node: SyntaxNodeFamily<'expression_record_literal', ['break', 'return']>,
 		public override readonly children: Readonly<NonemptyArray<Property>>,
@@ -48,15 +64,7 @@ class ExpressionRecord extends Collection {
 			if (this.children.length < assignee.minCount) {
 				throw err;
 			}
-			return xjs.Map.forEachAggregated(assignee.typeargs, (entry, key) => {
-				const prop: Property | undefined = this.children.find((p) => p.key.id === key);
-				/* NOTE: We *cannot* assert the property exists since properties are not ordered.
-					We can however make the assertion in tuples because of item ordering. */
-				if (!entry.optional && !prop) {
-					throw err;
-				}
-				return prop && typecheck_assign(visitor, prop.val, entry.type, prop);
-			});
+			return ExpressionRecord.assignPropsToRecordType(visitor, this.children, assignee, err);
 		}
 		throw err;
 	}

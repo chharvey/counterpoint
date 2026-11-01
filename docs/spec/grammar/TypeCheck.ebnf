@@ -91,11 +91,14 @@ Nil! TypeCheck(SemanticExpression expr) :=
 		1. *Note:* The result of this step is not used; it is only performed to rethrow any TypeErrors.
 ;
 
-Nil! TypeCheck(SemanticExpressionCall expr) :=
-	1. *Note:* Skip type-checking of `expr.children.0` for now, as semantics is determined by syntax.
-	2. *For each* `it` in `expr.children[1..]`:
+Nil! TypeCheck(SemanticExpressionCall ::= SemanticExpression__0 SemanticType* SemanticExpression__1* SemanticProperty*) :=
+	1. *If* `SemanticExpression__0` is a `SemanticExpressionVariable` *and* `SemanticExpression__0.isFuncRef` is `true`:
+		1. Fall through.
+	2. *Else:*
+		1. *Perform:* *Unwrap:* `TypeCheck(SemanticExpression__0)`.
+	3. *For each* `it` in `[SemanticType*, SemanticExpression__1*, SemanticProperty*]`:
 		1. *Perform:* *Unwrap:* `TypeCheck(it)`.
-	3. *Perform:* *Unwrap:* `TypeOf(expr)`.
+	4. *Perform:* *Unwrap:* `TypeOf(SemanticExpressionCall)`.
 		1. *Note:* The result of this step is not used; it is only performed to rethrow any TypeErrors.
 ;
 

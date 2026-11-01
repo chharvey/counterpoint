@@ -115,11 +115,13 @@ export class AstNodeVisitorTypeCheck extends AstNodeVisitor<void> {
 	public override visitExprAccess   (expr: EXPR.Access):          void { return this.visitExpression(expr); }
 
 	public override visitExprCall(expr: EXPR.Call): void {
-		// NOTE: ignore type-checking `this.base` for now, as semantics is determined by syntax.
-		// (`this.base.source` must be a `CallableClassName`)
+		if (!expr.isCallableClassName && !(expr.base instanceof EXPR.Variable && expr.base.isFuncRef)) {
+			return this.visit(expr.base);
+		}
 		xjs.Array.forEachAggregated([
 			...expr.typeargs,
-			...expr.exprargs,
+			...expr.exprargsPosit,
+			...expr.exprargsNamed,
 		], (arg) => this.visit(arg));
 		this.#exprVisitorType.visit(expr);
 	}

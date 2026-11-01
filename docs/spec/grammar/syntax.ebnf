@@ -172,6 +172,11 @@ ParametersFunction ::=
 	| ","?                                                                                         ParameterFunction<+Named><∓Optional>#   ","?
 ;
 
+ArgumentsFunction<Break, Return> ::=
+	| ","? Expression<+Block><?Break><?Return># ("," Property<?Break><?Return>#)? ","?
+	| ","?                                           Property<?Break><?Return>#   ","?
+;
+
 Capture<Ref>
 	::= <Ref+>"ref"? IDENTIFIER;
 
@@ -188,7 +193,6 @@ ExpressionListLiteral   <Break, Return> ::= "[" (","? Expression <+Block><?Break
 ExpressionDictLiteral   <Break, Return> ::= "["  ","? Property           <?Break><?Return># ","?   "]";
 ExpressionSetLiteral    <Break, Return> ::= "{" (","? Expression <+Block><?Break><?Return># ","?)? "}";
 ExpressionMapLiteral    <Break, Return> ::= "{"  ","? CaseMap            <?Break><?Return># ","?   "}";
-FunctionArguments       <Break, Return> ::= "(" (","? Expression <+Block><?Break><?Return># ","?)? ")";
 
 ExpressionUnit<Block, Break, Return> ::=
 	| IDENTIFIER
@@ -209,7 +213,7 @@ ExpressionCompound<Block, Break, Return> ::=
 	| ExpressionCompound<?Block><?Break><?Return> (
 		| "~?" | "~!"
 		| ("." | "?." | "!.") PropertyAccessor<?Break><?Return>
-		|  "."                GenericArguments? FunctionArguments<?Break><?Return>
+		|  "."                GenericArguments? "(" ArgumentsFunction<?Break><?Return>? ")"
 	)
 ;
 

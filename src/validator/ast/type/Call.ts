@@ -47,8 +47,8 @@ export class Call extends Type {
 
 		/* Argument Counting. Throws if the number of given args does not match the number of expected parameters. */
 		const expected_generic = {
-			min: BigInt(generic_params.filter((param) => !param.default).length),
-			max: BigInt(generic_params.length),
+			min: BigInt(generic_params?.positional?.filter((param) => !param.default).length ?? 0),
+			max: BigInt(generic_params?.positional?.length ?? 0),
 		} as const;
 		const actual_generic: bigint = BigInt(args.length);
 		// TODO: throw AggregateError if both
@@ -61,7 +61,7 @@ export class Call extends Type {
 
 		/* Argument Typing. Handles optionality and default values. Also checks if each argument matches the constraints given. */
 		const generic_args: TYPE.Type[] = args.map((t_arg) => t_arg.eval());
-		generic_params.forEach((param, i) => {
+		generic_params?.positional?.forEach((param, i) => {
 			if (!args.at(i)) {
 				assert.ok(param.default); // we can assert this due to argument counting above
 				generic_args[i] = param.default.call(null, generic_args);

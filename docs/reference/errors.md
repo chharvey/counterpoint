@@ -213,7 +213,7 @@ or is compatible with several.
 ```cpl
 func g(a: Animal, b: Cat): void { return; }
 func g(a: Cat, b: Animal): void { return; }
-g(Cat(), Cat()); % TypeErrorAmbiguousOverload: No overload matches this call.
+g(Cat(), Cat()); % TypeErrorAmbiguousOverload: No unique overload matches this call.
 ```
 Solution(s): Arguments to a function call must match exactly one overload.
 

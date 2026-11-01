@@ -945,6 +945,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					List.();
 					Dict.(record);
 					Set.<T>();
+					call.(a, b= c);
 					record.type;
 					record.bool;
 					record.true;
@@ -1032,18 +1033,26 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				s(
 					'expression_compound',
 					f('expression_0', 'identifier'),
-					f('function_arguments_0', 'function_arguments'),
 				),
 				s(
 					'expression_compound',
 					f('expression_0', 'identifier'),
-					f('function_arguments_0', 'function_arguments', s('identifier')),
+					f('arguments_function_0', 'arguments_function', s('identifier')),
 				),
 				s(
 					'expression_compound',
 					f('expression_0', 'identifier'),
 					f('generic_arguments_0', 'generic_arguments', s('identifier')),
-					f('function_arguments_0', 'function_arguments'),
+				),
+				s(
+					'expression_compound',
+					f('expression_0', 'identifier'),
+					f(
+						'arguments_function_0',
+						'arguments_function',
+						s('identifier'),
+						s('property', s('word', s('identifier')), s('identifier')),
+					),
 				),
 				s(
 					'expression_compound',

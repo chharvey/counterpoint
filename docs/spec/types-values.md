@@ -112,9 +112,9 @@ Property  | Description
 CompletionSchemas are the default values returned by all specification algorithms,
 unless explicitly stated otherwise.
 
-This table summarizes the enumerated values of a CompletionSchema’s \`type\` property.
+This table summarizes the enumerated values of a CompletionSchema’s \`kind\` property.
 
-Type     | Meaning
+Kind     | Meaning
 -------- | -------
 *normal* | TODO
 *break*  | TODO
