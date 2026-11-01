@@ -28,6 +28,9 @@ import {AstNodeVisitorBuild} from './AstNodeVisitorBuild.ts';
 
 
 export class ExprVisitorBuild extends EXPR.ExprVisitor<OP.Value> {
+	#nodeVisitorBuild?: AstNodeVisitorBuild;
+
+
 	public constructor(private readonly builder: Builder) {
 		super();
 	}
@@ -42,7 +45,7 @@ export class ExprVisitorBuild extends EXPR.ExprVisitor<OP.Value> {
 	public override visitTemplate(expr: EXPR.Template): OP.Value {
 		return new OP.Template(expr.children.map((c) => {
 			const build: OP.ValueTac = this.visit(c).asTac(this.builder);
-			return c.type().isSubtypeOf(TYPE.STR)
+			return c.type.isSubtypeOf(TYPE.STR)
 				? build
 				: new OP.Unop(OP.OpCode.STR_FROM, build, TYPE.STR).asTac(this.builder);
 		}));
@@ -56,7 +59,7 @@ export class ExprVisitorBuild extends EXPR.ExprVisitor<OP.Value> {
 
 	@memoizePerNode
 	public override visitTuple(expr: EXPR.Tuple): OP.Value {
-		return new OP.CollectionLinearNew(OP.TypeName.TUPLE, expr.children.map((c) => this.visit(c).asTac(this.builder)), expr.type());
+		return new OP.CollectionLinearNew(OP.TypeName.TUPLE, expr.children.map((c) => this.visit(c).asTac(this.builder)), expr.type);
 	}
 
 	@memoizePerNode
@@ -64,12 +67,12 @@ export class ExprVisitorBuild extends EXPR.ExprVisitor<OP.Value> {
 		return new OP.RecordNew(new Map(expr.children.map((c) => ([
 			c.key.id,
 			{keysrc: c.key.source, value: this.visit(c.val).asTac(this.builder)},
-		]))), expr.type());
+		]))), expr.type);
 	}
 
 	@memoizePerNode
 	public override visitList(expr: EXPR.List): OP.Value {
-		return new OP.CollectionLinearNew(OP.TypeName.LIST, expr.children.map((c) => this.visit(c).asTac(this.builder)), expr.type());
+		return new OP.CollectionLinearNew(OP.TypeName.LIST, expr.children.map((c) => this.visit(c).asTac(this.builder)), expr.type);
 	}
 
 	@memoizePerNode
@@ -77,12 +80,12 @@ export class ExprVisitorBuild extends EXPR.ExprVisitor<OP.Value> {
 		return new OP.DictNew(new Map(expr.children.map((c) => [
 			new VALUE.Symbol(c.key.id, c.key.source),
 			this.visit(c.val).asTac(this.builder),
-		])), expr.type());
+		])), expr.type);
 	}
 
 	@memoizePerNode
 	public override visitSet(expr: EXPR.Set): OP.Value {
-		return new OP.CollectionLinearNew(OP.TypeName.SET, expr.children.map((c) => this.visit(c).asTac(this.builder)), expr.type());
+		return new OP.CollectionLinearNew(OP.TypeName.SET, expr.children.map((c) => this.visit(c).asTac(this.builder)), expr.type);
 	}
 
 	@memoizePerNode
@@ -90,19 +93,19 @@ export class ExprVisitorBuild extends EXPR.ExprVisitor<OP.Value> {
 		return new OP.MapNew(new Map(expr.children.map((c) => [
 			this.visit(c.antecedents[0]) .asTac(this.builder),
 			this.visit(c.consequent)     .asTac(this.builder),
-		])), expr.type());
+		])), expr.type);
 	}
 
 	@memoizePerNode
 	public override visitExprBlock(expr: EXPR.ExpressionBlock): OP.Value {
-		const node_visitor = new AstNodeVisitorBuild(this.builder);
-		expr.block.children.slice(0, -1).forEach((stmt) => node_visitor.visit(stmt));
+		this.#nodeVisitorBuild ??= new AstNodeVisitorBuild(this.builder);
+		expr.block.children.slice(0, -1).forEach((stmt) => this.#nodeVisitorBuild!.visit(stmt));
 		return this.visit((expr.block.children.at(-1) as STMT.StatementExpression).expr!);
 	}
 
 	@memoizePerNode
 	public override visitAccess(expr: EXPR.Access): OP.Value {
-		const typ:        TYPE.Type   = expr.type();
+		const typ:        TYPE.Type   = expr.type;
 		const base_value: OP.ValueTac = this.visit(expr.base).asTac(this.builder);
 
 		if (expr.kind === Operator.DOT_MAYBE) {
@@ -146,7 +149,7 @@ export class ExprVisitorBuild extends EXPR.ExprVisitor<OP.Value> {
 			return new OP.Call(
 				this.visit(expr.base).asTac(this.builder),
 				expr.exprargs.map((arg) => this.visit(arg).asTac(this.builder)),
-				expr.type(),
+				expr.type,
 			);
 		}
 
@@ -163,17 +166,17 @@ export class ExprVisitorBuild extends EXPR.ExprVisitor<OP.Value> {
 					[IntrinsicName.NATURAL, OP.OpCode.NAT_FROM],
 					[IntrinsicName.FLOAT,   OP.OpCode.FLOAT_FROM],
 					[IntrinsicName.STRING,  OP.OpCode.STR_FROM],
-				]).get(base_source)!, this.visit(expr.exprargs[0]).asTac(this.builder), expr.type());
+				]).get(base_source)!, this.visit(expr.exprargs[0]).asTac(this.builder), expr.type);
 			}
 			case IntrinsicName.LIST:
 			case IntrinsicName.DICT:
 			case IntrinsicName.SET:
 			case IntrinsicName.MAP: {
 				const [name, ctor] = new Map<IntrinsicName, [OP.CollectionDynamicName, () => OP.Value]>([
-					[IntrinsicName.LIST, [OP.TypeName.LIST, () => new OP.CollectionLinearNew(OP.TypeName.LIST, [], expr.type())]],
-					[IntrinsicName.SET,  [OP.TypeName.SET,  () => new OP.CollectionLinearNew(OP.TypeName.SET,  [], expr.type())]],
-					[IntrinsicName.DICT, [OP.TypeName.DICT, () => new OP.DictNew (new Map(), expr.type())]],
-					[IntrinsicName.MAP,  [OP.TypeName.MAP,  () => new OP.MapNew  (new Map(), expr.type())]],
+					[IntrinsicName.LIST, [OP.TypeName.LIST, () => new OP.CollectionLinearNew(OP.TypeName.LIST, [], expr.type)]],
+					[IntrinsicName.SET,  [OP.TypeName.SET,  () => new OP.CollectionLinearNew(OP.TypeName.SET,  [], expr.type)]],
+					[IntrinsicName.DICT, [OP.TypeName.DICT, () => new OP.DictNew (new Map(), expr.type)]],
+					[IntrinsicName.MAP,  [OP.TypeName.MAP,  () => new OP.MapNew  (new Map(), expr.type)]],
 				]).get(base_source)!;
 				const new_obj: OP.Value = ctor();
 				if (!expr.exprargs.length) {
@@ -218,7 +221,7 @@ export class ExprVisitorBuild extends EXPR.ExprVisitor<OP.Value> {
 			[Operator.NOT,       OP.OpCode.NOT],
 			[Operator.EMP,       OP.OpCode.EMP],
 			[Operator.NEG,       OP.OpCode.NEG],
-		]).get(expr.operator)!, this.visit(expr.operand).asTac(this.builder), expr.type());
+		]).get(expr.operator)!, this.visit(expr.operand).asTac(this.builder), expr.type);
 	}
 
 	@memoizePerNode
@@ -251,7 +254,7 @@ export class ExprVisitorBuild extends EXPR.ExprVisitor<OP.Value> {
 				return new OP.Instance(OP.OpCode.CAST, op1_source, op0);
 			}
 			case Operator.CAST_MAYBE: {
-				const expr_type = expr.type() as TYPE.Maybe;
+				const expr_type = expr.type as TYPE.Maybe;
 				return OP.conditional_expression(
 					this.builder,
 					expr_type,
@@ -265,8 +268,8 @@ export class ExprVisitorBuild extends EXPR.ExprVisitor<OP.Value> {
 
 	@memoizePerNode
 	public override visitOperationBinaryArithmetic(expr: EXPR.OperationBinaryArithmetic): OP.Value {
-		const typ: TYPE.Type = expr.type();
-		const [t0, t1] = [expr.operand0.type(),                          expr.operand1.type()];
+		const typ: TYPE.Type = expr.type;
+		const [t0, t1] = [expr.operand0.type,                            expr.operand1.type];
 		const [v0, v1] = [this.visit(expr.operand0).asTac(this.builder), this.visit(expr.operand1).asTac(this.builder)];
 		return (
 			bothInts(t0, t1) ? new OP.Binop(new Map<Operator, OP.OpCodeBin>([
@@ -300,7 +303,7 @@ export class ExprVisitorBuild extends EXPR.ExprVisitor<OP.Value> {
 			[Operator.GT, OP.OpCode.GT],
 			[Operator.LE, OP.OpCode.LE],
 			[Operator.GE, OP.OpCode.GE],
-		]).get(expr.operator)!, this.visit(expr.operand0).asTac(this.builder), this.visit(expr.operand1).asTac(this.builder), expr.type());
+		]).get(expr.operator)!, this.visit(expr.operand0).asTac(this.builder), this.visit(expr.operand1).asTac(this.builder), expr.type);
 	}
 
 	@memoizePerNode
@@ -308,7 +311,7 @@ export class ExprVisitorBuild extends EXPR.ExprVisitor<OP.Value> {
 		return new OP.Binop(new Map<Operator, OP.OpCodeBin>([
 			[Operator.ID, OP.OpCode.ID],
 			[Operator.EQ, OP.OpCode.EQ],
-		]).get(expr.operator)!, this.visit(expr.operand0).asTac(this.builder), this.visit(expr.operand1).asTac(this.builder), expr.type());
+		]).get(expr.operator)!, this.visit(expr.operand0).asTac(this.builder), this.visit(expr.operand1).asTac(this.builder), expr.type);
 	}
 
 	@memoizePerNode
@@ -337,7 +340,7 @@ export class ExprVisitorBuild extends EXPR.ExprVisitor<OP.Value> {
 
 		return OP.conditional_expression(
 			this.builder,
-			expr.operand0.type().union(expr.operand1.type()), // TODO: turn typeCheck optimization off and just use `expr.type()` here
+			expr.operand0.type.union(expr.operand1.type), // TODO: turn typeCheck optimization off and just use `expr.type` here
 			() => new OP.Unop(OP.OpCode.BOOL_FROM, left, TYPE.BOOL),
 			conseq,
 			altern,
@@ -348,7 +351,7 @@ export class ExprVisitorBuild extends EXPR.ExprVisitor<OP.Value> {
 	public override visitOperationTernary(expr: EXPR.OperationTernary): OP.Value {
 		return OP.conditional_expression(
 			this.builder,
-			expr.operand1.type().union(expr.operand2.type()), // TODO: turn typeCheck optimization off and just use `expr.type()` here
+			expr.operand1.type.union(expr.operand2.type), // TODO: turn typeCheck optimization off and just use `expr.type` here
 			() => this.visit(expr.operand0),
 			() => this.visit(expr.operand1),
 			() => this.visit(expr.operand2),
@@ -361,7 +364,7 @@ export class ExprVisitorBuild extends EXPR.ExprVisitor<OP.Value> {
 			this.builder.pushInstruction(new OP.Drop(this.visit(expr.value)));
 			return this.visit(expr.default_);
 		}
-		const expr_type:  TYPE.Type   = expr.type();
+		const expr_type:  TYPE.Type   = expr.type;
 		const expr_value: OP.ValueTac = this.visit(expr.value).asTac(this.builder);
 		return expr.cases.flatMap((kase) => {
 			const consequent: () => OP.Value = () => this.visit(kase.consequent);
@@ -377,12 +380,12 @@ export class ExprVisitorBuild extends EXPR.ExprVisitor<OP.Value> {
 
 	@memoizePerNode
 	public override visitFunction(expr: EXPR.Function): OP.Value {
-		const node_visitor = new AstNodeVisitorBuild(this.builder);
-		const temp: Temp = this.builder.newTemp(expr.type());
+		this.#nodeVisitorBuild ??= new AstNodeVisitorBuild(this.builder);
+		const temp: Temp = this.builder.newTemp(expr.type);
 		return new OP.Function(temp.type as TYPE.Function, temp.name, expr.source.replaceAll(/\s+/g, ' '), () => {
-			expr.captures   .forEach((capt)  => node_visitor.visit(capt));
-			expr.parameters .forEach((param) => node_visitor.visit(param));
-			return node_visitor.visit(expr.block);
+			expr.captures   .forEach((capt)  => this.#nodeVisitorBuild!.visit(capt));
+			expr.parameters .forEach((param) => this.#nodeVisitorBuild!.visit(param));
+			return this.#nodeVisitorBuild!.visit(expr.block);
 		});
 	}
 

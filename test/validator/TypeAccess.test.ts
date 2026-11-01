@@ -29,9 +29,9 @@ test.suite('TypeAccess', () => {
 		 * @param expecteds the expected evaluations of the type-expressions
 		 */
 		function testTypeEvals(source: string, start: number, expecteds: readonly (TYPE.Type | ConstructorType<Error>)[]): void {
-			const {goal} = setupScript(source, {typeCheck: false});
+			const {goal, visitors} = setupScript(source, {typeCheck: false});
 			try {
-				goal.typeCheck();
+				visitors.typeCheck.visit(goal);
 			} catch {
 				// if type-checking fails, proceed to `assert.throws` below
 			}

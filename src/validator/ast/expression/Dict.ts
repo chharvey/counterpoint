@@ -10,6 +10,7 @@ import {
 } from '../../../core/index.ts';
 import {TYPE} from '../../../typer/index.ts';
 import type {SyntaxNodeFamily} from '../../utils-private.ts';
+import type {ExprVisitorType} from '../index.ts';
 import {check_unique_keys} from '../utils-private.ts';
 import {typecheck_assign} from '../AstNode.ts';
 import type {Property} from '../Property.ts';
@@ -41,10 +42,10 @@ export class Dict extends Collection {
 	}
 
 	@assignToDeco
-	public override assignTo(assignee: TYPE.Type): void {
+	public override assignTo(visitor: ExprVisitorType, assignee: TYPE.Type): void {
 		if (assignee instanceof TYPE.Dict) {
 			// better error reporting to check entry-by-entry instead of checking `this.type().typearg`
-			return xjs.Array.forEachAggregated(this.children, (prop) => typecheck_assign(prop.val, assignee.typearg, prop));
+			return xjs.Array.forEachAggregated(this.children, (prop) => typecheck_assign(visitor, prop.val, assignee.typearg, prop));
 		}
 		throw new TypeErrorNotAssignable(this, assignee);
 	}

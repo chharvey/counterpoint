@@ -20,6 +20,9 @@ import {
 
 
 test.suite('Access', () => {
+	const VISITOR = new AST.ExprVisitorType();
+
+
 	/**
 	 * Takes a program source text and compares it to the array of expected types.
 	 * The format of the program source text must be
@@ -31,9 +34,9 @@ test.suite('Access', () => {
 	 * @param expecteds the expected types of the expressions
 	 */
 	function testExprTypes(source: string, expecteds: readonly (TYPE.Type | ConstructorType<Error>)[]): void {
-		const {goal} = setupScript(source, {typeCheck: false});
+		const {goal, visitors} = setupScript(source, {typeCheck: false});
 		try {
-			goal.typeCheck();
+			visitors.typeCheck.visit(goal);
 		} catch {
 			// if type-checking fails, proceed to `assert.throws` below
 		}
@@ -42,11 +45,11 @@ test.suite('Access', () => {
 			? (assert.strictEqual(statements.length, expecteds.length, 'Arrays are not the same length.'), xjs.Array.forEachAggregated(statements, (stmt, i) => {
 				const expected: TYPE.Type | ConstructorType<Error> = expecteds[i];
 				return expected instanceof Function
-					? assert.throws(() => stmt.expr!.type(), expected)
-					: assertEqualTypes(stmt.expr!.type(), expected);
+					? assert.throws(() => VISITOR.visit(stmt.expr!), expected)
+					: assertEqualTypes(VISITOR.visit(stmt.expr!), expected);
 			}))
 			: assertEqualTypes(
-				statements.map((stmt) => stmt.expr!.type()),
+				statements.map((stmt) => VISITOR.visit(stmt.expr!)),
 				expecteds as TYPE.Type[],
 			);
 	}
@@ -547,7 +550,7 @@ test.suite('Access', () => {
 				]);
 			});
 			test.test('unsupported: throws for string access of dict.', () => {
-				assert.throws(() => AST.EXPR.Access.fromSource('[a= 10, b= 20, c= 30].["a"]').type(), /String keys for dict access are not yet supported\./);
+				assert.throws(() => VISITOR.visit(AST.EXPR.Access.fromSource('[a= 10, b= 20, c= 30].["a"]')), /String keys for dict access are not yet supported\./);
 			});
 			test.test('throws when base object is of incorrect type.', () => {
 				testExprTypes(`{

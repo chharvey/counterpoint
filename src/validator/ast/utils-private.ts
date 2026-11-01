@@ -28,12 +28,13 @@ import {
 	Key,
 	type TYPE as AST_TYPE,
 	EXPR,
+	ExprVisitorType,
 } from './index.ts';
 
 
 
-function throwWrongSubtypeError(accessor: EXPR.Expression, supertype: TYPE.Type): never {
-	throw new TypeErrorNotNarrow(accessor.type(), supertype, accessor.line_index, accessor.col_index);
+function throwWrongSubtypeError(subtype: TYPE.Type, supertype: TYPE.Type, accessor: EXPR.Expression): never {
+	throw new TypeErrorNotNarrow(subtype, supertype, accessor.line_index, accessor.col_index);
 }
 
 
@@ -466,7 +467,7 @@ export function get_entry_info(base_type: TYPE.Type, access: AST_TYPE.Access | E
 		default: {
 			assert_instanceof(access, EXPR.Access);
 			assert_instanceof(access.accessor, EXPR.Expression);
-			const accessor_type: TYPE.Type = access.accessor.type();
+			const accessor_type: TYPE.Type = new ExprVisitorType().visit(access.accessor);
 			if (accessor_type.isBottomType) {
 				return {type: TYPE.NOTHING, optional: accessor_maybe};
 			}
@@ -475,24 +476,24 @@ export function get_entry_info(base_type: TYPE.Type, access: AST_TYPE.Access | E
 					const INTEGRAL: TYPE.Type = TYPE.INT.union(TYPE.NAT);
 					return accessor_type.isSubtypeOf(INTEGRAL)
 						? {type: base_type.typearg, optional: accessor_maybe}
-						: throwWrongSubtypeError(access.accessor, INTEGRAL);
+						: throwWrongSubtypeError(accessor_type, INTEGRAL, access.accessor);
 				}
 				case base_type instanceof TYPE.Dict: {
 					return accessor_type.isSubtypeOf(TYPE.SYM)
 						? {type: base_type.typearg, optional: accessor_maybe}
 						: accessor_type.isSubtypeOf(TYPE.STR)
 							? assert.fail(new Error('String keys for dict access are not yet supported.'))
-							: throwWrongSubtypeError(access.accessor, TYPE.Union.all(TYPE.SYM, TYPE.STR));
+							: throwWrongSubtypeError(accessor_type, TYPE.Union.all(TYPE.SYM, TYPE.STR), access.accessor);
 				}
 				case base_type instanceof TYPE.Set: {
 					return accessor_type.isSubtypeOf(base_type.typearg) || !is_writing
 						? {type: TYPE.BOOL, optional: false}
-						: throwWrongSubtypeError(access.accessor, base_type.typearg);
+						: throwWrongSubtypeError(accessor_type, base_type.typearg, access.accessor);
 				}
 				case base_type instanceof TYPE.Map: {
 					return accessor_type.isSubtypeOf(base_type.typearg_ant) || !is_writing
 						? {type: base_type.typearg_con, optional: accessor_maybe}
-						: throwWrongSubtypeError(access.accessor, base_type.typearg_ant);
+						: throwWrongSubtypeError(accessor_type, base_type.typearg_ant, access.accessor);
 				}
 				default: {
 					throw new TypeErrorInvalidOperation(access);

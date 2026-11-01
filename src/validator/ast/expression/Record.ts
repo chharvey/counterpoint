@@ -10,6 +10,7 @@ import {
 } from '../../../core/index.ts';
 import {TYPE} from '../../../typer/index.ts';
 import type {SyntaxNodeFamily} from '../../utils-private.ts';
+import type {ExprVisitorType} from '../index.ts';
 import {check_unique_keys} from '../utils-private.ts';
 import {typecheck_assign} from '../AstNode.ts';
 import type {Property} from '../Property.ts';
@@ -41,7 +42,7 @@ class ExpressionRecord extends Collection {
 	}
 
 	@assignToDeco
-	public override assignTo(assignee: TYPE.Type): void {
+	public override assignTo(visitor: ExprVisitorType, assignee: TYPE.Type): void {
 		const err = new TypeErrorNotAssignable(this, assignee);
 		if (assignee instanceof TYPE.Record) {
 			if (this.children.length < assignee.minCount) {
@@ -54,7 +55,7 @@ class ExpressionRecord extends Collection {
 				if (!entry.optional && !prop) {
 					throw err;
 				}
-				return prop && typecheck_assign(prop.val, entry.type, prop);
+				return prop && typecheck_assign(visitor, prop.val, entry.type, prop);
 			});
 		}
 		throw err;

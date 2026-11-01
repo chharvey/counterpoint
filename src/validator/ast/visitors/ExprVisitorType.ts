@@ -7,10 +7,7 @@ import {
 	TypeErrorNotCallable,
 	TypeErrorArgCount,
 } from '../../../index.ts';
-import {
-	assert_instanceof,
-	noopMethod,
-} from '../../../lib/index.ts';
+import {assert_instanceof} from '../../../lib/index.ts';
 import {
 	type EntryType,
 	TYPE,
@@ -40,26 +37,37 @@ import {
 	bothFloats,
 	bothNumbers,
 } from './utils.ts';
-import {memoizePerNode} from './decorators.ts';
 import {AstNodeVisitorCompletion} from './AstNodeVisitorCompletion.ts';
 
 
 
+export function memoizeExpressionType<Param extends EXPR.Expression>(
+	method:   (this: ExprVisitorType, arg: Param) => TYPE.Type,
+	_context: ClassMethodDecoratorContext<ExprVisitorType, typeof method>,
+): typeof method {
+	return function (arg) {
+		arg.type = method.bind(this, arg);
+		return arg.type;
+	};
+}
+
+
+
 export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
-	private readonly astNodeVisitorCompletion = new AstNodeVisitorCompletion();
+	readonly #astNodeVisitorCompletion = new AstNodeVisitorCompletion();
 
 
-	@memoizePerNode
+	@memoizeExpressionType
 	public override visitConstant(expr: EXPR.Constant): TYPE.Type {
 		return expr.interpreterValue.toType();
 	}
 
-	@noopMethod(memoizePerNode)
+	@memoizeExpressionType
 	public override visitTemplate(_expr: EXPR.Template): TYPE.Type {
 		return TYPE.STR;
 	}
 
-	@memoizePerNode
+	@memoizeExpressionType
 	public override visitVariable(expr: EXPR.Variable): TYPE.Type {
 		assert.ok(expr.validator.hasSymbol(expr.id), `Expected ${expr.source} (${expr.id}) to be in the symbol table.`);
 		const symbol: SymbolSchema = expr.validator.getSymbol(expr.id)!;
@@ -71,7 +79,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 		}
 	}
 
-	@memoizePerNode
+	@memoizeExpressionType
 	public override visitTuple(expr: EXPR.Tuple): TYPE.Type {
 		if (expr.children.some((c) => this.visit(c).isBottomType)) {
 			return TYPE.NOTHING;
@@ -79,7 +87,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 		return TYPE.Tuple.fromTypes(expr.children.map((c) => this.visit(c)));
 	}
 
-	@memoizePerNode
+	@memoizeExpressionType
 	public override visitRecord(expr: EXPR.Record): TYPE.Type {
 		if (expr.children.some((c) => this.visit(c.val).isBottomType)) {
 			return TYPE.NOTHING;
@@ -90,7 +98,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 		])));
 	}
 
-	@memoizePerNode
+	@memoizeExpressionType
 	public override visitList(expr: EXPR.List): TYPE.Type {
 		if (expr.children.some((c) => this.visit(c).isBottomType)) {
 			return TYPE.NOTHING;
@@ -101,7 +109,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 		);
 	}
 
-	@memoizePerNode
+	@memoizeExpressionType
 	public override visitDict(expr: EXPR.Dict): TYPE.Type {
 		if (expr.children.some((c) => this.visit(c.val).isBottomType)) {
 			return TYPE.NOTHING;
@@ -112,7 +120,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 		);
 	}
 
-	@memoizePerNode
+	@memoizeExpressionType
 	public override visitSet(expr: EXPR.Set): TYPE.Type {
 		if (expr.children.some((c) => this.visit(c).isBottomType)) {
 			return TYPE.NOTHING;
@@ -123,7 +131,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 		);
 	}
 
-	@memoizePerNode
+	@memoizeExpressionType
 	public override visitMap(expr: EXPR.Map): TYPE.Type {
 		if (expr.children.some((c) => this.visit(c.antecedents[0]).isBottomType || this.visit(c.consequent).isBottomType)) {
 			return TYPE.NOTHING;
@@ -135,9 +143,9 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 		);
 	}
 
-	@memoizePerNode
+	@memoizeExpressionType
 	public override visitExprBlock(expr: EXPR.ExpressionBlock): TYPE.Type {
-		if (this.astNodeVisitorCompletion.visit(expr.block) !== CompletionKind.NORMAL) {
+		if (this.#astNodeVisitorCompletion.visit(expr.block) !== CompletionKind.NORMAL) {
 			return TYPE.NOTHING;
 		}
 		assert.ok(expr.block.children.length, 'Expected Block to contain at least 1 statement.');
@@ -155,7 +163,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 		return this.visit(last_expr);
 	}
 
-	@memoizePerNode
+	@memoizeExpressionType
 	public override visitAccess(expr: EXPR.Access): TYPE.Type {
 		const base_type: TYPE.Type = this.visit(expr.base);
 		if (base_type.isBottomType) {
@@ -178,13 +186,14 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 			} else {
 				throw new TypeErrorInvalidOperation(expr);
 			}
+		} else {
+			const entry: EntryType = get_entry_info(base_type, expr);
+			expr.isEntryOptional = entry.optional;
+			return entry.optional ? new TYPE.Maybe(entry.type) : entry.type;
 		}
-		const entry: EntryType = get_entry_info(base_type, expr);
-		expr.isEntryOptional = entry.optional;
-		return entry.optional ? new TYPE.Maybe(entry.type) : entry.type;
 	}
 
-	@memoizePerNode
+	@memoizeExpressionType
 	public override visitCall(expr: EXPR.Call): TYPE.Type {
 		if (!(expr.base instanceof EXPR.Variable)) {
 			throw new TypeErrorNotCallable(this.visit(expr.base), expr.base);
@@ -209,7 +218,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 					const itemtype: TYPE.Type  = expr.typeargs[0].eval();
 					const arg:      EXPR.Expression = expr.exprargs[0];
 					if (arg instanceof EXPR.Tuple) {
-						xjs.Array.forEachAggregated(arg.children, (item) => typecheck_assign(item, itemtype, item));
+						xjs.Array.forEachAggregated(arg.children, (item) => typecheck_assign(this, item, itemtype, item));
 					} else {
 						const argtype: TYPE.Type = this.visit(arg);
 						if (argtype instanceof TYPE.Tuple) {
@@ -229,9 +238,9 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 					const entrytype: TYPE.Tuple = TYPE.Tuple.fromTypes([TYPE.SYM, valuetype]);
 					const arg:       EXPR.Expression = expr.exprargs[0];
 					if (arg instanceof EXPR.Tuple) {
-						xjs.Array.forEachAggregated(arg.children, (item) => typecheck_assign(item, entrytype, item));
+						xjs.Array.forEachAggregated(arg.children, (item) => typecheck_assign(this, item, entrytype, item));
 					} else if (arg instanceof EXPR.Record) {
-						xjs.Array.forEachAggregated(arg.children, (prop) => typecheck_assign(prop.val, valuetype, prop.val));
+						xjs.Array.forEachAggregated(arg.children, (prop) => typecheck_assign(this, prop.val, valuetype, prop.val));
 					} else {
 						const argtype: TYPE.Type = this.visit(arg);
 						if (argtype instanceof TYPE.Tuple) {
@@ -255,7 +264,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 					const eltype: TYPE.Type  = expr.typeargs[0].eval();
 					const arg:    EXPR.Expression = expr.exprargs[0];
 					if (arg instanceof EXPR.Tuple) {
-						xjs.Array.forEachAggregated(arg.children, (item) => typecheck_assign(item, eltype, item));
+						xjs.Array.forEachAggregated(arg.children, (item) => typecheck_assign(this, item, eltype, item));
 					} else {
 						const argtype: TYPE.Type = this.visit(arg);
 						if (argtype instanceof TYPE.Tuple) {
@@ -276,7 +285,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 					const entrytype: TYPE.Tuple = TYPE.Tuple.fromTypes([anttype, contype]);
 					const arg:       EXPR.Expression = expr.exprargs[0];
 					if (arg instanceof EXPR.Tuple) {
-						xjs.Array.forEachAggregated(arg.children, (item) => typecheck_assign(item, entrytype, item));
+						xjs.Array.forEachAggregated(arg.children, (item) => typecheck_assign(this, item, entrytype, item));
 					} else {
 						const argtype: TYPE.Type = this.visit(arg);
 						if (argtype instanceof TYPE.Tuple) {
@@ -299,7 +308,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 		return return_type instanceof TYPE.ReferenceType ? return_type.mutableOf() : return_type;
 	}
 
-	@memoizePerNode
+	@memoizeExpressionType
 	public override visitClaim(expr: EXPR.Claim): TYPE.Type {
 		const computed_type: TYPE.Type = this.visit(expr.operand);
 		const claimed_type:  TYPE.Type = expr.claimed_type.eval();
@@ -315,7 +324,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 		return claimed_type;
 	}
 
-	@memoizePerNode
+	@memoizeExpressionType
 	public override visitOperationUnary(expr: EXPR.OperationUnary): TYPE.Type {
 		const t: TYPE.Type = this.visit(expr.operand);
 		if (t.isBottomType) {
@@ -344,7 +353,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 		}
 	}
 
-	@memoizePerNode
+	@memoizeExpressionType
 	public override visitOperationBinaryCast(expr: EXPR.OperationBinaryCast): TYPE.Type {
 		const t0: TYPE.Type = this.visit(expr.operand0);
 		if (t0.isBottomType) {
@@ -393,7 +402,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 		}
 	}
 
-	@memoizePerNode
+	@memoizeExpressionType
 	public override visitOperationBinaryArithmetic(expr: EXPR.OperationBinaryArithmetic): TYPE.Type {
 		const [t0, t1]: readonly TYPE.Type[] = expr.children.map((operand) => this.visit(operand));
 		if (t0.isBottomType || t1.isBottomType) {
@@ -407,7 +416,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 		);
 	}
 
-	@memoizePerNode
+	@memoizeExpressionType
 	public override visitOperationBinaryComparative(expr: EXPR.OperationBinaryComparative): TYPE.Type {
 		const [t0, t1]: readonly TYPE.Type[] = expr.children.map((operand) => this.visit(operand));
 		if (t0.isBottomType || t1.isBottomType) {
@@ -419,7 +428,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 		);
 	}
 
-	@memoizePerNode
+	@memoizeExpressionType
 	public override visitOperationBinaryEquality(expr: EXPR.OperationBinaryEquality): TYPE.Type {
 		const [t0, t1]: readonly TYPE.Type[] = expr.children.map((operand) => this.visit(operand));
 		if (t0.isBottomType || t1.isBottomType) {
@@ -450,7 +459,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 		}
 	}
 
-	@memoizePerNode
+	@memoizeExpressionType
 	public override visitOperationBinaryLogical(expr: EXPR.OperationBinaryLogical): TYPE.Type {
 		const [t0, t1]: readonly TYPE.Type[] = expr.children.map((operand) => this.visit(operand));
 		if (t0.isBottomType) {
@@ -474,7 +483,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 		}
 	}
 
-	@memoizePerNode
+	@memoizeExpressionType
 	public override visitOperationTernary(expr: EXPR.OperationTernary): TYPE.Type {
 		const [t0, t1, t2]: readonly TYPE.Type[] = expr.children.map((operand) => this.visit(operand));
 		if (!t0.isSubtypeOf(TYPE.BOOL)) {
@@ -488,7 +497,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 		);
 	}
 
-	@memoizePerNode
+	@memoizeExpressionType
 	public override visitSwitch(expr: EXPR.Switch): TYPE.Type {
 		return this.visit(expr.value).isBottomType
 			? TYPE.NOTHING
@@ -499,7 +508,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 	}
 
 
-	@memoizePerNode
+	@memoizeExpressionType
 	public override visitFunction(expr: EXPR.Function): TYPE.Type {
 		return this.visitFunctionlike(expr);
 	}
@@ -561,7 +570,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 				}
 				const argnode: EXPR.Expression | undefined = call.exprargs.at(i);
 				if (argnode) {
-					typecheck_assign(argnode, param.type.call(null, resolved_generic_args), call);
+					typecheck_assign(this, argnode, param.type.call(null, resolved_generic_args), call);
 				}
 			});
 		});

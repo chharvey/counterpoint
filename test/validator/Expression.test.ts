@@ -30,6 +30,9 @@ import {
 
 
 test.suite('Expression', () => {
+	const VISITOR = new AST.ExprVisitorType();
+
+
 	test.suite('#varCheck', () => {
 		test.suite('ExpressionFunction (and DeclarationFunction)', () => {
 			test.test('disallows duplicate param keys.', () => {
@@ -74,7 +77,7 @@ test.suite('Expression', () => {
 				assert.ok( (stmts[0] as AST.STMT.DeclarationVariable).assigned);
 				assert.ok(!(stmts[1] as AST.STMT.DeclarationVariable).assigned);
 				return assertEqualTypes(
-					stmts.slice(2).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()),
+					stmts.slice(2).map((stmt) => VISITOR.visit((stmt as AST.STMT.StatementExpression).expr!)),
 					[
 						TYPE.INT,
 						new TYPE.Maybe(TYPE.INT),
@@ -86,24 +89,24 @@ test.suite('Expression', () => {
 
 		test.suite('Claim', () => {
 			test.test('returns the type value of the claimed type.', () => {
-				assert.ok(AST.EXPR.Claim.fromSource('3 as <int | null>').type().equals(TYPE.INT.union(TYPE.NULL)));
+				assert.ok(VISITOR.visit(AST.EXPR.Claim.fromSource('3 as <int | null>')).equals(TYPE.INT.union(TYPE.NULL)));
 			});
 			test.test('allows claiming to a type alias.', () => {
 				const claim: AST.EXPR.Claim = AST.EXPR.Claim.fromSource('"Alice" as <Name>');
 				const id: bigint = Validator.cookTokenIdentifier('Name');
 				claim.validator.addSymbol(new SymbolSchemaType(id, claim.claimed_type));
 				(claim.validator.getSymbol(id) as SymbolSchemaType).typevalue = TYPE.STR;
-				return assert.strictEqual(claim.type(), TYPE.STR);
+				return assert.strictEqual(VISITOR.visit(claim), TYPE.STR);
 			});
 			test.test('allows claiming to `nothing` even though types are disjoint.', () => {
-				assert.ok(AST.EXPR.Claim.fromSource('42 as <nothing>').type().isBottomType);
+				assert.ok(VISITOR.visit(AST.EXPR.Claim.fromSource('42 as <nothing>')).isBottomType);
 			});
 			test.test('allows claiming a `nothing` expression even though types are disjoint.', () => {
 				const claim: AST.EXPR.Claim = AST.EXPR.Claim.fromSource('n as <int>');
 				const id: bigint = Validator.cookTokenIdentifier('n');
 				claim.validator.addSymbol(new SymbolSchemaVar(id, claim.operand, false, false));
 				(claim.validator.getSymbol(id) as SymbolSchemaVar).type = TYPE.NOTHING;
-				return assert.strictEqual(claim.type(), TYPE.INT);
+				return assert.strictEqual(VISITOR.visit(claim), TYPE.INT);
 			});
 			test.test('throws when the operand type and claimed type are disjoint (and neither is `nothing`).', () => {
 				xjs.Array.forEachAggregated(extract_lines`
@@ -111,7 +114,7 @@ test.suite('Expression', () => {
 					"three" as <int>
 					3       as <float>
 					3.0     as <int>
-				`, (src) => assert.throws(() => AST.EXPR.Claim.fromSource(src).type(), TypeErrorNotAssignable));
+				`, (src) => assert.throws(() => VISITOR.visit(AST.EXPR.Claim.fromSource(src)), TypeErrorNotAssignable));
 			});
 			test.test('allows disjoint types when claiming to top type first.', () => {
 				setupScript(`{
@@ -138,7 +141,7 @@ test.suite('Expression', () => {
 					setupScript(`{
 						switch 42 default true;
 						switch 42 as <nothing> default 43;
-					}`, {build: false}).stmts.map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()),
+					}`, {build: false}).stmts.map((stmt) => VISITOR.visit((stmt as AST.STMT.StatementExpression).expr!)),
 					[
 						TYPE.TRUE,
 						TYPE.NOTHING,
@@ -153,7 +156,7 @@ test.suite('Expression', () => {
 							case 1.1 -> 10
 							case 2.2 -> 20
 							default 43;
-					}`, {build: false}).stmts.map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()),
+					}`, {build: false}).stmts.map((stmt) => VISITOR.visit((stmt as AST.STMT.StatementExpression).expr!)),
 					[
 						typeUnit(4.3),
 						TYPE.Union.all(typeUnit(10n), typeUnit(20n), typeUnit(43n)),
@@ -161,13 +164,13 @@ test.suite('Expression', () => {
 				);
 			});
 			test.test('throws when at least one antecedent is an error.', () => {
-				const {stmts} = setupScript(`{
+				const {stmts, visitors} = setupScript(`{
 					switch 42
 						case 1.1       | 2.2 -> 15
 						case 33 / 10.0 | 4.4 -> 25
 						default 43;
 				}`, {typeCheck: false});
-				assert.throws(() => (stmts[0] as AST.STMT.StatementExpression).expr!.typeCheck(), TypeErrorInvalidOperation);
+				assert.throws(() => visitors.typeCheck.visit((stmts[0] as AST.STMT.StatementExpression).expr!), TypeErrorInvalidOperation);
 			});
 		});
 
@@ -179,7 +182,7 @@ test.suite('Expression', () => {
 					% TODO: test optional parameters (steal from 'test/validator/Type.test.ts')
 					\\(): int | float => 4.2;
 				}`, {build: false});
-				return assertEqualTypes(stmts.map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()), [
+				return assertEqualTypes(stmts.map((stmt) => VISITOR.visit((stmt as AST.STMT.StatementExpression).expr!)), [
 					new TYPE.Function(TYPE.Tuple.fromTypes([
 						TYPE.INT,
 						TYPE.FLOAT.union(TYPE.NULL),
@@ -215,7 +218,7 @@ test.suite('Expression', () => {
 					"42😀"  "42\\u{1f600}"
 				`).map((src) => AST.EXPR.Constant.fromSource(src));
 				return assertEqualTypes(
-					constants.map((c) => c.type()),
+					constants.map((c) => VISITOR.visit(c)),
 					constants.map((c) => new TYPE.Unit(c.interpreterValue)),
 				);
 			});
@@ -346,7 +349,7 @@ test.suite('Expression', () => {
 			test.test('always returns `String`.', () => {
 				const templates: readonly AST.EXPR.Template[] = initTemplates();
 				assertEqualTypes(
-					templates.map((t) => t.type()),
+					templates.map((t) => VISITOR.visit(t)),
 					repeat(TYPE.STR, templates.length),
 				);
 			});
@@ -443,7 +446,7 @@ test.suite('Expression', () => {
 					`),
 				];
 				return assertEqualTypes(
-					collections.map((node) => node.type()),
+					collections.map((node) => VISITOR.visit(node)),
 					[
 						TYPE.Tuple.fromTypes(expected),
 						TYPE.Record.fromTypes(new Map(collections[1].children.map((c, i) => [
@@ -473,7 +476,7 @@ test.suite('Expression', () => {
 	test.suite('ExpressionBlock', () => {
 		test.suite('#type', () => {
 			test.test('throws when the last statement is not an expression-statement.', () => {
-				const {goal} = setupScript(`{
+				const {goal, visitors} = setupScript(`{
 					val mut x: int = 42;
 					val mut y: int | null = {
 						x;
@@ -483,10 +486,10 @@ test.suite('Expression', () => {
 					x;
 					y;
 				}`, {typeCheck: false});
-				assert.throws(() => goal.typeCheck(), /The last statement of a block-expression must be an expression-statement/);
+				assert.throws(() => visitors.typeCheck.visit(goal), /The last statement of a block-expression must be an expression-statement/);
 			});
 			test.test('throws when the determinant is empty.', () => {
-				const {goal} = setupScript(`{
+				const {goal, visitors} = setupScript(`{
 					val mut x: int = 42;
 					val mut y: int | null = {
 						x;
@@ -496,7 +499,7 @@ test.suite('Expression', () => {
 					x;
 					y;
 				}`, {typeCheck: false});
-				assert.throws(() => goal.typeCheck(), /The determining expression-statement of a block-expression must be nonempty/);
+				assert.throws(() => visitors.typeCheck.visit(goal), /The determining expression-statement of a block-expression must be nonempty/);
 			});
 			test.test('returns the type of the determinant.', () => {
 				const {stmts} = setupScript(`{
@@ -509,7 +512,7 @@ test.suite('Expression', () => {
 					x;
 					y;
 				}`, {build: false});
-				assertEqualTypes((stmts[1] as AST.STMT.DeclarationVariable).assigned!.type(), TYPE.INT);
+				assertEqualTypes(VISITOR.visit((stmts[1] as AST.STMT.DeclarationVariable).assigned!), TYPE.INT);
 			});
 		});
 	});

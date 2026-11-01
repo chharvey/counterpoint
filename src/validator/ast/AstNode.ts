@@ -23,7 +23,7 @@ import {
 	TYPE as AST_TYPE,
 	EXPR,
 	STMT,
-	AstNodeVisitorTypeCheck,
+	type ExprVisitorType,
 } from './index.ts';
 
 
@@ -57,13 +57,14 @@ import {
  *                       or is not entry-wise assignable
  */
 export function typecheck_assign(
+	visitor:       ExprVisitorType,
 	assigned:      EXPR.Expression,
 	assignee_type: TYPE.Type,
 	node:          AstNode,
 ): void {
-	if (!assigned.type().isSubtypeOf(assignee_type)) {
+	if (!visitor.visit(assigned).isSubtypeOf(assignee_type)) {
 		if (assigned instanceof EXPR.Collection) {
-			return assigned.assignTo(assignee_type);
+			return assigned.assignTo(visitor, assignee_type);
 		}
 		throw new TypeErrorNotAssignable(assigned, assignee_type, node);
 	}
@@ -316,14 +317,5 @@ export class AstNode implements Serializable {
 	 */
 	public varCheck(): void {
 		return xjs.Array.forEachAggregated(this.children, (c) => c.varCheck());
-	}
-
-	/**
-	 * Type-check the node as part of semantic analysis.
-	 * @final
-	 * @deprecated TODO: migrate to AstNodeVisitorTypeCheck
-	 */
-	public typeCheck(): void {
-		return new AstNodeVisitorTypeCheck().visit(this);
 	}
 }

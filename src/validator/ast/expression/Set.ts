@@ -7,6 +7,7 @@ import {
 } from '../../../core/index.ts';
 import {TYPE} from '../../../typer/index.ts';
 import type {SyntaxNodeFamily} from '../../utils-private.ts';
+import type {ExprVisitorType} from '../index.ts';
 import {typecheck_assign} from '../AstNode.ts';
 import {Expression} from './Expression.ts';
 import {
@@ -31,10 +32,10 @@ class ExpressionSet extends Collection {
 	}
 
 	@assignToDeco
-	public override assignTo(assignee: TYPE.Type): void {
+	public override assignTo(visitor: ExprVisitorType, assignee: TYPE.Type): void {
 		if (assignee instanceof TYPE.Set) {
 			// better error reporting to check entry-by-entry instead of checking `this.type().typearg`
-			return xjs.Array.forEachAggregated(this.children, (expr) => typecheck_assign(expr, assignee.typearg, expr));
+			return xjs.Array.forEachAggregated(this.children, (expr) => typecheck_assign(visitor, expr, assignee.typearg, expr));
 		}
 		throw new TypeErrorNotAssignable(this, assignee);
 	}
