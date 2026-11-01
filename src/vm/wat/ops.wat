@@ -740,7 +740,7 @@
 		(if
 			(i32.and
 				(call $Value.is-primitive (local.get 0))
-				(call $Value.is-primitive (local.get 0))
+				(call $Value.is-primitive (local.get 1))
 			)
 			(then (br $exit (if (result i32)
 				(i32.or
