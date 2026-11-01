@@ -327,13 +327,13 @@ test.suite('Call', () => {
 				Map.<mut {int}, float>((({42}, 4.2),))
 			`.map((src) => VISITOR.visit(AST.EXPR.Call.fromSource(src)));
 		});
-		test.test('evaluates custom functions.', () => {
+		test.test('custom function calls.', () => {
 			setupScript(`{
 				func inc(x: int): int => x + 1;
 				inc.(42);
 			}`, {build: false});
 		});
-		test.test('allows compound base.', () => {
+		test.test('compound base.', () => {
 			setupScript(`{
 				val inc1: \\(int) => int = \\(x: int): int => x + 1;
 				val inc2: \\(int) => int = \\(x: int): int => x + 2;

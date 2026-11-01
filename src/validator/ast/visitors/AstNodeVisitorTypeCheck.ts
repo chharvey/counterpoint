@@ -117,7 +117,7 @@ export class AstNodeVisitorTypeCheck extends AstNodeVisitor<void> {
 
 	public override visitExprCall(expr: EXPR.Call): void {
 		if (!(expr.base instanceof EXPR.Variable && expr.base.isFuncRef)) {
-			return this.visit(expr.base);
+			this.visit(expr.base);
 		}
 		xjs.Array.forEachAggregated([
 			...expr.typeargs,

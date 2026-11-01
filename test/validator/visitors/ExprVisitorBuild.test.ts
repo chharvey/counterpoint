@@ -1338,6 +1338,25 @@ test.suite('ExprVisitorBuild#visit', () => {
 					(ENDPROGRAM)
 			`.trim());
 		});
+		test.test('custom function calls.', {todo: true}, () => {
+			assert.strictEqual(setupScript(`{
+				func inc(x: int): int => x + 1;
+				inc.(42);
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
+				"block-0":
+					(ENDPROGRAM)
+			`.trim());
+		});
+		test.test('compound base.', {todo: true}, () => {
+			assert.strictEqual(setupScript(`{
+				val inc1: \\(int) => int = \\(x: int): int => x + 1;
+				val inc2: \\(int) => int = \\(x: int): int => x + 2;
+				(inc1 || inc2).(42);
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
+				"block-0":
+					(ENDPROGRAM)
+			`.trim());
+		});
 	});
 
 
