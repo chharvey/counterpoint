@@ -10,6 +10,7 @@ import {
 } from '../../../core/index.ts';
 import {TYPE} from '../../../typer/index.ts';
 import type {SyntaxNodeFamily} from '../../utils-private.ts';
+import type {ExprVisitorType} from '../index.ts';
 import {typecheck_assign} from '../AstNode.ts';
 import type {Case} from '../Case.ts';
 import {Expression} from './Expression.ts';
@@ -35,12 +36,12 @@ class ExpressionMap extends Collection {
 	}
 
 	@assignToDeco
-	public override assignTo(assignee: TYPE.Type): void {
+	public override assignTo(visitor: ExprVisitorType, assignee: TYPE.Type): void {
 		if (assignee instanceof TYPE.Map) {
 			// better error reporting to check entry-by-entry instead of checking `this.type().typearg_{ant,con}`
 			return xjs.Array.forEachAggregated(this.children, (case_) => (
 				xjs.Array.forEachAggregated([case_.antecedents[0], case_.consequent], (expr, i) => (
-					typecheck_assign(expr, [assignee.typearg_ant, assignee.typearg_con][i], expr)
+					typecheck_assign(visitor, expr, [assignee.typearg_ant, assignee.typearg_con][i], expr)
 				))
 			));
 		}

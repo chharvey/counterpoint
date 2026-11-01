@@ -23,6 +23,7 @@ import {
 	TYPE as AST_TYPE,
 	EXPR,
 	STMT,
+	type ExprVisitorType,
 } from './index.ts';
 
 
@@ -56,13 +57,14 @@ import {
  *                       or is not entry-wise assignable
  */
 export function typecheck_assign(
+	visitor:       ExprVisitorType,
 	assigned:      EXPR.Expression,
 	assignee_type: TYPE.Type,
 	node:          AstNode,
 ): void {
-	if (!assigned.type().isSubtypeOf(assignee_type)) {
+	if (!visitor.visit(assigned).isSubtypeOf(assignee_type)) {
 		if (assigned instanceof EXPR.Collection) {
-			return assigned.assignTo(assignee_type);
+			return assigned.assignTo(visitor, assignee_type);
 		}
 		throw new TypeErrorNotAssignable(assigned, assignee_type, node);
 	}

@@ -8,6 +8,7 @@ import {
 } from '../../../core/index.ts';
 import {TYPE} from '../../../typer/index.ts';
 import type {SyntaxNodeFamily} from '../../utils-private.ts';
+import type {ExprVisitorType} from '../index.ts';
 import {typecheck_assign} from '../AstNode.ts';
 import {Expression} from './Expression.ts';
 import {
@@ -32,7 +33,7 @@ class ExpressionTuple extends Collection {
 	}
 
 	@assignToDeco
-	public override assignTo(assignee: TYPE.Type): void {
+	public override assignTo(visitor: ExprVisitorType, assignee: TYPE.Type): void {
 		const err = new TypeErrorNotAssignable(this, assignee);
 		if (assignee instanceof TYPE.Tuple) {
 			if (this.children.length < assignee.minCount) {
@@ -43,7 +44,7 @@ class ExpressionTuple extends Collection {
 				/* NOTE: We can assert the item exists because of item ordering.
 					We cannot do so with records since properties are not ordered. */
 				entry.optional || assert.ok(expr, err);
-				return expr && typecheck_assign(expr, entry.type, expr);
+				return expr && typecheck_assign(visitor, expr, entry.type, expr);
 			});
 		}
 		throw err;

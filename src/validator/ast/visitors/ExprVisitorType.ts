@@ -209,7 +209,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 					const itemtype: TYPE.Type  = expr.typeargs[0].eval();
 					const arg:      EXPR.Expression = expr.exprargs[0];
 					if (arg instanceof EXPR.Tuple) {
-						xjs.Array.forEachAggregated(arg.children, (item) => typecheck_assign(item, itemtype, item));
+						xjs.Array.forEachAggregated(arg.children, (item) => typecheck_assign(this, item, itemtype, item));
 					} else {
 						const argtype: TYPE.Type = this.visit(arg);
 						if (argtype instanceof TYPE.Tuple) {
@@ -229,9 +229,9 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 					const entrytype: TYPE.Tuple = TYPE.Tuple.fromTypes([TYPE.SYM, valuetype]);
 					const arg:       EXPR.Expression = expr.exprargs[0];
 					if (arg instanceof EXPR.Tuple) {
-						xjs.Array.forEachAggregated(arg.children, (item) => typecheck_assign(item, entrytype, item));
+						xjs.Array.forEachAggregated(arg.children, (item) => typecheck_assign(this, item, entrytype, item));
 					} else if (arg instanceof EXPR.Record) {
-						xjs.Array.forEachAggregated(arg.children, (prop) => typecheck_assign(prop.val, valuetype, prop.val));
+						xjs.Array.forEachAggregated(arg.children, (prop) => typecheck_assign(this, prop.val, valuetype, prop.val));
 					} else {
 						const argtype: TYPE.Type = this.visit(arg);
 						if (argtype instanceof TYPE.Tuple) {
@@ -255,7 +255,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 					const eltype: TYPE.Type  = expr.typeargs[0].eval();
 					const arg:    EXPR.Expression = expr.exprargs[0];
 					if (arg instanceof EXPR.Tuple) {
-						xjs.Array.forEachAggregated(arg.children, (item) => typecheck_assign(item, eltype, item));
+						xjs.Array.forEachAggregated(arg.children, (item) => typecheck_assign(this, item, eltype, item));
 					} else {
 						const argtype: TYPE.Type = this.visit(arg);
 						if (argtype instanceof TYPE.Tuple) {
@@ -276,7 +276,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 					const entrytype: TYPE.Tuple = TYPE.Tuple.fromTypes([anttype, contype]);
 					const arg:       EXPR.Expression = expr.exprargs[0];
 					if (arg instanceof EXPR.Tuple) {
-						xjs.Array.forEachAggregated(arg.children, (item) => typecheck_assign(item, entrytype, item));
+						xjs.Array.forEachAggregated(arg.children, (item) => typecheck_assign(this, item, entrytype, item));
 					} else {
 						const argtype: TYPE.Type = this.visit(arg);
 						if (argtype instanceof TYPE.Tuple) {
@@ -561,7 +561,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 				}
 				const argnode: EXPR.Expression | undefined = call.exprargs.at(i);
 				if (argnode) {
-					typecheck_assign(argnode, param.type.call(null, resolved_generic_args), call);
+					typecheck_assign(this, argnode, param.type.call(null, resolved_generic_args), call);
 				}
 			});
 		});

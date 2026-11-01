@@ -50,7 +50,7 @@ export class AstNodeVisitorTypeCheck extends AstNodeVisitor<void> {
 	public override visitParameterFunction(node: ParameterFunction): void {
 		this.defaultVisit(node);
 		const param_type: TYPE.Type = node.typenode.eval();
-		node.expr && typecheck_assign(node.expr, param_type, node);
+		node.expr && typecheck_assign(this.#exprVisitorType, node.expr, param_type, node);
 		if (node.identifier) {
 			const block: Block = (node.parent as Functionlike).block;
 			assert.ok(block.validator.hasSymbol(node.id!), `The validator symbol table should include ${node.id}.`);
@@ -170,7 +170,7 @@ export class AstNodeVisitorTypeCheck extends AstNodeVisitor<void> {
 			stmt.assigned instanceof EXPR.Template ? TYPE.STR :
 			this.#exprVisitorType.visit(stmt.assigned!)
 		);
-		stmt.assigned && typecheck_assign(stmt.assigned, assignee_type, stmt);
+		stmt.assigned && typecheck_assign(this.#exprVisitorType, stmt.assigned, assignee_type, stmt);
 		if (stmt.assignee) {
 			assert.ok(stmt.validator.hasSymbol(stmt.id!), `The validator symbol table should include ${stmt.id}.`);
 			(stmt.validator.getSymbol(stmt.id!) as SymbolSchemaVar).type = assignee_type;
@@ -238,7 +238,7 @@ export class AstNodeVisitorTypeCheck extends AstNodeVisitor<void> {
 				throw new CplTypeError('The `delete` statement is only applicable to interface types.');
 			}
 		}
-		stmt.assigned && typecheck_assign(stmt.assigned, stmt.assignee.writeType(), stmt);
+		stmt.assigned && typecheck_assign(this.#exprVisitorType, stmt.assigned, stmt.assignee.writeType(), stmt);
 	}
 
 	public override visitStmtConditional(stmt: STMT.StatementConditional): void {
@@ -274,7 +274,7 @@ export class AstNodeVisitorTypeCheck extends AstNodeVisitor<void> {
 	public override visitStmtReturn(stmt: STMT.StatementReturn): void {
 		this.defaultVisit(stmt);
 		if (stmt.panic) {
-			return typecheck_assign(stmt.expression!, TYPE.EXCP, stmt);
+			return typecheck_assign(this.#exprVisitorType, stmt.expression!, TYPE.EXCP, stmt);
 		}
 		let parent: AstNode | undefined = stmt.parent;
 		while (parent && !is_Functionlike(parent)) {
@@ -286,7 +286,7 @@ export class AstNodeVisitorTypeCheck extends AstNodeVisitor<void> {
 		const return_type: TYPE.Type | undefined = parent.returnType?.eval();
 		if (stmt.expression) {
 			if (return_type) {
-				return typecheck_assign(stmt.expression, return_type, stmt);
+				return typecheck_assign(this.#exprVisitorType, stmt.expression, return_type, stmt);
 			} else {
 				throw new Error(`Expression \`${stmt.expression.source}\` is returned from a void function.`); // TODO: create new TypeError subclass
 			}
