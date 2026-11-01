@@ -325,7 +325,7 @@ Nil! TypeCheck(SemanticStatementReturn[panic=false] ::= ()) :=
 		1. *Let* `return_node` be an item `node` in `parent` such that `item` is a SemanticType.
 		2. *If* `return_node` is set:
 			1. *Let* `return_type` be *Unwrap:* `TypeValueOf(return_node)`.
-			2. *Throw:* a new Error """A function with return type \`{{ return_type.value }}\` does not return a value."""
+			2. *Throw:* a new Error """A function with return type \`{{return_type.value}}\` does not return a value."""
 		3. *Else:*
 			1. *Note:* The function is a void function and the return statement has no expression.
 			2. *Return.*
