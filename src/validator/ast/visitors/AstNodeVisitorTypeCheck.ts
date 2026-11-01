@@ -19,6 +19,7 @@ import type {
 	SymbolSchemaVar,
 	SymbolSchemaFunc,
 } from '../../index.ts';
+import {get_entry_info} from '../utils-private.ts';
 import {CompletionKind} from '../CompletionKind.ts';
 import {
 	typecheck_assign,
@@ -229,7 +230,11 @@ export class AstNodeVisitorTypeCheck extends AstNodeVisitor<void> {
 
 	public override visitStmtReassignment(stmt: STMT.StatementReassignment): void {
 		this.defaultVisit(stmt);
-		if (stmt.assignee instanceof EXPR.Access) {
+		let write_type: TYPE.Type;
+		if (stmt.assignee instanceof EXPR.Variable) {
+			write_type = (stmt.assignee.validator.getSymbol(stmt.assignee.id) as SymbolSchemaVar).type;
+		} else {
+			assert_instanceof(stmt.assignee, EXPR.Access);
 			const base_type: TYPE.Type = this.#exprVisitorType.visit(stmt.assignee.base);
 			if (!base_type.isMutable) {
 				throw new MutabilityError01(base_type, stmt);
@@ -237,8 +242,9 @@ export class AstNodeVisitorTypeCheck extends AstNodeVisitor<void> {
 			if (!stmt.assigned && !(base_type instanceof TYPE.TypeInterface)) {
 				throw new CplTypeError('The `delete` statement is only applicable to interface types.');
 			}
+			write_type = get_entry_info(base_type, stmt.assignee, true).type;
 		}
-		stmt.assigned && typecheck_assign(this.#exprVisitorType, stmt.assigned, stmt.assignee.writeType(), stmt);
+		stmt.assigned && typecheck_assign(this.#exprVisitorType, stmt.assigned, write_type, stmt);
 	}
 
 	public override visitStmtConditional(stmt: STMT.StatementConditional): void {

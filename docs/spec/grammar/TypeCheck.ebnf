@@ -240,8 +240,9 @@ Nil! TypeCheck(SemanticStatementReassignment ::= SemanticExpressionVariable) :=
 Nil! TypeCheck(SemanticStatementReassignment ::= SemanticExpressionVariable SemanticExpression) :=
 	1. *Perform:* *Unwrap:* `TypeCheck(SemanticExpressionVariable)`.
 	2. *Perform:* *Unwrap:* `TypeCheck(SemanticExpression)`.
-	3. *Let* `assignee_type` be *Unwrap:* `WriteTypeOf(SemanticExpressionVariable)`.
-	4. *Return:* `TypeCheckAssign(SemanticExpression, assignee_type)`.
+	3. *Assert:* The validator’s symbol table contains a SymbolSchema `symbol` whose `id` is `reassignable.id`.
+	4. *Assert:* `symbol` is an instance of `SymbolSchemaVar`.
+	5. *Return:* `TypeCheckAssign(SemanticExpression, symbol.type)`.
 ;
 Nil! TypeCheck(SemanticStatementReassignment ::= SemanticExpressionAccess) :=
 	1. *Perform:* *Unwrap:* `TypeCheck(SemanticExpressionAccess)`.
@@ -259,8 +260,8 @@ Nil! TypeCheck(SemanticStatementReassignment ::= SemanticExpressionAccess Semant
 	3. *Let* `base_type` be *Unwrap:* `TypeOf(SemanticExpressionAccess)`.
 	4. *If* `base_type` is not mutable:
 		1. *Throw:* a new MutabilityError01.
-	5. *Let* `assignee_type` be *Unwrap:* `WriteTypeOf(SemanticExpressionAccess)`.
-	6. *Return:* `TypeCheckAssign(SemanticExpression, assignee_type)`.
+	5. *Let* `entry` be *Unwrap:* `GetEntryInfo(base_type, reassignable, true)`.
+	6. *Return:* `TypeCheckAssign(SemanticExpression, entry.type)`.
 ;
 
 

@@ -1,27 +1,23 @@
 import {
 	assert_instanceof,
-	memoizeMethod,
 	memoizeGetter,
 } from '../../../lib/index.ts';
 import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../../core/index.ts';
-import type {TYPE} from '../../../typer/index.ts';
 import type {
 	SyntaxNodeType,
 	SyntaxNodeFamily,
 } from '../../utils-private.ts';
 import type {ValidAccessOperator} from '../../Operator.ts';
-import {get_entry_info} from '../utils-private.ts';
 import type {Index} from '../Index-.ts';
 import type {Key} from '../Key.ts';
 import {Expression} from './Expression.ts';
-import type {Reassignable} from './Reassignable.ts';
 
 
 
-export class Access extends Expression implements Reassignable {
+export class Access extends Expression {
 	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): Access {
 		const expression: Expression = Expression.fromSource(src, config);
 		assert_instanceof(expression, Access);
@@ -52,16 +48,5 @@ export class Access extends Expression implements Reassignable {
 	public get isEntryOptional(): boolean {
 		this.type();
 		return this.#isEntryOptional!;
-	}
-
-
-	/**
-	 * @inheritdoc
-	 * @implements Reassignable
-	 */
-	@memoizeMethod
-	public writeType(): TYPE.Type {
-		this.type(); // re-assert any assumptions and re-throw any errors
-		return get_entry_info(this.base.type(), this, true).type;
 	}
 }
