@@ -28,12 +28,12 @@ import {ExprVisitorBuild} from './ExprVisitorBuild.ts';
 
 
 export class AstNodeVisitorBuild extends AstNodeVisitor<void> {
-	private readonly exprVisitor: ExprVisitorBuild;
+	readonly #exprVisitorBuild: ExprVisitorBuild;
 
 
 	public constructor(private readonly builder: Builder) {
 		super();
-		this.exprVisitor = new ExprVisitorBuild(this.builder);
+		this.#exprVisitorBuild = new ExprVisitorBuild(this.builder);
 	}
 
 
@@ -42,7 +42,7 @@ export class AstNodeVisitorBuild extends AstNodeVisitor<void> {
 		if (node.identifier) {
 			const block: Block                        = (node.parent as Functionlike).block;
 			const symbol                              = block.validator.getSymbol(node.id!) as SymbolSchemaVar;
-			const default_value: OP.Value | undefined = node.expr ? this.exprVisitor.visit(node.expr) : node.optional ? new OP.MaybeNew(symbol.type) : undefined;
+			const default_value: OP.Value | undefined = node.expr ? this.#exprVisitorBuild.visit(node.expr) : node.optional ? new OP.MaybeNew(symbol.type) : undefined;
 			symbol.irType = default_value?.type ?? symbol.type;
 			return this.builder.pushInstruction(new OP.Decl(symbol, symbol.irType, default_value));
 		}
@@ -53,7 +53,7 @@ export class AstNodeVisitorBuild extends AstNodeVisitor<void> {
 		if (!node.ref) {
 			const schema = (node.parent as Functionlike).block.validator.getSymbol(node.variable.id) as SymbolSchemaVar;
 			schema.irType = schema.type;
-			return this.builder.pushInstruction(new OP.Decl(schema, schema.irType, this.exprVisitor.visit(node.variable)));
+			return this.builder.pushInstruction(new OP.Decl(schema, schema.irType, this.#exprVisitorBuild.visit(node.variable)));
 		}
 	}
 
@@ -72,7 +72,7 @@ export class AstNodeVisitorBuild extends AstNodeVisitor<void> {
 	@runOncePerNode
 	public override visitDeclVariable(stmt: STMT.DeclarationVariable): void {
 		const symbol: SymbolSchemaVar | undefined = stmt.assignee ? stmt.validator.getSymbol(stmt.id!) as SymbolSchemaVar : undefined;
-		const value:  OP.Value                    = stmt.assigned ? this.exprVisitor.visit(stmt.assigned) : new OP.MaybeNew(symbol!.type);
+		const value:  OP.Value                    = stmt.assigned ? this.#exprVisitorBuild.visit(stmt.assigned) : new OP.MaybeNew(symbol!.type);
 		if (stmt.assignee) {
 			symbol!.irType = value.type;
 			return this.builder.pushInstruction(new OP.Decl(symbol!, symbol!.irType, value));
@@ -101,13 +101,13 @@ export class AstNodeVisitorBuild extends AstNodeVisitor<void> {
 	@runOncePerNode
 	public override visitStmtExpr(stmt: STMT.StatementExpression): void {
 		if (stmt.expr) {
-			return this.builder.pushInstruction(new OP.Drop(this.exprVisitor.visit(stmt.expr)));
+			return this.builder.pushInstruction(new OP.Drop(this.#exprVisitorBuild.visit(stmt.expr)));
 		}
 	}
 
 	@runOncePerNode
 	public override visitStmtClaim(stmt: STMT.StatementClaim): void {
-		return this.builder.pushInstruction(new OP.Drop(this.exprVisitor.visit(stmt.assignee)));
+		return this.builder.pushInstruction(new OP.Drop(this.#exprVisitorBuild.visit(stmt.assignee)));
 	}
 
 	@runOncePerNode
@@ -116,7 +116,7 @@ export class AstNodeVisitorBuild extends AstNodeVisitor<void> {
 			const symbol = stmt.validator.getSymbol(stmt.assignee.id) as SymbolSchemaVar;
 			let value: OP.Value;
 			if (stmt.assigned) {
-				value = this.exprVisitor.visit(stmt.assigned);
+				value = this.#exprVisitorBuild.visit(stmt.assigned);
 				if (symbol.isUninitialized) {
 					value = new OP.MaybeNew(symbol.type, value.asTac(this.builder));
 				}
@@ -127,14 +127,14 @@ export class AstNodeVisitorBuild extends AstNodeVisitor<void> {
 			return this.builder.pushInstruction(new OP.Set(symbol, symbol.irType, value));
 		} else if (stmt.assigned) {
 			assert_instanceof(stmt.assignee.accessor, EXPR.Expression);
-			const base_value:    OP.ValueTac = this.exprVisitor.visit(stmt.assignee.base).asTac(this.builder);
+			const base_value:    OP.ValueTac = this.#exprVisitorBuild.visit(stmt.assignee.base).asTac(this.builder);
 			const base_typename: OP.TypeName = OP.ast_type_name(base_value.type);
 			assert.ok([OP.TypeName.LIST, OP.TypeName.DICT, OP.TypeName.SET, OP.TypeName.MAP].includes(base_typename), `Expected ${OP.TypeName[base_typename]} to be a dynamic collection.`);
 			return this.builder.pushInstruction(new OP.CollectionDynamicSet(
 				base_typename as OP.CollectionDynamicName,
 				base_value,
-				this.exprVisitor.visit(stmt.assignee.accessor) .asTac(this.builder),
-				this.exprVisitor.visit(stmt.assigned)          .asTac(this.builder),
+				this.#exprVisitorBuild.visit(stmt.assignee.accessor) .asTac(this.builder),
+				this.#exprVisitorBuild.visit(stmt.assigned)          .asTac(this.builder),
 			));
 		}
 		return assert.fail('Expected `StatementReassignment#typeCheck` to throw by now.');
@@ -142,9 +142,9 @@ export class AstNodeVisitorBuild extends AstNodeVisitor<void> {
 
 	@runOncePerNode
 	public override visitStmtConditional(stmt: STMT.StatementConditional): void {
-		let condition: () => OP.Value = () => this.exprVisitor.visit(stmt.condition);
+		let condition: () => OP.Value = () => this.#exprVisitorBuild.visit(stmt.condition);
 		if (stmt.unless) {
-			condition = () => new OP.Unop(OP.OpCode.NOT, this.exprVisitor.visit(stmt.condition).asTac(this.builder), TYPE.BOOL);
+			condition = () => new OP.Unop(OP.OpCode.NOT, this.#exprVisitorBuild.visit(stmt.condition).asTac(this.builder), TYPE.BOOL);
 		}
 
 		const label_then:  string = this.builder.newLabel();
@@ -168,9 +168,9 @@ export class AstNodeVisitorBuild extends AstNodeVisitor<void> {
 
 	@runOncePerNode
 	public override visitStmtLoop(stmt: STMT.StatementLoop): void {
-		let condition: () => OP.Value = () => this.exprVisitor.visit(stmt.condition);
+		let condition: () => OP.Value = () => this.#exprVisitorBuild.visit(stmt.condition);
 		if (stmt.until) {
-			condition = () => new OP.Unop(OP.OpCode.NOT, this.exprVisitor.visit(stmt.condition).asTac(this.builder), TYPE.BOOL);
+			condition = () => new OP.Unop(OP.OpCode.NOT, this.#exprVisitorBuild.visit(stmt.condition).asTac(this.builder), TYPE.BOOL);
 		}
 
 		stmt.labelWhile    = this.builder.newLabel();
@@ -199,7 +199,7 @@ export class AstNodeVisitorBuild extends AstNodeVisitor<void> {
 
 	@runOncePerNode
 	public override visitStmtIteration(stmt: STMT.StatementIteration): void {
-		const iterable: OP.ValueTac = this.exprVisitor.visit(stmt.iterable).asTac(this.builder);
+		const iterable: OP.ValueTac = this.#exprVisitorBuild.visit(stmt.iterable).asTac(this.builder);
 		const index:    Temp        = this.builder.newTemp(new OP.Const(VALUE.NAT_0));
 		const get_index             = new OP.Get(index);
 		assert_instanceof(iterable.type, TYPE.List);
@@ -256,7 +256,7 @@ export class AstNodeVisitorBuild extends AstNodeVisitor<void> {
 	@runOncePerNode
 	public override visitStmtReturn(stmt: STMT.StatementReturn): void {
 		if (stmt.expression) {
-			const expr_build: OP.ValueTac = this.exprVisitor.visit(stmt.expression).asTac(this.builder);
+			const expr_build: OP.ValueTac = this.#exprVisitorBuild.visit(stmt.expression).asTac(this.builder);
 			this.builder.pushInstruction(new OP.Return(!stmt.panic, expr_build));
 		}
 		this.builder.terminateBlock(new OP.Goto('caller'));

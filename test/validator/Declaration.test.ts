@@ -235,6 +235,11 @@ test.suite('Declaration', () => {
 
 
 	test.suite('#typeCheck', () => {
+		let node_type_check: AST.AstNodeVisitorTypeCheck;
+		test.before(() => {
+			node_type_check = new AST.AstNodeVisitorTypeCheck();
+		});
+
 		test.suite('DeclarationType', () => {
 			test.test('sets `SymbolSchemaType#typevalue`.', () => {
 				assert.strictEqual(
@@ -254,10 +259,10 @@ test.suite('Declaration', () => {
 						.filter((s) => !!s)
 						.forEach((s) => typeCheckGoal(`{${s}}`, expect_thrown));
 				}
-				const {goal} = setupScript(src, {typeCheck: false});
+				const {goal, visitors} = setupScript(src, {typeCheck: false});
 				return (expect_thrown)
-					? assert.throws(() => goal.typeCheck(), expect_thrown)
-					: goal.typeCheck();
+					? assert.throws(() => visitors.typeCheck.visit(goal), expect_thrown)
+					: visitors.typeCheck.visit(goal);
 			}
 			test.test('checks the assigned expression’s type against the variable assignee’s type.', () => {
 				setupScript(`{
@@ -267,7 +272,7 @@ test.suite('Declaration', () => {
 					val  the_answer:  int | float =  21  *  2;
 				`);
 				var_.varCheck();
-				return var_.typeCheck();
+				return node_type_check.visit(var_);
 			});
 			test.test('passes when assigned is structurally assignable.', () => {
 				xjs.Array.forEachAggregated(extract_lines`
@@ -357,25 +362,26 @@ test.suite('Declaration', () => {
 					]);
 				});
 				test.test('throws when assigned expression is not a primitive literal, string template, constructor call, or inferrable tuple/record literal.', () => {
-					xjs.Array.forEachAggregated(setupScript(`{
+					const {stmts, visitors} = setupScript(`{
 						val operation = 21 * 2;
 						val block_expr = { 42; };
 						val tup_literal = (42, "hello", operation);
 						val rec_literal = (a= 69, b= "world", c= operation);
 						val list_literal = [42, 69];
 						val dict_literal = [a= "hello", b= "world"];
-					}`, {typeCheck: false}).stmts, (stmt) => assert.throws(() => stmt.typeCheck(), AssignmentErrorMissingType));
+					}`, {typeCheck: false});
+					xjs.Array.forEachAggregated(stmts, (stmt) => assert.throws(() => visitors.typeCheck.visit(stmt), AssignmentErrorMissingType));
 				});
 			});
 			test.test('throws when the assigned expression’s type is not compatible with the variable assignee’s type.', () => {
-				assert.throws(() => AST.STMT.DeclarationVariable.fromSource(`
+				assert.throws(() => node_type_check.visit(AST.STMT.DeclarationVariable.fromSource(`
 					val  the_answer:  null =  21  *  2;
-				`).typeCheck(), TypeErrorNotAssignable);
+				`)), TypeErrorNotAssignable);
 			});
 			test.test('throws when assigning int to float.', () => {
-				assert.throws(() => AST.STMT.DeclarationVariable.fromSource(`
+				assert.throws(() => node_type_check.visit(AST.STMT.DeclarationVariable.fromSource(`
 					val x: float = 42;
-				`).typeCheck(), TypeErrorNotAssignable);
+				`)), TypeErrorNotAssignable);
 			});
 			test.test('immutable lists/dicts/sets/maps should be covariant.', () => {
 				typeCheckGoal(extract_lines`
@@ -620,7 +626,7 @@ test.suite('Declaration', () => {
 
 		test.suite('DeclarationFunction', () => {
 			test.test('sets the SymbolSchemaFunc `type`.', () => {
-				const {stmts} = setupScript(`{
+				const {stmts, visitors} = setupScript(`{
 					func f(a: float, mut b: str): void { return; };
 				}`, {typeCheck: false});
 				const id_f: bigint = Validator.cookTokenIdentifier('f');
@@ -641,7 +647,7 @@ test.suite('Declaration', () => {
 					[info_a.type, info_b.type],
 					repeat(TYPE.ANYTHING, 2),
 				);
-				fn.typeCheck();
+				visitors.typeCheck.visit(fn);
 				assert.strictEqual(info_f.types.length, 1);
 				assertEqualTypes(info_f.types[0], new TYPE.Function(TYPE.Tuple.fromTypes([
 					TYPE.FLOAT,
@@ -653,7 +659,7 @@ test.suite('Declaration', () => {
 				);
 			});
 			test.test('pushes to array of overload signatures.', () => {
-				const {stmts, goal} = setupScript(`{
+				const {goal, stmts, visitors} = setupScript(`{
 					func f(a: int): void { "1"; return; }
 					func f($b: nat): void { "2"; return; }
 				}`, {typeCheck: false});
@@ -663,8 +669,8 @@ test.suite('Declaration', () => {
 				const info_f: SymbolSchema | undefined = validator.getSymbol(id_f);
 				assert_instanceof(info_f, SymbolSchemaFunc);
 				assert.strictEqual(info_f.types.length, 0);
-				stmts[0].typeCheck();
-				stmts[1].typeCheck();
+				visitors.typeCheck.visit(stmts[0]);
+				visitors.typeCheck.visit(stmts[1]);
 				return assertEqualTypes(info_f.types, [
 					new TYPE.Function(TYPE.Tuple.fromTypes([TYPE.INT])),
 					new TYPE.Function(new TYPE.Tuple(), TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>([
@@ -673,12 +679,12 @@ test.suite('Declaration', () => {
 				]);
 			});
 			test.test('throws when overloads have identical signatures.', () => {
-				const {stmts} = setupScript(`{
+				const {stmts, visitors} = setupScript(`{
 					func f(a: int): void { "1"; return; }
 					func f(b: int): void { "2"; return; }
 				}`, {typeCheck: false});
-				stmts[0].typeCheck(); // assert does not throw
-				return assert.throws(() => stmts[1].typeCheck(), TypeErrorAmbiguousOverload);
+				visitors.typeCheck.visit(stmts[0]); // assert does not throw
+				return assert.throws(() => visitors.typeCheck.visit(stmts[1]), TypeErrorAmbiguousOverload);
 			});
 		});
 	});

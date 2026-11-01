@@ -2,6 +2,7 @@ import * as xjs from 'extrajs';
 import {assert_context_name} from '../../../lib/index.ts';
 import {TYPE} from '../../../typer/index.ts';
 import type {SyntaxNodeFamily} from '../../utils-private.ts';
+import type {ExprVisitorType} from '../index.ts';
 import type {AstNode} from '../AstNode.ts';
 import {Expression} from './Expression.ts';
 
@@ -17,17 +18,17 @@ export function assignToDeco(
 	context: ClassMethodDecoratorContext<Collection, typeof method>,
 ): typeof method {
 	assert_context_name(context, 'assignTo');
-	return function (this: Collection, assignee) {
+	return function (this: Collection, visitor, assignee) {
 		if (assignee instanceof TYPE.Intersection) {
 			/* A value is assignable to a type intersection if and only if
 			it is assignable to all operands of that intersection. */
-			return xjs.Array.forEachAggregated(assignee.operands, (s) => this.assignTo(s));
+			return xjs.Array.forEachAggregated(assignee.operands, (s) => this.assignTo(visitor, s));
 		} else if (assignee instanceof TYPE.Union) {
 			/* A value is assignable to a type union if and only if
 			it is assignable to any operand of that union. */
-			return xjs.Array.forEither(assignee.operands, (s) => this.assignTo(s));
+			return xjs.Array.forEither(assignee.operands, (s) => this.assignTo(visitor, s));
 		} else {
-			return method.call(this, assignee);
+			return method.call(this, visitor, assignee);
 		}
 	};
 }
@@ -65,8 +66,9 @@ export abstract class Collection extends Expression {
 	 *
 	 * Note that this method must be present for Tuple and Record nodes (even though they are immutable),
 	 * because we want to ensure it applies for any nested types.
+	 * @param  visitor                  typer visitor
 	 * @param  assignee                 the type to assign to
 	 * @throws {TypeErrorNotAssignable} if this node is not assignable to the assignee
 	 */
-	public abstract assignTo(assignee: TYPE.Type): void;
+	public abstract assignTo(visitor: ExprVisitorType, assignee: TYPE.Type): void;
 }

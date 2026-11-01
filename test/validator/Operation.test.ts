@@ -23,19 +23,19 @@ import {
 
 
 
-function typeOperations(tests: ReadonlyMap<string, TYPE.Type>): void {
-	return assertEqualTypes(
-		[...tests.keys()].map((src) => AST.EXPR.Operation.fromSource(src).type()),
-		[...tests.values()],
-	);
-}
-
-
-
 test.suite('Operation', () => {
+	const VISITOR = new AST.ExprVisitorType();
+
+	function typeOperations(tests: ReadonlyMap<string, TYPE.Type>): void {
+		return assertEqualTypes(
+			[...tests.keys()].map((src) => VISITOR.visit(AST.EXPR.Operation.fromSource(src))),
+			[...tests.values()],
+		);
+	}
+
 	function typeOfStmtExpr(stmt: AST.STMT.Statement): TYPE.Type {
 		assert_instanceof(stmt, AST.STMT.StatementExpression);
-		return stmt.expr!.type();
+		return VISITOR.visit(stmt.expr!);
 	}
 
 
@@ -56,7 +56,7 @@ test.suite('Operation', () => {
 					x~?;
 					y~?;
 					z~?;
-				}`, {build: false}).stmts.slice(6).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()), [
+				}`, {build: false}).stmts.slice(6).map((stmt) => VISITOR.visit((stmt as AST.STMT.StatementExpression).expr!)), [
 					new TYPE.Maybe(TYPE.INT),
 					new TYPE.Maybe(TYPE.NAT),
 					new TYPE.Maybe(TYPE.FLOAT),
@@ -77,7 +77,7 @@ test.suite('Operation', () => {
 					x~!;
 					y~!;
 					z~!;
-				}`, {build: false}).stmts.slice(3).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()), [
+				}`, {build: false}).stmts.slice(3).map((stmt) => VISITOR.visit((stmt as AST.STMT.StatementExpression).expr!)), [
 					new TYPE.Result(TYPE.INT),
 					new TYPE.Result(TYPE.NAT),
 					new TYPE.Result(TYPE.FLOAT, TYPE.EXCP),
@@ -113,7 +113,7 @@ test.suite('Operation', () => {
 							?j;
 							?k;
 							?l;
-						}`, {build: false}).stmts.slice(11).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()),
+						}`, {build: false}).stmts.slice(11).map((stmt) => VISITOR.visit((stmt as AST.STMT.StatementExpression).expr!)),
 						repeat(TYPE.BOOL, 11),
 					);
 				});
@@ -127,7 +127,7 @@ test.suite('Operation', () => {
 					setupScript(`{
 						val n: null = null;
 						${INTRINSICS.map((t) => `n is ${t};`).join('\n')}
-					}`, {build: false}).stmts.slice(1).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()),
+					}`, {build: false}).stmts.slice(1).map((stmt) => VISITOR.visit((stmt as AST.STMT.StatementExpression).expr!)),
 					repeat(TYPE.BOOL, 20),
 				);
 			});
@@ -138,7 +138,7 @@ test.suite('Operation', () => {
 						setupScript(`{
 							val n: anything = null;
 							${INTRINSICS.map((t) => `n as ${t};`).join('\n')}
-						}`, {build: false}).stmts.slice(1).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()),
+						}`, {build: false}).stmts.slice(1).map((stmt) => VISITOR.visit((stmt as AST.STMT.StatementExpression).expr!)),
 						[
 							TYPE.NULL,
 							TYPE.BOOL,
@@ -164,12 +164,12 @@ test.suite('Operation', () => {
 					);
 				});
 				test.test('throws when the assigned type is not equal or narrower.', () => {
-					const {stmts} = setupScript(`{
+					const {stmts, visitors} = setupScript(`{
 						val n: int = 42;
 						n as Float;
 					}`, {typeCheck: false});
-					stmts[0].typeCheck();
-					return assert.throws(() => stmts[1].typeCheck(), TypeErrorNotNarrow);
+					visitors.typeCheck.visit(stmts[0]);
+					return assert.throws(() => visitors.typeCheck.visit(stmts[1]), TypeErrorNotNarrow);
 				});
 			});
 
@@ -179,7 +179,7 @@ test.suite('Operation', () => {
 						setupScript(`{
 							val n: anything = null;
 							${INTRINSICS.map((t) => `n as? ${t};`).join('\n')}
-						}`, {build: false}).stmts.slice(1).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()),
+						}`, {build: false}).stmts.slice(1).map((stmt) => VISITOR.visit((stmt as AST.STMT.StatementExpression).expr!)),
 						[
 							new TYPE.Maybe(TYPE.NULL),
 							new TYPE.Maybe(TYPE.BOOL),
@@ -205,12 +205,12 @@ test.suite('Operation', () => {
 					);
 				});
 				test.test('throws when the assigned type is not equal or narrower.', () => {
-					const {stmts} = setupScript(`{
+					const {stmts, visitors} = setupScript(`{
 						val n: int = 42;
 						n as? Float;
 					}`, {typeCheck: false});
-					stmts[0].typeCheck();
-					return assert.throws(() => stmts[1].typeCheck(), TypeErrorNotNarrow);
+					visitors.typeCheck.visit(stmts[0]);
+					return assert.throws(() => visitors.typeCheck.visit(stmts[1]), TypeErrorNotNarrow);
 				});
 			});
 		});
@@ -233,7 +233,7 @@ test.suite('Operation', () => {
 						(i1 + i2) * i3;
 						(n1 + n2) * n3;
 						f1 * f2 ^ f3;
-					}`, {build: false}).stmts.slice(9).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()),
+					}`, {build: false}).stmts.slice(9).map((stmt) => VISITOR.visit((stmt as AST.STMT.StatementExpression).expr!)),
 					[TYPE.INT, TYPE.NAT, TYPE.FLOAT],
 				);
 			});
@@ -252,7 +252,7 @@ test.suite('Operation', () => {
 						val mut f2: float = 3.1;
 
 						${['i1', 'n1', 'f1'].flatMap((left) => ['i2', 'n2', 'f2'].flatMap((right) => ['<', '>', '<=', '>=', '!<', '!>'].map((op) => `${left} ${op} ${right};`))).join('\n')}
-					}`).stmts.slice(6).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()),
+					}`).stmts.slice(6).map((stmt) => VISITOR.visit((stmt as AST.STMT.StatementExpression).expr!)),
 					repeat(TYPE.BOOL, 3 * 3 * 6),
 				);
 			});
@@ -266,11 +266,11 @@ test.suite('Operation', () => {
 					"hello" === "world"
 					@symb1  ==  @symb2
 					"hello" ==  "world"
-				`, (expr) => assert.strictEqual(AST.EXPR.Operation.fromSource(expr).type(), TYPE.FALSE));
+				`, (expr) => assert.strictEqual(VISITOR.visit(AST.EXPR.Operation.fromSource(expr)), TYPE.FALSE));
 			});
 			test.test('returns `false` if operands are of disjoint types in general.', () => {
-				assert.strictEqual(AST.EXPR.Operation.fromSource('7      == null').type(), TYPE.FALSE);
-				assert.strictEqual(AST.EXPR.Operation.fromSource('@symb1 == 256').type(),  TYPE.FALSE);
+				assert.strictEqual(VISITOR.visit(AST.EXPR.Operation.fromSource('7      == null')), TYPE.FALSE);
+				assert.strictEqual(VISITOR.visit(AST.EXPR.Operation.fromSource('@symb1 == 256')),  TYPE.FALSE);
 			});
 			test.test('without constant folding: returns `bool` for operands of same numeric type.', () => {
 				assert_shallowStrictEqual(
@@ -288,7 +288,7 @@ test.suite('Operation', () => {
 						i1 == i2;
 						n1 == n2;
 						f1 == f2;
-					}`).stmts.slice(6).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()),
+					}`).stmts.slice(6).map((stmt) => VISITOR.visit((stmt as AST.STMT.StatementExpression).expr!)),
 					repeat(TYPE.BOOL, 6),
 				);
 			});
@@ -304,7 +304,7 @@ test.suite('Operation', () => {
 							i1 === n1;
 							i1 === f1;
 							n1 === f1;
-						}`).stmts.slice(3).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()),
+						}`).stmts.slice(3).map((stmt) => VISITOR.visit((stmt as AST.STMT.StatementExpression).expr!)),
 						repeat(TYPE.FALSE, 3),
 					);
 				});
@@ -321,7 +321,7 @@ test.suite('Operation', () => {
 							i1 == n1;
 							i1 == f1;
 							n1 == f1;
-						}`).stmts.slice(3).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()),
+						}`).stmts.slice(3).map((stmt) => VISITOR.visit((stmt as AST.STMT.StatementExpression).expr!)),
 						repeat(TYPE.BOOL, 3),
 					);
 				});
@@ -364,7 +364,7 @@ test.suite('Operation', () => {
 					]));
 				});
 				test.test('[operator=NEG] throws for Natural number literals (foldable).', () => {
-					assert.throws(() => AST.EXPR.Operation.fromSource('-+42').type(), TypeErrorInvalidOperation);
+					assert.throws(() => VISITOR.visit(AST.EXPR.Operation.fromSource('-+42')), TypeErrorInvalidOperation);
 				});
 			});
 
@@ -420,12 +420,12 @@ test.suite('Operation', () => {
 					});
 				});
 				test.test('[operator=NEG] throws for `nat` type.', () => {
-					const {stmts} = setupScript(`{
+					const {stmts, visitors} = setupScript(`{
 						val mut n: nat = +42;
 						-n;
 					}`, {typeCheck: false});
-					stmts[0].typeCheck(); // assert does not throw
-					assert.throws(() => ((stmts[1] as AST.STMT.StatementExpression).expr as AST.EXPR.OperationUnary).type(), TypeErrorInvalidOperation);
+					visitors.typeCheck.visit(stmts[0]); // assert does not throw
+					assert.throws(() => VISITOR.visit((stmts[1] as AST.STMT.StatementExpression).expr as AST.EXPR.OperationUnary), TypeErrorInvalidOperation);
 				});
 			});
 		});
@@ -443,21 +443,27 @@ test.suite('Operation', () => {
 				]));
 			});
 			test.test('throws for any operation of mix of numeric types.', () => {
-				assert.throws(() => AST.EXPR.OperationBinaryArithmetic.fromSource('+3 * 2')      .type(), TypeErrorInvalidOperation);
-				assert.throws(() => AST.EXPR.OperationBinaryArithmetic.fromSource('+3 * 2.7')    .type(), TypeErrorInvalidOperation);
-				assert.throws(() => AST.EXPR.OperationBinaryArithmetic.fromSource('3 * 2.7')     .type(), TypeErrorInvalidOperation);
-				assert.throws(() => AST.EXPR.OperationBinaryArithmetic.fromSource('7 * 3.0 * 2') .type(), TypeErrorInvalidOperation);
+				xjs.Array.forEachAggregated(extract_lines`
+					+3 * 2
+					+3 * 2.7
+					3 * 2.7
+					7 * 3.0 * 2
+				`, (src) => {
+					const op = AST.EXPR.OperationBinaryArithmetic.fromSource(src);
+					return assert.throws(() => VISITOR.visit(op), TypeErrorInvalidOperation);
+				});
 			});
 			test.test('throws for arithmetic operation of non-numbers.', () => {
-				[
-					'null + 5',
-					'5 * null',
-					'false - 2',
-					'2 / true',
-					'null ^ false',
-					'"hello" + 5',
-				].forEach((src) => {
-					assert.throws(() => AST.EXPR.OperationBinaryArithmetic.fromSource(src).type(), TypeErrorInvalidOperation);
+				xjs.Array.forEachAggregated(extract_lines`
+					null + 5
+					5 * null
+					false - 2
+					2 / true
+					null ^ false
+					"hello" + 5
+				`, (src) => {
+					const op = AST.EXPR.OperationBinaryArithmetic.fromSource(src);
+					return assert.throws(() => VISITOR.visit(op), TypeErrorInvalidOperation);
 				});
 			});
 		});
@@ -487,10 +493,10 @@ test.suite('Operation', () => {
 					2   >= 3.0
 					2   !< 3.0
 					2   !> 3.0
-				`, (src) => assert.strictEqual(AST.EXPR.Operation.fromSource(src).type(), TYPE.BOOL));
+				`, (src) => assert.strictEqual(VISITOR.visit(AST.EXPR.Operation.fromSource(src)), TYPE.BOOL));
 			});
 			test.test('throws for comparative operation of non-numbers.', () => {
-				assert.throws(() => AST.EXPR.OperationBinaryComparative.fromSource('7.0 <= null').type(), TypeErrorInvalidOperation);
+				assert.throws(() => VISITOR.visit(AST.EXPR.OperationBinaryComparative.fromSource('7.0 <= null')), TypeErrorInvalidOperation);
 			});
 		});
 	});
@@ -543,7 +549,7 @@ test.suite('Operation', () => {
 						d != {41 -> 43};
 						d != {43 -> 42};
 					}`, {build: false}).stmts.slice(4).forEach((stmt) => assert.strictEqual(
-						((stmt as AST.STMT.StatementExpression).expr as AST.EXPR.OperationBinaryEquality).type(),
+						VISITOR.visit((stmt as AST.STMT.StatementExpression).expr as AST.EXPR.OperationBinaryEquality),
 						TYPE.BOOL,
 					));
 				});
@@ -679,10 +685,10 @@ test.suite('Operation', () => {
 			test.test('returns `nothing` when condition is `nothing`.', () => {
 				const ternary: AST.EXPR.OperationTernary = AST.EXPR.OperationTernary.fromSource('if n as <nothing> then true else false');
 				ternary.validator.addSymbol(new SymbolSchemaVar(Validator.cookTokenIdentifier('n'), (ternary.operand0 as AST.EXPR.Claim).operand, false, false));
-				return assert.ok(ternary.type().isBottomType);
+				return assert.ok(VISITOR.visit(ternary).isBottomType);
 			});
 			test.test('throws when condition is not a subtype of `boolean`.', () => {
-				assert.throws(() => AST.EXPR.OperationTernary.fromSource('if 2 then true else false').type(), TypeErrorInvalidOperation);
+				assert.throws(() => VISITOR.visit(AST.EXPR.OperationTernary.fromSource('if 2 then true else false')), TypeErrorInvalidOperation);
 			});
 		});
 	});

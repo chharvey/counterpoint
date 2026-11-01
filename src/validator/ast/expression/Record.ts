@@ -13,6 +13,7 @@ import {
 } from '../../../core/index.ts';
 import {TYPE} from '../../../typer/index.ts';
 import type {SyntaxNodeFamily} from '../../utils-private.ts';
+import type {ExprVisitorType} from '../index.ts';
 import {check_unique_keys} from '../utils-private.ts';
 import {typecheck_assign} from '../AstNode.ts';
 import type {Property} from '../Property.ts';
@@ -31,7 +32,7 @@ class ExpressionRecord extends Collection {
 		return expression;
 	}
 
-	public static assignPropsToRecordType(properties: readonly Property[], assignee: TYPE.Record, err: CplTypeError): void {
+	public static assignPropsToRecordType(visitor: ExprVisitorType, properties: readonly Property[], assignee: TYPE.Record, err: CplTypeError): void {
 		return xjs.Map.forEachAggregated(assignee.typeargs, (entry, key) => {
 			const prop: Property | undefined = properties.find((p) => p.key.id === key);
 			/* NOTE: We *cannot* assert the property exists since properties are not ordered.
@@ -39,7 +40,7 @@ class ExpressionRecord extends Collection {
 			if (!entry.optional && !prop) {
 				throw err;
 			}
-			return prop && typecheck_assign(prop.val, entry.type, prop);
+			return prop && typecheck_assign(visitor, prop.val, entry.type, prop);
 		});
 	}
 
@@ -57,13 +58,13 @@ class ExpressionRecord extends Collection {
 	}
 
 	@assignToDeco
-	public override assignTo(assignee: TYPE.Type): void {
+	public override assignTo(visitor: ExprVisitorType, assignee: TYPE.Type): void {
 		const err = new TypeErrorNotAssignable(this, assignee);
 		if (assignee instanceof TYPE.Record) {
 			if (this.children.length < assignee.minCount) {
 				throw err;
 			}
-			return ExpressionRecord.assignPropsToRecordType(this.children, assignee, err);
+			return ExpressionRecord.assignPropsToRecordType(visitor, this.children, assignee, err);
 		}
 		throw err;
 	}

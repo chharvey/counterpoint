@@ -234,9 +234,10 @@ test.suite('Call', () => {
 
 
 	test.suite('#type', () => {
+		const VISITOR = new AST.ExprVisitorType();
 		test.test('evaluates Callable Class Names.', () => {
 			assertEqualTypes(
-				EVALUATE.map((src) => AST.EXPR.Call.fromSource(src).type()),
+				EVALUATE.map((src) => VISITOR.visit(AST.EXPR.Call.fromSource(src))),
 				[
 					TYPE.BOOL,
 					TYPE.INT,
@@ -259,61 +260,61 @@ test.suite('Call', () => {
 		});
 		test.test('`Boolean.(‹…›)`', () => {
 			assertEqualTypes(
-				BOOL_CONS.map((src) => AST.EXPR.Call.fromSource(src).type()),
+				BOOL_CONS.map((src) => VISITOR.visit(AST.EXPR.Call.fromSource(src))),
 				repeat(TYPE.BOOL, BOOL_CONS.length),
 			);
 		});
 		test.test('`Integer.(‹…›)`', () => {
 			assertEqualTypes(
-				INT_CONS.map((src) => AST.EXPR.Call.fromSource(src).type()),
+				INT_CONS.map((src) => VISITOR.visit(AST.EXPR.Call.fromSource(src))),
 				repeat(TYPE.INT, INT_CONS.length),
 			);
 		});
 		test.test('`Natural.(‹…›)`', () => {
 			assertEqualTypes(
-				NAT_CONS.map((src) => AST.EXPR.Call.fromSource(src).type()),
+				NAT_CONS.map((src) => VISITOR.visit(AST.EXPR.Call.fromSource(src))),
 				repeat(TYPE.NAT, NAT_CONS.length),
 			);
 		});
 		test.test('`Float.(‹…›)`', () => {
 			assertEqualTypes(
-				FLOAT_CONS.map((src) => AST.EXPR.Call.fromSource(src).type()),
+				FLOAT_CONS.map((src) => VISITOR.visit(AST.EXPR.Call.fromSource(src))),
 				repeat(TYPE.FLOAT, FLOAT_CONS.length),
 			);
 		});
 		test.test('`String.(‹…›)`', () => {
 			assertEqualTypes(
-				STRING_CONS.map((src) => AST.EXPR.Call.fromSource(src).type()),
+				STRING_CONS.map((src) => VISITOR.visit(AST.EXPR.Call.fromSource(src))),
 				repeat(TYPE.STR, STRING_CONS.length),
 			);
 		});
 		test.test('`List.(‹…›)`', () => {
 			assertEqualTypes(
-				LIST_CONS.map((src) => AST.EXPR.Call.fromSource(src).type()),
+				LIST_CONS.map((src) => VISITOR.visit(AST.EXPR.Call.fromSource(src))),
 				repeat(new TYPE.List(TYPE.INT, true), LIST_CONS.length),
 			);
 		});
 		test.test('`Dict.(‹…›)`', () => {
 			assertEqualTypes(
-				DICT_CONS.map((src) => AST.EXPR.Call.fromSource(src).type()),
+				DICT_CONS.map((src) => VISITOR.visit(AST.EXPR.Call.fromSource(src))),
 				repeat(new TYPE.Dict(TYPE.INT, true), DICT_CONS.length),
 			);
 		});
 		test.test('`Set.(‹…›)`', () => {
 			assertEqualTypes(
-				SET_CONS.map((src) => AST.EXPR.Call.fromSource(src).type()),
+				SET_CONS.map((src) => VISITOR.visit(AST.EXPR.Call.fromSource(src))),
 				repeat(new TYPE.Set(TYPE.INT, true), SET_CONS.length),
 			);
 		});
 		test.test('`Map.(‹…›)`', () => {
 			assertEqualTypes(
-				MAP_CONS.map((src) => AST.EXPR.Call.fromSource(src).type()),
+				MAP_CONS.map((src) => VISITOR.visit(AST.EXPR.Call.fromSource(src))),
 				repeat(new TYPE.Map(TYPE.INT, TYPE.FLOAT, true), MAP_CONS.length),
 			);
 		});
 		test.test('`Exception.(‹…›)`', () => {
 			assertEqualTypes(
-				EXCEPTION_CONS.map((src) => AST.EXPR.Call.fromSource(src).type()),
+				EXCEPTION_CONS.map((src) => VISITOR.visit(AST.EXPR.Call.fromSource(src))),
 				repeat(TYPE.EXCP, EXCEPTION_CONS.length),
 			);
 		});
@@ -324,11 +325,11 @@ test.suite('Call', () => {
 				Set .<mut {int}>((   {42},))
 				Map.<float, mut {int}>(((4.2, {42}),))
 				Map.<mut {int}, float>((({42}, 4.2),))
-			`.map((src) => AST.EXPR.Call.fromSource(src).type());
+			`.map((src) => VISITOR.visit(AST.EXPR.Call.fromSource(src)));
 		});
 		test.test('Map has a default type parameter.', () => {
 			assertEqualTypes(
-				AST.EXPR.Call.fromSource('Map.<int>()').type(),
+				VISITOR.visit(AST.EXPR.Call.fromSource('Map.<int>()')),
 				new TYPE.Map(TYPE.INT, TYPE.INT, true),
 			);
 		});
@@ -349,10 +350,10 @@ test.suite('Call', () => {
 			xjs.Array.forEachAggregated(extract_lines`
 				null.()
 				(42 || 43).<bool>()
-			`, (src) => assert.throws(() => AST.EXPR.Call.fromSource(src).type(), TypeErrorNotCallable));
+			`, (src) => assert.throws(() => VISITOR.visit(AST.EXPR.Call.fromSource(src)), TypeErrorNotCallable));
 		});
 		test.test('throws when providing incorrect number (or names) of arguments.', () => {
-			const {stmts} = setupScript(`{
+			const {stmts, visitors} = setupScript(`{
 				func inc1(x: int): int => x + 1;
 				func inc2($x: int): int => x + 2;
 				inc1.();
@@ -362,9 +363,9 @@ test.suite('Call', () => {
 				inc2.(5);
 				inc2.(y= 6);
 			}`, {typeCheck: false});
-			stmts[0].typeCheck();
-			stmts[1].typeCheck();
-			xjs.Array.forEachAggregated(stmts.slice(2), (stmt) => assert.throws(() => (stmt as AST.STMT.StatementExpression).expr!.typeCheck(), TypeErrorArgCount));
+			visitors.typeCheck.visit(stmts[0]);
+			visitors.typeCheck.visit(stmts[1]);
+			xjs.Array.forEachAggregated(stmts.slice(2), (stmt) => assert.throws(() => visitors.typeCheck.visit((stmt as AST.STMT.StatementExpression).expr!), TypeErrorArgCount));
 			xjs.Array.forEachAggregated(extract_lines`
 				Integer.()
 				Integer.(1, 2)
@@ -380,22 +381,22 @@ test.suite('Call', () => {
 				Map.<int>((), ())
 				None.<int>(42)
 				Some.<int>()
-			`, (src) => assert.throws(() => AST.EXPR.Call.fromSource(src).type(), TypeErrorArgCount));
+			`, (src) => assert.throws(() => VISITOR.visit(AST.EXPR.Call.fromSource(src)), TypeErrorArgCount));
 		});
 		test.test('throws when providing incorrect type of arguments.', () => {
-			const {stmts} = setupScript(`{
+			const {stmts, visitors} = setupScript(`{
 				func inc1(x: int): int => x + 1;
 				func inc2($x: int): int => x + 2;
 				inc1.("3");
 				inc2.(x= "4");
 			}`, {typeCheck: false});
-			stmts[0].typeCheck();
-			stmts[1].typeCheck();
-			xjs.Array.forEachAggregated(stmts.slice(2), (stmt) => assert.throws(() => (stmt as AST.STMT.StatementExpression).expr!.typeCheck(), TypeErrorNotAssignable));
+			visitors.typeCheck.visit(stmts[0]);
+			visitors.typeCheck.visit(stmts[1]);
+			xjs.Array.forEachAggregated(stmts.slice(2), (stmt) => assert.throws(() => visitors.typeCheck.visit((stmt as AST.STMT.StatementExpression).expr!), TypeErrorNotAssignable));
 			// API overload checks
 			xjs.Map.forEachAggregated(new Map<string, readonly [string, readonly string[]]>(['Integer', 'Natural', 'Float'].flatMap((basesrc) => ['()', '[]', '{}'].map((argsrc) => (
 				[`${basesrc}.(${argsrc})`, [argsrc, ['int', 'nat', 'float']]] as const
-			)))), ([argexpr, allowed_types], src) => assert.throws(() => AST.EXPR.Call.fromSource(src).type(), (thrown) => {
+			)))), ([argexpr, allowed_types], src) => assert.throws(() => VISITOR.visit(AST.EXPR.Call.fromSource(src)), (thrown) => {
 				assertAssignable(thrown as Error, {
 					cons:   AggregateError,
 					errors: allowed_types.map((allowed_type) => ({
@@ -411,7 +412,7 @@ test.suite('Call', () => {
 				['Set.<int>(42)',  ['42', ['List.<int>', 'Set.<int>']]],
 				['Map.<int>(42)',  ['42', ['List.<(int, int)>', 'Set.<(int, int)>', 'Map.<int, int>']]],
 			]), ([argexpr, allowed_types], src) => assert.throws(
-				() => AST.EXPR.Call.fromSource(src).type(),
+				() => VISITOR.visit(AST.EXPR.Call.fromSource(src)),
 				(err) => {
 					assertAssignable(err as Error, {
 						cons:   AggregateError,
@@ -433,47 +434,47 @@ test.suite('Call', () => {
 				Set.<int>((42, "42"))
 				Map.<int>(((42, "42"),))
 				Some.<int>(4.2)
-			`, (src) => assert.throws(() => AST.EXPR.Call.fromSource(src).type(), TypeErrorNotAssignable));
+			`, (src) => assert.throws(() => VISITOR.visit(AST.EXPR.Call.fromSource(src)), TypeErrorNotAssignable));
 		});
 		test.test('return type.', () => {
-			assertEqualTypes((setupScript(`{
+			assertEqualTypes(VISITOR.visit((setupScript(`{
 				func inc(x: int): int => x + 1;
 				inc.(42);
-			}`, {build: false}).stmts[1] as AST.STMT.StatementExpression).expr!.type(), TYPE.INT);
+			}`, {build: false}).stmts[1] as AST.STMT.StatementExpression).expr!), TYPE.INT);
 		});
 		test.test('void functions have no return type.', {expectFailure: true}, () => {
-			assert.strictEqual((setupScript(`{
+			assert.strictEqual(VISITOR.visit((setupScript(`{
 				func inc(x: int): void { return; }
 				inc.(42);
-			}`, {build: false}).stmts[1] as AST.STMT.StatementExpression).expr!.type(), null);
+			}`, {build: false}).stmts[1] as AST.STMT.StatementExpression).expr!), null);
 		});
 		test.suite('function overloads.', () => {
 			test.test('when multiple overloads match and one is most specific, returns type of that overload.', () => {
-				assertEqualTypes((setupScript(`{
+				assertEqualTypes(VISITOR.visit((setupScript(`{
 					func overload_test(a: (int), b: (int,)): float => 4.2;
 					func overload_test(a: (int, int), b: (int, int)): str => "hello";
 					overload_test.((1, 2), (3, 4)); % matches both overloads, but 2nd is chosen; returns type \`str\`
-				}`, {build: false}).stmts[2] as AST.STMT.StatementExpression).expr!.type(), TYPE.STR);
+				}`, {build: false}).stmts[2] as AST.STMT.StatementExpression).expr!), TYPE.STR);
 			});
 			test.test('throws when multiple overloads match and none is most specific.', () => {
-				const {stmts} = setupScript(`{
+				const {stmts, visitors} = setupScript(`{
 					func overload_test(a: (int,), b: (int, int)): bool => true;
 					func overload_test(a: (int, int), b: (int,)): bool => true;
 					overload_test.((1, 2), (3, 4)); % TypeErrorAmbiguousOverload: matches both overloads
 				}`, {typeCheck: false});
-				stmts[0].typeCheck();
-				stmts[1].typeCheck();
-				return assert.throws(() => (stmts[2] as AST.STMT.StatementExpression).expr!.type(), TypeErrorAmbiguousOverload);
+				visitors.typeCheck.visit(stmts[0]);
+				visitors.typeCheck.visit(stmts[1]);
+				return assert.throws(() => VISITOR.visit((stmts[2] as AST.STMT.StatementExpression).expr!), TypeErrorAmbiguousOverload);
 			});
 			test.test('throws when no overloads match.', () => {
-				const {stmts} = setupScript(`{
+				const {stmts, visitors} = setupScript(`{
 					func overload_test(a: (int,), b: (int, int)): bool => true;
 					func overload_test(a: (int, int), b: (int,)): bool => true;
 					overload_test.((a= 1, b= 2), (c= 3, d= 4)); % TypeErrorAmbiguousOverload: matches neither overload
 				}`, {typeCheck: false});
-				stmts[0].typeCheck();
-				stmts[1].typeCheck();
-				return assert.throws(() => (stmts[2] as AST.STMT.StatementExpression).expr!.type(), TypeErrorAmbiguousOverload);
+				visitors.typeCheck.visit(stmts[0]);
+				visitors.typeCheck.visit(stmts[1]);
+				return assert.throws(() => VISITOR.visit((stmts[2] as AST.STMT.StatementExpression).expr!), TypeErrorAmbiguousOverload);
 			});
 		});
 	});

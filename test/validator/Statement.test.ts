@@ -244,9 +244,9 @@ test.suite('Statement', () => {
 						val x: int | float = 42;
 						claim x: anything; % supertype
 					}`], (src) => {
-						const {stmts} = setupScript(src, {typeCheck: false});
-						stmts[0].typeCheck(); // assert does not throw
-						return assert.throws(() => stmts[1].typeCheck(), TypeErrorNotNarrow);
+						const {stmts, visitors} = setupScript(src, {typeCheck: false});
+						visitors.typeCheck.visit(stmts[0]); // assert does not throw
+						return assert.throws(() => visitors.typeCheck.visit(stmts[1]), TypeErrorNotNarrow);
 					});
 				});
 				test.test('accessing variable after claim is narrowed.', () => {
@@ -256,8 +256,9 @@ test.suite('Statement', () => {
 						claim x: int;
 						x;            % type \`int\`
 					}`, {build: false});
+					const expr_visitor = new AST.ExprVisitorType();
 					return assert.deepStrictEqual(
-						[stmts[1], stmts[3]].map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()),
+						[stmts[1], stmts[3]].map((stmt) => expr_visitor.visit((stmt as AST.STMT.StatementExpression).expr!)),
 						[TYPE.INT.union(TYPE.FLOAT), TYPE.INT],
 					);
 				});
@@ -276,14 +277,14 @@ test.suite('Statement', () => {
 					}`, {build: false}); // assert does not throw
 				});
 				test.test('disallows reassigning incorrect type after claim.', () => {
-					const {stmts} = setupScript(`{
+					const {stmts, visitors} = setupScript(`{
 						val mut x: bool | null = false;
 						claim x: bool;
 						set x = null;
 					}`, {typeCheck: false});
-					stmts[0].typeCheck(); // assert does not throw
-					stmts[1].typeCheck(); // assert does not throw
-					return assert.throws(() => stmts[2].typeCheck(), TypeErrorNotAssignable);
+					visitors.typeCheck.visit(stmts[0]); // assert does not throw
+					visitors.typeCheck.visit(stmts[1]); // assert does not throw
+					return assert.throws(() => visitors.typeCheck.visit(stmts[2]), TypeErrorNotAssignable);
 				});
 			});
 			test.suite('for accesses.', () => {
@@ -323,8 +324,9 @@ test.suite('Statement', () => {
 						record.tuple.0;             % type \`int\`
 					}`, {build: false});
 					const INT_NULL: TYPE.Type = TYPE.INT.union(TYPE.NULL);
+					const expr_visitor = new AST.ExprVisitorType();
 					return assert.deepStrictEqual(
-						[...stmts.slice(1, 3), ...stmts.slice(5, 7)].map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()),
+						[...stmts.slice(1, 3), ...stmts.slice(5, 7)].map((stmt) => expr_visitor.visit((stmt as AST.STMT.StatementExpression).expr!)),
 						[INT_NULL, INT_NULL, TYPE.NULL, TYPE.INT],
 					);
 				});
@@ -369,10 +371,10 @@ test.suite('Statement', () => {
 						claim list.[0]: float;
 						set list.[0] = 42;
 					}`], (src, i) => {
-						const {stmts} = setupScript(src, {typeCheck: false});
+						const {stmts, visitors} = setupScript(src, {typeCheck: false});
 						if (i === 0) {
-							xjs.Array.forEachAggregated(stmts.slice(0, -1), (stmt) => stmt.typeCheck()); // assert does not throw
-							return assert.throws(() => stmts.at(-1)!.typeCheck(), (err) => {
+							xjs.Array.forEachAggregated(stmts.slice(0, -1), (stmt) => visitors.typeCheck.visit(stmt)); // assert does not throw
+							return assert.throws(() => visitors.typeCheck.visit(stmts.at(-1)!), (err) => {
 								assertAssignable(err as Error, {
 									cons:   AggregateError,
 									errors: [
@@ -383,8 +385,8 @@ test.suite('Statement', () => {
 								return true;
 							});
 						} else {
-							stmts[0].typeCheck(); // assert does not throw
-							assert.throws(() => stmts[1].typeCheck(), /not yet supported/);
+							visitors.typeCheck.visit(stmts[0]); // assert does not throw
+							assert.throws(() => visitors.typeCheck.visit(stmts[1]), /not yet supported/);
 						}
 					});
 				});
@@ -394,39 +396,39 @@ test.suite('Statement', () => {
 		test.suite('StatementReassignment', () => {
 			test.suite('for variable reassignment.', () => {
 				test.test('throws when variable assignee type is not supertype.', () => {
-					const {goal} = setupScript(`{
+					const {goal, visitors} = setupScript(`{
 						val mut i: int = 42;
 						set i = 4.3;
 					}`, {typeCheck: false});
-					return assert.throws(() => goal.typeCheck(), TypeErrorNotAssignable);
+					return assert.throws(() => visitors.typeCheck.visit(goal), TypeErrorNotAssignable);
 				});
 				test.test('does not allow reassignment of `null` or `Maybe` when uninitialized.', () => {
-					const {goal, stmts} = setupScript(`{
+					const {goal, stmts, visitors} = setupScript(`{
 						val mut x?: int;
 						val mut y?: int;
 						set x = 42;
 						set x = null;
 						set x = y;
 					}`, {typeCheck: false});
-					stmts.slice(0, 3).forEach((stmt) => stmt.typeCheck());
+					stmts.slice(0, 3).forEach((stmt) => visitors.typeCheck.visit(stmt));
 					assert.partialDeepStrictEqual(goal.block!.validator.getSymbolBySource('x'), {
 						isWritable:      true,
 						isUninitialized: true,
 					});
-					return xjs.Array.forEachAggregated(stmts.slice(3), (stmt) => assert.throws(() => stmt.typeCheck(), TypeErrorNotAssignable));
+					return xjs.Array.forEachAggregated(stmts.slice(3), (stmt) => assert.throws(() => visitors.typeCheck.visit(stmt), TypeErrorNotAssignable));
 				});
 				test.test('None/Some assignable to Maybe, but not to each other.', () => {
 					setupScript(`{
 						val a: Maybe.<int> = None.<int>();
 						val b: Maybe.<int> = Some.<int>(42);
 					}`, {build: false}); // assert does not throw
-					const {stmts} = setupScript(`{
+					const {stmts, visitors} = setupScript(`{
 						val c: Maybe.<float> = None.<int>();
 						val d: Maybe.<float> = Some.<int>(42);
 						val e: Some.<int> = None.<int>();
 						val f: None.<int> = Some.<int>(42);
 					}`, {typeCheck: false});
-					return xjs.Array.forEachAggregated(stmts, (stmt) => assert.throws(() => stmt.typeCheck(), TypeErrorNotAssignable));
+					return xjs.Array.forEachAggregated(stmts, (stmt) => assert.throws(() => visitors.typeCheck.visit(stmt), TypeErrorNotAssignable));
 				});
 			});
 			test.suite('for property reassignment.', () => {
@@ -467,8 +469,8 @@ test.suite('Statement', () => {
 							set m.[true] = 4.2;
 						}`,
 					].forEach((src) => {
-						const {goal} = setupScript(src, {typeCheck: false});
-						assert.throws(() => goal.typeCheck(), TypeErrorNotAssignable);
+						const {goal, visitors} = setupScript(src, {typeCheck: false});
+						assert.throws(() => visitors.typeCheck.visit(goal), TypeErrorNotAssignable);
 					});
 				});
 				test.test('throws when Set/Map accessor expression is not a valid type.', () => {
@@ -479,8 +481,8 @@ test.suite('Statement', () => {
 						val m: mut {bool -> int} = {true -> 42};
 						set m.["true"] = 43;
 					}`], (src) => {
-						const {goal} = setupScript(src, {typeCheck: false});
-						assert.throws(() => goal.typeCheck(), TypeErrorNotNarrow);
+						const {goal, visitors} = setupScript(src, {typeCheck: false});
+						assert.throws(() => visitors.typeCheck.visit(goal), TypeErrorNotNarrow);
 					});
 				});
 				test.test('throws when assignee’s base type is not mutable.', () => {
@@ -510,8 +512,8 @@ test.suite('Statement', () => {
 							set m.[true] = 43;
 						}`,
 					].forEach((src) => {
-						const {goal} = setupScript(src, {typeCheck: false});
-						assert.throws(() => goal.typeCheck(), MutabilityError01);
+						const {goal, visitors} = setupScript(src, {typeCheck: false});
+						assert.throws(() => visitors.typeCheck.visit(goal), MutabilityError01);
 					});
 				});
 			});
@@ -523,12 +525,12 @@ test.suite('Statement', () => {
 						Set.<int>((42,)).[43]
 						Map.<bool, int>(((true, 42),)).[true]
 					`, (src) => {
-						const {goal} = setupScript(`{ delete ${src}; }`, {typeCheck: false});
-						assert.throws(() => goal.typeCheck(), /only applicable to interface types/);
+						const {goal, visitors} = setupScript(`{ delete ${src}; }`, {typeCheck: false});
+						assert.throws(() => visitors.typeCheck.visit(goal), /only applicable to interface types/);
 					});
 				});
 				test.test('throws when assignee’s base type is not mutable.', {expectFailure: true}, () => {
-					const {stmts} = setupScript(`{
+					const {stmts, visitors} = setupScript(`{
 						claim p: interface {
 							readonly x: int;
 							y: int;
@@ -538,26 +540,29 @@ test.suite('Statement', () => {
 						delete p.y;
 						delete p.z;
 					}`, {typeCheck: false});
-					stmts[0].typeCheck();
-					assert.throws(() => stmts[1].typeCheck(), MutabilityError01);
-					assert.throws(() => stmts[2].typeCheck(), MutabilityError01);
-					assert.throws(() => stmts[3].typeCheck(), MutabilityError01);
+					visitors.typeCheck.visit(stmts[0]);
+					return xjs.Array.forEachAggregated(
+						stmts.slice(1),
+						(stmt) => assert.throws(() => visitors.typeCheck.visit(stmt), MutabilityError01),
+					);
 				});
 				test.test('throws when assignee’s property is read-only or non-optional.', {expectFailure: true}, () => {
-					const {stmts} = setupScript(`{
+					const {stmts, visitors} = setupScript(`{
 						claim p: mut interface {
 							readonly x: int;
 							y: int | null;
 							z?: int;
 						};
+						delete p.z; % allowed
 						delete p.x; % cannot delete a read-only property
 						delete p.y; % cannot delete a non-optional property (even if type is nullish)
-						delete p.z; % allowed
 					}`, {typeCheck: false});
-					stmts[0].typeCheck();
-					assert.throws(() => stmts[1].typeCheck(), MutabilityError01);
-					assert.throws(() => stmts[2].typeCheck(), MutabilityError01);
-					stmts[3].typeCheck();
+					visitors.typeCheck.visit(stmts[0]);
+					visitors.typeCheck.visit(stmts[1]);
+					return xjs.Array.forEachAggregated(
+						stmts.slice(2),
+						(stmt) => assert.throws(() => visitors.typeCheck.visit(stmt), MutabilityError01),
+					);
 				});
 			});
 		});
@@ -585,13 +590,13 @@ test.suite('Statement', () => {
 			});
 			test.test('throws when condition is not subtype of Boolean.', () => {
 				xjs.Array.forEachAggregated(NON_BOOLS, (decl) => {
-					const {stmts} = setupScript(`{
+					const {stmts, visitors} = setupScript(`{
 						${decl}
 						if     cond then { "consequent"; } else { "alternative"; };
 						unless cond then { "consequent"; };
 					}`, {typeCheck: false});
-					stmts[0].typeCheck(); // assert does not throw
-					return xjs.Array.forEachAggregated(stmts.slice(1), (stmt) => assert.throws(() => stmt.typeCheck(), TypeErrorNotAssignable));
+					visitors.typeCheck.visit(stmts[0]); // assert does not throw
+					return xjs.Array.forEachAggregated(stmts.slice(1), (stmt) => assert.throws(() => visitors.typeCheck.visit(stmt), TypeErrorNotAssignable));
 				});
 			});
 		});
@@ -619,13 +624,13 @@ test.suite('Statement', () => {
 			});
 			test.test('throws when condition is not subtype of Boolean.', () => {
 				xjs.Array.forEachAggregated(NON_BOOLS, (decl) => {
-					const {stmts} = setupScript(`{
+					const {stmts, visitors} = setupScript(`{
 						${decl}
 						while cond do { "consequent"; };
 						until cond do { "consequent"; };
 					}`, {typeCheck: false});
-					stmts[0].typeCheck(); // assert does not throw
-					return xjs.Array.forEachAggregated(stmts.slice(1), (stmt) => assert.throws(() => stmt.typeCheck(), TypeErrorNotAssignable));
+					visitors.typeCheck.visit(stmts[0]); // assert does not throw
+					return xjs.Array.forEachAggregated(stmts.slice(1), (stmt) => assert.throws(() => visitors.typeCheck.visit(stmt), TypeErrorNotAssignable));
 				});
 			});
 		});
@@ -653,12 +658,12 @@ test.suite('Statement', () => {
 					{"hello", "world"}
 					{"a" -> "hello", "b" -> "world"}
 				`, (collection) => {
-					const {stmts} = setupScript(`{
+					const {stmts, visitors} = setupScript(`{
 						for it: str in ${collection} do {
 							;
 						};
 					}`, {typeCheck: false});
-					return assert.throws(() => stmts[0].typeCheck(), TypeErrorNotAssignable);
+					return assert.throws(() => visitors.typeCheck.visit(stmts[0]), TypeErrorNotAssignable);
 				});
 			});
 			test.test('throws when iteration variable is not supertype of List item type.', () => {
@@ -671,28 +676,28 @@ test.suite('Statement', () => {
 					"to the" | "world"
 					nothing
 				`, (vartype) => {
-					const {stmts} = setupScript(`{
+					const {stmts, visitors} = setupScript(`{
 						for it: ${vartype} in ["hello", "world"] do {
 							;
 						};
 					}`, {typeCheck: false});
-					return assert.throws(() => stmts[0].typeCheck(), TypeErrorNotNarrow);
+					return assert.throws(() => visitors.typeCheck.visit(stmts[0]), TypeErrorNotNarrow);
 				});
 			});
 			test.test('throws when block type-checking fails.', () => {
-				const {stmts} = setupScript(`{
+				const {stmts, visitors} = setupScript(`{
 					for it: str in ["hello", "world"] do {
 						42 + it; %> TypeErrorInvalidOperation
 					};
 				}`, {typeCheck: false});
-				assert.throws(() => (stmts[0] as AST.STMT.StatementIteration).block.children[0].typeCheck(), TypeErrorInvalidOperation);
-				return assert.throws(() => stmts[0].typeCheck(), TypeErrorInvalidOperation);
+				assert.throws(() => visitors.typeCheck.visit((stmts[0] as AST.STMT.StatementIteration).block.children[0]), TypeErrorInvalidOperation);
+				return assert.throws(() => visitors.typeCheck.visit(stmts[0]), TypeErrorInvalidOperation);
 			});
 		});
 
 		test.suite('StatementReturn', () => {
 			test.test('throws when returned expression is not assignable to declared return type.', () => {
-				const {stmts} = setupScript(`{
+				const {stmts, visitors} = setupScript(`{
 					func foo0(): float { return 40; }
 					func foo1(): float => 41;
 					func foo2(b: bool): float {
@@ -708,16 +713,16 @@ test.suite('Statement', () => {
 				const ret2b: AST.STMT.Statement = ((fn2.block.children[0] as AST.STMT.StatementConditional).alternative as AST.Block).children[0];
 				const ret3:  AST.STMT.Statement = fn3.block.children[0];
 				xjs.Array.forEachAggregated([ret0, ret1, ret2a, ret2b, ret3], (ret) => assert_instanceof(ret, AST.STMT.StatementReturn));
-				assert.throws(() => ret0.typeCheck(), TypeErrorNotAssignable);
-				assert.throws(() => ret1.typeCheck(), TypeErrorNotAssignable);
-				xjs.Array.forEachAggregated(fn2.parameters, (p) => p.typeCheck());
-				ret2a.typeCheck(); // assert does not throw
-				assert.throws(() => ret2b.typeCheck(), TypeErrorNotAssignable);
-				xjs.Array.forEachAggregated(fn3.parameters, (p) => p.typeCheck());
-				return assert.throws(() => ret3.typeCheck(), TypeErrorNotAssignable);
+				assert.throws(() => visitors.typeCheck.visit(ret0), TypeErrorNotAssignable);
+				assert.throws(() => visitors.typeCheck.visit(ret1), TypeErrorNotAssignable);
+				xjs.Array.forEachAggregated(fn2.parameters, (p) => visitors.typeCheck.visit(p));
+				visitors.typeCheck.visit(ret2a); // assert does not throw
+				assert.throws(() => visitors.typeCheck.visit(ret2b), TypeErrorNotAssignable);
+				xjs.Array.forEachAggregated(fn3.parameters, (p) => visitors.typeCheck.visit(p));
+				return assert.throws(() => visitors.typeCheck.visit(ret3), TypeErrorNotAssignable);
 			});
 			test.test('throws when returned expression is present in void function.', () => {
-				const {stmts} = setupScript(`{
+				const {stmts, visitors} = setupScript(`{
 					func foo0(): void { return 40; }
 					func foo1(): void => 41;
 					func foo2(b: bool): void {
@@ -734,16 +739,16 @@ test.suite('Statement', () => {
 				const ret3:  AST.STMT.Statement = fn3.block.children[0];
 				xjs.Array.forEachAggregated([ret0, ret1, ret2a, ret2b, ret3], (ret) => assert_instanceof(ret, AST.STMT.StatementReturn));
 				const expected: RegExp = /is returned from a void function/;
-				assert.throws(() => ret0.typeCheck(), expected);
-				assert.throws(() => ret1.typeCheck(), expected);
-				xjs.Array.forEachAggregated(fn2.parameters, (p) => p.typeCheck());
-				ret2a.typeCheck(); // assert does not throw
-				assert.throws(() => ret2b.typeCheck(), expected);
-				xjs.Array.forEachAggregated(fn3.parameters, (p) => p.typeCheck());
-				return assert.throws(() => ret3.typeCheck(), expected);
+				assert.throws(() => visitors.typeCheck.visit(ret0), expected);
+				assert.throws(() => visitors.typeCheck.visit(ret1), expected);
+				xjs.Array.forEachAggregated(fn2.parameters, (p) => visitors.typeCheck.visit(p));
+				visitors.typeCheck.visit(ret2a); // assert does not throw
+				assert.throws(() => visitors.typeCheck.visit(ret2b), expected);
+				xjs.Array.forEachAggregated(fn3.parameters, (p) => visitors.typeCheck.visit(p));
+				return assert.throws(() => visitors.typeCheck.visit(ret3), expected);
 			});
 			test.test('throws for empty return statement in non-void function.', () => {
-				const {stmts} = setupScript(`{
+				const {stmts, visitors} = setupScript(`{
 					func foo0(): float { return; }
 					func foo2(b: bool): float {
 						if b then { return 4.2; } else { return; };
@@ -755,18 +760,18 @@ test.suite('Statement', () => {
 				const ret1b: AST.STMT.Statement = ((fn1.block.children[0] as AST.STMT.StatementConditional).alternative as AST.Block).children[0];
 				xjs.Array.forEachAggregated([ret0, ret1a, ret1b], (ret) => assert_instanceof(ret, AST.STMT.StatementReturn));
 				const expected: RegExp = /does not return a value/;
-				assert.throws(() => ret0.typeCheck(), expected);
-				xjs.Array.forEachAggregated(fn1.parameters, (p) => p.typeCheck());
-				ret1a.typeCheck(); // assert does not throw
-				return assert.throws(() => ret1b.typeCheck(), expected);
+				assert.throws(() => visitors.typeCheck.visit(ret0), expected);
+				xjs.Array.forEachAggregated(fn1.parameters, (p) => visitors.typeCheck.visit(p));
+				visitors.typeCheck.visit(ret1a); // assert does not throw
+				return assert.throws(() => visitors.typeCheck.visit(ret1b), expected);
 			});
 			test.test('throws when panicked expression is not an Exception.', () => {
-				const {stmts} = setupScript(`{
+				const {stmts, visitors} = setupScript(`{
 					panic Exception.("error1");
 					panic "error2";
 				}`, {typeCheck: false});
-				stmts[0].typeCheck(); // assert does not throw
-				return assert.throws(() => stmts[1].typeCheck(), TypeErrorNotAssignable);
+				visitors.typeCheck.visit(stmts[0]); // assert does not throw
+				return assert.throws(() => visitors.typeCheck.visit(stmts[1]), TypeErrorNotAssignable);
 			});
 		});
 	});
