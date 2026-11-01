@@ -46,8 +46,8 @@ export function memoizeExpressionType<Param extends EXPR.Expression>(
 	_context: ClassMethodDecoratorContext<ExprVisitorType, typeof method>,
 ): typeof method {
 	return function (arg) {
-		arg.type_ = method.bind(this, arg);
-		return arg.type_;
+		arg.type = method.bind(this, arg);
+		return arg.type;
 	};
 }
 

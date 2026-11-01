@@ -1,8 +1,5 @@
 import * as assert from 'node:assert';
-import {
-	memoizeMethod,
-	memoizeGetter,
-} from '../../../lib/index.ts';
+import {memoizeGetter} from '../../../lib/index.ts';
 import {
 	type CplConfig,
 	CONFIG_DEFAULT,
@@ -138,28 +135,16 @@ export abstract class Expression extends AstNode {
 
 
 	@memoizeGetter
-	public get type_(): TYPE.Type {
+	public get type(): TYPE.Type {
 		if (this.#type === undefined) {
 			this.#type = new ExprVisitorType().visit(this);
 		}
 		return this.#type;
 	}
 
-	public set type_(thunk: () => TYPE.Type) {
+	public set type(thunk: () => TYPE.Type) {
 		if (this.#type === undefined) {
 			this.#type = thunk();
 		}
-	}
-
-
-	/**
-	 * The Type of this expression.
-	 * @return the compile-time type of this node
-	 * @final
-	 * @deprecated TODO: migrate to ExprVisitorType
-	 */
-	@memoizeMethod
-	public type(): TYPE.Type {
-		return this.type_;
 	}
 }
