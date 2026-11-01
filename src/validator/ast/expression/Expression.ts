@@ -131,18 +131,18 @@ export abstract class Expression extends AstNode {
 	}
 
 
-	#type?: TYPE.Type;
+	#type?: TYPE.Type | null;
 
 
 	@memoizeGetter
-	public get type(): TYPE.Type {
+	public get type(): TYPE.Type | null {
 		if (this.#type === undefined) {
-			this.#type = new ExprVisitorType().visit(this)!; // HACK: for now, assert non-null; TODO: handle null case
+			this.#type = new ExprVisitorType().visit(this);
 		}
 		return this.#type;
 	}
 
-	public set type(thunk: () => TYPE.Type) {
+	public set type(thunk: () => TYPE.Type | null) {
 		if (this.#type === undefined) {
 			this.#type = thunk();
 		}

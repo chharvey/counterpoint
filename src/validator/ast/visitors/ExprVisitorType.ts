@@ -51,7 +51,7 @@ export function memoizeExpressionType<Param extends EXPR.Expression>(
 ): typeof method {
 	return function (arg) {
 		// set, then get
-		arg.type = () => method.call(this, arg)!; // HACK: for now, assert non-null; TODO: handle null case
+		arg.type = method.bind(this, arg);
 		return arg.type;
 	};
 }
