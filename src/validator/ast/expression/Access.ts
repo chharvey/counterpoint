@@ -1,4 +1,3 @@
-import * as assert from 'node:assert';
 import {
 	assert_instanceof,
 	memoizeGetter,
@@ -12,6 +11,7 @@ import type {
 	SyntaxNodeFamily,
 } from '../../utils-private.ts';
 import type {ValidAccessOperator} from '../../Operator.ts';
+import {ExprVisitorType} from '../index.ts';
 import type {Index} from '../Index-.ts';
 import type {Key} from '../Key.ts';
 import {Expression} from './Expression.ts';
@@ -43,11 +43,13 @@ export class Access extends Expression {
 
 	@memoizeGetter
 	public get isEntryOptional(): boolean {
-		assert.ok(typeof this.#isEntryOptional === 'boolean', '=Run TypeCheck first!'); // better type-guard than `assert.strictEqual`
-		return this.#isEntryOptional;
+		if (typeof this.#isEntryOptional !== 'boolean') {
+			new ExprVisitorType().visit(this);
+		}
+		return this.#isEntryOptional!;
 	}
 
-	public set isEntryOptional(value: boolean) {
-		this.#isEntryOptional = value;
+	public set isEntryOptional(b: boolean) {
+		this.#isEntryOptional = b;
 	}
 }
