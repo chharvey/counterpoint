@@ -267,18 +267,20 @@ export function setupScript(
 	readonly cg:           CodeGenerator,
 	readonly wasm:         binaryen.ExpressionBuilder,
 	readonly visitorBuild: AST.AstNodeVisitorBuild,
+	readonly visitors:     {readonly typeCheck: AST.AstNodeVisitorTypeCheck},
 } {
-	const goal: AST.Goal = AST.Goal.fromSource(source);
-	const builder        = new Builder();
-	const cg             = new CodeGenerator();
-	const visitor_build  = new AST.AstNodeVisitorBuild(builder);
+	const goal: AST.Goal     = AST.Goal.fromSource(source);
+	const builder            = new Builder();
+	const cg                 = new CodeGenerator();
+	const visitor_type_check = new AST.AstNodeVisitorTypeCheck();
+	const visitor_build      = new AST.AstNodeVisitorBuild(builder);
 	assert.ok(goal.block, 'Expected AST.Goal to contain a block.');
 	opts.varCheck  ??= true;
 	opts.typeCheck ??= true;
 	opts.build     ??= true;
 	opts.codegen   ??= true;
 	opts.varCheck &&                                                 goal.varCheck();
-	opts.varCheck && opts.typeCheck &&                               goal.typeCheck();
+	opts.varCheck && opts.typeCheck &&                               visitor_type_check.visit(goal);
 	opts.varCheck && opts.typeCheck && opts.build &&                 visitor_build.visit(goal);
 	opts.varCheck && opts.typeCheck && opts.build && opts.codegen && builder.codegen(cg);
 	return {
@@ -288,5 +290,6 @@ export function setupScript(
 		stmts:        goal.block.children,
 		wasm:         cg.mod.wasm,
 		visitorBuild: visitor_build,
+		visitors:     {typeCheck: visitor_type_check},
 	};
 }

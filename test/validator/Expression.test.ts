@@ -161,13 +161,13 @@ test.suite('Expression', () => {
 				);
 			});
 			test.test('throws when at least one antecedent is an error.', () => {
-				const {stmts} = setupScript(`{
+				const {stmts, visitors} = setupScript(`{
 					switch 42
 						case 1.1       | 2.2 -> 15
 						case 33 / 10.0 | 4.4 -> 25
 						default 43;
 				}`, {typeCheck: false});
-				assert.throws(() => (stmts[0] as AST.STMT.StatementExpression).expr!.typeCheck(), TypeErrorInvalidOperation);
+				assert.throws(() => visitors.typeCheck.visit((stmts[0] as AST.STMT.StatementExpression).expr!), TypeErrorInvalidOperation);
 			});
 		});
 
@@ -473,7 +473,7 @@ test.suite('Expression', () => {
 	test.suite('ExpressionBlock', () => {
 		test.suite('#type', () => {
 			test.test('throws when the last statement is not an expression-statement.', () => {
-				const {goal} = setupScript(`{
+				const {goal, visitors} = setupScript(`{
 					val mut x: int = 42;
 					val mut y: int | null = {
 						x;
@@ -483,10 +483,10 @@ test.suite('Expression', () => {
 					x;
 					y;
 				}`, {typeCheck: false});
-				assert.throws(() => goal.typeCheck(), /The last statement of a block-expression must be an expression-statement/);
+				assert.throws(() => visitors.typeCheck.visit(goal), /The last statement of a block-expression must be an expression-statement/);
 			});
 			test.test('throws when the determinant is empty.', () => {
-				const {goal} = setupScript(`{
+				const {goal, visitors} = setupScript(`{
 					val mut x: int = 42;
 					val mut y: int | null = {
 						x;
@@ -496,7 +496,7 @@ test.suite('Expression', () => {
 					x;
 					y;
 				}`, {typeCheck: false});
-				assert.throws(() => goal.typeCheck(), /The determining expression-statement of a block-expression must be nonempty/);
+				assert.throws(() => visitors.typeCheck.visit(goal), /The determining expression-statement of a block-expression must be nonempty/);
 			});
 			test.test('returns the type of the determinant.', () => {
 				const {stmts} = setupScript(`{

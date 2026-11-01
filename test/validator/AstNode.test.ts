@@ -296,7 +296,7 @@ test.suite('AstNode', () => {
 	test.suite('#typeCheck', () => {
 		test.suite('ParameterFunction', () => {
 			test.test('sets the SymbolSchemaVar `type`.', () => {
-				const {stmts} = setupScript(`{
+				const {stmts, visitors} = setupScript(`{
 					\\(a: float, mut b: str): void { return; };
 				}`, {typeCheck: false});
 				const id_a: bigint = Validator.cookTokenIdentifier('a');
@@ -312,7 +312,7 @@ test.suite('AstNode', () => {
 					[info_a.type, info_b.type],
 					repeat(TYPE.ANYTHING, 2),
 				);
-				fn.parameters.forEach((param) => param.typeCheck());
+				fn.parameters.forEach((param) => visitors.typeCheck.visit(param));
 				return assert_shallowStrictEqual(
 					[info_a.type, info_b.type],
 					[TYPE.FLOAT, TYPE.STR],
@@ -320,13 +320,14 @@ test.suite('AstNode', () => {
 			});
 			test.test('throws when param default value is not assignable to declared type.', () => {
 				const param: AST.ParameterFunction = AST.EXPR.Function.fromSource('\\(a?: float = 42): void { return; }').parameters[0];
-				return assert.throws(() => param.typeCheck(), TypeErrorNotAssignable);
+				const visitor_type_check = new AST.AstNodeVisitorTypeCheck();
+				return assert.throws(() => visitor_type_check.visit(param), TypeErrorNotAssignable);
 			});
 		});
 
 		test.suite('Block', () => {
 			test.test('throws for lack of return statement in every code path.', () => {
-				const {stmts} = setupScript(`{
+				const {stmts, visitors} = setupScript(`{
 					func foo0(): float { "hello"; }
 					func foo2(b: bool): float {
 						if b then { return 4.2; } else { "world"; };
@@ -336,14 +337,14 @@ test.suite('AstNode', () => {
 				const block0:  AST.Block = (stmts[0] as AST.STMT.DeclarationFunction).block;
 				const block1a: AST.Block = (fn1.block.children[0] as AST.STMT.StatementConditional).consequent;
 				const block1b: AST.Block = (fn1.block.children[0] as AST.STMT.StatementConditional).alternative as AST.Block;
-				assert.throws(() => block0.typeCheck(), AssignmentErrorFunctionExit);
-				xjs.Array.forEachAggregated(fn1.parameters, (p) => p.typeCheck());
-				block1a.typeCheck(); // assert does not throw
-				block1b.typeCheck(); // assert does not throw
-				return assert.throws(() => fn1.block.typeCheck(), AssignmentErrorFunctionExit);
+				assert.throws(() => visitors.typeCheck.visit(block0), AssignmentErrorFunctionExit);
+				xjs.Array.forEachAggregated(fn1.parameters, (p) => visitors.typeCheck.visit(p));
+				visitors.typeCheck.visit(block1a); // assert does not throw
+				visitors.typeCheck.visit(block1b); // assert does not throw
+				return assert.throws(() => visitors.typeCheck.visit(fn1.block), AssignmentErrorFunctionExit);
 			});
 			test.test('throws when not all code paths return.', () => {
-				const {stmts} = setupScript(`{
+				const {stmts, visitors} = setupScript(`{
 					\\(): void {
 						42;
 					};
@@ -396,7 +397,7 @@ test.suite('AstNode', () => {
 				return xjs.Array.forEachAggregated([
 					...stmts.slice(0, 5).map((stmt) => (stmt as AST.STMT.StatementExpression).expr as AST.EXPR.Function),
 					...stmts.slice(5).map((stmt) => stmt as AST.STMT.DeclarationFunction),
-				], (fn) => assert.throws(() => fn.typeCheck(), AssignmentErrorFunctionExit));
+				], (fn) => assert.throws(() => visitors.typeCheck.visit(fn), AssignmentErrorFunctionExit));
 			});
 		});
 	});
@@ -491,7 +492,7 @@ test.suite('AstNode', () => {
 
 		test.suite('#typeCheck', () => {
 			test.test('aggregates multiple errors.', () => {
-				const {goal} = setupScript(`{
+				const {goal, visitors} = setupScript(`{
 					val a: null = null;
 					val b: null = null;
 					val c: null = null;
@@ -505,7 +506,7 @@ test.suite('AstNode', () => {
 					if null then 42 else 4.2;
 					val x: int = 4.2;
 				}`, {typeCheck: false});
-				assert.throws(() => goal.typeCheck(), (err) => {
+				assert.throws(() => visitors.typeCheck.visit(goal), (err) => {
 					assertAssignable(err as Error, {
 						cons:   AggregateError,
 						errors: [

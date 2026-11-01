@@ -164,12 +164,12 @@ test.suite('Operation', () => {
 					);
 				});
 				test.test('throws when the assigned type is not equal or narrower.', () => {
-					const {stmts} = setupScript(`{
+					const {stmts, visitors} = setupScript(`{
 						val n: int = 42;
 						n as Float;
 					}`, {typeCheck: false});
-					stmts[0].typeCheck();
-					return assert.throws(() => stmts[1].typeCheck(), TypeErrorNotNarrow);
+					visitors.typeCheck.visit(stmts[0]);
+					return assert.throws(() => visitors.typeCheck.visit(stmts[1]), TypeErrorNotNarrow);
 				});
 			});
 
@@ -205,12 +205,12 @@ test.suite('Operation', () => {
 					);
 				});
 				test.test('throws when the assigned type is not equal or narrower.', () => {
-					const {stmts} = setupScript(`{
+					const {stmts, visitors} = setupScript(`{
 						val n: int = 42;
 						n as? Float;
 					}`, {typeCheck: false});
-					stmts[0].typeCheck();
-					return assert.throws(() => stmts[1].typeCheck(), TypeErrorNotNarrow);
+					visitors.typeCheck.visit(stmts[0]);
+					return assert.throws(() => visitors.typeCheck.visit(stmts[1]), TypeErrorNotNarrow);
 				});
 			});
 		});
@@ -420,11 +420,11 @@ test.suite('Operation', () => {
 					});
 				});
 				test.test('[operator=NEG] throws for `nat` type.', () => {
-					const {stmts} = setupScript(`{
+					const {stmts, visitors} = setupScript(`{
 						val mut n: nat = +42;
 						-n;
 					}`, {typeCheck: false});
-					stmts[0].typeCheck(); // assert does not throw
+					visitors.typeCheck.visit(stmts[0]); // assert does not throw
 					assert.throws(() => ((stmts[1] as AST.STMT.StatementExpression).expr as AST.EXPR.OperationUnary).type(), TypeErrorInvalidOperation);
 				});
 			});
