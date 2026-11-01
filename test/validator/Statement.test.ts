@@ -256,8 +256,9 @@ test.suite('Statement', () => {
 						claim x: int;
 						x;            % type \`int\`
 					}`, {build: false});
+					const expr_visitor = new AST.ExprVisitorType();
 					return assert.deepStrictEqual(
-						[stmts[1], stmts[3]].map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()),
+						[stmts[1], stmts[3]].map((stmt) => expr_visitor.visit((stmt as AST.STMT.StatementExpression).expr!)),
 						[TYPE.INT.union(TYPE.FLOAT), TYPE.INT],
 					);
 				});
@@ -323,8 +324,9 @@ test.suite('Statement', () => {
 						record.tuple.0;             % type \`int\`
 					}`, {build: false});
 					const INT_NULL: TYPE.Type = TYPE.INT.union(TYPE.NULL);
+					const expr_visitor = new AST.ExprVisitorType();
 					return assert.deepStrictEqual(
-						[...stmts.slice(1, 3), ...stmts.slice(5, 7)].map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()),
+						[...stmts.slice(1, 3), ...stmts.slice(5, 7)].map((stmt) => expr_visitor.visit((stmt as AST.STMT.StatementExpression).expr!)),
 						[INT_NULL, INT_NULL, TYPE.NULL, TYPE.INT],
 					);
 				});

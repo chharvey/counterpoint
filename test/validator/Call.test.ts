@@ -221,9 +221,10 @@ test.suite('Call', () => {
 
 
 	test.suite('#type', () => {
+		const VISITOR = new AST.ExprVisitorType();
 		test.test('evaluates Callable Class Names.', () => {
 			assertEqualTypes(
-				EVALUATE.map((src) => AST.EXPR.Call.fromSource(src).type()),
+				EVALUATE.map((src) => VISITOR.visit(AST.EXPR.Call.fromSource(src))),
 				[
 					TYPE.BOOL,
 					TYPE.INT,
@@ -246,61 +247,61 @@ test.suite('Call', () => {
 		});
 		test.test('`Boolean.(‹…›)`', () => {
 			assertEqualTypes(
-				BOOL_CONS.map((src) => AST.EXPR.Call.fromSource(src).type()),
+				BOOL_CONS.map((src) => VISITOR.visit(AST.EXPR.Call.fromSource(src))),
 				repeat(TYPE.BOOL, BOOL_CONS.length),
 			);
 		});
 		test.test('`Integer.(‹…›)`', () => {
 			assertEqualTypes(
-				INT_CONS.map((src) => AST.EXPR.Call.fromSource(src).type()),
+				INT_CONS.map((src) => VISITOR.visit(AST.EXPR.Call.fromSource(src))),
 				repeat(TYPE.INT, INT_CONS.length),
 			);
 		});
 		test.test('`Natural.(‹…›)`', () => {
 			assertEqualTypes(
-				NAT_CONS.map((src) => AST.EXPR.Call.fromSource(src).type()),
+				NAT_CONS.map((src) => VISITOR.visit(AST.EXPR.Call.fromSource(src))),
 				repeat(TYPE.NAT, NAT_CONS.length),
 			);
 		});
 		test.test('`Float.(‹…›)`', () => {
 			assertEqualTypes(
-				FLOAT_CONS.map((src) => AST.EXPR.Call.fromSource(src).type()),
+				FLOAT_CONS.map((src) => VISITOR.visit(AST.EXPR.Call.fromSource(src))),
 				repeat(TYPE.FLOAT, FLOAT_CONS.length),
 			);
 		});
 		test.test('`String.(‹…›)`', () => {
 			assertEqualTypes(
-				STRING_CONS.map((src) => AST.EXPR.Call.fromSource(src).type()),
+				STRING_CONS.map((src) => VISITOR.visit(AST.EXPR.Call.fromSource(src))),
 				repeat(TYPE.STR, STRING_CONS.length),
 			);
 		});
 		test.test('`List.(‹…›)`', () => {
 			assertEqualTypes(
-				LIST_CONS.map((src) => AST.EXPR.Call.fromSource(src).type()),
+				LIST_CONS.map((src) => VISITOR.visit(AST.EXPR.Call.fromSource(src))),
 				repeat(new TYPE.List(TYPE.INT, true), LIST_CONS.length),
 			);
 		});
 		test.test('`Dict.(‹…›)`', () => {
 			assertEqualTypes(
-				DICT_CONS.map((src) => AST.EXPR.Call.fromSource(src).type()),
+				DICT_CONS.map((src) => VISITOR.visit(AST.EXPR.Call.fromSource(src))),
 				repeat(new TYPE.Dict(TYPE.INT, true), DICT_CONS.length),
 			);
 		});
 		test.test('`Set.(‹…›)`', () => {
 			assertEqualTypes(
-				SET_CONS.map((src) => AST.EXPR.Call.fromSource(src).type()),
+				SET_CONS.map((src) => VISITOR.visit(AST.EXPR.Call.fromSource(src))),
 				repeat(new TYPE.Set(TYPE.INT, true), SET_CONS.length),
 			);
 		});
 		test.test('`Map.(‹…›)`', () => {
 			assertEqualTypes(
-				MAP_CONS.map((src) => AST.EXPR.Call.fromSource(src).type()),
+				MAP_CONS.map((src) => VISITOR.visit(AST.EXPR.Call.fromSource(src))),
 				repeat(new TYPE.Map(TYPE.INT, TYPE.FLOAT, true), MAP_CONS.length),
 			);
 		});
 		test.test('`Exception.(‹…›)`', () => {
 			assertEqualTypes(
-				EXCEPTION_CONS.map((src) => AST.EXPR.Call.fromSource(src).type()),
+				EXCEPTION_CONS.map((src) => VISITOR.visit(AST.EXPR.Call.fromSource(src))),
 				repeat(TYPE.EXCP, EXCEPTION_CONS.length),
 			);
 		});
@@ -312,7 +313,7 @@ test.suite('Call', () => {
 				'Result.<int>(Exception.("message"))',
 			], (src) => {
 				const call: AST.EXPR.Call = AST.EXPR.Call.fromSource(src);
-				return assert.throws(() => call.type(), TypeErrorNotCallable);
+				return assert.throws(() => VISITOR.visit(call), TypeErrorNotCallable);
 			});
 		});
 		test.test('bypasses invariance for generic arguments.', () => {
@@ -322,11 +323,11 @@ test.suite('Call', () => {
 				Set .<mut {int}>((   {42},))
 				Map.<float, mut {int}>(((4.2, {42}),))
 				Map.<mut {int}, float>((({42}, 4.2),))
-			`.map((src) => AST.EXPR.Call.fromSource(src).type());
+			`.map((src) => VISITOR.visit(AST.EXPR.Call.fromSource(src)));
 		});
 		test.test('Map has a default type parameter.', () => {
 			assertEqualTypes(
-				AST.EXPR.Call.fromSource('Map.<int>()').type(),
+				VISITOR.visit(AST.EXPR.Call.fromSource('Map.<int>()')),
 				new TYPE.Map(TYPE.INT, TYPE.INT, true),
 			);
 		});
@@ -334,7 +335,7 @@ test.suite('Call', () => {
 			xjs.Array.forEachAggregated(extract_lines`
 				null.()
 				(42 || 43).<bool>()
-			`, (src) => assert.throws(() => AST.EXPR.Call.fromSource(src).type(), TypeErrorNotCallable));
+			`, (src) => assert.throws(() => VISITOR.visit(AST.EXPR.Call.fromSource(src)), TypeErrorNotCallable));
 		});
 		test.test('throws when providing incorrect number of arguments.', () => {
 			xjs.Array.forEachAggregated(extract_lines`
@@ -352,13 +353,13 @@ test.suite('Call', () => {
 				Map.<int>((), ())
 				None.<int>(42)
 				Some.<int>()
-			`, (src) => assert.throws(() => AST.EXPR.Call.fromSource(src).type(), TypeErrorArgCount));
+			`, (src) => assert.throws(() => VISITOR.visit(AST.EXPR.Call.fromSource(src)), TypeErrorArgCount));
 		});
 		test.test('throws when providing incorrect type of arguments.', () => {
 			// API overload checks
 			xjs.Map.forEachAggregated(new Map<string, readonly [string, readonly string[]]>(['Integer', 'Natural', 'Float'].flatMap((basesrc) => ['()', '[]', '{}'].map((argsrc) => (
 				[`${basesrc}.(${argsrc})`, [argsrc, ['int', 'nat', 'float']]] as const
-			)))), ([argexpr, allowed_types], src) => assert.throws(() => AST.EXPR.Call.fromSource(src).type(), (thrown) => {
+			)))), ([argexpr, allowed_types], src) => assert.throws(() => VISITOR.visit(AST.EXPR.Call.fromSource(src)), (thrown) => {
 				assertAssignable(thrown as Error, {
 					cons:   AggregateError,
 					errors: allowed_types.map((allowed_type) => ({
@@ -374,7 +375,7 @@ test.suite('Call', () => {
 				['Set.<int>(42)',  ['42', ['List.<int>', 'Set.<int>']]],
 				['Map.<int>(42)',  ['42', ['List.<(int, int)>', 'Set.<(int, int)>', 'Map.<int, int>']]],
 			]), ([argexpr, allowed_types], src) => assert.throws(
-				() => AST.EXPR.Call.fromSource(src).type(),
+				() => VISITOR.visit(AST.EXPR.Call.fromSource(src)),
 				(err) => {
 					assertAssignable(err as Error, {
 						cons:   AggregateError,
@@ -396,7 +397,7 @@ test.suite('Call', () => {
 				Set.<int>((42, "42"))
 				Map.<int>(((42, "42"),))
 				Some.<int>(4.2)
-			`, (src) => assert.throws(() => AST.EXPR.Call.fromSource(src).type(), TypeErrorNotAssignable));
+			`, (src) => assert.throws(() => VISITOR.visit(AST.EXPR.Call.fromSource(src)), TypeErrorNotAssignable));
 		});
 	});
 });
