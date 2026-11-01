@@ -46,7 +46,7 @@ import {AstNodeVisitorCompletion} from './AstNodeVisitorCompletion.ts';
 
 
 export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
-	private readonly astNodeVisitorCompletion = new AstNodeVisitorCompletion();
+	readonly #astNodeVisitorCompletion = new AstNodeVisitorCompletion();
 
 
 	@memoizePerNode
@@ -137,7 +137,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 
 	@memoizePerNode
 	public override visitExprBlock(expr: EXPR.ExpressionBlock): TYPE.Type {
-		if (this.astNodeVisitorCompletion.visit(expr.block) !== CompletionKind.NORMAL) {
+		if (this.#astNodeVisitorCompletion.visit(expr.block) !== CompletionKind.NORMAL) {
 			return TYPE.NOTHING;
 		}
 		assert.ok(expr.block.children.length, 'Expected Block to contain at least 1 statement.');

@@ -43,8 +43,8 @@ import {ExprVisitorType} from './ExprVisitorType.ts';
 
 
 export class AstNodeVisitorTypeCheck extends AstNodeVisitor<void> {
-	private readonly astNodeVisitorCompletion = new AstNodeVisitorCompletion();
-	private readonly exprVisitorType          = new ExprVisitorType();
+	readonly #astNodeVisitorCompletion = new AstNodeVisitorCompletion();
+	readonly #exprVisitorType          = new ExprVisitorType();
 
 
 	public override visitParameterFunction(node: ParameterFunction): void {
@@ -61,13 +61,13 @@ export class AstNodeVisitorTypeCheck extends AstNodeVisitor<void> {
 	public override visitCapture(node: Capture): void {
 		this.defaultVisit(node);
 		if (!node.ref) {
-			((node.parent as Functionlike).block.validator.getSymbol(node.variable.id) as SymbolSchemaVar).type = this.exprVisitorType.visit(node.variable);
+			((node.parent as Functionlike).block.validator.getSymbol(node.variable.id) as SymbolSchemaVar).type = this.#exprVisitorType.visit(node.variable);
 		}
 	}
 
 	public override visitBlock(node: Block): void {
 		this.defaultVisit(node);
-		if (!!node.parent && is_Functionlike(node.parent) && this.astNodeVisitorCompletion.visit(node) !== CompletionKind.RETURN_OR_PANIC) {
+		if (!!node.parent && is_Functionlike(node.parent) && this.#astNodeVisitorCompletion.visit(node) !== CompletionKind.RETURN_OR_PANIC) {
 			throw new AssignmentErrorFunctionExit(node.parent);
 		}
 	}
@@ -120,7 +120,7 @@ export class AstNodeVisitorTypeCheck extends AstNodeVisitor<void> {
 			...expr.typeargs,
 			...expr.exprargs,
 		], (arg) => this.visit(arg));
-		this.exprVisitorType.visit(expr);
+		this.#exprVisitorType.visit(expr);
 	}
 
 	public override visitExprClaim          (expr: EXPR.Claim):          void { return this.visitExpression(expr); }
@@ -130,7 +130,7 @@ export class AstNodeVisitorTypeCheck extends AstNodeVisitor<void> {
 		// NOTE: ignore type-checking `this.operand1` for now, as semantics is determined by syntax.
 		// (`this.operand1.source` must be an `IntrinsicName`)
 		this.visit(expr.operand0);
-		this.exprVisitorType.visit(expr);
+		this.#exprVisitorType.visit(expr);
 	}
 
 	public override visitOperationExprBinaryArithmetic  (expr: EXPR.OperationBinaryArithmetic):  void { return this.visitExpression(expr); }
@@ -144,7 +144,7 @@ export class AstNodeVisitorTypeCheck extends AstNodeVisitor<void> {
 
 	public override visitExpression(expr: EXPR.Expression): void {
 		this.defaultVisit(expr);
-		this.exprVisitorType.visit(expr);
+		this.#exprVisitorType.visit(expr);
 	}
 
 	public override visitDeclType(stmt: STMT.DeclarationType): void {
@@ -168,7 +168,7 @@ export class AstNodeVisitorTypeCheck extends AstNodeVisitor<void> {
 				EXPR.Record,
 			].some((klass) => stmt.assigned instanceof klass)) ? this.#writableInferredType(stmt.assigned!) :
 			stmt.assigned instanceof EXPR.Template ? TYPE.STR :
-			this.exprVisitorType.visit(stmt.assigned!)
+			this.#exprVisitorType.visit(stmt.assigned!)
 		);
 		stmt.assigned && typecheck_assign(stmt.assigned, assignee_type, stmt);
 		if (stmt.assignee) {
@@ -179,7 +179,7 @@ export class AstNodeVisitorTypeCheck extends AstNodeVisitor<void> {
 
 	public override visitDeclFunction(stmt: STMT.DeclarationFunction): void {
 		this.defaultVisit(stmt);
-		const fn_type: TYPE.Type = this.exprVisitorType.visitFunctionlike(stmt);
+		const fn_type: TYPE.Type = this.#exprVisitorType.visitFunctionlike(stmt);
 		assert_instanceof(fn_type, TYPE.Function);
 		if (stmt.identifier) {
 			assert.ok(stmt.validator.hasSymbol(stmt.id!), `The validator symbol table should include ${stmt.id}.`);
@@ -195,7 +195,7 @@ export class AstNodeVisitorTypeCheck extends AstNodeVisitor<void> {
 
 	public override visitStmtClaim(stmt: STMT.StatementClaim): void {
 		this.defaultVisit(stmt);
-		const computed_type: TYPE.Type = this.exprVisitorType.visit(stmt.assignee);
+		const computed_type: TYPE.Type = this.#exprVisitorType.visit(stmt.assignee);
 		const claimed_type:  TYPE.Type = stmt.claimed_type.eval();
 		/* Type claim statements can only narrow the expression’s type. */
 		if (!claimed_type.isSubtypeOf(computed_type)) {
@@ -208,7 +208,7 @@ export class AstNodeVisitorTypeCheck extends AstNodeVisitor<void> {
 			}
 		} else {
 			assert_instanceof(stmt.assignee, EXPR.Access);
-			const base_type: TYPE.Type = this.exprVisitorType.visit(stmt.assignee.base);
+			const base_type: TYPE.Type = this.#exprVisitorType.visit(stmt.assignee.base);
 			const {accessor} = stmt.assignee;
 			switch (true) {
 				case base_type instanceof TYPE.Tuple: {
@@ -230,7 +230,7 @@ export class AstNodeVisitorTypeCheck extends AstNodeVisitor<void> {
 	public override visitStmtReassignment(stmt: STMT.StatementReassignment): void {
 		this.defaultVisit(stmt);
 		if (stmt.assignee instanceof EXPR.Access) {
-			const base_type: TYPE.Type = this.exprVisitorType.visit(stmt.assignee.base);
+			const base_type: TYPE.Type = this.#exprVisitorType.visit(stmt.assignee.base);
 			if (!base_type.isMutable) {
 				throw new MutabilityError01(base_type, stmt);
 			}
@@ -243,21 +243,21 @@ export class AstNodeVisitorTypeCheck extends AstNodeVisitor<void> {
 
 	public override visitStmtConditional(stmt: STMT.StatementConditional): void {
 		this.defaultVisit(stmt);
-		if (!this.exprVisitorType.visit(stmt.condition).isSubtypeOf(TYPE.BOOL)) {
+		if (!this.#exprVisitorType.visit(stmt.condition).isSubtypeOf(TYPE.BOOL)) {
 			throw new TypeErrorNotAssignable(stmt.condition, TYPE.BOOL);
 		}
 	}
 
 	public override visitStmtLoop(stmt: STMT.StatementLoop): void {
 		this.defaultVisit(stmt);
-		if (!this.exprVisitorType.visit(stmt.condition).isSubtypeOf(TYPE.BOOL)) {
+		if (!this.#exprVisitorType.visit(stmt.condition).isSubtypeOf(TYPE.BOOL)) {
 			throw new TypeErrorNotAssignable(stmt.condition, TYPE.BOOL);
 		}
 	}
 
 	public override visitStmtIteration(stmt: STMT.StatementIteration): void {
 		const assignee_type: TYPE.Type = stmt.typenode.eval();
-		const iterable_type: TYPE.Type = this.exprVisitorType.visit(stmt.iterable);
+		const iterable_type: TYPE.Type = this.#exprVisitorType.visit(stmt.iterable);
 		if (!(iterable_type instanceof TYPE.List)) {
 			throw new TypeErrorNotAssignable(stmt.iterable, new TYPE.List(TYPE.ANYTHING));
 		}
@@ -334,7 +334,7 @@ export class AstNodeVisitorTypeCheck extends AstNodeVisitor<void> {
 				return TYPE.Record.fromTypes(new Map(expression.children.map((prop) => [prop.key.id, this.#writableInferredType(prop.val)])));
 			}
 			case expression instanceof EXPR.Call: { // TODO: distinguish between constructor calls and function calls
-				return this.exprVisitorType.visit(expression);
+				return this.#exprVisitorType.visit(expression);
 			}
 			default: {
 				assert.fail(`${expression.source} should be an instance of ${EXPR.Constant.name}, ${EXPR.Tuple.name}, ${EXPR.Record.name}, or ${EXPR.Call.name}.`);

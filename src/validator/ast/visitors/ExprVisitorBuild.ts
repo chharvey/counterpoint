@@ -28,6 +28,9 @@ import {AstNodeVisitorBuild} from './AstNodeVisitorBuild.ts';
 
 
 export class ExprVisitorBuild extends EXPR.ExprVisitor<OP.Value> {
+	#nodeVisitorBuild?: AstNodeVisitorBuild;
+
+
 	public constructor(private readonly builder: Builder) {
 		super();
 	}
@@ -95,8 +98,8 @@ export class ExprVisitorBuild extends EXPR.ExprVisitor<OP.Value> {
 
 	@memoizePerNode
 	public override visitExprBlock(expr: EXPR.ExpressionBlock): OP.Value {
-		const node_visitor = new AstNodeVisitorBuild(this.builder);
-		expr.block.children.slice(0, -1).forEach((stmt) => node_visitor.visit(stmt));
+		this.#nodeVisitorBuild ??= new AstNodeVisitorBuild(this.builder);
+		expr.block.children.slice(0, -1).forEach((stmt) => this.#nodeVisitorBuild!.visit(stmt));
 		return this.visit((expr.block.children.at(-1) as STMT.StatementExpression).expr!);
 	}
 
@@ -377,12 +380,12 @@ export class ExprVisitorBuild extends EXPR.ExprVisitor<OP.Value> {
 
 	@memoizePerNode
 	public override visitFunction(expr: EXPR.Function): OP.Value {
-		const node_visitor = new AstNodeVisitorBuild(this.builder);
+		this.#nodeVisitorBuild ??= new AstNodeVisitorBuild(this.builder);
 		const temp: Temp = this.builder.newTemp(expr.type());
 		return new OP.Function(temp.type as TYPE.Function, temp.name, expr.source.replaceAll(/\s+/g, ' '), () => {
-			expr.captures   .forEach((capt)  => node_visitor.visit(capt));
-			expr.parameters .forEach((param) => node_visitor.visit(param));
-			return node_visitor.visit(expr.block);
+			expr.captures   .forEach((capt)  => this.#nodeVisitorBuild!.visit(capt));
+			expr.parameters .forEach((param) => this.#nodeVisitorBuild!.visit(param));
+			return this.#nodeVisitorBuild!.visit(expr.block);
 		});
 	}
 
