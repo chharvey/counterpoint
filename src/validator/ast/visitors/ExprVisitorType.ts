@@ -178,10 +178,11 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 			} else {
 				throw new TypeErrorInvalidOperation(expr);
 			}
+		} else {
+			const entry: EntryType = get_entry_info(base_type, expr);
+			expr.isEntryOptional = entry.optional;
+			return entry.optional ? new TYPE.Maybe(entry.type) : entry.type;
 		}
-		const entry: EntryType = get_entry_info(base_type, expr);
-		expr.isEntryOptional = entry.optional;
-		return entry.optional ? new TYPE.Maybe(entry.type) : entry.type;
 	}
 
 	@memoizePerNode

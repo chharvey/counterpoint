@@ -1,3 +1,4 @@
+import * as assert from 'node:assert';
 import {
 	assert_instanceof,
 	memoizeGetter,
@@ -40,13 +41,13 @@ export class Access extends Expression {
 	}
 
 
-	public set isEntryOptional(value: boolean) {
-		this.#isEntryOptional = value;
-	}
-
 	@memoizeGetter
 	public get isEntryOptional(): boolean {
-		this.type();
-		return this.#isEntryOptional!;
+		assert.ok(typeof this.#isEntryOptional === 'boolean', '=Run TypeCheck first!'); // better type-guard than `assert.strictEqual`
+		return this.#isEntryOptional;
+	}
+
+	public set isEntryOptional(value: boolean) {
+		this.#isEntryOptional = value;
 	}
 }
