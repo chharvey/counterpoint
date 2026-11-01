@@ -721,7 +721,7 @@ test.suite('Statement', () => {
 				xjs.Array.forEachAggregated(fn3.parameters, (p) => visitors.typeCheck.visit(p));
 				return assert.throws(() => visitors.typeCheck.visit(ret3), TypeErrorNotAssignable);
 			});
-			test.test('throws when returned expression is present in void function.', () => {
+			test.test('throws when void function returns non-void expression.', () => {
 				const {stmts, visitors} = setupScript(`{
 					func foo0(): void { return 40; }
 					func foo1(): void => 41;
@@ -746,6 +746,16 @@ test.suite('Statement', () => {
 				assert.throws(() => visitors.typeCheck.visit(ret2b), expected);
 				xjs.Array.forEachAggregated(fn3.parameters, (p) => visitors.typeCheck.visit(p));
 				return assert.throws(() => visitors.typeCheck.visit(ret3), expected);
+			});
+			test.test('passes when void function returns void expression.', () => {
+				setupScript(`{
+					func f(): void { return; }
+					func foo1(): void => f.();
+					func foo2(b: bool): void {
+						if b then { return; } else { return f.(); };
+					}
+					func foo3(b: bool): void => if b then foo1.() else foo2.(b);
+				}`, {build: false}); // assert does not throw
 			});
 			test.test('throws for empty return statement in non-void function.', () => {
 				const {stmts, visitors} = setupScript(`{

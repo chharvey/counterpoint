@@ -296,10 +296,10 @@ export class AstNodeVisitorTypeCheck extends AstNodeVisitor<void> {
 		if (stmt.expression) {
 			if (return_type) {
 				return typecheck_assign(this.#exprVisitorType, stmt.expression, return_type, stmt);
-			} else {
-				throw new Error(`Expression \`${stmt.expression.source}\` is returned from a void function.`); // TODO: create new TypeError subclass
-				// TODO: allow tail calls
+			} else if (this.#exprVisitorType.visit(stmt.expression)) {
+				throw new Error(`Non-void expression \`${stmt.expression.source}\` is returned from a void function.`); // TODO: create new TypeError subclass
 			}
+			// else, tail calls of void expressions are allowed
 		} else if (return_type) {
 			throw new Error(`A function with return type \`${return_type}\` does not return a value.`); // TODO: create new TypeError subclass
 		}

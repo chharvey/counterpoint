@@ -346,8 +346,11 @@ Nil! TypeCheck(SemanticStatementReturn[panic=false] ::= SemanticExpression) :=
 			1. *Let* `return_type` be *Unwrap:* `TypeValueOf(return_node)`.
 			2. *Return:* `TypeCheckAssign(SemanticExpression, return_type.value)`.
 		3. *Else:*
-			1. *Throw:* a new Error """Expression \`{{ SemanticExpression }}\` is returned from a void function."""
-			// TODO: allow tail calls
+			1. *Let* `returned_expr_type` be *Unwrap:* `TypeOf(SemanticExpression)`.
+			2. *If* `returned_expr_type` is not *nil*:
+				1. *Throw:* a new Error """Non-void expression \`{{SemanticExpression}}\` is returned from a void function."""
+			3. *Else:*
+				1. *Note:* A void function may return a void expression.
 	3. *Else:*
 		1. *Return.*
 ;
