@@ -137,7 +137,7 @@ export abstract class Expression extends AstNode {
 	@memoizeGetter
 	public get type(): TYPE.Type {
 		if (this.#type === undefined) {
-			this.#type = new ExprVisitorType().visit(this);
+			this.#type = new ExprVisitorType().visit(this)!; // HACK: for now, assert non-null; TODO: handle null case
 		}
 		return this.#type;
 	}

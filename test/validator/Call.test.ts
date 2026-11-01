@@ -442,7 +442,7 @@ test.suite('Call', () => {
 				inc.(42);
 			}`, {build: false}).stmts[1] as AST.STMT.StatementExpression).expr!), TYPE.INT);
 		});
-		test.test('void functions have no return type.', {expectFailure: true}, () => {
+		test.test('void functions have no return type.', () => {
 			assert.strictEqual(VISITOR.visit((setupScript(`{
 				func inc(x: int): void { return; }
 				inc.(42);

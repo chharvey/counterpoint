@@ -311,7 +311,7 @@ EntryTypeSchema! GetEntryInfo(Type base_type, Or<SemanticTypeAccess, SemanticExp
 			1. *Throw:* a new TypeErrorNoEntry.
 	9. *Else:*
 		1. *Assert:* `accessor` is a SemanticExpression.
-		2. *Let* `accessor_type` be *Unwrap:* `TypeOf(accessor)`.
+		2. *Let* `accessor_type` be *Unwrap:* `ThrowIfVoid(accessor, TypeErrorInvalidOperation)`.
 		3. *If* *UnwrapAffirm:* `IsBottomType(accessor_type)` is `true`:
 			1. *Return:* a new EntryTypeSchema [
 					type=     `Nothing`,

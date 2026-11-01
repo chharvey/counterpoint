@@ -89,7 +89,7 @@ test.suite('Expression', () => {
 
 		test.suite('Claim', () => {
 			test.test('returns the type value of the claimed type.', () => {
-				assert.ok(VISITOR.visit(AST.EXPR.Claim.fromSource('3 as <int | null>')).equals(TYPE.INT.union(TYPE.NULL)));
+				assert.ok(VISITOR.visit(AST.EXPR.Claim.fromSource('3 as <int | null>'))!.equals(TYPE.INT.union(TYPE.NULL)));
 			});
 			test.test('allows claiming to a type alias.', () => {
 				const claim: AST.EXPR.Claim = AST.EXPR.Claim.fromSource('"Alice" as <Name>');
@@ -99,7 +99,7 @@ test.suite('Expression', () => {
 				return assert.strictEqual(VISITOR.visit(claim), TYPE.STR);
 			});
 			test.test('allows claiming to `nothing` even though types are disjoint.', () => {
-				assert.ok(VISITOR.visit(AST.EXPR.Claim.fromSource('42 as <nothing>')).isBottomType);
+				assert.ok(VISITOR.visit(AST.EXPR.Claim.fromSource('42 as <nothing>'))!.isBottomType);
 			});
 			test.test('allows claiming a `nothing` expression even though types are disjoint.', () => {
 				const claim: AST.EXPR.Claim = AST.EXPR.Claim.fromSource('n as <int>');
@@ -148,6 +148,16 @@ test.suite('Expression', () => {
 					],
 				);
 			});
+			test.test('returns no type if any consequent is void.', () => {
+				const {stmts, visitors} = setupScript(`{
+					func f(): void { return; }
+					switch 42
+						case 1.1 -> f.()
+						default true;
+				}`, {typeCheck: false});
+				visitors.typeCheck.visit(stmts[0]);
+				return assertEqualTypes(VISITOR.visit((stmts[1] as AST.STMT.StatementExpression).expr!), null);
+			});
 			test.test('returns the union of all cases’ consequents and the default.', () => {
 				assertEqualTypes(
 					setupScript(`{
@@ -163,14 +173,33 @@ test.suite('Expression', () => {
 					],
 				);
 			});
-			test.test('throws when at least one antecedent is an error.', () => {
+			test.test('throws if the compared value is void.', () => {
 				const {stmts, visitors} = setupScript(`{
+					func f(): void { return; }
+					switch f.() default true;
+				}`, {typeCheck: false});
+				visitors.typeCheck.visit(stmts[0]);
+				return assert.throws(() => VISITOR.visit((stmts[1] as AST.STMT.StatementExpression).expr!), TypeErrorInvalidOperation);
+			});
+			test.test('throws if at least one antecedent is void.', () => {
+				const {stmts, visitors} = setupScript(`{
+					func f(): void { return; }
+					switch 42
+						case 1.1  | 2.2 -> 15
+						case f.() | 4.4 -> 25
+						default 43;
+				}`, {typeCheck: false});
+				visitors.typeCheck.visit(stmts[0]);
+				return assert.throws(() => VISITOR.visit((stmts[1] as AST.STMT.StatementExpression).expr!), /is not a value/);
+			});
+			test.test('throws if at least one antecedent is an error.', () => {
+				const {stmts} = setupScript(`{
 					switch 42
 						case 1.1       | 2.2 -> 15
 						case 33 / 10.0 | 4.4 -> 25
 						default 43;
 				}`, {typeCheck: false});
-				assert.throws(() => visitors.typeCheck.visit((stmts[0] as AST.STMT.StatementExpression).expr!), TypeErrorInvalidOperation);
+				return assert.throws(() => VISITOR.visit((stmts[0] as AST.STMT.StatementExpression).expr!), TypeErrorInvalidOperation);
 			});
 		});
 
@@ -354,7 +383,17 @@ test.suite('Expression', () => {
 			];
 		}
 		test.suite('#type', () => {
-			test.test('always returns `String`.', () => {
+			test.test('returns type `nothing` when an operand is `nothing`.', () => {
+				const {stmts} = setupScript(`{
+					val x: int = 42;
+					"""the answer is {{x as <nothing>}} but what is the question?""";
+				}`, {build: false});
+				assertEqualTypes(
+					VISITOR.visit((stmts[1] as AST.STMT.StatementExpression).expr!),
+					TYPE.NOTHING,
+				);
+			});
+			test.test('returns type `str` for all other operands.', () => {
 				const templates: readonly AST.EXPR.Template[] = initTemplates();
 				assertEqualTypes(
 					templates.map((t) => VISITOR.visit(t)),
@@ -483,34 +522,38 @@ test.suite('Expression', () => {
 
 	test.suite('ExpressionBlock', () => {
 		test.suite('#type', () => {
-			test.test('throws when the last statement is not an expression-statement.', () => {
-				const {goal, visitors} = setupScript(`{
+			test.test('block has no type when the last statement is not an expression-statement.', () => {
+				const {stmts, visitors} = setupScript(`{
 					val mut x: int = 42;
 					val mut y: int | null = {
 						x;
 						val mut z: int = 69;
-						%> Error!
+						% \`void\` block
 					};
 					x;
 					y;
 				}`, {typeCheck: false});
-				assert.throws(() => visitors.typeCheck.visit(goal), /The last statement of a block-expression must be an expression-statement/);
+				visitors.typeCheck.visit(stmts[0]);
+				assertEqualTypes(VISITOR.visit((stmts[1] as AST.STMT.DeclarationVariable).assigned!), null);
+				return assert.throws(() => visitors.typeCheck.visit(stmts[1]), TypeErrorNotAssignable);
 			});
-			test.test('throws when the determinant is empty.', () => {
-				const {goal, visitors} = setupScript(`{
+			test.test('block has no type when the determinant is empty.', () => {
+				const {stmts, visitors} = setupScript(`{
 					val mut x: int = 42;
 					val mut y: int | null = {
 						x;
 						val mut z: int = 69;
-						; %> Error!
+						; % \`void\` block
 					};
 					x;
 					y;
 				}`, {typeCheck: false});
-				assert.throws(() => visitors.typeCheck.visit(goal), /The determining expression-statement of a block-expression must be nonempty/);
+				visitors.typeCheck.visit(stmts[0]);
+				assertEqualTypes(VISITOR.visit((stmts[1] as AST.STMT.DeclarationVariable).assigned!), null);
+				return assert.throws(() => visitors.typeCheck.visit(stmts[1]), TypeErrorNotAssignable);
 			});
 			test.test('returns the type of the determinant.', () => {
-				const {stmts} = setupScript(`{
+				const {stmts, visitors} = setupScript(`{
 					val mut x: int = 42;
 					val mut y: int | null = {
 						x;
@@ -521,6 +564,7 @@ test.suite('Expression', () => {
 					y;
 				}`, {build: false});
 				assertEqualTypes(VISITOR.visit((stmts[1] as AST.STMT.DeclarationVariable).assigned!), TYPE.INT);
+				return visitors.typeCheck.visit(stmts[1]); // assert does not throw
 			});
 		});
 	});

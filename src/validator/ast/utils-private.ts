@@ -472,7 +472,7 @@ export function get_entry_info(base_type: TYPE.Type, access: AST_TYPE.Access | E
 		default: {
 			assert_instanceof(access, EXPR.Access);
 			assert_instanceof(access.accessor, EXPR.Expression);
-			const accessor_type: TYPE.Type = new ExprVisitorType().visit(access.accessor);
+			const accessor_type: TYPE.Type = new ExprVisitorType().throwIfVoid(access.accessor, new TypeErrorInvalidOperation(access));
 			if (accessor_type.isBottomType) {
 				return {type: TYPE.NOTHING, optional: accessor_maybe};
 			}

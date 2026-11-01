@@ -46,33 +46,37 @@ import {AstNodeVisitorCompletion} from './AstNodeVisitorCompletion.ts';
 
 
 export function memoizeExpressionType<Param extends EXPR.Expression>(
-	method:   (this: ExprVisitorType, arg: Param) => TYPE.Type,
+	method:   (this: ExprVisitorType, arg: Param) => TYPE.Type | null,
 	_context: ClassMethodDecoratorContext<ExprVisitorType, typeof method>,
 ): typeof method {
 	return function (arg) {
-		arg.type = method.bind(this, arg);
+		// set, then get
+		arg.type = () => method.call(this, arg)!; // HACK: for now, assert non-null; TODO: handle null case
 		return arg.type;
 	};
 }
 
 
 
-export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
+export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type | null> {
 	readonly #astNodeVisitorCompletion = new AstNodeVisitorCompletion();
 
 
 	@memoizeExpressionType
-	public override visitConstant(expr: EXPR.Constant): TYPE.Type {
+	public override visitConstant(expr: EXPR.Constant): TYPE.Type | null {
 		return expr.interpreterValue.toType();
 	}
 
 	@memoizeExpressionType
-	public override visitTemplate(_expr: EXPR.Template): TYPE.Type {
+	public override visitTemplate(expr: EXPR.Template): TYPE.Type | null {
+		if (xjs.Array.mapAggregated(expr.children, (item) => this.throwIfVoid(item, new TypeErrorNotAssignable(item, TYPE.STR))).some((t) => t.isBottomType)) {
+			return TYPE.NOTHING;
+		}
 		return TYPE.STR;
 	}
 
 	@memoizeExpressionType
-	public override visitVariable(expr: EXPR.Variable): TYPE.Type {
+	public override visitVariable(expr: EXPR.Variable): TYPE.Type | null {
 		assert.ok(expr.validator.hasSymbol(expr.id), `Expected ${expr.source} (${expr.id}) to be in the symbol table.`);
 		const symbol: SymbolSchema = expr.validator.getSymbol(expr.id)!;
 		assert_instanceof(symbol, SymbolSchemaVar);
@@ -80,92 +84,98 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 	}
 
 	@memoizeExpressionType
-	public override visitTuple(expr: EXPR.Tuple): TYPE.Type {
-		if (expr.children.some((c) => this.visit(c).isBottomType)) {
+	public override visitTuple(expr: EXPR.Tuple): TYPE.Type | null {
+		const types: readonly TYPE.Type[] = xjs.Array.mapAggregated(expr.children, (item) => this.throwIfVoid(item));
+		if (types.some((t) => t.isBottomType)) {
 			return TYPE.NOTHING;
 		}
-		return TYPE.Tuple.fromTypes(expr.children.map((c) => this.visit(c)));
+		return TYPE.Tuple.fromTypes(types);
 	}
 
 	@memoizeExpressionType
-	public override visitRecord(expr: EXPR.Record): TYPE.Type {
-		if (expr.children.some((c) => this.visit(c.val).isBottomType)) {
+	public override visitRecord(expr: EXPR.Record): TYPE.Type | null {
+		const proptypes = new Map<bigint, TYPE.Type>(xjs.Array.mapAggregated(expr.children, (prop) => [
+			prop.key.id,
+			this.throwIfVoid(prop.val),
+		]));
+		if (proptypes.values().some((typ) => typ.isBottomType)) {
 			return TYPE.NOTHING;
 		}
-		return TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>(expr.children.map((c) => [
-			c.key.id,
-			this.visit(c.val),
-		])));
+		return TYPE.Record.fromTypes(proptypes);
 	}
 
 	@memoizeExpressionType
-	public override visitList(expr: EXPR.List): TYPE.Type {
-		if (expr.children.some((c) => this.visit(c).isBottomType)) {
+	public override visitList(expr: EXPR.List): TYPE.Type | null {
+		const types: readonly TYPE.Type[] = xjs.Array.mapAggregated(expr.children, (item) => this.throwIfVoid(item));
+		if (types.some((t) => t.isBottomType)) {
 			return TYPE.NOTHING;
 		}
 		return new TYPE.List(
-			TYPE.Union.all(...expr.children.map((c) => this.visit(c))),
+			TYPE.Union.all(...types),
 			true,
 		);
 	}
 
 	@memoizeExpressionType
-	public override visitDict(expr: EXPR.Dict): TYPE.Type {
-		if (expr.children.some((c) => this.visit(c.val).isBottomType)) {
+	public override visitDict(expr: EXPR.Dict): TYPE.Type | null {
+		const types: readonly TYPE.Type[] = xjs.Array.mapAggregated(expr.children, (prop) => this.throwIfVoid(prop.val));
+		if (types.some((typ) => typ.isBottomType)) {
 			return TYPE.NOTHING;
 		}
 		return new TYPE.Dict(
-			TYPE.Union.all(...expr.children.map((c) => this.visit(c.val))),
+			TYPE.Union.all(...types),
 			true,
 		);
 	}
 
 	@memoizeExpressionType
-	public override visitSet(expr: EXPR.Set): TYPE.Type {
-		if (expr.children.some((c) => this.visit(c).isBottomType)) {
+	public override visitSet(expr: EXPR.Set): TYPE.Type | null {
+		const types: readonly TYPE.Type[] = xjs.Array.mapAggregated(expr.children, (item) => this.throwIfVoid(item));
+		if (types.some((t) => t.isBottomType)) {
 			return TYPE.NOTHING;
 		}
 		return new TYPE.Set(
-			TYPE.Union.all(...expr.children.map((c) => this.visit(c))),
+			TYPE.Union.all(...types),
 			true,
 		);
 	}
 
 	@memoizeExpressionType
-	public override visitMap(expr: EXPR.Map): TYPE.Type {
-		if (expr.children.some((c) => this.visit(c.antecedents[0]).isBottomType || this.visit(c.consequent).isBottomType)) {
+	public override visitMap(expr: EXPR.Map): TYPE.Type | null {
+		const casetypes: readonly (readonly [TYPE.Type, TYPE.Type])[] = xjs.Array.mapAggregated(expr.children, (kase) => [
+			this.throwIfVoid(kase.antecedents[0]),
+			this.throwIfVoid(kase.consequent),
+		]);
+		if (casetypes.some((kase) => kase[0].isBottomType || kase[1].isBottomType)) {
 			return TYPE.NOTHING;
 		}
 		return new TYPE.Map(
-			TYPE.Union.all(...expr.children.map((c) => this.visit(c.antecedents[0]))),
-			TYPE.Union.all(...expr.children.map((c) => this.visit(c.consequent))),
+			TYPE.Union.all(...casetypes.map((kase) => kase[0])),
+			TYPE.Union.all(...casetypes.map((kase) => kase[1])),
 			true,
 		);
 	}
 
 	@memoizeExpressionType
-	public override visitExprBlock(expr: EXPR.ExpressionBlock): TYPE.Type {
+	public override visitExprBlock(expr: EXPR.ExpressionBlock): TYPE.Type | null {
 		if (this.#astNodeVisitorCompletion.visit(expr.block) !== CompletionKind.NORMAL) {
 			return TYPE.NOTHING;
 		}
 		assert.ok(expr.block.children.length, 'Expected Block to contain at least 1 statement.');
 		const last_stmt: STMT.Statement = expr.block.children.at(-1)!;
-		/* TODO: For now, all block-expressions must have a type, thus must have a determinant.
-		but after #46 (void functions), block-expressions don’t need a determinant and thus may have a “void” type.
-		In those cases, instead of throwing errors here, return `null`. */
 		if (!(last_stmt instanceof STMT.StatementExpression)) {
-			throw new Error('The last statement of a block-expression must be an expression-statement.');
+			return null;
 		}
 		const last_expr: EXPR.Expression | undefined = last_stmt.expr;
 		if (!last_expr) {
-			throw new Error('The determining expression-statement of a block-expression must be nonempty.');
+			return null;
 		}
 		return this.visit(last_expr);
 	}
 
 	@memoizeExpressionType
-	public override visitAccess(expr: EXPR.Access): TYPE.Type {
-		const base_type: TYPE.Type = this.visit(expr.base);
+	public override visitAccess(expr: EXPR.Access): TYPE.Type | null {
+		const base_type: TYPE.Type = this.throwIfVoid(expr.base, new TypeErrorInvalidOperation(expr));
 		if (base_type.isBottomType) {
 			return TYPE.NOTHING;
 		}
@@ -194,18 +204,18 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 	}
 
 	@memoizeExpressionType
-	public override visitCall(expr: EXPR.Call): TYPE.Type {
+	public override visitCall(expr: EXPR.Call): TYPE.Type | null {
 		let base_types: readonly TYPE.Type[] = [];
 		if (!expr.isCallableClassName) {
 			const symbol: SymbolSchema | undefined = expr.base instanceof EXPR.Variable ? expr.validator.getSymbol(expr.base.id) : undefined;
-			base_types = symbol instanceof SymbolSchemaFunc ? symbol.types : [this.visit(expr.base)];
+			base_types = symbol instanceof SymbolSchemaFunc ? symbol.types : [this.throwIfVoid(expr.base, new TypeErrorInvalidOperation(expr))];
 			if (base_types.some((t) => t.isBottomType)) {
 				return TYPE.NOTHING;
 			}
 		}
 		if (
-			expr.exprargsPosit.some((arg) => this.visit(arg).isBottomType) ||
-			expr.exprargsNamed.some((arg) => this.visit(arg.val).isBottomType)
+			expr.exprargsPosit.some((arg) => this.throwIfVoid(arg).isBottomType) ||
+			expr.exprargsNamed.some((arg) => this.throwIfVoid(arg.val).isBottomType)
 		) {
 			return TYPE.NOTHING;
 		}
@@ -217,21 +227,21 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 
 			/* Throw and aggregate if any overload is not a function;
 			otherwise, map to return types or errors as a result of type-checking. */
-			const overload_calls: readonly [TYPE.Function, TYPE.Type | Error][] = xjs.Array.mapAggregated(base_types, (t) => {
+			const overload_calls: readonly [TYPE.Function, TYPE.Type | null | Error][] = xjs.Array.mapAggregated(base_types, (t) => {
 				if (t instanceof TYPE.Function) {
 					return [t, this.#typeFunctionCall(expr, t)];
 				} else {
 					throw new TypeErrorNotCallable(t, expr.base);
 				}
 			});
-			const successes = overload_calls.filter(([_, result]) => result instanceof TYPE.Type) as readonly [TYPE.Function, TYPE.Type][];
+			const successes = overload_calls.filter(([_, result]) => !result || result instanceof TYPE.Type) as readonly [TYPE.Function, TYPE.Type | null][];
 			const errors: readonly Error[] = overload_calls.map(([_, result]) => result).filter((result) => result instanceof Error);
 
 			/* If multiple overloads match: if a maximally specific overload is found, return it; else throw a TypeErrorAmbiguousOverload.
 			Else if there are multiple failures, throw a TypeErrorAmbiguousOverload containing the failures.
 			Else return a single failure. */
 			if (successes.length) {
-				const maximally_specific: readonly [TYPE.Function, TYPE.Type][] = successes.filter(([ovl1]) => successes.every(([ovl2]) => ovl1 === ovl2 || ovl1.isMoreSpecificThan(ovl2)));
+				const maximally_specific: readonly [TYPE.Function, TYPE.Type | null][] = successes.filter(([ovl1]) => successes.every(([ovl2]) => ovl1 === ovl2 || ovl1.isMoreSpecificThan(ovl2)));
 				if (maximally_specific.length === 1) {
 					return maximally_specific[0][1];
 				} else {
@@ -263,7 +273,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 					if (arg instanceof EXPR.Tuple) {
 						xjs.Array.forEachAggregated(arg.children, (item) => typecheck_assign(this, item, itemtype, item));
 					} else {
-						const argtype: TYPE.Type = this.visit(arg);
+						const argtype: TYPE.Type = this.throwIfVoid(arg);
 						if (argtype instanceof TYPE.Tuple) {
 							const tupleitemtypes: TYPE.Type = argtype.itemTypes();
 							if (!tupleitemtypes.isSubtypeOf(itemtype)) {
@@ -285,7 +295,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 					} else if (arg instanceof EXPR.Record) {
 						xjs.Array.forEachAggregated(arg.children, (prop) => typecheck_assign(this, prop.val, valuetype, prop.val));
 					} else {
-						const argtype: TYPE.Type = this.visit(arg);
+						const argtype: TYPE.Type = this.throwIfVoid(arg);
 						if (argtype instanceof TYPE.Tuple) {
 							const tupleitemtypes: TYPE.Type = argtype.itemTypes();
 							if (!tupleitemtypes.isSubtypeOf(entrytype)) {
@@ -309,7 +319,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 					if (arg instanceof EXPR.Tuple) {
 						xjs.Array.forEachAggregated(arg.children, (item) => typecheck_assign(this, item, eltype, item));
 					} else {
-						const argtype: TYPE.Type = this.visit(arg);
+						const argtype: TYPE.Type = this.throwIfVoid(arg);
 						if (argtype instanceof TYPE.Tuple) {
 							const tupleitemtypes: TYPE.Type = argtype.itemTypes();
 							if (!tupleitemtypes.isSubtypeOf(eltype)) {
@@ -330,7 +340,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 					if (arg instanceof EXPR.Tuple) {
 						xjs.Array.forEachAggregated(arg.children, (item) => typecheck_assign(this, item, entrytype, item));
 					} else {
-						const argtype: TYPE.Type = this.visit(arg);
+						const argtype: TYPE.Type = this.throwIfVoid(arg);
 						if (argtype instanceof TYPE.Tuple) {
 							const tupleitemtypes: TYPE.Type = argtype.itemTypes();
 							if (!tupleitemtypes.isSubtypeOf(entrytype)) {
@@ -352,8 +362,8 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 	}
 
 	@memoizeExpressionType
-	public override visitClaim(expr: EXPR.Claim): TYPE.Type {
-		const computed_type: TYPE.Type = this.visit(expr.operand);
+	public override visitClaim(expr: EXPR.Claim): TYPE.Type | null {
+		const computed_type: TYPE.Type = this.throwIfVoid(expr.operand);
 		const claimed_type:  TYPE.Type = expr.claimed_type.eval();
 		/* If the types are disjoint and neither of the types are the Bottom Type, throw an error. */
 		if (!expr.force && computed_type.isDisjointWith(claimed_type) && !computed_type.isBottomType && !claimed_type.isBottomType) {
@@ -368,8 +378,8 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 	}
 
 	@memoizeExpressionType
-	public override visitOperationUnary(expr: EXPR.OperationUnary): TYPE.Type {
-		const t: TYPE.Type = this.visit(expr.operand);
+	public override visitOperationUnary(expr: EXPR.OperationUnary): TYPE.Type | null {
+		const t: TYPE.Type = this.throwIfVoid(expr.operand, new TypeErrorInvalidOperation(expr));
 		if (t.isBottomType) {
 			return TYPE.NOTHING;
 		}
@@ -397,8 +407,8 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 	}
 
 	@memoizeExpressionType
-	public override visitOperationBinaryCast(expr: EXPR.OperationBinaryCast): TYPE.Type {
-		const t0: TYPE.Type = this.visit(expr.operand0);
+	public override visitOperationBinaryCast(expr: EXPR.OperationBinaryCast): TYPE.Type | null {
+		const t0: TYPE.Type = this.throwIfVoid(expr.operand0, new TypeErrorInvalidOperation(expr));
 		if (t0.isBottomType) {
 			return TYPE.NOTHING;
 		}
@@ -446,8 +456,8 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 	}
 
 	@memoizeExpressionType
-	public override visitOperationBinaryArithmetic(expr: EXPR.OperationBinaryArithmetic): TYPE.Type {
-		const [t0, t1]: readonly TYPE.Type[] = expr.children.map((operand) => this.visit(operand));
+	public override visitOperationBinaryArithmetic(expr: EXPR.OperationBinaryArithmetic): TYPE.Type | null {
+		const [t0, t1]: readonly TYPE.Type[] = expr.children.map((operand) => this.throwIfVoid(operand, new TypeErrorInvalidOperation(expr)));
 		if (t0.isBottomType || t1.isBottomType) {
 			return TYPE.NOTHING;
 		}
@@ -460,8 +470,8 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 	}
 
 	@memoizeExpressionType
-	public override visitOperationBinaryComparative(expr: EXPR.OperationBinaryComparative): TYPE.Type {
-		const [t0, t1]: readonly TYPE.Type[] = expr.children.map((operand) => this.visit(operand));
+	public override visitOperationBinaryComparative(expr: EXPR.OperationBinaryComparative): TYPE.Type | null {
+		const [t0, t1]: readonly TYPE.Type[] = expr.children.map((operand) => this.throwIfVoid(operand, new TypeErrorInvalidOperation(expr)));
 		if (t0.isBottomType || t1.isBottomType) {
 			return TYPE.NOTHING;
 		}
@@ -472,8 +482,8 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 	}
 
 	@memoizeExpressionType
-	public override visitOperationBinaryEquality(expr: EXPR.OperationBinaryEquality): TYPE.Type {
-		const [t0, t1]: readonly TYPE.Type[] = expr.children.map((operand) => this.visit(operand));
+	public override visitOperationBinaryEquality(expr: EXPR.OperationBinaryEquality): TYPE.Type | null {
+		const [t0, t1]: readonly TYPE.Type[] = expr.children.map((operand) => this.throwIfVoid(operand, new TypeErrorInvalidOperation(expr)));
 		if (t0.isBottomType || t1.isBottomType) {
 			return TYPE.NOTHING;
 		}
@@ -503,10 +513,14 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 	}
 
 	@memoizeExpressionType
-	public override visitOperationBinaryLogical(expr: EXPR.OperationBinaryLogical): TYPE.Type {
-		const [t0, t1]: readonly TYPE.Type[] = expr.children.map((operand) => this.visit(operand));
+	public override visitOperationBinaryLogical(expr: EXPR.OperationBinaryLogical): TYPE.Type | null {
+		const t0: TYPE.Type = this.throwIfVoid(expr.children[0], new TypeErrorInvalidOperation(expr)); // a void expression cannot be tested for truthiness
+		const t1: TYPE.Type | null = this.visit(expr.children[1]);
 		if (t0.isBottomType) {
 			return TYPE.NOTHING;
+		}
+		if (!t1) {
+			return null; // a void operand consumes other operands
 		}
 		switch (expr.operator) {
 			case Operator.AND: {
@@ -527,40 +541,55 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 	}
 
 	@memoizeExpressionType
-	public override visitOperationTernary(expr: EXPR.OperationTernary): TYPE.Type {
-		const [t0, t1, t2]: readonly TYPE.Type[] = expr.children.map((operand) => this.visit(operand));
+	public override visitOperationTernary(expr: EXPR.OperationTernary): TYPE.Type | null {
+		const t0: TYPE.Type = this.throwIfVoid(expr.children[0], new TypeErrorInvalidOperation(expr));
+		const [t1, t2]: readonly (TYPE.Type | null)[] = expr.children.slice(1).map((operand) => this.visit(operand));
+		if (t0.isBottomType) {
+			return TYPE.NOTHING;
+		}
 		if (!t0.isSubtypeOf(TYPE.BOOL)) {
 			throw new TypeErrorInvalidOperation(expr);
 		}
 		return (
-			t0.isBottomType       ? TYPE.NOTHING :
-			t0.equals(TYPE.FALSE) ? t2 : // If `typeof a` is `false`, then `typeof (if a then b else c)` is `typeof c`.
-			t0.equals(TYPE.TRUE)  ? t1 : // If `typeof a` is `true`,  then `typeof (if a then b else c)` is `typeof b`.
+			!t1 || !t2            ? null :
+			t0.equals(TYPE.FALSE) ? t2 :
+			t0.equals(TYPE.TRUE)  ? t1 :
 			t1.union(t2)
 		);
 	}
 
 	@memoizeExpressionType
-	public override visitSwitch(expr: EXPR.Switch): TYPE.Type {
-		return this.visit(expr.value).isBottomType
-			? TYPE.NOTHING
-			: TYPE.Union.all(...expr.cases.map((kase) => {
-				kase.antecedents.forEach((ant) => { this.visit(ant); }); // rethrow any type-errors
-				return this.visit(kase.consequent);
-			}), this.visit(expr.default_));
+	public override visitSwitch(expr: EXPR.Switch): TYPE.Type | null {
+		const t0: TYPE.Type = this.throwIfVoid(expr.value, new TypeErrorInvalidOperation(expr));
+		const tns: readonly (TYPE.Type | null)[] = [...expr.cases.map((kase) => {
+			kase.antecedents.forEach((ant) => { this.throwIfVoid(ant); });
+			return this.visit(kase.consequent);
+		}), this.visit(expr.default_)];
+		if (t0.isBottomType) {
+			return TYPE.NOTHING;
+		}
+		return tns.some((t) => !t) ? null : TYPE.Union.all(...tns as readonly TYPE.Type[]);
 	}
 
 
 	@memoizeExpressionType
-	public override visitFunction(expr: EXPR.Function): TYPE.Type {
+	public override visitFunction(expr: EXPR.Function): TYPE.Type | null {
 		return this.visitFunctionlike(expr);
 	}
 
-	public override defaultVisit(_expr: EXPR.Expression): TYPE.Type {
+	public override defaultVisit(_expr: EXPR.Expression): TYPE.Type | null {
 		return TYPE.ANYTHING;
 	}
 
-	public visitFunctionlike(node: Functionlike): TYPE.Type {
+	public throwIfVoid(expr: EXPR.Expression, err?: CplTypeError): TYPE.Type {
+		const t: TYPE.Type | null = this.visit(expr);
+		if (!t) {
+			throw err ?? new CplTypeError('Expression of type `void` is not a value.'); // TODO: new class of CplTypeError
+		}
+		return t;
+	}
+
+	public visitFunctionlike(node: Functionlike): TYPE.Function {
 		return new TYPE.Function(
 			new TYPE.Tuple(node.parameters.filter((param) => !param.named).map((param) => ({
 				type:     param.typenode.eval(),
@@ -577,7 +606,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 		);
 	}
 
-	#typeFunctionCall(call: EXPR.Call, t: TYPE.Function): TYPE.Type | Error {
+	#typeFunctionCall(call: EXPR.Call, t: TYPE.Function): TYPE.Type | null | Error {
 		const expected_function = {
 			min: t.typeargParamsPosit.minCount,
 			max: BigInt(t.typeargParamsPosit.typeargs.length),
@@ -599,7 +628,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 				throw err;
 			}
 		}
-		return t.typeargReturn ?? assert.fail(new Error('Void function return types are not yet supported.'));
+		return t.typeargReturn ?? null;
 	}
 
 	/**
@@ -610,7 +639,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 	#checkFunctionArgs(call: EXPR.Call, constructor_schema: ConstructorSchema, resolved_generic_args: readonly TYPE.Type[]): void {
 		if (!constructor_schema.overloads.length) {
 			throw new TypeErrorNotCallable(
-				this.visit(call.base),
+				this.visit(call.base)!,
 				call.base,
 			);
 		}

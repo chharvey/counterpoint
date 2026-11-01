@@ -5,8 +5,14 @@ Type TypeOf(SemanticConstant const) :=
 
 
 
-Type TypeOf(SemanticExpressionTemplate template) :=
-	1. *Return:* `String`.
+Type! TypeOf(SemanticExpressionTemplate template) :=
+	1. *For each* `expr` in `template`:
+		1. *Let* `type` be *Unwrap:* `ThrowIfVoid(expr, TypeErrorNotAssignable)`.
+		2. *If* *UnwrapAffirm:* `IsBottomType(type)` is `true`:
+			1. *Return:* `Nothing`.
+		3. *Else:*
+			5. Fall through.
+	2. *Return:* `String`.
 ;
 
 
@@ -26,7 +32,7 @@ Type! TypeOf(SemanticExpressionTuple tuple) :=
 	1. *Let* `data` be a new Sequence.
 	2. *For each* `item` in `tuple`:
 		1. *Let* `typedatum` be a new EntryTypeSchema [
-			type=     *Unwrap:* `TypeOf(item)`,
+			type=     *Unwrap:* `ThrowIfVoid(item)`,
 			optional= `false`,
 		].
 		2. *If* *UnwrapAffirm:* `IsBottomType(typedatum.type)` is `true`:
@@ -42,7 +48,7 @@ Type! TypeOf(SemanticExpressionRecord record) :=
 	2. *For each* `property` in `record`:
 		1. *Assert:* `property.children.count` is 2.
 		2. *Let* `typedatum` be a new EntryTypeSchema [
-			type=     *Unwrap:* `TypeOf(property.children.1)`,
+			type=     *Unwrap:* `ThrowIfVoid(property.children.1)`,
 			optional= `false`,
 		].
 		3. *If* *UnwrapAffirm:* `IsBottomType(typedatum.type)` is `true`:
@@ -54,7 +60,7 @@ Type! TypeOf(SemanticExpressionRecord record) :=
 
 
 Type! TypeOf(SemanticExpressionList list) :=
-	1. *Let* `types` be a mapping of `list` for each `it` to *Unwrap:* `TypeOf(it)`.
+	1. *Let* `types` be a mapping of `list` for each `it` to *Unwrap:* `ThrowIfVoid(it)`.
 	2. *If* `types` contains `Nothing`:
 		1. *Return:* `Nothing`.
 	3. *Let* `t` be `Union(...types)`.
@@ -64,7 +70,7 @@ Type! TypeOf(SemanticExpressionList list) :=
 
 
 Type! TypeOf(SemanticExpressionDict dict) :=
-	1. *Let* `types` be a mapping of `dict` for each `prop` to *Unwrap:* `TypeOf(prop.children.1)`.
+	1. *Let* `types` be a mapping of `dict` for each `prop` to *Unwrap:* `ThrowIfVoid(prop.children.1)`.
 	2. *If* `types` contains `Nothing`:
 		1. *Return:* `Nothing`.
 	3. *Let* `t` be `Union(...types)`.
@@ -74,7 +80,7 @@ Type! TypeOf(SemanticExpressionDict dict) :=
 
 
 Type! TypeOf(SemanticExpressionSet set) :=
-	1. *Let* `types` be a mapping of `set` for each `el` to *Unwrap:* `TypeOf(el)`.
+	1. *Let* `types` be a mapping of `set` for each `el` to *Unwrap:* `ThrowIfVoid(el)`.
 	2. *If* `types` contains `Nothing`:
 		1. *Return:* `Nothing`.
 	3. *Let* `t` be *UnwrapAffirm:* `Union(...types)`.
@@ -84,8 +90,8 @@ Type! TypeOf(SemanticExpressionSet set) :=
 
 
 Type! TypeOf(SemanticExpressionMap map) :=
-	1. *Let* `ant_types` be a mapping of `map` for each `case` to *Unwrap:* `TypeOf(case.children.0)`.
-	2. *Let* `con_types` be a mapping of `map` for each `case` to *Unwrap:* `TypeOf(case.children.1)`.
+	1. *Let* `ant_types` be a mapping of `map` for each `case` to *Unwrap:* `ThrowIfVoid(case.children.0)`.
+	2. *Let* `con_types` be a mapping of `map` for each `case` to *Unwrap:* `ThrowIfVoid(case.children.1)`.
 	3. *If* `ant_types` contains `Nothing`:
 		1. *Return:* `Nothing`.
 	4. *If* `con_types` contains `Nothing`:
@@ -97,7 +103,7 @@ Type! TypeOf(SemanticExpressionMap map) :=
 
 
 
-Type! TypeOf(SemanticExpressionBlock ::= SemanticBlock) :=
+Type?! TypeOf(SemanticExpressionBlock ::= SemanticBlock) :=
 	1. *If* *UnwrapAffirm:* `CompletionOf(SemanticBlock)` is not *NORMAL*:
 		1. *Return:* `Nothing`.
 	2. *Else:*
@@ -105,9 +111,9 @@ Type! TypeOf(SemanticExpressionBlock ::= SemanticBlock) :=
 	3. *Assert:* `SemanticBlock.children.count` is greater than 0.
 	4. *Let* `last_stmt` be `SemanticBlock.children.-1`.
 	5. *If* `last_stmt` is not a SemanticStatementExpression:
-		1. *Throw:* a new Error.
+		1. *Return:* *nil*.
 	6. *If* `last_stmt.children.count` is less than 1:
-		1. *Throw:* a new Error.
+		1. *Return:* *nil*.
 	7. *Let* `expr` be `last_stmt.children.0`.
 	8. *Assert:* `expr` is a SemanticExpression.
 	9. *Return:* `TypeOf(expr)`.
@@ -116,7 +122,7 @@ Type! TypeOf(SemanticExpressionBlock ::= SemanticBlock) :=
 
 
 Type! TypeOf(SemanticExpressionAccess[kind=NORMAL] ::= SemanticExpression__0 (SemanticIndex | SemanticKey | SemanticExpression__1)) :=
-	1. *Let* `base_type` be *Unwrap:* `TypeOf(SemanticExpression__0)`.
+	1. *Let* `base_type` be *Unwrap:* `ThrowIfVoid(SemanticExpression__0, TypeErrorInvalidOperation)`.
 	2. *If* *UnwrapAffirm:* `IsBottomType(base_type)` is `true`:
 		1. *Return:* `Nothing`.
 	3. *Else:*
@@ -130,7 +136,7 @@ Type! TypeOf(SemanticExpressionAccess[kind=NORMAL] ::= SemanticExpression__0 (Se
 	7. *Return:* `entry.type`.
 ;
 Type! TypeOf(SemanticExpressionAccess[kind=MAYBE] ::= SemanticExpression__0 (SemanticIndex | SemanticKey | SemanticExpression__1)) :=
-	1. *Let* `base_type` be *Unwrap:* `TypeOf(SemanticExpression__0)`.
+	1. *Let* `base_type` be *Unwrap:* `ThrowIfVoid(SemanticExpression__0, TypeErrorInvalidOperation)`.
 	2. *If* *UnwrapAffirm:* `IsBottomType(base_type)` is `true`:
 		1. *Return:* `Nothing`.
 	3. *Else:*
@@ -147,7 +153,7 @@ Type! TypeOf(SemanticExpressionAccess[kind=MAYBE] ::= SemanticExpression__0 (Sem
 		1. *Throw:* a new TypeErrorInvalidOperation.
 ;
 Type! TypeOf(SemanticExpressionAccess[kind=RESULT] ::= SemanticExpression__0 (SemanticIndex | SemanticKey | SemanticExpression__1)) :=
-	1. *Let* `base_type` be *Unwrap:* `TypeOf(SemanticExpression__0)`.
+	1. *Let* `base_type` be *Unwrap:* `ThrowIfVoid(SemanticExpression__0, TypeErrorInvalidOperation)`.
 	2. *If* *UnwrapAffirm:* `IsBottomType(base_type)` is `true`:
 		1. *Return:* `Nothing`.
 	3. *Else:*
@@ -166,7 +172,7 @@ Type! TypeOf(SemanticExpressionAccess[kind=RESULT] ::= SemanticExpression__0 (Se
 
 
 
-Type! TypeOf(SemanticExpressionCall ::= SemanticExpression__0 SemanticType* SemanticExpression__1* SemanticProperty*) :=
+Type?! TypeOf(SemanticExpressionCall ::= SemanticExpression__0 SemanticType* SemanticExpression__1* SemanticProperty*) :=
 	1. *Let* `base_types` be an empty Sequence.
 	2. *Let* `schema` be *nil*.
 	3. *If* `SemanticExpression__0` is a SemanticExpressionVariable:
@@ -177,7 +183,7 @@ Type! TypeOf(SemanticExpressionCall ::= SemanticExpression__0 SemanticType* Sema
 	5. *If* `schema` is an instance of `SymbolSchemaFunc`:
 		1. *Set* `base_types` to `schema.types`.
 	6. *Else:*
-		1. *Let* `basetype` be *Unwrap:* `TypeOf(SemanticExpression__0)`.
+		1. *Let* `basetype` be *Unwrap:* `ThrowIfVoid(SemanticExpression__0, TypeErrorInvalidOperation)`.
 		2. *Set* `base_types` to a new Sequence [`basetype`].
 	7. *For each* `type` in `base_types`:
 		1. *If* *UnwrapAffirm:* `IsBottomType(type)` is `true`:
@@ -185,13 +191,13 @@ Type! TypeOf(SemanticExpressionCall ::= SemanticExpression__0 SemanticType* Sema
 		2. *Else:*
 			1. Fall through.
 	8. *For each* `it` in `SemanticExpression__1*`:
-		1. *Let* `arg_type` be *Unwrap:* `TypeOf(it)`.
+		1. *Let* `arg_type` be *Unwrap:* `ThrowIfVoid(it)`.
 		2. *If* *UnwrapAffirm:* `IsBottomType(arg_type)` is `true`:
 			1. *Return:* `Nothing`.
 		3. *Else:*
 			1. Fall through.
 	9. *For each* `it ::= SemanticKey SemanticExpression__2` in `SemanticProperty*`:
-		1. *Let* `arg_type` be *Unwrap:* `TypeOf(SemanticExpression__2)`.
+		1. *Let* `arg_type` be *Unwrap:* `ThrowIfVoid(SemanticExpression__2)`.
 		2. *If* *UnwrapAffirm:* `IsBottomType(arg_type)` is `true`:
 			1. *Return:* `Nothing`.
 		3. *Else:*
@@ -222,7 +228,7 @@ Type! TypeOf(SemanticExpressionCall ::= SemanticExpression__0 SemanticType* Sema
 			14. *If* `type` has a return type:
 				1. *Return:* the return type of `type`.
 			15. *Else:*
-				1. *Throw:* a new Error "Void function return types are not yet supported.".
+				1. *Return:* *nil*.
 		2. *If* the result of the above substeps is a normal completion:
 			1. Push the result to `successes`.
 		3. *Else:*
@@ -245,7 +251,7 @@ Type! TypeOf(SemanticExpressionCall ::= SemanticExpression__0 SemanticType* Sema
 Type! TypeOf(SemanticExpressionClaim claim) :=
 	1. *Note:* This algorithm overrides `TypeOf(SemanticExpression)`.
 	2. *Assert:* `claim.children.count` is 2.
-	3. *Let* `computed_type` be *Unwrap:* `TypeOf(claim.children.0)`.
+	3. *Let* `computed_type` be *Unwrap:* `ThrowIfVoid(claim.children.0)`.
 	4. *Let* `claimed_type` be *Unwrap:* `TypeValueOf(claim.children.1)`.
 	5. *If* `claim.force` is `false` *and* *UnwrapAffirm:* `AreDisjoint(computed_type, claimed_type)` is `true` *and* *UnwrapAffirm:* `IsBottomType(computed_type)` is `false` *and* *UnwrapAffirm:* `IsBottomType(claimed_type)` is `false`:
 		1. *Throw:* a new TypeErrorNotAssignable.
@@ -255,7 +261,7 @@ Type! TypeOf(SemanticExpressionClaim claim) :=
 
 
 Type! TypeOf(SemanticExpressionOperation[operator=UN_MAYBE] ::= SemanticExpression) :=
-	1. *Let* `operand` be *Unwrap:* `TypeOf(SemanticExpression)`.
+	1. *Let* `operand` be *Unwrap:* `ThrowIfVoid(SemanticExpression, TypeErrorInvalidOperation)`.
 	2. *If* `operand` is not a Maybe type:
 		1. *Throw:* a new TypeErrorInvalidOperation.
 	3. *Let* `valuetype` be the type argument to `operand`.
@@ -263,7 +269,7 @@ Type! TypeOf(SemanticExpressionOperation[operator=UN_MAYBE] ::= SemanticExpressi
 ;
 
 Type! TypeOf(SemanticExpressionOperation[operator=UN_RESULT] ::= SemanticExpression) :=
-	1. *Let* `operand` be *Unwrap:* `TypeOf(SemanticExpression)`.
+	1. *Let* `operand` be *Unwrap:* `ThrowIfVoid(SemanticExpression, TypeErrorInvalidOperation)`.
 	2. *If* `operand` is not a Result type:
 		1. *Throw:* a new TypeErrorInvalidOperation.
 	3. *Let* `valuetype` be the first type argument to `operand`.
@@ -272,7 +278,7 @@ Type! TypeOf(SemanticExpressionOperation[operator=UN_RESULT] ::= SemanticExpress
 
 Type! TypeOf(SemanticExpressionOperation[operator: NOT] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
-	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
+	2. *Let* `t0` be *Unwrap:* `ThrowIfVoid(expr.children.0, TypeErrorInvalidOperation)`.
 	3. *If* *UnwrapAffirm:* `IsBottomType(t0)` is `true`:
 		1. *Return:* `Nothing`.
 	4. *If* *UnwrapAffirm:* `IsDefinitelyFalsy(t0)` is `true`:
@@ -285,7 +291,7 @@ Type! TypeOf(SemanticExpressionOperation[operator: NOT] expr) :=
 
 Type! TypeOf(SemanticExpressionOperation[operator: EMP] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
-	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
+	2. *Let* `t0` be *Unwrap:* `ThrowIfVoid(expr.children.0, TypeErrorInvalidOperation)`.
 	3. *If* *UnwrapAffirm:* `IsBottomType(t0)` is `true`:
 		1. *Return:* `Nothing`.
 	4. *Else If* *UnwrapAffirm:* `IsDefinitelyFalsy(t0)` is `true`:
@@ -296,7 +302,7 @@ Type! TypeOf(SemanticExpressionOperation[operator: EMP] expr) :=
 
 Type! TypeOf(SemanticExpressionOperation[operator: NEG] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
-	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
+	2. *Let* `t0` be *Unwrap:* `ThrowIfVoid(expr.children.0, TypeErrorInvalidOperation)`.
 	3. *If* *UnwrapAffirm:* `IsBottomType(t0)` is `true`:
 		1. *Return:* `Nothing`.
 	4. *Else If* *UnwrapAffirm:* `Subtype(t0, Union(Integer, Float))` is `true`:
@@ -306,14 +312,14 @@ Type! TypeOf(SemanticExpressionOperation[operator: NEG] expr) :=
 ;
 
 Type! TypeOf(SemanticExpressionOperation[operator: IS] ::= SemanticExpression__0 SemanticExpression__1[type: Class]) :=
-	1. *Let* `t0` be *Unwrap:* `TypeOf(SemanticExpression__0)`.
+	1. *Let* `t0` be *Unwrap:* `ThrowIfVoid(SemanticExpression__0, TypeErrorInvalidOperation)`.
 	2. *If* *UnwrapAffirm:* `IsBottomType(t0)` is `true`:
 		1. *Return:* `Nothing`.
 	3. *Return:* `Boolean`.
 ;
 
 Type! TypeOf(SemanticExpressionOperation[operator: CAST] ::= SemanticExpression__0 SemanticExpression__1[type: Class]) :=
-	1. *Let* `t0` be *Unwrap:* `TypeOf(SemanticExpression__0)`.
+	1. *Let* `t0` be *Unwrap:* `ThrowIfVoid(SemanticExpression__0, TypeErrorInvalidOperation)`.
 	2. *If* *UnwrapAffirm:* `IsBottomType(t0)` is `true`:
 		1. *Return:* `Nothing`.
 	3. *Let* `t1` be the class identified by `SemanticExpression__1`.
@@ -324,7 +330,7 @@ Type! TypeOf(SemanticExpressionOperation[operator: CAST] ::= SemanticExpression_
 ;
 
 Type! TypeOf(SemanticExpressionOperation[operator: MAYBE] ::= SemanticExpression__0 SemanticExpression__1[type: Class]) :=
-	1. *Let* `t0` be *Unwrap:* `TypeOf(SemanticExpression__0)`.
+	1. *Let* `t0` be *Unwrap:* `ThrowIfVoid(SemanticExpression__0, TypeErrorInvalidOperation)`.
 	2. *If* *UnwrapAffirm:* `IsBottomType(t0)` is `true`:
 		1. *Return:* `Nothing`.
 	3. *Let* `t1` be the class identified by `SemanticExpression__1`.
@@ -336,8 +342,8 @@ Type! TypeOf(SemanticExpressionOperation[operator: MAYBE] ::= SemanticExpression
 
 Type! TypeOf(SemanticExpressionOperation[operator: EXP | MUL | DIV | ADD | SUB] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
-	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
-	3. *Let* `t1` be *Unwrap:* `TypeOf(expr.children.1)`.
+	2. *Let* `t0` be *Unwrap:* `ThrowIfVoid(expr.children.0, TypeErrorInvalidOperation)`.
+	3. *Let* `t1` be *Unwrap:* `ThrowIfVoid(expr.children.1, TypeErrorInvalidOperation)`.
 	4. *If* *UnwrapAffirm:* `IsBottomType(t0)` is `true` *or* *UnwrapAffirm:* `IsBottomType(t1)` is `true`:
 		1. *Return:* `Nothing`.
 	5. *Else If* *UnwrapAffirm:* `Subtype(t0, Integer)` is `true` *and* *UnwrapAffirm:* `Subtype(t1, Integer)` is `true`:
@@ -352,8 +358,8 @@ Type! TypeOf(SemanticExpressionOperation[operator: EXP | MUL | DIV | ADD | SUB] 
 
 Type! TypeOf(SemanticExpressionOperation[operator: LT | GT | LE | GE] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
-	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
-	3. *Let* `t1` be *Unwrap:* `TypeOf(expr.children.1)`.
+	2. *Let* `t0` be *Unwrap:* `ThrowIfVoid(expr.children.0, TypeErrorInvalidOperation)`.
+	3. *Let* `t1` be *Unwrap:* `ThrowIfVoid(expr.children.1, TypeErrorInvalidOperation)`.
 	4. *If* *UnwrapAffirm:* `IsBottomType(t0)` is `true` *or* *UnwrapAffirm:* `IsBottomType(t1)` is `true`:
 		1. *Return:* `Nothing`.
 	5. *Else If* *UnwrapAffirm:* `Subtype(t0, Number)` is `true` *and* *UnwrapAffirm:* `Subtype(t1, Number)` is `true`:
@@ -364,8 +370,8 @@ Type! TypeOf(SemanticExpressionOperation[operator: LT | GT | LE | GE] expr) :=
 
 Type! TypeOf(SemanticExpressionOperation[operator: ID | EQ] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
-	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
-	3. *Let* `t1` be *Unwrap:* `TypeOf(expr.children.1)`.
+	2. *Let* `t0` be *Unwrap:* `ThrowIfVoid(expr.children.0, TypeErrorInvalidOperation)`.
+	3. *Let* `t1` be *Unwrap:* `ThrowIfVoid(expr.children.1, TypeErrorInvalidOperation)`.
 	4. *If* *UnwrapAffirm:* `IsBottomType(t0)` is `true` *or* *UnwrapAffirm:* `IsBottomType(t1)` is `true`:
 		1. *Return:* `Nothing`.
 	5. *If* *UnwrapAffirm:* `AreDisjoint(t0, t1)` is `true`:
@@ -376,67 +382,78 @@ Type! TypeOf(SemanticExpressionOperation[operator: ID | EQ] expr) :=
 	6. *Return:* `Boolean`.
 ;
 
-Type! TypeOf(SemanticExpressionOperation[operator: AND] expr) :=
+Type?! TypeOf(SemanticExpressionOperation[operator: AND] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
-	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
+	2. *Let* `t0` be *Unwrap:* `ThrowIfVoid(expr.children.0, TypeErrorInvalidOperation)`.
 	3. *Let* `t1` be *Unwrap:* `TypeOf(expr.children.1)`.
 	4. *If* *UnwrapAffirm:* `IsBottomType(t0)` is `true`:
 		1. *Return:* `Nothing`.
-	5. *If* *UnwrapAffirm:* `IsDefinitelyFalsy(t0)` is `true`:
+	5. *Else If* `t1` is *nil*:
+		1. *Return:* *nil*.
+	6. *Else If* *UnwrapAffirm:* `IsDefinitelyFalsy(t0)` is `true`:
 		1. *Return:* `t0`.
-	6. *Else If* *UnwrapAffirm:* `IsDefinitelyTruthy(t0)` is `true`:
+	7. *Else If* *UnwrapAffirm:* `IsDefinitelyTruthy(t0)` is `true`:
 		1. *Return:* `t1`.
-	7. *Else:*
+	8. *Else:*
 		1. *Return:* `Union(FalsySide(t0), t1)`.
 ;
 
-Type! TypeOf(SemanticExpressionOperation[operator: OR] expr) :=
+Type?! TypeOf(SemanticExpressionOperation[operator: OR] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
-	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
+	2. *Let* `t0` be *Unwrap:* `ThrowIfVoid(expr.children.0, TypeErrorInvalidOperation)`.
 	3. *Let* `t1` be *Unwrap:* `TypeOf(expr.children.1)`.
 	4. *If* *UnwrapAffirm:* `IsBottomType(t0)` is `true`:
 		1. *Return:* `Nothing`.
-	5. *If* *UnwrapAffirm:* `IsDefinitelyFalsy(t0)` is `true`:
+	5. *Else If* `t1` is *nil*:
+		1. *Return:* *nil*.
+	6. *Else If* *UnwrapAffirm:* `IsDefinitelyFalsy(t0)` is `true`:
 		1. *Return:* `t1`.
-	6. *Else If* *UnwrapAffirm:* `IsDefinitelyTruthy(t0)` is `true`:
+	7. *Else If* *UnwrapAffirm:* `IsDefinitelyTruthy(t0)` is `true`:
 		1. *Return:* `t0`.
-	7. *Else:*
+	8. *Else:*
 		1. *Return:* `Union(TruthySide(t0), t1)`.
 ;
 
-Type! TypeOf(SemanticExpressionOperation[operator: COND] expr) :=
+Type?! TypeOf(SemanticExpressionOperation[operator: COND] expr) :=
 	1. *Assert:* `expr.children.count` is 3.
-	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
+	2. *Let* `t0` be *Unwrap:* `ThrowIfVoid(expr.children.0, TypeErrorInvalidOperation)`.
 	3. *Let* `t1` be *Unwrap:* `TypeOf(expr.children.1)`.
 	4. *Let* `t2` be *Unwrap:* `TypeOf(expr.children.2)`.
 	5. *If* *UnwrapAffirm:* `IsBottomType(t0)` is `true`:
 		1. *Return:* `Nothing`.
-	6. *If* *UnwrapAffirm:* `Subtype(t0, Boolean)` is `true`:
-		1. *If* `t0` is `ToType(false)`:
-			1. *Return:* `t2`.
-		2. *If* `t0` is `ToType(true)`:
-			1. *Return:* `t1`.
-		3. *Return:* `Union(t1, t2)`.
-	7. *Else:*
+	6. *Else If* *UnwrapAffirm:* `Subtype(t0, Boolean)` is `false`:
 		1. *Throw:* a new TypeErrorInvalidOperation.
+	7. *Else If* `t1` is *nil* *or* `t2` is *nil*:
+		1. *Return:* *nil*.
+	8. *Else If* `t0` is `ToType(false)`:
+		1. *Return:* `t2`.
+	9. *Else If* `t0` is `ToType(true)`:
+		1. *Return:* `t1`.
+	10. *Else:*
+		1. *Return:* `Union(t1, t2)`.
 ;
 
 
 
-Type! TypeOf(SemanticExpressionSwitch ::= SemanticExpression__0 SemanticCase* SemanticExpression__1) :=
-	1. *Let* `t_value` be *Unwrap:* `TypeOf(SemanticExpression__0)`.
-	2. *If* *UnwrapAffirm:* `IsBottomType(t_value)` is `true`:
-		1. *Return:* `Nothing`.
-	3. *Let* `union` be `Nothing`.
-	4. *For each* `case` in `SemanticCase*`:
+Type?! TypeOf(SemanticExpressionSwitch ::= SemanticExpression__0 SemanticCase* SemanticExpression__1) :=
+	1. *Let* `t_value` be *Unwrap:* `ThrowIfVoid(SemanticExpression__0, TypeErrorInvalidOperation)`.
+	2. *Let* `t_cons` be an empty Sequence.
+	3. *For each* `case` in `SemanticCase*`:
 		1. *Assert:* `case` matches `SemanticCase ::= SemanticExpression__2+ SemanticExpression__3`.
 		2. *For each* `ant` in `SemanticExpression__2+`:
-			1. *Perform:* *Unwrap:* `TypeOf(ant)`;
+			1. *Perform:* *Unwrap:* `ThrowIfVoid(ant)`;
 		3. *Let* `t_con` be *Unwrap:* `TypeOf(SemanticExpression__3)`.
-		4. *Set* `union` to *UnwrapAffirm:* `Union(union, t_con)`.
-	5. *Let* `t_default` be *Unwrap:* `TypeOf(SemanticExpression__1)`.
-	6. *Set* `union` to *UnwrapAffirm:* `Union(union, t_default)`.
-	7. *Return:* `union`.
+		4. Push `t_con` to `t_cons`.
+	4. *Let* `t_default` be *Unwrap:* `TypeOf(SemanticExpression__1)`.
+	5. Push `t_default` to `t_cons`.
+	6. *If* *UnwrapAffirm:* `IsBottomType(t_value)` is `true`:
+		1. *Return:* `Nothing`.
+	7. *Else If* `t_cons` contains *nil*:
+		1. *Return:* *nil*.
+	8. *Else:*
+		1. *Assert:* all the items in `t_cons` are Types.
+		2. *Let* `union` be *UnwrapAffirm:* `Union(...t_cons)`.
+		3. *Return:* `union`.
 ;
 
 
@@ -479,4 +496,14 @@ Type! TypeOf(SemanticExpressionFunction fn) :=
 
 Type ToType(Or<Null, Boolean, Symbol, Number, String> v) :=
 	1. *Return:* a new Type containing only the value `v`.
+;
+
+
+
+Type! ThrowIfVoid(SemanticExpression, TypeError?) :=
+	1. *Let* `type_or_nil` be *Unwrap:* `TypeOf(SemanticExpression)`.
+	2. *If* `type_or_nil` is *nil*:
+		1. *Throw:* the given TypeError or a new TypeError "Expression of type `void` is not a value.".
+	3. *Else:*
+		1. *Return:* `type_or_nil`.
 ;

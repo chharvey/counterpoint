@@ -71,6 +71,7 @@ export function assertAssignable(actual: Error, validation: ValidationObject): v
 
 
 
+type NullishType = TYPE.Type | null;
 /**
  * Assert equal types. First compares by `assert.deepStrictEqual`,
  * but if that fails, compares by `Type#equals`.
@@ -78,7 +79,7 @@ export function assertAssignable(actual: Error, validation: ValidationObject): v
  * @param expected what `actual` is expected to equal
  * @throws {AssertionError} actual and expected fail equality
  */
-export function assertEqualTypes(actual: TYPE.Type, expected: TYPE.Type): void;
+export function assertEqualTypes(actual: NullishType, expected: NullishType): void;
 /**
  * Assert equal types. First compares by `assert.deepStrictEqual`,
  * but if that fails, compares by `Type#equals`.
@@ -86,30 +87,33 @@ export function assertEqualTypes(actual: TYPE.Type, expected: TYPE.Type): void;
  * @param expected an array of what `actual` is expected to equal
  * @throws {AssertionError} if a corresponding type fails equality
  */
-export function assertEqualTypes(actual: readonly TYPE.Type[], expected: readonly TYPE.Type[]): void;
+export function assertEqualTypes(actual: readonly NullishType[], expected: readonly NullishType[]): void;
 /**
  * Assert equal types. First compares by `assert.deepStrictEqual`,
  * but if that fails, compares by `Type#equals`.
  * @param types a map of keys and values to compare
  * @throws {AssertionError} if one of the pairs fails equality
  */
-export function assertEqualTypes(types: ReadonlyMap<TYPE.Type, TYPE.Type>): void;
-export function assertEqualTypes(arg0: TYPE.Type | readonly TYPE.Type[] | ReadonlyMap<TYPE.Type, TYPE.Type>, arg1?: TYPE.Type | readonly TYPE.Type[]): void {
+export function assertEqualTypes(types: ReadonlyMap<NullishType, NullishType>): void;
+export function assertEqualTypes(
+	arg0:  NullishType | readonly NullishType[] | ReadonlyMap<NullishType, NullishType>,
+	arg1?: NullishType | readonly NullishType[],
+): void {
 	if (arg0 instanceof Map) {
 		return assertEqualTypes([...arg0.keys()], [...arg0.values()]);
 	} else if (Array.isArray(arg0)) {
-		assert.strictEqual(arg0.length, (arg1 as TYPE.Type[]).length, 'Expected arrays to have the same length.');
-		return xjs.Array.forEachAggregated(arg0, (act, i) => assertEqualTypes(act as TYPE.Type, (arg1 as TYPE.Type[])[i]));
+		assert.strictEqual(arg0.length, (arg1 as readonly NullishType[]).length, 'Expected arrays to have the same length.');
+		return xjs.Array.forEachAggregated(arg0, (act, i) => assertEqualTypes(act as NullishType, (arg1 as readonly NullishType[])[i]));
+	} else if (arg1 === null) {
+		return assert.strictEqual(arg0, null);
+	} else if ((TYPE.TYPE_CONSTANTS as readonly NullishType[]).includes(arg1 as NullishType)) {
+		return assert.strictEqual(arg0, arg1);
 	} else {
-		if (TYPE.TYPE_CONSTANTS.includes(arg1 as TYPE.Type)) {
-			return assert.strictEqual(arg0, arg1);
-		} else {
-			try {
-				return assert.deepStrictEqual(arg0, arg1);
-			} catch {
-				return assert.ok((arg0 as TYPE.Type).equals(arg1 as TYPE.Type), `${arg0 as TYPE.Type} == ${arg1}`);
-			}
-		};
+		try {
+			return assert.deepStrictEqual(arg0, arg1);
+		} catch {
+			return assert.ok(arg0 && arg1 && (arg0 as TYPE.Type).equals(arg1 as TYPE.Type), `${arg0 as TYPE.Type} == ${arg1}`);
+		}
 	}
 }
 

@@ -62,11 +62,12 @@ export function typecheck_assign(
 	assignee_type: TYPE.Type,
 	node:          AstNode,
 ): void {
-	if (!visitor.visit(assigned).isSubtypeOf(assignee_type)) {
+	const err = new TypeErrorNotAssignable(assigned, assignee_type, node);
+	if (!visitor.throwIfVoid(assigned, err).isSubtypeOf(assignee_type)) {
 		if (assigned instanceof EXPR.Collection) {
 			return assigned.assignTo(visitor, assignee_type);
 		}
-		throw new TypeErrorNotAssignable(assigned, assignee_type, node);
+		throw err;
 	}
 }
 

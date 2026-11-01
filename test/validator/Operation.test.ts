@@ -33,7 +33,7 @@ test.suite('Operation', () => {
 		);
 	}
 
-	function typeOfStmtExpr(stmt: AST.STMT.Statement): TYPE.Type {
+	function typeOfStmtExpr(stmt: AST.STMT.Statement): TYPE.Type | null {
 		assert_instanceof(stmt, AST.STMT.StatementExpression);
 		return VISITOR.visit(stmt.expr!);
 	}
@@ -56,7 +56,7 @@ test.suite('Operation', () => {
 					x~?;
 					y~?;
 					z~?;
-				}`, {build: false}).stmts.slice(6).map((stmt) => VISITOR.visit((stmt as AST.STMT.StatementExpression).expr!)), [
+				}`, {build: false}).stmts.slice(6).map((stmt) => VISITOR.visit((stmt as AST.STMT.StatementExpression).expr!)!), [
 					new TYPE.Maybe(TYPE.INT),
 					new TYPE.Maybe(TYPE.NAT),
 					new TYPE.Maybe(TYPE.FLOAT),
@@ -77,7 +77,7 @@ test.suite('Operation', () => {
 					x~!;
 					y~!;
 					z~!;
-				}`, {build: false}).stmts.slice(3).map((stmt) => VISITOR.visit((stmt as AST.STMT.StatementExpression).expr!)), [
+				}`, {build: false}).stmts.slice(3).map((stmt) => VISITOR.visit((stmt as AST.STMT.StatementExpression).expr!)!), [
 					new TYPE.Result(TYPE.INT),
 					new TYPE.Result(TYPE.NAT),
 					new TYPE.Result(TYPE.FLOAT, TYPE.EXCP),
@@ -580,6 +580,30 @@ test.suite('Operation', () => {
 				]));
 			});
 			test.suite('with constant folding off.', () => {
+				test.test('throws when left operand is void.', () => {
+					const {stmts, visitors} = setupScript(`{
+						func f(): void { return; }
+						f.() && true;
+						f.() || true;
+					}`, {typeCheck: false});
+					visitors.typeCheck.visit(stmts[0]);
+					return xjs.Array.forEachAggregated(
+						stmts.slice(1).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!),
+						(expr) => assert.throws(() => VISITOR.visit(expr), TypeErrorInvalidOperation),
+					);
+				});
+				test.test('returns no type when right operand is void.', () => {
+					const {stmts, visitors} = setupScript(`{
+						func f(): void { return; }
+						true && f.();
+						true || f.();
+					}`, {typeCheck: false});
+					visitors.typeCheck.visit(stmts[0]);
+					return assertEqualTypes(
+						stmts.slice(1).map((stmt) => VISITOR.visit((stmt as AST.STMT.StatementExpression).expr!)),
+						repeat(null, 2),
+					);
+				});
 				test.suite('[operator=AND]', () => {
 					test.test('returns `left` if it’s a subtype of `null | false`.', () => {
 						assertEqualTypes(setupScript(`{
@@ -685,7 +709,30 @@ test.suite('Operation', () => {
 			test.test('returns `nothing` when condition is `nothing`.', () => {
 				const ternary: AST.EXPR.OperationTernary = AST.EXPR.OperationTernary.fromSource('if n as <nothing> then true else false');
 				ternary.validator.addSymbol(new SymbolSchemaVar(Validator.cookTokenIdentifier('n'), (ternary.operand0 as AST.EXPR.Claim).operand, false, false));
-				return assert.ok(VISITOR.visit(ternary).isBottomType);
+				return assert.ok(VISITOR.visit(ternary)!.isBottomType);
+			});
+			test.test('returns no type when consequent/alternative is void.', () => {
+				const {stmts, visitors} = setupScript(`{
+					func f(): void { return; }
+					func g(): void { return; }
+					if true then f.() else 4.3;
+					if true then 42 else g.();
+					if true then f.() else g.();
+				}`, {typeCheck: false});
+				visitors.typeCheck.visit(stmts[0]);
+				visitors.typeCheck.visit(stmts[1]);
+				return assertEqualTypes(
+					stmts.slice(2).map((stmt) => VISITOR.visit((stmt as AST.STMT.StatementExpression).expr!)),
+					repeat(null, 3),
+				);
+			});
+			test.test('throws when condition is void.', () => {
+				const {stmts, visitors} = setupScript(`{
+					func f(): void { return; }
+					if f.() then 42 else 4.3;
+				}`, {typeCheck: false});
+				visitors.typeCheck.visit(stmts[0]);
+				return assert.throws(() => VISITOR.visit((stmts[1] as AST.STMT.StatementExpression).expr!), TypeErrorInvalidOperation);
 			});
 			test.test('throws when condition is not a subtype of `boolean`.', () => {
 				assert.throws(() => VISITOR.visit(AST.EXPR.OperationTernary.fromSource('if 2 then true else false')), TypeErrorInvalidOperation);

@@ -4,6 +4,7 @@ import {
 	AssignmentErrorMissingType,
 	AssignmentErrorFunctionExit,
 	TypeError as CplTypeError,
+	TypeErrorInvalidOperation,
 	TypeErrorNotNarrow,
 	TypeErrorNotAssignable,
 	TypeErrorAmbiguousOverload,
@@ -62,7 +63,7 @@ export class AstNodeVisitorTypeCheck extends AstNodeVisitor<void> {
 	public override visitCapture(node: Capture): void {
 		this.defaultVisit(node);
 		if (!node.ref) {
-			((node.parent as Functionlike).block.validator.getSymbol(node.variable.id) as SymbolSchemaVar).type = this.#exprVisitorType.visit(node.variable);
+			((node.parent as Functionlike).block.validator.getSymbol(node.variable.id) as SymbolSchemaVar).type = this.#exprVisitorType.visit(node.variable)!; // variables will never be void
 		}
 	}
 
@@ -169,9 +170,9 @@ export class AstNodeVisitorTypeCheck extends AstNodeVisitor<void> {
 				EXPR.Constant,
 				EXPR.Tuple,
 				EXPR.Record,
-			].some((klass) => stmt.assigned instanceof klass)) ? this.#writableInferredType(stmt.assigned!) :
+			].some((klass) => stmt.assigned instanceof klass)) ? this.#writableInferredType(stmt.assigned!)! : // constants/tuples/records will never be void
 			stmt.assigned instanceof EXPR.Template ? TYPE.STR :
-			this.#exprVisitorType.visit(stmt.assigned!)
+			this.#exprVisitorType.throwIfVoid(stmt.assigned!)
 		);
 		stmt.assigned && typecheck_assign(this.#exprVisitorType, stmt.assigned, assignee_type, stmt);
 		if (stmt.assignee) {
@@ -198,7 +199,7 @@ export class AstNodeVisitorTypeCheck extends AstNodeVisitor<void> {
 
 	public override visitStmtClaim(stmt: STMT.StatementClaim): void {
 		this.defaultVisit(stmt);
-		const computed_type: TYPE.Type = this.#exprVisitorType.visit(stmt.assignee);
+		const computed_type: TYPE.Type = this.#exprVisitorType.throwIfVoid(stmt.assignee);
 		const claimed_type:  TYPE.Type = stmt.claimed_type.eval();
 		/* Type claim statements can only narrow the expression’s type. */
 		if (!claimed_type.isSubtypeOf(computed_type)) {
@@ -211,7 +212,7 @@ export class AstNodeVisitorTypeCheck extends AstNodeVisitor<void> {
 			}
 		} else {
 			assert_instanceof(stmt.assignee, EXPR.Access);
-			const base_type: TYPE.Type = this.#exprVisitorType.visit(stmt.assignee.base);
+			const base_type: TYPE.Type = this.#exprVisitorType.throwIfVoid(stmt.assignee.base, new TypeErrorInvalidOperation(stmt.assignee));
 			const {accessor} = stmt.assignee;
 			switch (true) {
 				case base_type instanceof TYPE.Tuple: {
@@ -237,7 +238,7 @@ export class AstNodeVisitorTypeCheck extends AstNodeVisitor<void> {
 			write_type = (stmt.assignee.validator.getSymbol(stmt.assignee.id) as SymbolSchemaVar).type;
 		} else {
 			assert_instanceof(stmt.assignee, EXPR.Access);
-			const base_type: TYPE.Type = this.#exprVisitorType.visit(stmt.assignee.base);
+			const base_type: TYPE.Type = this.#exprVisitorType.throwIfVoid(stmt.assignee.base);
 			if (!base_type.isMutable) {
 				throw new MutabilityError01(base_type, stmt);
 			}
@@ -251,21 +252,21 @@ export class AstNodeVisitorTypeCheck extends AstNodeVisitor<void> {
 
 	public override visitStmtConditional(stmt: STMT.StatementConditional): void {
 		this.defaultVisit(stmt);
-		if (!this.#exprVisitorType.visit(stmt.condition).isSubtypeOf(TYPE.BOOL)) {
+		if (!this.#exprVisitorType.throwIfVoid(stmt.condition).isSubtypeOf(TYPE.BOOL)) {
 			throw new TypeErrorNotAssignable(stmt.condition, TYPE.BOOL);
 		}
 	}
 
 	public override visitStmtLoop(stmt: STMT.StatementLoop): void {
 		this.defaultVisit(stmt);
-		if (!this.#exprVisitorType.visit(stmt.condition).isSubtypeOf(TYPE.BOOL)) {
+		if (!this.#exprVisitorType.throwIfVoid(stmt.condition).isSubtypeOf(TYPE.BOOL)) {
 			throw new TypeErrorNotAssignable(stmt.condition, TYPE.BOOL);
 		}
 	}
 
 	public override visitStmtIteration(stmt: STMT.StatementIteration): void {
 		const assignee_type: TYPE.Type = stmt.typenode.eval();
-		const iterable_type: TYPE.Type = this.#exprVisitorType.visit(stmt.iterable);
+		const iterable_type: TYPE.Type = this.#exprVisitorType.throwIfVoid(stmt.iterable);
 		if (!(iterable_type instanceof TYPE.List)) {
 			throw new TypeErrorNotAssignable(stmt.iterable, new TYPE.List(TYPE.ANYTHING));
 		}
@@ -297,6 +298,7 @@ export class AstNodeVisitorTypeCheck extends AstNodeVisitor<void> {
 				return typecheck_assign(this.#exprVisitorType, stmt.expression, return_type, stmt);
 			} else {
 				throw new Error(`Expression \`${stmt.expression.source}\` is returned from a void function.`); // TODO: create new TypeError subclass
+				// TODO: allow tail calls
 			}
 		} else if (return_type) {
 			throw new Error(`A function with return type \`${return_type}\` does not return a value.`); // TODO: create new TypeError subclass
@@ -320,7 +322,8 @@ export class AstNodeVisitorTypeCheck extends AstNodeVisitor<void> {
 		);
 	}
 
-	#writableInferredType(expression: EXPR.Expression): TYPE.Type {
+	#writableInferredType(expression: EXPR.Expression): TYPE.Type | null {
+		const err = new CplTypeError('Expression of type `void` is not a value.'); // TODO: new class of CplTypeError
 		switch (true) {
 			case expression instanceof EXPR.Constant: {
 				const value: VALUE.Primitive = expression.interpreterValue;
@@ -336,10 +339,10 @@ export class AstNodeVisitorTypeCheck extends AstNodeVisitor<void> {
 				);
 			}
 			case expression instanceof EXPR.Tuple: {
-				return TYPE.Tuple.fromTypes(expression.children.map((expr) => this.#writableInferredType(expr)));
+				return TYPE.Tuple.fromTypes(expression.children.map((expr) => this.#writableInferredType(expr) ?? assert.fail(err)));
 			}
 			case expression instanceof EXPR.Record: {
-				return TYPE.Record.fromTypes(new Map(expression.children.map((prop) => [prop.key.id, this.#writableInferredType(prop.val)])));
+				return TYPE.Record.fromTypes(new Map(expression.children.map((prop) => [prop.key.id, this.#writableInferredType(prop.val) ?? assert.fail(err)])));
 			}
 			case expression instanceof EXPR.Call: { // TODO: distinguish between constructor calls and function calls
 				return this.#exprVisitorType.visit(expression);
