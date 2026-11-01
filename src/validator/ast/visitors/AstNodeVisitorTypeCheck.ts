@@ -185,7 +185,7 @@ export class AstNodeVisitorTypeCheck extends AstNodeVisitor<void> {
 		if (stmt.identifier) {
 			assert.ok(stmt.validator.hasSymbol(stmt.id!), `The validator symbol table should include ${stmt.id}.`);
 			const schema = stmt.validator.getSymbol(stmt.id!) as SymbolSchemaFunc;
-			if (schema.types.find((t) => fn_type === t || t instanceof TYPE.Function && fn_type.isMoreSpecificThan(t) && t.isMoreSpecificThan(fn_type))) {
+			if (schema.types.find((t) => fn_type === t || fn_type.isMoreSpecificThan(t) && t.isMoreSpecificThan(fn_type))) {
 				// if there exists an identically-typed overload, as static dispatch won’t know which one to choose
 				throw new TypeErrorAmbiguousOverload(stmt);
 			} else {
