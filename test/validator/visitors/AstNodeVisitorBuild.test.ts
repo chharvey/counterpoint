@@ -172,7 +172,7 @@ test.suite('AstNodeVisitorBuild#visit', () => {
 					(ENDPROGRAM)
 			`.trim());
 		});
-		test.test.todo('conditional panic statements.', () => {
+		test.test('conditional panic statements.', () => {
 			assert.strictEqual(setupScript(`{
 				func f(): float {
 					if 42 < 43 then {
