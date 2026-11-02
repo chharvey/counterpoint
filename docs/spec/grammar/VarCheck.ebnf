@@ -123,7 +123,7 @@ Nil! VarCheck(Or<SemanticTypeRecord, SemanticExpressionRecord, SemanticExpressio
 
 Nil! VarCheck(SemanticTypeAlias var) :=
 	1. *Note:* Skip var-checking of `var` for now, as semantics is determined by syntax.
-	2. *If* `var.source` is "Object" or "Exception" or "Function":
+	2. *If* `var.source` is "Object" or "Exception" or "Function" or "Class":
 		1. *Return.*
 	3. *If* the validator’s symbol table does not contain a SymbolSchema `symbol` whose `id` is `var.id`:
 		1. *Throw:* a new ReferenceErrorUndeclared.

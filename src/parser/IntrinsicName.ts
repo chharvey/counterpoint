@@ -20,6 +20,7 @@ export enum IntrinsicName {
 	FAIL      = 'Fail',
 	OK        = 'Ok',
 	FUNCTION  = 'Function',
+	CLASS     = 'Class',
 }
 
 

@@ -341,4 +341,11 @@ export const CLASS_API = new Map<IntrinsicName, ClassSignature>([
 		`(\() => anything) | (\() => void)`. */
 		returnType: () => TYPE.Union.all(new TYPE.Function(new TYPE.Tuple(), new TYPE.Record(), TYPE.ANYTHING), new TYPE.Function()),
 	}],
+
+	/*
+	 * ```cpl
+	 * declare class open Class {}
+	 * ```
+	 */
+	[IntrinsicName.CLASS, {returnType: () => TYPE.CLASS}],
 ]);
