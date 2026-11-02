@@ -5,7 +5,6 @@ import {
 } from '../../../core/index.ts';
 import type {SyntaxNodeSupertype} from '../../utils-private.ts';
 import type {ValidOperatorCast} from '../../Operator.ts';
-import {validate_intrinsic_name} from '../utils-private.ts';
 import {Expression} from './Expression.ts';
 import {OperationBinary} from './OperationBinary.ts';
 
@@ -25,13 +24,5 @@ export class OperationBinaryCast extends OperationBinary {
 		operand1: Expression,
 	) {
 		super(start_node, operator, operand0, operand1);
-	}
-
-	public override varCheck(): void {
-		// NOTE: ignore var-checking `this.operand1` for now, as semantics is determined by syntax.
-		// (`this.operand1.source` must be an `IntrinsicName`)
-		this.operand0.varCheck();
-		this.operand1.varCheck();
-		return validate_intrinsic_name(this.operand1.source);
 	}
 }

@@ -15,10 +15,7 @@ import {
 	VALUE,
 	TYPE,
 } from '../../typer/index.ts';
-import {
-	IntrinsicName,
-	INTRINSICS,
-} from '../../parser/index.ts';
+import {IntrinsicName} from '../../parser/index.ts';
 import {
 	Operator,
 	Validator,
@@ -61,12 +58,6 @@ export function check_unique_keys(keys: readonly Key[]): void {
 }
 
 
-
-export function validate_intrinsic_name(source: string): asserts source is IntrinsicName {
-	if (!(INTRINSICS as readonly string[]).includes(source)) {
-		throw new SyntaxError(`Unexpected token: \`${source}\`; expected \`${INTRINSICS.join(' | ')}\`.`);
-	}
-}
 
 /** Callable type interfaces that have generic parameters. */
 export type CallableInterfaceName = (
@@ -116,27 +107,6 @@ export type CallableClassName = (
 	| IntrinsicName.FAIL
 	| IntrinsicName.OK
 );
-const CALLABLE_CLASSES: readonly string[] = [
-	IntrinsicName.BOOLEAN,
-	IntrinsicName.INTEGER,
-	IntrinsicName.NATURAL,
-	IntrinsicName.FLOAT,
-	IntrinsicName.STRING,
-	IntrinsicName.LIST,
-	IntrinsicName.DICT,
-	IntrinsicName.SET,
-	IntrinsicName.MAP,
-	IntrinsicName.EXCEPTION,
-	IntrinsicName.NONE,
-	IntrinsicName.SOME,
-	IntrinsicName.FAIL,
-	IntrinsicName.OK,
-];
-export function validate_callable_class_name(source: string): asserts source is CallableClassName {
-	if (!CALLABLE_CLASSES.includes(source)) {
-		throw new SyntaxError(`Unexpected token: \`${source}\`; expected \`${CALLABLE_CLASSES.join(' | ')}\`.`);
-	}
-}
 
 
 
