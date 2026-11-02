@@ -100,13 +100,6 @@ export class SymbolSchemaFunc extends SymbolSchema {
 
 /** The symbol of a declared class. */
 export class SymbolSchemaClass extends SymbolSchema {
-	/**
-	 * NOTE: Only intrinsic classes persist because they are in the core library.
-	 * User-defined classes do not persist.
-	 * TODO: update once we get custom classes.
-	 */
-	public override readonly persists = true;
-
 	public constructor(
 		id: bigint,
 		classname: string,

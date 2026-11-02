@@ -4,13 +4,17 @@ import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../core/index.ts';
+import {CLASS_API} from '../typer/index.ts';
 import {
 	Punctuator,
 	type Keyword,
 	KEYWORDS,
 	INTRINSICS,
 } from '../parser/index.ts';
-import type {SymbolSchema} from './index.ts';
+import {
+	type SymbolSchema,
+	SymbolSchemaClass,
+} from './index.ts';
 import {
 	type SyntaxNodeType,
 	isSyntaxNodeType,
@@ -339,6 +343,16 @@ export class Validator {
 		public  readonly config:  CplConfig = CONFIG_DEFAULT,
 		private readonly parent?: Validator,
 	) {
+		if (!this.parent) {
+			xjs.Array.forEachAggregated(INTRINSICS, (name) => {
+				if (!CLASS_API.has(name)) {
+					throw new ReferenceError(`Class API is missing a definition for ${name}.`);
+				}
+			});
+			CLASS_API.forEach((signature, name) => {
+				this.addSymbol(new SymbolSchemaClass(Validator.cookTokenIdentifier(name), name, signature));
+			});
+		}
 	}
 
 	/**

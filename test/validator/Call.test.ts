@@ -233,7 +233,7 @@ test.suite('Call', () => {
 	});
 
 
-	test.suite.todo('#type', () => {
+	test.suite('#type', () => {
 		const VISITOR = new AST.ExprVisitorType();
 		test.test('evaluates Callable Class Names.', () => {
 			assertEqualTypes(
