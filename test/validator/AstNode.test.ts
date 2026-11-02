@@ -109,6 +109,13 @@ test.suite('AstNode', () => {
 				const fn0 = (stmts[0] as AST.STMT.StatementExpression).expr as AST.EXPR.Function;
 				return assert.throws(() => fn0.varCheck());
 			});
+			test.test('default values may not reference each other.', () => {
+				xjs.Array.forEachAggregated(setupScript(`{
+					\\(a: int, b?: int = a): int => a + b;
+					\\($a?: int = b, $b: int): int => a + b;
+					\\(alpha= a?: int = b, bravo= b: int): int => a + b;
+				}`, {varCheck: false}).stmts, (stmt) => assert.throws(() => stmt.varCheck(), ReferenceErrorUndeclared));
+			});
 			test.test('parameters do not shadow outside scope.', () => {
 				setupScript(`{
 					val x: int = 42;
