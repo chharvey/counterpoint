@@ -323,7 +323,7 @@ export const CLASS_API = new Map<CallableInterfaceName | CallableClassName, Cons
 	[IntrinsicName.MAP, {
 		genericParams: [
 			{positional: true, readonlyVariance: 'covariant', mutableVariance: 'invariant'},
-			{positional: true, readonlyVariance: 'covariant', mutableVariance: 'invariant', default: (generic_params) => generic_params[0]},
+			{positional: true, readonlyVariance: 'covariant', mutableVariance: 'invariant'},
 		],
 		overloads: [
 			[],
