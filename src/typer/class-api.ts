@@ -336,11 +336,7 @@ export const CLASS_API = new Map<IntrinsicName, ClassSignature>([
 	 * declare class abstract Function extends Object {}
 	 * ```
 	 */
-	[IntrinsicName.FUNCTION, {
-		/* The supertype of all functions. Every function type is assignable to it.
-		`(\() => anything) | (\() => void)`. */
-		returnType: () => TYPE.Union.all(new TYPE.Function(new TYPE.Tuple(), new TYPE.Record(), TYPE.ANYTHING), new TYPE.Function()),
-	}],
+	[IntrinsicName.FUNCTION, {returnType: () => TYPE.FUNCTION}],
 
 	/*
 	 * ```cpl

@@ -382,7 +382,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 			[IntrinsicName.RESULT,    new TYPE.Result(TYPE.ANYTHING)],
 			[IntrinsicName.FAIL,      new TYPE.Fail(TYPE.ANYTHING)],
 			[IntrinsicName.OK,        new TYPE.Ok(TYPE.ANYTHING)],
-			[IntrinsicName.FUNCTION,  new TYPE.Function(undefined, undefined, TYPE.ANYTHING)],
+			[IntrinsicName.FUNCTION,  TYPE.FUNCTION],
 			[IntrinsicName.CLASS,     TYPE.CLASS],
 		]).get(expr.operand1.source as IntrinsicName)!;
 		switch (expr.operator) {

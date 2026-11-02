@@ -159,7 +159,7 @@ test.suite('Operation', () => {
 							new TYPE.Result(TYPE.ANYTHING),
 							new TYPE.Fail(TYPE.ANYTHING),
 							new TYPE.Ok(TYPE.ANYTHING),
-							new TYPE.Function(undefined, undefined, TYPE.ANYTHING),
+							TYPE.FUNCTION,
 							TYPE.CLASS,
 						],
 					);
@@ -201,7 +201,7 @@ test.suite('Operation', () => {
 							new TYPE.Maybe(new TYPE.Result(TYPE.ANYTHING)),
 							new TYPE.Maybe(new TYPE.Fail(TYPE.ANYTHING)),
 							new TYPE.Maybe(new TYPE.Ok(TYPE.ANYTHING)),
-							new TYPE.Maybe(new TYPE.Function(undefined, undefined, TYPE.ANYTHING)),
+							new TYPE.Maybe(TYPE.FUNCTION),
 							new TYPE.Maybe(TYPE.CLASS),
 						],
 					);

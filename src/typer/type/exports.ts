@@ -11,6 +11,7 @@ import {Float} from './Float.ts';
 import {String as TypeString} from './String.ts';
 import {Object as TypeObject} from './Object.ts';
 import {Exception} from './Exception.ts';
+import {Function as TypeFunction} from './Function.ts';
 import {Class as TypeClass} from './Class.ts';
 
 
@@ -42,8 +43,20 @@ export const TRUE = new Unit<VALUE.Boolean>(VALUE.TRUE);
 /** The Counterpoint Language Boolean Type `bool`. */
 export const BOOL = new TypeBoolean(); // NOTE: We would typically just use a `new Union()` here, but we need a class for overriding Union methods to improve performance.
 
-/** The union of all numeric types. */
+/**
+ * The union of all numeric types.
+ * `int | nat | float`
+ */
 export const NUMBER = new Union(INT, NAT, FLOAT); // cannot call `Type#union` because it has a decorator that relies on `TYPE_CONSTANTS` below
+
+/**
+ * The supertype of all function types.
+ * `(\() => anything) | (\() => void)`
+ */
+export const FUNCTION = new Union(
+	new TypeFunction(undefined, undefined, ANYTHING),
+	new TypeFunction(),
+);
 
 
 
