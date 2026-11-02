@@ -98,16 +98,6 @@ Nil! VarCheck(SemanticBlock block) :=
 
 
 
-Nil! VarCheck(SemanticGoal ::= ()) :=
-	1. *Register all intrinsics with the validator.
-;
-Nil! VarCheck(SemanticGoal ::= SemanticBlock) :=
-	1. *Register all intrinsics with the validator.
-	2. *Return:* `VarCheck(SemanticBlock)`.
-;
-
-
-
 Nil! VarCheck(Or<SemanticTypeRecord, SemanticExpressionRecord, SemanticExpressionDict> assoc) :=
 	1. *Note:* In keyed collection literals, all keys are var-checked before all values.
 	2. *For each* `prop` in `assoc.children`:
