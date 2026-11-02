@@ -1,4 +1,7 @@
-import {TYPE} from '../typer/index.ts';
+import {
+	TYPE,
+	type ClassSignature,
+} from '../typer/index.ts';
 import type {Serializable} from '../parser/index.ts';
 
 
@@ -78,5 +81,31 @@ export class SymbolSchemaFunc extends SymbolSchema {
 
 	public constructor(id: bigint, node: Serializable) {
 		super(id, node.line_index, node.col_index, node.source);
+	}
+}
+
+
+
+/** The symbol of a declared class. */
+export class SymbolSchemaClass extends SymbolSchemaVar {
+	public constructor(
+		id: bigint,
+		classname: string,
+		/** The declared class’s call signature type. */
+		private readonly classSignature: ClassSignature,
+	) {
+		super(
+			id,
+			{
+				tagname:      'DeclarationClass',
+				source:       classname,
+				source_index: 0,
+				line_index:   0,
+				col_index:    0,
+				serialize() { throw new Error('Class declaration syntax not yet supported.'); },
+			},
+			false,
+			false,
+		);
 	}
 }

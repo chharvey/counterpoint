@@ -1,3 +1,4 @@
+import * as assert from 'node:assert';
 import * as xjs from 'extrajs';
 import type {SyntaxNode} from 'tree-sitter';
 import {ParseError01} from '../../index.ts';
@@ -5,12 +6,15 @@ import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
+import {CLASS_API} from '../../typer/index.ts';
 import {
 	TS_PARSER,
+	INTRINSICS,
 	type Serializable,
 	to_serializable,
 } from '../../parser/index.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
+import {SymbolSchemaClass} from '../SymbolSchema.ts';
 import {Decorator} from '../Decorator.ts';
 import {Validator} from '../Validator.ts';
 import {AstNode} from './AstNode.ts';
@@ -67,5 +71,15 @@ export class Goal extends AstNode {
 
 	public override get validator(): Validator {
 		return this.#validator;
+	}
+
+
+	public override varCheck(): void {
+		INTRINSICS.forEach((name) => assert.ok(CLASS_API.has(name)));
+		CLASS_API.forEach((signature, name) => {
+			const id: bigint = Validator.cookTokenIdentifier(name);
+			this.#validator.addSymbol(new SymbolSchemaClass(id, name, signature));
+		});
+		super.varCheck();
 	}
 }

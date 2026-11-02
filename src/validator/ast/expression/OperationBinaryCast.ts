@@ -31,6 +31,7 @@ export class OperationBinaryCast extends OperationBinary {
 		// NOTE: ignore var-checking `this.operand1` for now, as semantics is determined by syntax.
 		// (`this.operand1.source` must be an `IntrinsicName`)
 		this.operand0.varCheck();
+		this.operand1.varCheck();
 		return validate_intrinsic_name(this.operand1.source);
 	}
 }

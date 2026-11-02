@@ -42,7 +42,7 @@ export class TypeAlias extends Type {
 
 	public override varCheck(): void {
 		// NOTE: ignore var-checking `this` for now if source is an intrinsic identifier, as semantics is determined by syntax.
-		if (this.source === IntrinsicName.OBJECT || this.source === IntrinsicName.EXCEPTION) {
+		if (this.source === IntrinsicName.OBJECT || this.source === IntrinsicName.EXCEPTION || this.source === IntrinsicName.FUNCTION) {
 			return;
 		}
 		if (!this.validator.hasSymbol(this.id)) {

@@ -32,6 +32,7 @@ export class Call extends Expression {
 		// (`this.base.source` must be a `CallableClassName`)
 		validate_callable_class_name(this.base.source);
 		return xjs.Array.forEachAggregated([
+			this.base,
 			...this.typeargs,
 			...this.exprargs,
 		], (arg) => arg.varCheck());

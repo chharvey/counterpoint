@@ -5,7 +5,6 @@ Nil! VarCheck(Or<
 	SemanticPropertyType,
 	SemanticProperty,
 	SemanticCase,
-	SemanticGoal,
 	Difference<SemanticType, Or<SemanticTypeAlias, SemanticTypeCall, SemanticTypeFunction>>,
 	Difference<SemanticExpression, Or<SemanticExpressionVariable, SemanticExpressionCall, SemanticExpressionFunction>>,
 	SemanticStatementExpression,
@@ -99,6 +98,16 @@ Nil! VarCheck(SemanticBlock block) :=
 
 
 
+Nil! VarCheck(SemanticGoal ::= ()) :=
+	1. *Register all intrinsics with the validator.
+;
+Nil! VarCheck(SemanticGoal ::= SemanticBlock) :=
+	1. *Register all intrinsics with the validator.
+	2. *Return:* `VarCheck(SemanticBlock)`.
+;
+
+
+
 Nil! VarCheck(Or<SemanticTypeRecord, SemanticExpressionRecord, SemanticExpressionDict> assoc) :=
 	1. *Note:* In keyed collection literals, all keys are var-checked before all values.
 	2. *For each* `prop` in `assoc.children`:
@@ -113,8 +122,8 @@ Nil! VarCheck(Or<SemanticTypeRecord, SemanticExpressionRecord, SemanticExpressio
 
 
 Nil! VarCheck(SemanticTypeAlias var) :=
-	1. *Note:* Skip var-checking of `var` for now if source is "Object", as semantics is determined by syntax.
-	2. *If* `var.source` is "Object":
+	1. *Note:* Skip var-checking of `var` for now, as semantics is determined by syntax.
+	2. *If* `var.source` is "Object" or "Exception" or "Function":
 		1. *Return.*
 	3. *If* the validator’s symbol table does not contain a SymbolSchema `symbol` whose `id` is `var.id`:
 		1. *Throw:* a new ReferenceErrorUndeclared.
@@ -159,10 +168,7 @@ Nil! VarCheck(SemanticExpressionVariable var) :=
 
 
 Nil! VarCheck(SemanticExpressionCall call) :=
-	1. *Note:* Skip var-checking of `call.children.0` for now, as semantics is determined by syntax.
-	2. *If* `call.children.0.source` is not a Callable Class Name:
-		1. *Throw:* a new SyntaxError.
-	3. *For each* `it` in `call.children[1..]`:
+	1. *For each* `it` in `call.children[0..]`:
 		1. *Perform:* *Unwrap:* `VarCheck(it)`.
 ;
 
@@ -170,11 +176,7 @@ Nil! VarCheck(SemanticExpressionCall call) :=
 
 Nil! VarCheck(SemanticExpressionOperation[operator: IS | CAST | MAYBE] ::= SemanticExpression__0 SemanticExpression__1[type: Class]) :=
 	1. *Perform:* *Unwrap:* `VarCheck(SemanticExpression__0)`.
-	2. *Note:* Skip var-checking of `SemanticExpression__1` for now, as semantics is determined by syntax.
-	3. *If* `SemanticExpression__1` is not an Intrinsic Name:
-		1. *Throw:* a new SyntaxError.
-	4. *Else:*
-		1. *Return.*
+	2. *Return:* `VarCheck(SemanticExpression__1)`.
 ;
 
 
