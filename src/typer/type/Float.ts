@@ -7,6 +7,7 @@ import {ValueType} from './ValueType.ts';
 
 /**
  * Class for constructing the `float` type.
+ * @singleton
  * @final
  */
 export class Float extends ValueType {
@@ -19,7 +20,7 @@ export class Float extends ValueType {
 	}
 
 	@instanceOf(() => VALUE.Float)
-	public override includes(_: VALUE.Value): boolean {
+	public override includes(_v: VALUE.Value): boolean {
 		return true;
 	}
 }

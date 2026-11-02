@@ -1909,7 +1909,7 @@ test.suite('Opcode', () => {
 			test.suite('Instance', () => {
 				test.test('INSTANCEOF', () => {
 					const {builder, cg, wasm} = setupScript(`{
-						${INTRINSICS.slice(2).map((classname) => `null is ${classname};`).join('\n')};
+						${INTRINSICS.slice(2, -1).map((classname) => `null is ${classname};`).join('\n')};
 					}`);
 					const operand: binaryen.ExpressionRef = genConst(cg);
 					return assertEqualBins(builder.instructions.map((instr) => instr.codegen(cg)), [
@@ -1931,11 +1931,12 @@ test.suite('Opcode', () => {
 						cg.vm.op.isFail(operand),
 						cg.vm.op.isOk(operand),
 						cg.vm.op.isFunction(operand),
+						// TODO: cg.vm.op.isClass(operand),
 					].map((expr) => wasm.drop(expr)));
 				});
 				test.test('CAST', () => {
 					const {builder, cg, wasm} = setupScript(`{
-						${INTRINSICS.map((classname) => `null as <anything> as ${classname};`).join('\n')};
+						${INTRINSICS.slice(0, -1).map((classname) => `null as <anything> as ${classname};`).join('\n')};
 					}`);
 					const operand: binaryen.ExpressionRef = genConst(cg);
 					return assertEqualBins(builder.instructions.filter((instr) => instr instanceof OP.Drop).map((instr) => instr.codegen(cg)), [
@@ -1959,6 +1960,7 @@ test.suite('Opcode', () => {
 						cg.vm.op.asFail(operand),
 						cg.vm.op.asOk(operand),
 						cg.vm.op.asFunction(operand),
+						// TODO: cg.vm.op.asClass(operand),
 					].map((expr) => wasm.drop(expr)));
 				});
 			});

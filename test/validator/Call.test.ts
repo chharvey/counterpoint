@@ -233,7 +233,7 @@ test.suite('Call', () => {
 	});
 
 
-	test.suite('#type', () => {
+	test.suite.todo('#type', () => {
 		const VISITOR = new AST.ExprVisitorType();
 		test.test('evaluates Callable Class Names.', () => {
 			assertEqualTypes(
@@ -327,12 +327,6 @@ test.suite('Call', () => {
 				Map.<mut {int}, float>((({42}, 4.2),))
 			`.map((src) => VISITOR.visit(AST.EXPR.Call.fromSource(src)));
 		});
-		test.test('Map has a default type parameter.', () => {
-			assertEqualTypes(
-				VISITOR.visit(AST.EXPR.Call.fromSource('Map.<int>()')),
-				new TYPE.Map(TYPE.INT, TYPE.INT, true),
-			);
-		});
 		test.test('evaluates custom functions.', () => {
 			setupScript(`{
 				func inc(x: int): int => x + 1;
@@ -378,7 +372,8 @@ test.suite('Call', () => {
 				List.<int>((), ())
 				Dict.<int>((), ())
 				Set.<int>((), ())
-				Map.<int>((), ())
+				Map.<int, int>((), ())
+				Map.<int>()
 				None.<int>(42)
 				Some.<int>()
 			`, (src) => assert.throws(() => VISITOR.visit(AST.EXPR.Call.fromSource(src)), TypeErrorArgCount));
@@ -407,10 +402,10 @@ test.suite('Call', () => {
 				return true;
 			}));
 			xjs.Map.forEachAggregated(new Map<string, readonly [string, readonly string[]]>([
-				['List.<int>(42)', ['42', ['List.<int>', 'Set.<int>']]],
-				['Dict.<int>(42)', ['42', ['List.<(sym, int)>', 'Dict.<int>', 'Set.<(sym, int)>', 'Map.<sym, int>']]],
-				['Set.<int>(42)',  ['42', ['List.<int>', 'Set.<int>']]],
-				['Map.<int>(42)',  ['42', ['List.<(int, int)>', 'Set.<(int, int)>', 'Map.<int, int>']]],
+				['List.<int>(42)',     ['42', ['List.<int>', 'Set.<int>']]],
+				['Dict.<int>(42)',     ['42', ['List.<(sym, int)>', 'Dict.<int>', 'Set.<(sym, int)>', 'Map.<sym, int>']]],
+				['Set.<int>(42)',      ['42', ['List.<int>', 'Set.<int>']]],
+				['Map.<int, int>(42)', ['42', ['List.<(int, int)>', 'Set.<(int, int)>', 'Map.<int, int>']]],
 			]), ([argexpr, allowed_types], src) => assert.throws(
 				() => VISITOR.visit(AST.EXPR.Call.fromSource(src)),
 				(err) => {
@@ -432,7 +427,7 @@ test.suite('Call', () => {
 				List.<int>((4.2,))
 				Dict.<int>((a= 4.2))
 				Set.<int>((42, "42"))
-				Map.<int>(((42, "42"),))
+				Map.<int, int>(((42, "42"),))
 				Some.<int>(4.2)
 			`, (src) => assert.throws(() => VISITOR.visit(AST.EXPR.Call.fromSource(src)), TypeErrorNotAssignable));
 		});

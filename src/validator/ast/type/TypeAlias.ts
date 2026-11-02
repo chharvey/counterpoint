@@ -42,7 +42,12 @@ export class TypeAlias extends Type {
 
 	public override varCheck(): void {
 		// NOTE: ignore var-checking `this` for now if source is an intrinsic identifier, as semantics is determined by syntax.
-		if (this.source === IntrinsicName.OBJECT || this.source === IntrinsicName.EXCEPTION) {
+		if (([
+			IntrinsicName.OBJECT,
+			IntrinsicName.EXCEPTION,
+			IntrinsicName.FUNCTION,
+			IntrinsicName.CLASS,
+		] as readonly string[]).includes(this.source)) {
 			return;
 		}
 		if (!this.validator.hasSymbol(this.id)) {
@@ -61,6 +66,9 @@ export class TypeAlias extends Type {
 		}
 		if (this.source === IntrinsicName.EXCEPTION) {
 			return TYPE.EXCP;
+		}
+		if (this.source === IntrinsicName.CLASS) {
+			return TYPE.CLASS;
 		}
 		assert.ok(this.validator.hasSymbol(this.id), `Expected ${this.source} (${this.id}) to be in the symbol table.`);
 		const symbol: SymbolSchema = this.validator.getSymbol(this.id)!;

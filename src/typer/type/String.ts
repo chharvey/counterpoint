@@ -7,6 +7,7 @@ import {ValueType} from './ValueType.ts';
 
 /**
  * Class for constructing the `str` type.
+ * @singleton
  * @final
  */
 class TypeString extends ValueType {
@@ -19,7 +20,7 @@ class TypeString extends ValueType {
 	}
 
 	@instanceOf(() => VALUE.String)
-	public override includes(_: VALUE.Value): boolean {
+	public override includes(_v: VALUE.Value): boolean {
 		return true;
 	}
 }

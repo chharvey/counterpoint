@@ -16,13 +16,13 @@ import {
  * @final
  */
 export class Maybe<T extends Value = Value> extends Value {
-	private readonly type:   TYPE.Type;
-	public  readonly value?: T;
+	private readonly typearg: TYPE.Type;
+	public  readonly value?:  T;
 
 
 	public constructor(value_or_type: T | TYPE.Type) {
 		super();
-		this.type = value_or_type instanceof Value ? value_or_type.toType() : value_or_type;
+		this.typearg = value_or_type instanceof Value ? value_or_type.toType() : value_or_type;
 		if (value_or_type instanceof Value) {
 			this.value = value_or_type;
 		}
@@ -59,6 +59,6 @@ export class Maybe<T extends Value = Value> extends Value {
 	 * Returns a TYPE.Maybe whose type argument is the type of this Maybe’s value (defaulting to `anything`).
 	 */
 	public override toType(): TYPE.Maybe {
-		return new TYPE.Maybe(this.type);
+		return new TYPE.Maybe(this.typearg);
 	}
 }

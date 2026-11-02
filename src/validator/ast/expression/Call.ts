@@ -5,7 +5,6 @@ import {
 	CONFIG_DEFAULT,
 } from '../../../core/index.ts';
 import type {SyntaxNodeType} from '../../utils-private.ts';
-import {CALLABLE_CLASS_NAMES} from '../utils-private.ts';
 import type * as AST_TYPE from '../type/index.ts';
 import type {Property} from '../Property.ts';
 import {Expression} from './Expression.ts';
@@ -21,9 +20,6 @@ export class Call extends Expression {
 	}
 
 
-	public readonly isCallableClassName: boolean;
-
-
 	public constructor(
 		start_node: SyntaxNodeType<'expression_compound'>,
 		public readonly base:          Expression,
@@ -32,17 +28,14 @@ export class Call extends Expression {
 		public readonly exprargsNamed: readonly Property[],
 	) {
 		super(start_node, {}, [base, ...typeargs, ...exprargsPosit, ...exprargsNamed]);
-		this.isCallableClassName = (CALLABLE_CLASS_NAMES as readonly string[]).includes(this.base.source);
 	}
 
 	public override varCheck(): void {
-		if (!this.isCallableClassName) {
-			try {
-				this.base.varCheck();
-			} catch (err) {
-				if (!(this.base instanceof Variable && this.base.isFuncRef)) {
-					throw err;
-				}
+		try {
+			this.base.varCheck();
+		} catch (err) {
+			if (!(this.base instanceof Variable && this.base.isFuncRef)) {
+				throw err;
 			}
 		}
 		return xjs.Array.forEachAggregated([

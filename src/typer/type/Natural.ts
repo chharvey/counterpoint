@@ -7,6 +7,7 @@ import {ValueType} from './ValueType.ts';
 
 /**
  * Class for constructing the `nat` type.
+ * @singleton
  * @final
  */
 export class Natural extends ValueType {
@@ -19,7 +20,7 @@ export class Natural extends ValueType {
 	}
 
 	@instanceOf(() => VALUE.Natural)
-	public override includes(_: VALUE.Value): boolean {
+	public override includes(_v: VALUE.Value): boolean {
 		return true;
 	}
 }

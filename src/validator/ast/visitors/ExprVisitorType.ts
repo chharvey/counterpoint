@@ -19,6 +19,7 @@ import {
 	type SymbolSchema,
 	SymbolSchemaVar,
 	SymbolSchemaFunc,
+	SymbolSchemaClass,
 } from '../../index.ts';
 import {Operator} from '../../Operator.ts';
 import {
@@ -79,8 +80,12 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type | null> {
 	public override visitVariable(expr: EXPR.Variable): TYPE.Type | null {
 		assert.ok(expr.validator.hasSymbol(expr.id), `Expected ${expr.source} (${expr.id}) to be in the symbol table.`);
 		const symbol: SymbolSchema = expr.validator.getSymbol(expr.id)!;
-		assert_instanceof(symbol, SymbolSchemaVar);
-		return symbol.isUninitialized ? new TYPE.Maybe(symbol.type) : symbol.type;
+		if (symbol instanceof SymbolSchemaVar) {
+			return symbol.isUninitialized ? new TYPE.Maybe(symbol.type) : symbol.type;
+		} else {
+			assert_instanceof(symbol, SymbolSchemaClass);
+			return TYPE.CLASS;
+		}
 	}
 
 	@memoizeExpressionType
@@ -205,13 +210,10 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type | null> {
 
 	@memoizeExpressionType
 	public override visitCall(expr: EXPR.Call): TYPE.Type | null {
-		let base_types: readonly TYPE.Type[] = [];
-		if (!expr.isCallableClassName) {
-			const symbol: SymbolSchema | undefined = expr.base instanceof EXPR.Variable ? expr.validator.getSymbol(expr.base.id) : undefined;
-			base_types = symbol instanceof SymbolSchemaFunc ? symbol.types : [this.throwIfVoid(expr.base, new TypeErrorInvalidOperation(expr))];
-			if (base_types.some((t) => t.isBottomType)) {
-				return TYPE.NOTHING;
-			}
+		const symbol: SymbolSchema | undefined = expr.base instanceof EXPR.Variable ? expr.validator.getSymbol(expr.base.id) : undefined;
+		const base_types: readonly TYPE.Type[] = symbol instanceof SymbolSchemaFunc ? symbol.types : [this.throwIfVoid(expr.base, new TypeErrorInvalidOperation(expr))];
+		if (base_types.some((t) => t.isBottomType)) {
+			return TYPE.NOTHING;
 		}
 		if (
 			expr.exprargsPosit.some((arg) => this.throwIfVoid(arg).isBottomType) ||
@@ -219,12 +221,12 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type | null> {
 		) {
 			return TYPE.NOTHING;
 		}
-		if (!expr.isCallableClassName) {
-			if (base_types.find((t) => t instanceof TYPE.Maybe || t instanceof TYPE.Result)) {
-				throw new Error('Maybe/Result calls are not yet supported.');
-			}
-			assert.ok(base_types.length);
+		if (base_types.find((t) => t instanceof TYPE.Maybe || t instanceof TYPE.Result)) {
+			throw new Error('Maybe/Result calls are not yet supported.');
+		}
+		assert.ok(base_types.length);
 
+		if (base_types[0] !== TYPE.CLASS) {
 			/* Throw and aggregate if any overload is not a function;
 			otherwise, map to return types or errors as a result of type-checking. */
 			const overload_calls: readonly [TYPE.Function, TYPE.Type | null | Error][] = xjs.Array.mapAggregated(base_types, (t) => {
@@ -408,49 +410,33 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type | null> {
 
 	@memoizeExpressionType
 	public override visitOperationBinaryCast(expr: EXPR.OperationBinaryCast): TYPE.Type | null {
-		const t0: TYPE.Type = this.throwIfVoid(expr.operand0, new TypeErrorInvalidOperation(expr));
-		if (t0.isBottomType) {
+		const [t0, t1]: readonly TYPE.Type[] = expr.children.map((operand) => this.throwIfVoid(operand, new TypeErrorInvalidOperation(expr)));
+		if (t0.isBottomType || t1.isBottomType) {
 			return TYPE.NOTHING;
 		}
-		const t1: TYPE.Type = new Map<IntrinsicName, TYPE.Type>([
-			[IntrinsicName.NULL,      TYPE.NULL],
-			[IntrinsicName.BOOLEAN,   TYPE.BOOL],
-			[IntrinsicName.SYMBOL,    TYPE.SYM],
-			[IntrinsicName.INTEGER,   TYPE.INT],
-			[IntrinsicName.NATURAL,   TYPE.NAT],
-			[IntrinsicName.FLOAT,     TYPE.FLOAT],
-			[IntrinsicName.STRING,    TYPE.STR],
-			[IntrinsicName.OBJECT,    TYPE.OBJ],
-			[IntrinsicName.LIST,      new TYPE.List(TYPE.ANYTHING)],
-			[IntrinsicName.DICT,      new TYPE.Dict(TYPE.ANYTHING)],
-			[IntrinsicName.SET,       new TYPE.Set(TYPE.ANYTHING)],
-			[IntrinsicName.MAP,       new TYPE.Map(TYPE.ANYTHING, TYPE.ANYTHING)],
-			[IntrinsicName.EXCEPTION, TYPE.EXCP],
-			[IntrinsicName.MAYBE,     new TYPE.Maybe(TYPE.ANYTHING)],
-			[IntrinsicName.NONE,      new TYPE.None(TYPE.ANYTHING)],
-			[IntrinsicName.SOME,      new TYPE.Some(TYPE.ANYTHING)],
-			[IntrinsicName.RESULT,    new TYPE.Result(TYPE.ANYTHING)],
-			[IntrinsicName.FAIL,      new TYPE.Fail(TYPE.ANYTHING)],
-			[IntrinsicName.OK,        new TYPE.Ok(TYPE.ANYTHING)],
-			[IntrinsicName.FUNCTION,  new TYPE.Function(undefined, undefined, TYPE.ANYTHING)],
-		]).get(expr.operand1.source as IntrinsicName)!;
+		if (!t1.isSubtypeOf(TYPE.CLASS)) {
+			throw new TypeErrorInvalidOperation(expr);
+		}
+		let cast_type: TYPE.Type | undefined;
+		if (expr.operand1 instanceof EXPR.Variable) {
+			const symbol = expr.validator.getSymbol(expr.operand1.id) as SymbolSchemaClass;
+			cast_type = symbol.classSignature.supertype;
+		}
 		switch (expr.operator) {
 			case Operator.IS: {
 				return TYPE.BOOL;
 			}
 			case Operator.CAST: {
-				if (t1.isSubtypeOf(t0)) {
-					return t1;
-				} else {
-					throw new TypeErrorNotNarrow(t1, t0, expr.line_index, expr.col_index);
+				if (cast_type && !cast_type.isSubtypeOf(t0)) {
+					throw new TypeErrorNotNarrow(cast_type, t0, expr.line_index, expr.col_index);
 				}
+				return cast_type ?? t0;
 			}
 			case Operator.CAST_MAYBE: {
-				if (t1.isSubtypeOf(t0)) {
-					return new TYPE.Maybe(t1);
-				} else {
-					throw new TypeErrorNotNarrow(t1, t0, expr.line_index, expr.col_index);
+				if (cast_type && !cast_type.isSubtypeOf(t0)) {
+					throw new TypeErrorNotNarrow(cast_type, t0, expr.line_index, expr.col_index);
 				}
+				return new TYPE.Maybe(cast_type ?? t0);
 			}
 		}
 	}

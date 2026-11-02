@@ -116,7 +116,7 @@ export class AstNodeVisitorTypeCheck extends AstNodeVisitor<void> {
 	public override visitExprAccess   (expr: EXPR.Access):          void { return this.visitExpression(expr); }
 
 	public override visitExprCall(expr: EXPR.Call): void {
-		if (!expr.isCallableClassName && !(expr.base instanceof EXPR.Variable && expr.base.isFuncRef)) {
+		if (!(expr.base instanceof EXPR.Variable && expr.base.isFuncRef)) {
 			return this.visit(expr.base);
 		}
 		xjs.Array.forEachAggregated([
@@ -188,7 +188,7 @@ export class AstNodeVisitorTypeCheck extends AstNodeVisitor<void> {
 		if (stmt.identifier) {
 			assert.ok(stmt.validator.hasSymbol(stmt.id!), `The validator symbol table should include ${stmt.id}.`);
 			const schema = stmt.validator.getSymbol(stmt.id!) as SymbolSchemaFunc;
-			if (schema.types.find((t) => fn_type === t || t instanceof TYPE.Function && fn_type.isMoreSpecificThan(t) && t.isMoreSpecificThan(fn_type))) {
+			if (schema.types.find((t) => fn_type === t || fn_type.isMoreSpecificThan(t) && t.isMoreSpecificThan(fn_type))) {
 				// if there exists an identically-typed overload, as static dispatch won’t know which one to choose
 				throw new TypeErrorAmbiguousOverload(stmt);
 			} else {

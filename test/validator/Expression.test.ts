@@ -4,6 +4,7 @@ import * as xjs from 'extrajs';
 import {
 	VALUE,
 	TYPE,
+	INTRINSICS,
 	Validator,
 	AST,
 	SymbolSchemaType,
@@ -313,6 +314,11 @@ test.suite('Expression', () => {
 
 	test.suite('Variable', () => {
 		test.suite('#varCheck', () => {
+			test.test('allows intrinsic class references.', () => {
+				setupScript(`{
+					${INTRINSICS.join(';')};
+				}`, {typeCheck: false}); // assert does not throw
+			});
 			test.test('throws if the validator does not contain a record for the identifier.', () => {
 				setupScript(`{
 					val mut i: int = 42;

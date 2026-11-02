@@ -19,11 +19,14 @@ Type! TypeOf(SemanticExpressionTemplate template) :=
 
 Type TypeOf(SemanticExpressionVariable var) :=
 	1. *Assert:* The validator’s symbol table contains a SymbolSchema `symbol` whose `id` is `var.id`.
-	2. *Assert:* `symbol` is an instance of `SymbolSchemaVar`.
-	3. *If* `symbol.isUninitialized` is `true`:
-		1. *Return:* `Maybe(symbol.type)`.
-	4. *Else:*
-		1. *Return:* `symbol.type`.
+	2. *If* `symbol` is an instance of `SymbolSchemaVar`:
+		1. *If* `symbol.isUninitialized` is `true`:
+			1. *Return:* `Maybe(symbol.type)`.
+		2. *Else:*
+			1. *Return:* `symbol.type`.
+	3. *Else*:
+		1. *Assert:* `symbol` is an instance of `SymbolSchemaClass`.
+		2. *Return:* `Class`.
 ;
 
 
@@ -173,39 +176,36 @@ Type! TypeOf(SemanticExpressionAccess[kind=RESULT] ::= SemanticExpression__0 (Se
 
 
 Type?! TypeOf(SemanticExpressionCall ::= SemanticExpression__0 SemanticType* SemanticExpression__1* SemanticProperty*) :=
-	1. *Let* `base_types` be an empty Sequence.
-	2. *Let* `schema` be *nil*.
-	3. *If* `SemanticExpression__0` is a SemanticExpressionVariable:
+	1. *If* `SemanticExpression__0` is a SemanticExpressionVariable:
 		1. *Assert:* The validator’s symbol table contains a SymbolSchema `symbol` whose `id` is `SemanticExpression__0.id`.
-		2. *Set* `schema` to `symbol`.
-	4. *Else:*
+	2. *Else:*
 		1. Fall through.
-	5. *If* `schema` is an instance of `SymbolSchemaFunc`:
-		1. *Set* `base_types` to `schema.types`.
-	6. *Else:*
+	3. *If* `symbol` is set and an instance of `SymbolSchemaFunc`:
+		1. *Let* `base_types` be `symbol.types`.
+	4. *Else:*
 		1. *Let* `basetype` be *Unwrap:* `ThrowIfVoid(SemanticExpression__0, TypeErrorInvalidOperation)`.
-		2. *Set* `base_types` to a new Sequence [`basetype`].
-	7. *For each* `type` in `base_types`:
+		2. *Let* `base_types` be a new Sequence [`basetype`].
+	5. *For each* `type` in `base_types`:
 		1. *If* *UnwrapAffirm:* `IsBottomType(type)` is `true`:
 			1. *Return:* `Nothing`.
 		2. *Else:*
 			1. Fall through.
-	8. *For each* `it` in `SemanticExpression__1*`:
+	6. *For each* `it` in `SemanticExpression__1*`:
 		1. *Let* `arg_type` be *Unwrap:* `ThrowIfVoid(it)`.
 		2. *If* *UnwrapAffirm:* `IsBottomType(arg_type)` is `true`:
 			1. *Return:* `Nothing`.
 		3. *Else:*
 			1. Fall through.
-	9. *For each* `it ::= SemanticKey SemanticExpression__2` in `SemanticProperty*`:
+	7. *For each* `it ::= SemanticKey SemanticExpression__2` in `SemanticProperty*`:
 		1. *Let* `arg_type` be *Unwrap:* `ThrowIfVoid(SemanticExpression__2)`.
 		2. *If* *UnwrapAffirm:* `IsBottomType(arg_type)` is `true`:
 			1. *Return:* `Nothing`.
 		3. *Else:*
 			1. Fall through.
-	10. *Assert:* `base_types.count` is greater than *0*.
-	11. *Let* `successes` be an empty Sequence.
-	12. *Let* `failures` be an empty Sequence.
-	13. *For each* `type` in `base_types`:
+	8. *Assert:* `base_types.count` is greater than *0*.
+	9. *Let* `successes` be an empty Sequence.
+	10. *Let* `failures` be an empty Sequence.
+	11. *For each* `type` in `base_types`:
 		1. *Perform:* the following substeps and save the result:
 			1. *If* `type` is not a Function type:
 				1. *Throw:* a new TypeErrorNotCallable.
@@ -233,15 +233,15 @@ Type?! TypeOf(SemanticExpressionCall ::= SemanticExpression__0 SemanticType* Sem
 			1. Push the result to `successes`.
 		3. *Else:*
 			1. Push the result to `failures`.
-	14. *If* `successes.count` is greater than *0*:
+	12. *If* `successes.count` is greater than *0*:
 		1. *Let* `maximal` be the unique maximally specific overload, if it exists.
 		2. *If* `maximal` is not *nil*:
 			1. *Return:* the corresponding item in `successes`.
 		3. *Else:*
 			1. *Throw:* a new TypeErrorAmbiguousOverload.
-	15. *Else If* `failures.count` is greater than *1*:
+	13. *Else If* `failures.count` is greater than *1*:
 		1. *Throw:* a new TypeErrorAmbiguousOverload.
-	16. *Else:*
+	14. *Else:*
 		1. *Assert*: `failures.count` is *1*.
 		2. *Throw:* `failures.0`.
 ;
@@ -311,33 +311,54 @@ Type! TypeOf(SemanticExpressionOperation[operator: NEG] expr) :=
 		1. *Throw:* a new TypeErrorInvalidOperation.
 ;
 
-Type! TypeOf(SemanticExpressionOperation[operator: IS] ::= SemanticExpression__0 SemanticExpression__1[type: Class]) :=
+Type! TypeOf(SemanticExpressionOperation[operator=IS] ::= SemanticExpression__0 SemanticExpression__1[type: Class]) :=
 	1. *Let* `t0` be *Unwrap:* `ThrowIfVoid(SemanticExpression__0, TypeErrorInvalidOperation)`.
-	2. *If* *UnwrapAffirm:* `IsBottomType(t0)` is `true`:
+	2. *Let* `t1` be *Unwrap:* `ThrowIfVoid(SemanticExpression__1, TypeErrorInvalidOperation)`.
+	3. *If* *UnwrapAffirm:* `IsBottomType(t0)` is `true` *or* *UnwrapAffirm:* `IsBottomType(t1)` is `true`:
 		1. *Return:* `Nothing`.
-	3. *Return:* `Boolean`.
+	4. *Else If* *UnwrapAffirm:* `Subtype(t1, Class)` is `false`:
+		1. *Throw:* a new TypeErrorInvalidOperation.
+	5. *Else:*
+		1. Fall through.
+	6. *Return:* `Boolean`.
 ;
 
-Type! TypeOf(SemanticExpressionOperation[operator: CAST] ::= SemanticExpression__0 SemanticExpression__1[type: Class]) :=
+Type! TypeOf(SemanticExpressionOperation[operator=CAST] ::= SemanticExpression__0 SemanticExpression__1[type: Class]) :=
 	1. *Let* `t0` be *Unwrap:* `ThrowIfVoid(SemanticExpression__0, TypeErrorInvalidOperation)`.
-	2. *If* *UnwrapAffirm:* `IsBottomType(t0)` is `true`:
+	2. *Let* `t1` be *Unwrap:* `ThrowIfVoid(SemanticExpression__1, TypeErrorInvalidOperation)`.
+	3. *If* *UnwrapAffirm:* `IsBottomType(t0)` is `true` *or* *UnwrapAffirm:* `IsBottomType(t1)` is `true`:
 		1. *Return:* `Nothing`.
-	3. *Let* `t1` be the class identified by `SemanticExpression__1`.
-	4. *If* `Subtype(t1, t0)` is `true`:
-		1. *Return:* `t1`.
+	4. *Else If* *UnwrapAffirm:* `Subtype(t1, Class)` is `false`:
+		1. *Throw:* a new TypeErrorInvalidOperation.
 	5. *Else:*
-		1. *Throw:* a new TypeErrorNotNarrow.
+		1. Fall through.
+	6. *Let* `cast_type` be the class identified by `SemanticExpression__1`, if it exists.
+	7. *If* `cast_type` is *nil*:
+		1. *Return:* `t0`.
+	8. *Else:*
+		1. *If* `Subtype(cast_type, t0)` is `true`:
+			1. *Return:* `cast_type`.
+		2. *Else:*
+			1. *Throw:* a new TypeErrorNotNarrow.
 ;
 
-Type! TypeOf(SemanticExpressionOperation[operator: MAYBE] ::= SemanticExpression__0 SemanticExpression__1[type: Class]) :=
+Type! TypeOf(SemanticExpressionOperation[operator=MAYBE] ::= SemanticExpression__0 SemanticExpression__1[type: Class]) :=
 	1. *Let* `t0` be *Unwrap:* `ThrowIfVoid(SemanticExpression__0, TypeErrorInvalidOperation)`.
-	2. *If* *UnwrapAffirm:* `IsBottomType(t0)` is `true`:
+	2. *Let* `t1` be *Unwrap:* `ThrowIfVoid(SemanticExpression__1, TypeErrorInvalidOperation)`.
+	3. *If* *UnwrapAffirm:* `IsBottomType(t0)` is `true` *or* *UnwrapAffirm:* `IsBottomType(t1)` is `true`:
 		1. *Return:* `Nothing`.
-	3. *Let* `t1` be the class identified by `SemanticExpression__1`.
-	4. *If* `Subtype(t1, t0)` is `true`:
-		1. *Return:* `Maybe(t1)`.
+	4. *Else If* *UnwrapAffirm:* `Subtype(t1, Class)` is `false`:
+		1. *Throw:* a new TypeErrorInvalidOperation.
 	5. *Else:*
-		1. *Throw:* a new TypeErrorNotNarrow.
+		1. Fall through.
+	6. *Let* `cast_type` be the class identified by `SemanticExpression__1`, if it exists.
+	7. *If* `cast_type` is *nil*:
+		1. *Return:* `Maybe(t0)`.
+	8. *Else:*
+		1. *If* `Subtype(cast_type, t0)` is `true`:
+			1. *Return:* `Maybe(cast_type)`.
+		2. *Else:*
+			1. *Throw:* a new TypeErrorNotNarrow.
 ;
 
 Type! TypeOf(SemanticExpressionOperation[operator: EXP | MUL | DIV | ADD | SUB] expr) :=

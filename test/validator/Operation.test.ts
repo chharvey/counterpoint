@@ -122,13 +122,32 @@ test.suite('Operation', () => {
 
 
 		test.suite('OperationBinaryCast', () => {
+			test.test('returns `nothing` if either operand is `nothing`.', () => {
+				assertEqualTypes(
+					setupScript(`{
+						val x: nothing = 42 as <nothing>;
+						val y: nothing = "hello" as <nothing>;
+						x as Exception;
+						Exception.("") as y;
+					}`, {build: false}).stmts.slice(2).map((stmt) => typeOfStmtExpr(stmt)),
+					repeat(TYPE.NOTHING, 2),
+				);
+			});
+
+			test.test('throws if right-hand operand is not an instance of `Class`.', () => {
+				const {stmts} = setupScript(`{
+					Exception.("hello") as (message= "hello");
+				}`, {typeCheck: false});
+				return assert.throws(() => typeOfStmtExpr(stmts[0]), TypeErrorInvalidOperation);
+			});
+
 			test.test('[operator=IS] always returns `bool`.', () => {
 				assert_shallowStrictEqual(
 					setupScript(`{
 						val n: null = null;
 						${INTRINSICS.map((t) => `n is ${t};`).join('\n')}
 					}`, {build: false}).stmts.slice(1).map((stmt) => VISITOR.visit((stmt as AST.STMT.StatementExpression).expr!)),
-					repeat(TYPE.BOOL, 20),
+					repeat(TYPE.BOOL, 21),
 				);
 			});
 
@@ -159,7 +178,8 @@ test.suite('Operation', () => {
 							new TYPE.Result(TYPE.ANYTHING),
 							new TYPE.Fail(TYPE.ANYTHING),
 							new TYPE.Ok(TYPE.ANYTHING),
-							new TYPE.Function(undefined, undefined, TYPE.ANYTHING),
+							TYPE.FUNCTION,
+							TYPE.CLASS,
 						],
 					);
 				});
@@ -170,6 +190,23 @@ test.suite('Operation', () => {
 					}`, {typeCheck: false});
 					visitors.typeCheck.visit(stmts[0]);
 					return assert.throws(() => visitors.typeCheck.visit(stmts[1]), TypeErrorNotNarrow);
+				});
+				test.test('returns the uncast type if a referenced type cannot be found.', () => {
+					assertEqualTypes(
+						setupScript(`{
+							val a: anything          = null;
+							val b: int | nat | float = 42;
+							val c: sym               = @hello;
+							a as (Symbol || String);
+							b as (Integer || Float);
+							c as (Function && Class);
+						}`, {build: false}).stmts.slice(3).map((stmt) => typeOfStmtExpr(stmt)),
+						[
+							TYPE.ANYTHING,
+							TYPE.NUMBER,
+							TYPE.SYM,
+						],
+					);
 				});
 			});
 
@@ -200,7 +237,8 @@ test.suite('Operation', () => {
 							new TYPE.Maybe(new TYPE.Result(TYPE.ANYTHING)),
 							new TYPE.Maybe(new TYPE.Fail(TYPE.ANYTHING)),
 							new TYPE.Maybe(new TYPE.Ok(TYPE.ANYTHING)),
-							new TYPE.Maybe(new TYPE.Function(undefined, undefined, TYPE.ANYTHING)),
+							new TYPE.Maybe(TYPE.FUNCTION),
+							new TYPE.Maybe(TYPE.CLASS),
 						],
 					);
 				});
@@ -211,6 +249,23 @@ test.suite('Operation', () => {
 					}`, {typeCheck: false});
 					visitors.typeCheck.visit(stmts[0]);
 					return assert.throws(() => visitors.typeCheck.visit(stmts[1]), TypeErrorNotNarrow);
+				});
+				test.test('returns the uncast type, wrapped in Maybe, if a referenced type cannot be found.', () => {
+					assertEqualTypes(
+						setupScript(`{
+							val a: anything          = null;
+							val b: int | nat | float = 42;
+							val c: sym               = @hello;
+							a as? (Symbol || String);
+							b as? (Integer || Float);
+							c as? (Function && Class);
+						}`, {build: false}).stmts.slice(3).map((stmt) => typeOfStmtExpr(stmt)),
+						[
+							new TYPE.Maybe(TYPE.ANYTHING),
+							new TYPE.Maybe(TYPE.NUMBER),
+							new TYPE.Maybe(TYPE.SYM),
+						],
+					);
 				});
 			});
 		});

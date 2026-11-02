@@ -7,6 +7,7 @@ import {ValueType} from './ValueType.ts';
 
 /**
  * Class for constructing the `int` type.
+ * @singleton
  * @final
  */
 export class Integer extends ValueType {
@@ -19,7 +20,7 @@ export class Integer extends ValueType {
 	}
 
 	@instanceOf(() => VALUE.Integer)
-	public override includes(_: VALUE.Value): boolean {
+	public override includes(_v: VALUE.Value): boolean {
 		return true;
 	}
 }
