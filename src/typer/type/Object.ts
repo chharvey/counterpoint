@@ -14,6 +14,7 @@ import {ReferenceType} from './ReferenceType.ts';
 
 /**
  * Class for constructing the `Object` type.
+ * @singleton
  * @final
  */
 class TypeObject extends ReferenceType {

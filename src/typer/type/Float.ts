@@ -7,6 +7,7 @@ import {ValueType} from './ValueType.ts';
 
 /**
  * Class for constructing the `float` type.
+ * @singleton
  * @final
  */
 export class Float extends ValueType {

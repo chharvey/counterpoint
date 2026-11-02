@@ -9,6 +9,7 @@ import {Type} from './Type.ts';
 
 /**
  * Class for constructing the Bottom Type, the type containing no values.
+ * @singleton
  * @final
  */
 export class Nothing extends Type {

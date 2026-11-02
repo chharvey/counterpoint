@@ -18,7 +18,10 @@ import {
 
 
 /**
- * A `Result` repesents a success or failure.
+ * Class for constructing a `Result` type.
+ * Known subclasses:
+ * - None
+ * - Some
  */
 export class Result extends ReferenceType {
 	/**

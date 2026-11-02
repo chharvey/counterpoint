@@ -7,6 +7,7 @@ import {ValueType} from './ValueType.ts';
 
 /**
  * Class for constructing the `nat` type.
+ * @singleton
  * @final
  */
 export class Natural extends ValueType {

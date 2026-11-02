@@ -11,6 +11,7 @@ import {Union} from './Union.ts';
 
 /**
  * Class for constructing the `bool` type.
+ * @singleton
  * @final
  */
 class TypeBoolean extends Union {

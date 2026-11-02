@@ -17,7 +17,10 @@ import {
 
 
 /**
- * A `Maybe` repesents presence or absence of a value.
+ * Class for constructing a `Maybe` type.
+ * Known subclasses:
+ * - None
+ * - Some
  */
 export class Maybe extends ReferenceType {
 	/**

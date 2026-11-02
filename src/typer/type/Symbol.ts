@@ -7,6 +7,7 @@ import {ValueType} from './ValueType.ts';
 
 /**
  * Class for constructing the `sym` type.
+ * @singleton
  * @final
  */
 class TypeSymbol extends ValueType {

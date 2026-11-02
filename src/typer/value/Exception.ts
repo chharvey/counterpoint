@@ -40,10 +40,6 @@ export class Exception extends Value {
 		);
 	}
 
-	/**
-	 * @inheritdoc
-	 * Returns a TYPE.Maybe whose type argument is the type of this Maybe’s value (defaulting to `anything`).
-	 */
 	public override toType(): TYPE.Exception {
 		return TYPE.EXCP;
 	}

@@ -7,6 +7,7 @@ import {ValueType} from './ValueType.ts';
 
 /**
  * Class for constructing the `int` type.
+ * @singleton
  * @final
  */
 export class Integer extends ValueType {

@@ -16,7 +16,8 @@ import {
 
 
 /**
- * An `Exception` is used for runtime error reporting.
+ * Class for constructing the `Exception` type.
+ * @singleton
  * @final
  */
 export class Exception extends ReferenceType {

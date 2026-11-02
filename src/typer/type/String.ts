@@ -7,6 +7,7 @@ import {ValueType} from './ValueType.ts';
 
 /**
  * Class for constructing the `str` type.
+ * @singleton
  * @final
  */
 class TypeString extends ValueType {

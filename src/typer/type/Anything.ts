@@ -9,6 +9,7 @@ import {Type} from './Type.ts';
 
 /**
  * Class for constructing the Top Type, the type containing all values.
+ * @singleton
  * @final
  */
 export class Anything extends Type {
