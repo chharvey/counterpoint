@@ -440,6 +440,7 @@ The **Result** class is abstract and enumerated by two concrete subclasses:
 ### Callable Types
 
 - [Function Types](#function-types)
+- [Class Types](#class-types)
 
 #### Function Types
 A **Function** type describes instances of [`Function`](./intrinsics.md#function) and is parameterized by a triple containing
@@ -448,6 +449,12 @@ a [Schema](#schema) with [EntryTypeSchema](#entrytypeschema) values representing
 a type representing a return type.
 The objects that any given Function type describes are `Function` objects whose
 parameters and return type are respectively assignable to the types parameterizing the Function Type.
+
+#### Class Types
+A **Class** type describes callable classes — instances of [`Class`](./intrinsics.md#class)
+that can be called like a function to construct new objects. The Class type is parameterized
+by the signatures of the corresponding `Class` object’s constructors, if any.
+Any given Class type only describes one `Class` object, but it may have several signatures.
 
 
 ### Nominal Types

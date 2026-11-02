@@ -961,6 +961,13 @@ test.suite('Type', () => {
 			});
 		});
 
+		test.suite('TypeClass', () => {
+			test.test('is a subtype but not a supertype of `Object`.', () => {
+				assert.ok(TYPE.CLASS.isSubtypeOf(TYPE.OBJ), 'Class <: Object');
+				assert.ok(!TYPE.OBJ.isSubtypeOf(TYPE.CLASS), 'Object !<: Class');
+			});
+		});
+
 		test.suite('TypeInterface', () => {
 			test.test('returns `true` if the subtype contains at least the properties of the supertype.', () => {
 				const t0 = new TYPE.TypeInterface(new Map<string, TYPE.Type>([
