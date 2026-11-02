@@ -109,6 +109,14 @@ test.suite('AstNodeVisitorRefCheck#visit', () => {
 			}`, {refCheck: false});
 			return assert.throws(() => VISITOR.visit((stmts[0] as AST.STMT.StatementExpression).expr as AST.EXPR.Function), AssignmentErrorDuplicateDeclaration);
 		});
+		test.test('default values may not reference each other.', () => {
+			const {stmts, visitors: {refCheck: VISITOR}} = setupScript(`{
+				\\(a: int, b?: int = a): int => a + b;
+				\\($a?: int = b, $b: int): int => a + b;
+				\\(alpha= a?: int = b, bravo= b: int): int => a + b;
+			}`, {refCheck: false});
+			xjs.Array.forEachAggregated(stmts, (stmt) => assert.throws(() => VISITOR.visit(stmt), ReferenceErrorUndeclared));
+		});
 		test.test('parameters do not shadow outside scope.', () => {
 			setupScript(`{
 				val x: int = 42;
