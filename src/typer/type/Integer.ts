@@ -19,7 +19,7 @@ export class Integer extends ValueType {
 	}
 
 	@instanceOf(() => VALUE.Integer)
-	public override includes(_: VALUE.Value): boolean {
+	public override includes(_v: VALUE.Value): boolean {
 		return true;
 	}
 }

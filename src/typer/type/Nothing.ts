@@ -3,7 +3,6 @@ import {
 	strictEqual,
 	memoizeBinOp,
 } from '../utils-private.ts';
-import type * as VALUE from '../value/index.ts';
 import {Type} from './Type.ts';
 
 
@@ -25,7 +24,7 @@ export class Nothing extends Type {
 		return Keyword.NOTHING;
 	}
 
-	public override includes(_: VALUE.Value): boolean {
+	public override includes(): boolean {
 		return false;
 	}
 

@@ -19,7 +19,7 @@ export class Float extends ValueType {
 	}
 
 	@instanceOf(() => VALUE.Float)
-	public override includes(_: VALUE.Value): boolean {
+	public override includes(_v: VALUE.Value): boolean {
 		return true;
 	}
 }
