@@ -17,6 +17,7 @@ import {
 	type SymbolSchema,
 	SymbolSchemaVar,
 	SymbolSchemaFunc,
+	SymbolSchemaClass,
 } from '../../index.ts';
 import {Operator} from '../../Operator.ts';
 import {
@@ -73,9 +74,11 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 		const symbol: SymbolSchema = expr.validator.getSymbol(expr.id)!;
 		if (symbol instanceof SymbolSchemaVar) {
 			return symbol.isUninitialized ? new TYPE.Maybe(symbol.type) : symbol.type;
-		} else {
-			assert_instanceof(symbol, SymbolSchemaFunc);
+		} else if (symbol instanceof SymbolSchemaFunc) {
 			return TYPE.Intersection.all(...symbol.types);
+		} else {
+			assert_instanceof(symbol, SymbolSchemaClass);
+			return TYPE.ANYTHING;
 		}
 	}
 

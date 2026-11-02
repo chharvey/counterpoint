@@ -97,7 +97,7 @@ export class SymbolSchemaFunc extends SymbolSchema {
 
 
 /** The symbol of a declared class. */
-export class SymbolSchemaClass extends SymbolSchemaVar {
+export class SymbolSchemaClass extends SymbolSchema {
 	/**
 	 * NOTE: Only intrinsic classes persist because they are in the core library.
 	 * User-defined classes do not persist.
@@ -111,18 +111,6 @@ export class SymbolSchemaClass extends SymbolSchemaVar {
 		/** The declared class’s call signature type. */
 		private readonly classSignature: ClassSignature,
 	) {
-		super(
-			id,
-			{
-				tagname:      'DeclarationClass',
-				source:       classname,
-				source_index: 0,
-				line_index:   0,
-				col_index:    0,
-				serialize() { throw new Error('Class declaration syntax not yet supported.'); },
-			},
-			false,
-			false,
-		);
+		super(id, 0, 0, classname);
 	}
 }
