@@ -78,7 +78,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 			return TYPE.Intersection.all(...symbol.types);
 		} else {
 			assert_instanceof(symbol, SymbolSchemaClass);
-			return TYPE.ANYTHING;
+			return TYPE.CLASS;
 		}
 	}
 
@@ -358,50 +358,33 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 
 	@memoizeExpressionType
 	public override visitOperationBinaryCast(expr: EXPR.OperationBinaryCast): TYPE.Type {
-		const t0: TYPE.Type = this.visit(expr.operand0);
-		if (t0.isBottomType) {
+		const [t0, t1]: readonly TYPE.Type[] = expr.children.map((operand) => this.visit(operand));
+		if (t0.isBottomType || t1.isBottomType) {
 			return TYPE.NOTHING;
 		}
-		const t1: TYPE.Type = new Map<IntrinsicName, TYPE.Type>([
-			[IntrinsicName.NULL,      TYPE.NULL],
-			[IntrinsicName.BOOLEAN,   TYPE.BOOL],
-			[IntrinsicName.SYMBOL,    TYPE.SYM],
-			[IntrinsicName.INTEGER,   TYPE.INT],
-			[IntrinsicName.NATURAL,   TYPE.NAT],
-			[IntrinsicName.FLOAT,     TYPE.FLOAT],
-			[IntrinsicName.STRING,    TYPE.STR],
-			[IntrinsicName.OBJECT,    TYPE.OBJ],
-			[IntrinsicName.LIST,      new TYPE.List(TYPE.ANYTHING)],
-			[IntrinsicName.DICT,      new TYPE.Dict(TYPE.ANYTHING)],
-			[IntrinsicName.SET,       new TYPE.Set(TYPE.ANYTHING)],
-			[IntrinsicName.MAP,       new TYPE.Map(TYPE.ANYTHING, TYPE.ANYTHING)],
-			[IntrinsicName.EXCEPTION, TYPE.EXCP],
-			[IntrinsicName.MAYBE,     new TYPE.Maybe(TYPE.ANYTHING)],
-			[IntrinsicName.NONE,      new TYPE.None(TYPE.ANYTHING)],
-			[IntrinsicName.SOME,      new TYPE.Some(TYPE.ANYTHING)],
-			[IntrinsicName.RESULT,    new TYPE.Result(TYPE.ANYTHING)],
-			[IntrinsicName.FAIL,      new TYPE.Fail(TYPE.ANYTHING)],
-			[IntrinsicName.OK,        new TYPE.Ok(TYPE.ANYTHING)],
-			[IntrinsicName.FUNCTION,  TYPE.FUNCTION],
-			[IntrinsicName.CLASS,     TYPE.CLASS],
-		]).get(expr.operand1.source as IntrinsicName)!;
+		if (!t1.isSubtypeOf(TYPE.CLASS)) {
+			throw new TypeErrorInvalidOperation(expr);
+		}
+		let cast_type: TYPE.Type | undefined;
+		if (expr.operand1 instanceof EXPR.Variable) {
+			const symbol = expr.validator.getSymbol(expr.operand1.id) as SymbolSchemaClass;
+			cast_type = symbol.classSignature.supertype;
+		}
 		switch (expr.operator) {
 			case Operator.IS: {
 				return TYPE.BOOL;
 			}
 			case Operator.CAST: {
-				if (t1.isSubtypeOf(t0)) {
-					return t1;
-				} else {
-					throw new TypeErrorNotNarrow(t1, t0, expr.line_index, expr.col_index);
+				if (cast_type && !cast_type.isSubtypeOf(t0)) {
+					throw new TypeErrorNotNarrow(cast_type, t0, expr.line_index, expr.col_index);
 				}
+				return cast_type ?? t0;
 			}
 			case Operator.CAST_MAYBE: {
-				if (t1.isSubtypeOf(t0)) {
-					return new TYPE.Maybe(t1);
-				} else {
-					throw new TypeErrorNotNarrow(t1, t0, expr.line_index, expr.col_index);
+				if (cast_type && !cast_type.isSubtypeOf(t0)) {
+					throw new TypeErrorNotNarrow(cast_type, t0, expr.line_index, expr.col_index);
 				}
+				return new TYPE.Maybe(cast_type ?? t0);
 			}
 		}
 	}

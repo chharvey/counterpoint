@@ -109,7 +109,7 @@ export class SymbolSchemaClass extends SymbolSchema {
 		id: bigint,
 		classname: string,
 		/** The declared class’s call signature type. */
-		private readonly classSignature: ClassSignature,
+		public readonly classSignature: ClassSignature,
 	) {
 		super(id, 0, 0, classname);
 	}

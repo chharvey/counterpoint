@@ -50,14 +50,19 @@ type ConstructorOverload = {
 
 /**
  * Schema for defining a class’s constructor signatures.
- * @property genericParams - generic parameters for the class
- * @property overloads     - a list of class constructor overload signatures
- * @property returnType    - the return type of the constructor call, or type of the type call (they’re the same)
+ * @property genericParams generic parameters for the class
+ * @property overloads     a list of class constructor overload signatures
+ * @property returnType    the return type of the constructor call, or type of the type call (they’re the same)
+ * @property supertype     the root type of all return types.
+ * 	if non-generic, `supertype` amd `returnType` are the same;
+ * 	if generic, `supertype` is the type to which all generic invocations are assignable
+ * 	(e.g. `List[anything]` is the supertype of all generic `List[‹T›]` types)
  */
 export type ClassSignature = {
 	readonly genericParams?: GenericParams,
 	readonly overloads?:     (generic_params: GenericArgs) => readonly ConstructorOverload[],
 	readonly returnType:     (generic_params: GenericArgs) => TYPE.Type,
+	readonly supertype:      TYPE.Type,
 };
 
 
@@ -85,7 +90,10 @@ export const CLASS_API = new Map<IntrinsicName, ClassSignature>([
 	 * declare class Null {}
 	 * ```
 	 */
-	[IntrinsicName.NULL, {returnType: () => TYPE.NULL}],
+	[IntrinsicName.NULL, {
+		returnType: () => TYPE.NULL,
+		supertype:  TYPE.NULL,
+	}],
 
 	/*
 	 * ```cpl
@@ -97,6 +105,7 @@ export const CLASS_API = new Map<IntrinsicName, ClassSignature>([
 	[IntrinsicName.BOOLEAN, {
 		overloads:  () => [{positional: new TYPE.Tuple([{type: TYPE.ANYTHING, optional: true}])}],
 		returnType: () => TYPE.BOOL,
+		supertype:  TYPE.BOOL,
 	}],
 
 	/*
@@ -104,7 +113,10 @@ export const CLASS_API = new Map<IntrinsicName, ClassSignature>([
 	 * declare class Symbol {}
 	 * ```
 	 */
-	[IntrinsicName.SYMBOL, {returnType: () => TYPE.SYM}],
+	[IntrinsicName.SYMBOL, {
+		returnType: () => TYPE.SYM,
+		supertype:  TYPE.SYM,
+	}],
 
 	/*
 	 * ```cpl
@@ -116,6 +128,7 @@ export const CLASS_API = new Map<IntrinsicName, ClassSignature>([
 	[IntrinsicName.INTEGER, {
 		overloads:  () => [{positional: new TYPE.Tuple([{type: TYPE.NUMBER, optional: true}])}],
 		returnType: () => TYPE.INT,
+		supertype:  TYPE.INT,
 	}],
 
 	/*
@@ -128,6 +141,7 @@ export const CLASS_API = new Map<IntrinsicName, ClassSignature>([
 	[IntrinsicName.NATURAL, {
 		overloads:  () => [{positional: new TYPE.Tuple([{type: TYPE.NUMBER, optional: true}])}],
 		returnType: () => TYPE.NAT,
+		supertype:  TYPE.NAT,
 	}],
 
 	/*
@@ -140,6 +154,7 @@ export const CLASS_API = new Map<IntrinsicName, ClassSignature>([
 	[IntrinsicName.FLOAT, {
 		overloads:  () => [{positional: new TYPE.Tuple([{type: TYPE.NUMBER, optional: true}])}],
 		returnType: () => TYPE.FLOAT,
+		supertype:  TYPE.FLOAT,
 	}],
 
 	/*
@@ -152,6 +167,7 @@ export const CLASS_API = new Map<IntrinsicName, ClassSignature>([
 	[IntrinsicName.STRING, {
 		overloads:  () => [{positional: new TYPE.Tuple([{type: TYPE.ANYTHING, optional: true}])}],
 		returnType: () => TYPE.STR,
+		supertype:  TYPE.STR,
 	}],
 
 	/*
@@ -159,7 +175,10 @@ export const CLASS_API = new Map<IntrinsicName, ClassSignature>([
 	 * declare class open Object {}
 	 * ```
 	 */
-	[IntrinsicName.OBJECT, {returnType: () => TYPE.OBJ}],
+	[IntrinsicName.OBJECT, {
+		returnType: () => TYPE.OBJ,
+		supertype:  TYPE.OBJ,
+	}],
 
 	/*
 	 * ```cpl
@@ -182,6 +201,7 @@ export const CLASS_API = new Map<IntrinsicName, ClassSignature>([
 			{positional: TYPE.Tuple.fromTypes([new TYPE.Set(t)])},
 		],
 		returnType: ({positional: [t]}) => new TYPE.List(t, true),
+		supertype:  new TYPE.List(TYPE.ANYTHING),
 	}],
 
 	/*
@@ -212,6 +232,7 @@ export const CLASS_API = new Map<IntrinsicName, ClassSignature>([
 			{positional: TYPE.Tuple.fromTypes([new TYPE.Map(TYPE.SYM, t)])},
 		],
 		returnType: ({positional: [t]}) => new TYPE.Dict(t, true),
+		supertype:  new TYPE.Dict(TYPE.ANYTHING),
 	}],
 
 	/*
@@ -235,6 +256,7 @@ export const CLASS_API = new Map<IntrinsicName, ClassSignature>([
 			{positional: TYPE.Tuple.fromTypes([new TYPE.Set(t)])},
 		],
 		returnType: ({positional: [t]}) => new TYPE.Set(t, true),
+		supertype:  new TYPE.Set(TYPE.ANYTHING),
 	}],
 
 	/*
@@ -265,6 +287,7 @@ export const CLASS_API = new Map<IntrinsicName, ClassSignature>([
 			{positional: TYPE.Tuple.fromTypes([new TYPE.Map  (k, v)])},
 		],
 		returnType: ({positional: [k, v]}) => new TYPE.Map(k, v, true),
+		supertype:  new TYPE.Map(TYPE.ANYTHING, TYPE.ANYTHING),
 	}],
 
 	/*
@@ -277,6 +300,7 @@ export const CLASS_API = new Map<IntrinsicName, ClassSignature>([
 	[IntrinsicName.EXCEPTION, {
 		overloads:  () => [{positional: new TYPE.Tuple([{type: TYPE.STR, optional: false}, {type: TYPE.EXCP, optional: true}])}],
 		returnType: () => TYPE.EXCP,
+		supertype:  TYPE.EXCP,
 	}],
 
 	/*
@@ -293,16 +317,19 @@ export const CLASS_API = new Map<IntrinsicName, ClassSignature>([
 	[IntrinsicName.MAYBE, {
 		genericParams: {positional: [VARIANCE.out]},
 		returnType:    ({positional: [t]}) => new TYPE.Maybe(t),
+		supertype:     new TYPE.Maybe(TYPE.ANYTHING),
 	}],
 	[IntrinsicName.NONE, {
 		genericParams: {positional: [VARIANCE.out]},
 		overloads:     () => [{}],
 		returnType:    ({positional: [t]}) => new TYPE.None(t),
+		supertype:     new TYPE.None(TYPE.ANYTHING),
 	}],
 	[IntrinsicName.SOME, {
 		genericParams: {positional: [VARIANCE.out]},
 		overloads:     ({positional: [t]}) => [{positional: TYPE.Tuple.fromTypes([t])}],
 		returnType:    ({positional: [t]}) => new TYPE.Some(t),
+		supertype:     new TYPE.Some(TYPE.ANYTHING),
 	}],
 
 	/*
@@ -319,16 +346,19 @@ export const CLASS_API = new Map<IntrinsicName, ClassSignature>([
 	[IntrinsicName.RESULT, {
 		genericParams: {positional: [VARIANCE.out, {...VARIANCE.out, constraint: ['narrows', TYPE.EXCP], default: TYPE.EXCP}]},
 		returnType:    ({positional: [t, e]}) => new TYPE.Result(t, e),
+		supertype:     new TYPE.Result(TYPE.ANYTHING),
 	}],
 	[IntrinsicName.FAIL, {
 		genericParams: {positional: [VARIANCE.out, {...VARIANCE.out, constraint: ['narrows', TYPE.EXCP], default: TYPE.EXCP}]},
 		overloads:     ({positional: [_, e]}) => [{positional: TYPE.Tuple.fromTypes([e])}],
 		returnType:    ({positional: [t, e]}) => new TYPE.Fail(t, e),
+		supertype:     new TYPE.Fail(TYPE.ANYTHING),
 	}],
 	[IntrinsicName.OK, {
 		genericParams: {positional: [VARIANCE.out, {...VARIANCE.out, constraint: ['narrows', TYPE.EXCP], default: TYPE.EXCP}]},
 		overloads:     ({positional: [t]})    => [{positional: TYPE.Tuple.fromTypes([t])}],
 		returnType:    ({positional: [t, e]}) => new TYPE.Ok(t, e),
+		supertype:     new TYPE.Ok(TYPE.ANYTHING),
 	}],
 
 	/*
@@ -336,12 +366,18 @@ export const CLASS_API = new Map<IntrinsicName, ClassSignature>([
 	 * declare class abstract Function extends Object {}
 	 * ```
 	 */
-	[IntrinsicName.FUNCTION, {returnType: () => TYPE.FUNCTION}],
+	[IntrinsicName.FUNCTION, {
+		returnType: () => TYPE.FUNCTION,
+		supertype:  TYPE.FUNCTION,
+	}],
 
 	/*
 	 * ```cpl
 	 * declare class open Class {}
 	 * ```
 	 */
-	[IntrinsicName.CLASS, {returnType: () => TYPE.CLASS}],
+	[IntrinsicName.CLASS, {
+		returnType: () => TYPE.CLASS,
+		supertype:  TYPE.CLASS,
+	}],
 ]);

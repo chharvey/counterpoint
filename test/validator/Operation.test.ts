@@ -122,6 +122,25 @@ test.suite('Operation', () => {
 
 
 		test.suite('OperationBinaryCast', () => {
+			test.test('returns `nothing` if either operand is `nothing`.', () => {
+				assertEqualTypes(
+					setupScript(`{
+						val x: nothing = 42 as <nothing>;
+						val y: nothing = "hello" as <nothing>;
+						x as Exception;
+						Exception.("") as y;
+					}`, {build: false}).stmts.slice(2).map((stmt) => typeOfStmtExpr(stmt)),
+					repeat(TYPE.NOTHING, 2),
+				);
+			});
+
+			test.test('throws if right-hand operand is not an instance of `Class`.', () => {
+				const {stmts} = setupScript(`{
+					Exception.("hello") as (message= "hello");
+				}`, {typeCheck: false});
+				return assert.throws(() => typeOfStmtExpr(stmts[0]), TypeErrorInvalidOperation);
+			});
+
 			test.test('[operator=IS] always returns `bool`.', () => {
 				assert_shallowStrictEqual(
 					setupScript(`{
@@ -172,6 +191,23 @@ test.suite('Operation', () => {
 					visitors.typeCheck.visit(stmts[0]);
 					return assert.throws(() => visitors.typeCheck.visit(stmts[1]), TypeErrorNotNarrow);
 				});
+				test.test('returns the uncast type if a referenced type cannot be found.', () => {
+					assertEqualTypes(
+						setupScript(`{
+							val a: anything          = null;
+							val b: int | nat | float = 42;
+							val c: sym               = @hello;
+							a as (Symbol || String);
+							b as (Integer || Float);
+							c as (Function && Class);
+						}`, {build: false}).stmts.slice(3).map((stmt) => typeOfStmtExpr(stmt)),
+						[
+							TYPE.ANYTHING,
+							TYPE.NUMBER,
+							TYPE.SYM,
+						],
+					);
+				});
 			});
 
 			test.suite('[operator=MAYBE]', () => {
@@ -213,6 +249,23 @@ test.suite('Operation', () => {
 					}`, {typeCheck: false});
 					visitors.typeCheck.visit(stmts[0]);
 					return assert.throws(() => visitors.typeCheck.visit(stmts[1]), TypeErrorNotNarrow);
+				});
+				test.test('returns the uncast type, wrapped in Maybe, if a referenced type cannot be found.', () => {
+					assertEqualTypes(
+						setupScript(`{
+							val a: anything          = null;
+							val b: int | nat | float = 42;
+							val c: sym               = @hello;
+							a as? (Symbol || String);
+							b as? (Integer || Float);
+							c as? (Function && Class);
+						}`, {build: false}).stmts.slice(3).map((stmt) => typeOfStmtExpr(stmt)),
+						[
+							new TYPE.Maybe(TYPE.ANYTHING),
+							new TYPE.Maybe(TYPE.NUMBER),
+							new TYPE.Maybe(TYPE.SYM),
+						],
+					);
 				});
 			});
 		});
