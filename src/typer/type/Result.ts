@@ -59,7 +59,7 @@ export class Result extends ReferenceType {
 	}
 
 	/** @final */
-	public override mutableOf(): Type {
+	public override mutableOf(): Result {
 		return this;
 	}
 }

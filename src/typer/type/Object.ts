@@ -37,7 +37,7 @@ class TypeObject extends ReferenceType {
 		return true;
 	}
 
-	public override mutableOf(): Type {
+	public override mutableOf(): TypeObject {
 		return this;
 	}
 }

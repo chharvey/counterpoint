@@ -48,7 +48,7 @@ export class Maybe extends ReferenceType {
 	}
 
 	/** @final */
-	public override mutableOf(): Type {
+	public override mutableOf(): Maybe {
 		return this;
 	}
 }

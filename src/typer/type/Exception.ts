@@ -38,7 +38,7 @@ export class Exception extends ReferenceType {
 		return true;
 	}
 
-	public override mutableOf(): Type {
+	public override mutableOf(): Exception {
 		return this;
 	}
 }
