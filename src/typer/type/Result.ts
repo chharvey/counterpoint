@@ -18,7 +18,10 @@ import {
 
 
 /**
- * A `Result` repesents a success or failure.
+ * Class for constructing a `Result` type.
+ * Known subclasses:
+ * - None
+ * - Some
  */
 export class Result extends ReferenceType {
 	/**
@@ -59,7 +62,7 @@ export class Result extends ReferenceType {
 	}
 
 	/** @final */
-	public override mutableOf(): Type {
+	public override mutableOf(): Result {
 		return this;
 	}
 }

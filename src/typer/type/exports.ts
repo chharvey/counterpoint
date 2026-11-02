@@ -11,6 +11,7 @@ import {Float} from './Float.ts';
 import {String as TypeString} from './String.ts';
 import {Object as TypeObject} from './Object.ts';
 import {Exception} from './Exception.ts';
+import {Class as TypeClass} from './Class.ts';
 
 
 
@@ -23,6 +24,7 @@ import {Exception} from './Exception.ts';
 /** The Counterpoint Language String   Type `str`.       */ export const STR      = new TypeString();
 /** The Counterpoint Language Object   Type `Object`.    */ export const OBJ      = new TypeObject();
 /** The Counterpoint Language Object   Type `Exception`. */ export const EXCP     = new Exception();
+/** The Counterpoint Language Object   Type `Class`.     */ export const CLASS    = new TypeClass();
 
 
 
@@ -55,6 +57,7 @@ export const TYPE_CONSTANTS = [
 	STR,
 	OBJ,
 	EXCP,
+	CLASS,
 	FALSE,
 	TRUE,
 ] as const;

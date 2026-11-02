@@ -3,13 +3,13 @@ import {
 	strictEqual,
 	memoizeBinOp,
 } from '../utils-private.ts';
-import type * as VALUE from '../value/index.ts';
 import {Type} from './Type.ts';
 
 
 
 /**
  * Class for constructing the Top Type, the type containing all values.
+ * @singleton
  * @final
  */
 export class Anything extends Type {
@@ -25,7 +25,7 @@ export class Anything extends Type {
 		return Keyword.ANYTHING;
 	}
 
-	public override includes(_: VALUE.Value): boolean {
+	public override includes(): boolean {
 		return true;
 	}
 
