@@ -125,7 +125,6 @@ const TYPES: {
 	tb.setArrayType(
 		i_string_internal,
 		binaryen.Type.i32,
-		// @ts-expect-error --- incorrect `setArrayType` signature
 		binaryen.PackedType.i8,
 		true,
 	);
@@ -136,7 +135,6 @@ const TYPES: {
 	tb.setArrayType(
 		i_tuple_internal,
 		tb.getTempRefType(tb.getTempHeapType(i_value), false),
-		// @ts-expect-error --- incorrect `setArrayType` signature
 		binaryen.PackedType.notPacked,
 		false,
 	);
@@ -147,7 +145,6 @@ const TYPES: {
 	tb.setArrayType(
 		i_record_internal,
 		tb.getTempRefType(tb.getTempHeapType(i_property), false),
-		// @ts-expect-error --- incorrect `setArrayType` signature
 		binaryen.PackedType.notPacked,
 		false,
 	);
@@ -158,7 +155,6 @@ const TYPES: {
 	tb.setArrayType(
 		i_list_internal,
 		tb.getTempRefType(tb.getTempHeapType(i_value), true),
-		// @ts-expect-error --- incorrect `setArrayType` signature
 		binaryen.PackedType.notPacked,
 		true,
 	);
@@ -169,7 +165,6 @@ const TYPES: {
 	tb.setArrayType(
 		i_dict_internal,
 		tb.getTempRefType(tb.getTempHeapType(i_property), true),
-		// @ts-expect-error --- incorrect `setArrayType` signature
 		binaryen.PackedType.notPacked,
 		true,
 	);
@@ -180,7 +175,6 @@ const TYPES: {
 	tb.setArrayType(
 		i_map_internal,
 		tb.getTempRefType(tb.getTempHeapType(i_case), true),
-		// @ts-expect-error --- incorrect `setArrayType` signature
 		binaryen.PackedType.notPacked,
 		true,
 	);
@@ -191,7 +185,6 @@ const TYPES: {
 	tb.setStructType(i_string, [
 		/* $internal */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_string_internal), false)),
 	]);
-	// @ts-expect-error --- incorrect `setSubType` signature
 	tb.setSubType(i_string, tb.getTempHeapType(i_composite));
 
 	/* (type $Tuple ...) */
@@ -200,7 +193,6 @@ const TYPES: {
 	tb.setStructType(i_tuple, [
 		/* $internal */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_tuple_internal), false)),
 	]);
-	// @ts-expect-error --- incorrect `setSubType` signature
 	tb.setSubType(i_tuple, tb.getTempHeapType(i_composite));
 
 	/* (type $Record ...) */
@@ -209,7 +201,6 @@ const TYPES: {
 	tb.setStructType(i_record, [
 		/* $internal */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_record_internal), false)),
 	]);
-	// @ts-expect-error --- incorrect `setSubType` signature
 	tb.setSubType(i_record, tb.getTempHeapType(i_composite));
 
 	/* (type $Object ...) */
@@ -218,7 +209,6 @@ const TYPES: {
 	tb.setStructType(i_object, [
 		/* $id */ TypeBuilder_makeField(binaryen.Type.i64),
 	]);
-	// @ts-expect-error --- incorrect `setSubType` signature
 	tb.setSubType(i_object, tb.getTempHeapType(i_composite));
 	tb.setOpen(i_object);
 
@@ -230,7 +220,6 @@ const TYPES: {
 		/* $size */     TypeBuilder_makeField(binaryen.Type.i32, 'notPacked', true),
 		/* $internal */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_list_internal), false), 'notPacked', true),
 	]);
-	// @ts-expect-error --- incorrect `setSubType` signature
 	tb.setSubType(i_list, tb.getTempHeapType(i_object));
 
 	/* (type $Dict ...) */
@@ -241,7 +230,6 @@ const TYPES: {
 		/* $size */     TypeBuilder_makeField(binaryen.Type.i32, 'notPacked', true),
 		/* $internal */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_dict_internal), false), 'notPacked', true),
 	]);
-	// @ts-expect-error --- incorrect `setSubType` signature
 	tb.setSubType(i_dict, tb.getTempHeapType(i_object));
 
 	/* (type $Map ...) */
@@ -252,7 +240,6 @@ const TYPES: {
 		/* $size */     TypeBuilder_makeField(binaryen.Type.i32, 'notPacked', true),
 		/* $internal */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_map_internal), false), 'notPacked', true),
 	]);
-	// @ts-expect-error --- incorrect `setSubType` signature
 	tb.setSubType(i_map, tb.getTempHeapType(i_object));
 
 	/* (type $Exception ...) */
@@ -263,7 +250,6 @@ const TYPES: {
 		/* $message */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_string),    false)),
 		/* $cause */   TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_exception), true)),
 	]);
-	// @ts-expect-error --- incorrect `setSubType` signature
 	tb.setSubType(i_exception, tb.getTempHeapType(i_object));
 
 	/* (type $Maybe ...) */
@@ -273,7 +259,6 @@ const TYPES: {
 		/* $id */    TypeBuilder_makeField(binaryen.Type.i64),
 		/* $value */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_value), true)),
 	]);
-	// @ts-expect-error --- incorrect `setSubType` signature
 	tb.setSubType(i_maybe, tb.getTempHeapType(i_object));
 
 	/* (type $Result ...) */
@@ -284,7 +269,6 @@ const TYPES: {
 		/* $value */  TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_value),     true)),
 		/* $reason */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_exception), true)),
 	]);
-	// @ts-expect-error --- incorrect `setSubType` signature
 	tb.setSubType(i_result, tb.getTempHeapType(i_object));
 
 	/* (type $Function ...) */
@@ -294,7 +278,6 @@ const TYPES: {
 		/* $id */    TypeBuilder_makeField(binaryen.Type.i64),
 		/* $arity */ TypeBuilder_makeField(binaryen.Type.i32, 'notPacked', true),
 	]);
-	// @ts-expect-error --- incorrect `setSubType` signature
 	tb.setSubType(i_function, tb.getTempHeapType(i_object));
 
 	const heaptypes: readonly binaryen.HeapType[] = tb.buildAndDispose();
@@ -362,7 +345,14 @@ const TYPES: {
 
 export class VirtualMachine {
 	/** The Binaryen module that holds static types and functions, independent of any source program. */
-	public readonly mod: binaryen.Module = binaryen.parseText(MODULE_TEXT);
+	public readonly mod: binaryen.Module = binaryen.parseText(MODULE_TEXT, (0
+		| binaryen.Feature.NontrappingFPToInt
+		| binaryen.Feature.SIMD128
+		| binaryen.Feature.TailCall
+		| binaryen.Feature.ReferenceTypes
+		| binaryen.Feature.Multivalue
+		| binaryen.Feature.GC
+	));
 
 	/** A lookup table for heap types created by a Binaryen TypeBuilder. */
 	public readonly heaptype: HeaptypeRegistry;
@@ -399,15 +389,6 @@ export class VirtualMachine {
 
 
 	public constructor() {
-		this.mod.features = (
-			0
-			| binaryen.Feature.NontrappingFPToInt
-			| binaryen.Feature.SIMD128
-			| binaryen.Feature.TailCall
-			| binaryen.Feature.ReferenceTypes
-			| binaryen.Feature.Multivalue
-			| binaryen.Feature.GC
-		);
 		if (!this.mod.validate()) {
 			throw new Error('Invalid WebAssembly module in VirtualMachine.');
 		}

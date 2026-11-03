@@ -45,9 +45,9 @@ export class Value implements HasFuncData {
 	} {
 		const {mod: {wasm}, reftypeNull} = this.vm;
 		return {
-			get tag()       { return wasm.struct.get(FIELD.TAG,       ref, binaryen.Type.i32, false); },
-			get primitive() { return wasm.struct.get(FIELD.PRIMITIVE, ref, binaryen.Type.v128); },
-			get composite() { return wasm.struct.get(FIELD.COMPOSITE, ref, reftypeNull.Composite); },
+			get tag()       { return wasm.struct.get_u (FIELD.TAG,       ref, binaryen.Type.i32); },
+			get primitive() { return wasm.struct.get   (FIELD.PRIMITIVE, ref, binaryen.Type.v128); },
+			get composite() { return wasm.struct.get   (FIELD.COMPOSITE, ref, reftypeNull.Composite); },
 		};
 	}
 
