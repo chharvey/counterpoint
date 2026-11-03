@@ -26,30 +26,6 @@ import type {ValueTac} from './ValueTac.ts';
 
 
 
-/** Adjusts destination capacity before copying. */
-function copy_array(
-	wasm:    binaryen.ExpressionBuilder,
-	destobj: Local,
-	destref: binaryen.ExpressionRef,
-	srcref:  Local,
-	adj_cap: binaryen.ExpressionRef /* void */,
-): binaryen.ExpressionRef {
-	return wasm.block(null, [
-		destobj.set(),
-		srcref.set(),
-		adj_cap,
-		wasm.array.copy(
-			destref,
-			wasm.i32.const(0),
-			srcref.get(),
-			wasm.i32.const(0),
-			wasm.array.len(srcref.get()),
-		),
-	]);
-}
-
-
-
 /** Perform a set (insert) for each item. */
 function each_item(
 	cg:         CodeGenerator,
@@ -347,13 +323,10 @@ export class CollectionDynamicCopy extends Instruction {
 
 	@memoizeMethod
 	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
-		const {vm: {reftype, reftypeNull, util, Value, Case, Tuple: VmTuple, Record: VmRecord, List, Dict, Map: VmMap}, mod: {wasm}} = cg;
+		const {vm: {reftype, reftypeNull, Value, Case, Tuple: VmTuple, List, Dict, Map: VmMap}, mod: {wasm}} = cg;
 
 		function tuple_intern(ref: binaryen.ExpressionRef /* (ref $Tuple) */): binaryen.ExpressionRef /* (ref $TupleInternal) */ {
 			return VmTuple.field(ref).internal;
-		}
-		function record_intern(ref: binaryen.ExpressionRef /* (ref $Record) */): binaryen.ExpressionRef /* (ref $RecordInternal) */ {
-			return VmRecord.field(ref).internal;
 		}
 
 		const code_dest: binaryen.ExpressionRef = this.destination.codegen(cg);
@@ -365,25 +338,17 @@ export class CollectionDynamicCopy extends Instruction {
 				switch (true) { // using `ast_type_name()` is too expensive
 					// List.<T>((t, t, t));
 					case this.source.type instanceof TYPE.Tuple: {
-						const srcref: Local = cg.newLocal(tuple_intern(Value.cast(code_src, reftype.Tuple)));
-						return copy_array(
-							wasm,
-							destlist,
-							List.field(destlist.get()).internal,
-							srcref,
-							List.adjustCapacity(destlist.get(), util.capacityNeeded(wasm.array.len(srcref.get()))),
+						return List.copyFromTuple(
+							Value.cast(code_dest, reftype.List),
+							Value.cast(code_src,  reftype.Tuple),
 						);
 					}
 					// List.<T>([t, t, t]);
 					// List.<T>(List.<T>((t, t, t)));
 					case this.source.type instanceof TYPE.List: {
-						const srcref: Local = cg.newLocal(List.field(Value.cast(code_src, reftype.List)).internal, reftype.ListInternal);
-						return copy_array(
-							wasm,
-							destlist,
-							List.field(destlist.get()).internal,
-							srcref,
-							List.adjustCapacity(destlist.get(), wasm.array.len(srcref.get())),
+						return List.copyFromList(
+							Value.cast(code_dest, reftype.List),
+							Value.cast(code_src,  reftype.List),
 						);
 					}
 					// List.<T>({t, t, t});
@@ -423,13 +388,9 @@ export class CollectionDynamicCopy extends Instruction {
 					}
 					// Dict.<T>((a= t, b= t, c= t));
 					case this.source.type instanceof TYPE.Record: {
-						const srcref: Local = cg.newLocal(record_intern(Value.cast(code_src, reftype.Record)));
-						return copy_array(
-							wasm,
-							destdict,
-							Dict.field(destdict.get()).internal,
-							srcref,
-							Dict.adjustCapacity(destdict.get(), util.capacityNeeded(wasm.array.len(srcref.get()))),
+						return Dict.copyFromRecord(
+							Value.cast(code_dest, reftype.Dict),
+							Value.cast(code_src,  reftype.Record),
 						);
 					}
 					// Dict.<T>([ (@a, t), (@b, t), (@c, t) ]);
@@ -444,13 +405,9 @@ export class CollectionDynamicCopy extends Instruction {
 					// Dict.<T>([a= t, b= t, c= t]);
 					// Dict.<T>(Dict.<T>( (a= t, b= t, c= t) ));
 					case this.source.type instanceof TYPE.Dict: {
-						const srcref: Local = cg.newLocal(Dict.field(Value.cast(code_src, reftype.Dict)).internal, reftype.DictInternal);
-						return copy_array(
-							wasm,
-							destdict,
-							Dict.field(destdict.get()).internal,
-							srcref,
-							Dict.adjustCapacity(destdict.get(), wasm.array.len(srcref.get())),
+						return Dict.copyFromDict(
+							Value.cast(code_dest, reftype.Dict),
+							Value.cast(code_src,  reftype.Dict),
 						);
 					}
 					// Dict.<T>({ (@a, t), (@b, t), (@c, t) });
@@ -501,13 +458,9 @@ export class CollectionDynamicCopy extends Instruction {
 					// Set.<T>({t, t, t});
 					// Set.<T>(Set.<T>((t, t, t)));
 					case this.source.type instanceof TYPE.Set: {
-						const srcref: Local = cg.newLocal(VmMap.field(Value.cast(code_src, reftype.Map)).internal, reftype.MapInternal);
-						return copy_array(
-							wasm,
-							destset,
-							VmMap.field(destset.get()).internal,
-							srcref,
-							VmMap.adjustCapacity(destset.get(), wasm.array.len(srcref.get())),
+						return VmMap.copyFromMap(
+							Value.cast(code_dest, reftype.Map),
+							Value.cast(code_src,  reftype.Map),
 						);
 					}
 					default: {
@@ -547,13 +500,9 @@ export class CollectionDynamicCopy extends Instruction {
 					// Map.<K, V>({k -> v, k -> v, k -> v});
 					// Map.<K, V>(Map.<K, V>(( (k, v), (k, v), (k, v) )));
 					case this.source.type instanceof TYPE.Map: {
-						const srcref: Local = cg.newLocal(VmMap.field(Value.cast(code_src, reftype.Map)).internal, reftype.MapInternal);
-						return copy_array(
-							wasm,
-							destmap,
-							VmMap.field(destmap.get()).internal,
-							srcref,
-							VmMap.adjustCapacity(destmap.get(), wasm.array.len(srcref.get())),
+						return VmMap.copyFromMap(
+							Value.cast(code_dest, reftype.Map),
+							Value.cast(code_src,  reftype.Map),
 						);
 					}
 					default: {

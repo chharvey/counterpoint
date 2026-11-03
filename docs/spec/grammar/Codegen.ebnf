@@ -23,7 +23,7 @@ Codegen((STR.TEMPLATE `strings`)) := (call $Value.new-composite
 		)
 		(local.set $offset (i32.const 0))
 		`strings.flatMap([
-			"(array.COPY
+			"(array.copy
 				(local.get $internal)
 				(local.get $offset)
 				(local.get $str_`i`)
@@ -371,35 +371,13 @@ Codegen((MAP.SET `obj` `accessor` `v`)) := (call $Map.set
 	`Codegen(v)`
 );
 
-Codegen((LIST.COPY `dest` `src:Tuple`)) := (block
-	(local.set $destlist (ref.cast (ref $List) (struct.get $Value $composite `Codegen(dest)`)))
-	(local.set $srcref   (struct.get $Tuple $internal (ref.cast (ref $Tuple) (struct.get $Value $composite `Codegen(src)`))))
-	(call $List.adjust-capacity
-		(local.get $destlist)
-		(call $util:capacity-needed (array.len (local.get $srcref)))
-	)
-	(array.copy $ListInternal $TupleInternal
-		(struct.get $List $internal (local.get $destlist))
-		(i32.const 0)
-		(local.get $srcref)
-		(i32.const 0)
-		(array.len (local.get $srcref))
-	)
+Codegen((LIST.COPY `dest` `src:Tuple`)) := (call $List.copy-from-tuple
+	(ref.cast (ref $List)  (struct.get $Value $composite `Codegen(dest)`))
+	(ref.cast (ref $Tuple) (struct.get $Value $composite `Codegen(src)`))
 );
-Codegen((LIST.COPY `dest` `src:List`)) := (block
-	(local.set $destlist (ref.cast (ref $List) (struct.get $Value $composite `Codegen(dest)`)))
-	(local.set $srcref   (struct.get $List $internal (ref.cast (ref $List) (struct.get $Value $composite `Codegen(src)`))))
-	(call $List.adjust-capacity
-		(local.get $destlist)
-		(array.len (local.get $srcref))
-	)
-	(array.copy $ListInternal $ListInternal
-		(struct.get $List $internal (local.get $destlist))
-		(i32.const 0)
-		(local.get $srcref)
-		(i32.const 0)
-		(array.len (local.get $srcref))
-	)
+Codegen((LIST.COPY `dest` `src:List`)) := (call $List.copy-from-list
+	(ref.cast (ref $List) (struct.get $Value $composite `Codegen(dest)`))
+	(ref.cast (ref $List) (struct.get $Value $composite `Codegen(src)`))
 );
 Codegen((LIST.COPY `dest` `src:Set`)) := (block
 	(local.set $list  (ref.cast (ref $List) (struct.get $Value $composite `Codegen(dest)`)))
@@ -447,20 +425,9 @@ Codegen((DICT.COPY `dest` `src:Tuple`)) := (block
 		)
 	)
 );
-Codegen((DICT.COPY `dest` `src:Record`)) := (block
-	(local.set $destdict (ref.cast (ref $Dict) (struct.get $Value $composite `Codegen(dest)`)))
-	(local.set $srcref   (struct.get $Record $internal (ref.cast (ref $Record) (struct.get $Value $composite `Codegen(src)`))))
-	(call $Dict.adjust-capacity
-		(local.get $destdict)
-		(call $util:capacity-needed (array.len (local.get $srcref)))
-	)
-	(array.copy $DictInternal $RecordInternal
-		(struct.get $Dict $internal (local.get $destdict))
-		(i32.const 0)
-		(local.get $srcref)
-		(i32.const 0)
-		(array.len (local.get $srcref))
-	)
+Codegen((DICT.COPY `dest` `src:Record`)) := (call $Dict.copy-from-record
+	(ref.cast (ref $Dict)   (struct.get $Value $composite `Codegen(dest)`))
+	(ref.cast (ref $Record) (struct.get $Value $composite `Codegen(src)`))
 );
 Codegen((DICT.COPY `dest` `src:List`)) := (block
 	(local.set $dict  (ref.cast (ref $Dict) (struct.get $Value $composite `Codegen(dest)`)))
@@ -485,20 +452,9 @@ Codegen((DICT.COPY `dest` `src:List`)) := (block
 		)
 	)
 );
-Codegen((DICT.COPY `dest` `src:Dict`)) := (block
-	(local.set $destdict (ref.cast (ref $Dict) (struct.get $Value $composite `Codegen(dest)`)))
-	(local.set $srcref   (struct.get $Dict $internal (ref.cast (ref $Dict) (struct.get $Value $composite `Codegen(src)`))))
-	(call $Dict.adjust-capacity
-		(local.get $destdict)
-		(array.len (local.get $srcref))
-	)
-	(array.copy $DictInternal $DictInternal
-		(struct.get $Dict $internal (local.get $destdict))
-		(i32.const 0)
-		(local.get $srcref)
-		(i32.const 0)
-		(array.len (local.get $srcref))
-	)
+Codegen((DICT.COPY `dest` `src:Dict`)) := (call $Dict.copy-from-dict
+	(ref.cast (ref $Dict) (struct.get $Value $composite `Codegen(dest)`))
+	(ref.cast (ref $Dict) (struct.get $Value $composite `Codegen(src)`))
 );
 Codegen((DICT.COPY `dest` `src:Set`)) := (block
 	(local.set $dict  (ref.cast (ref $Dict) (struct.get $Value $composite `Codegen(dest)`)))
@@ -584,20 +540,9 @@ Codegen((SET.COPY `dest` `src:List`)) := (block
 		)
 	)
 );
-Codegen((SET.COPY `dest` `src:Set`)) := (block
-	(local.set $destset (ref.cast (ref $Map) (struct.get $Value $composite `Codegen(dest)`)))
-	(local.set $srcref  (struct.get $Map $internal (ref.cast (ref $Map) (struct.get $Value $composite `Codegen(src)`))))
-	(call $Map.adjust-capacity
-		(local.get $destset)
-		(array.len (local.get $srcref))
-	)
-	(array.copy $MapInternal $MapInternal
-		(struct.get $Map $internal (local.get $destset))
-		(i32.const 0)
-		(local.get $srcref)
-		(i32.const 0)
-		(array.len (local.get $srcref))
-	)
+Codegen((SET.COPY `dest` `src:Set`)) := (call $Map.copy-from-map
+	(ref.cast (ref $Map) (struct.get $Value $composite `Codegen(dest)`))
+	(ref.cast (ref $Map) (struct.get $Value $composite `Codegen(src)`))
 );
 
 Codegen((MAP.COPY `dest` `src:Tuple`)) := (block
@@ -660,20 +605,9 @@ Codegen((MAP.COPY `dest` `src:Set`)) := (block
 		)
 	)
 );
-Codegen((MAP.COPY `dest` `src:Map`)) := (block
-	(local.set $destmap (ref.cast (ref $Map) (struct.get $Value $composite `Codegen(dest)`)))
-	(local.set $srcref  (struct.get $Map $internal (ref.cast (ref $Map) (struct.get $Value $composite `Codegen(src)`))))
-	(call $Map.adjust-capacity
-		(local.get $destmap)
-		(array.len (local.get $srcref))
-	)
-	(array.copy $MapInternal $MapInternal
-		(struct.get $Map $internal (local.get $destmap))
-		(i32.const 0)
-		(local.get $srcref)
-		(i32.const 0)
-		(array.len (local.get $srcref))
-	)
+Codegen((MAP.COPY `dest` `src:Map`)) := (call $Map.copy-from-map
+	(ref.cast (ref $Map) (struct.get $Value $composite `Codegen(dest)`))
+	(ref.cast (ref $Map) (struct.get $Value $composite `Codegen(src)`))
 );
 
 Codegen((RETURN `value` nil)) := (return `Codegen(value)`  (ref.null $Exception));

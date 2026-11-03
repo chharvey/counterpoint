@@ -2226,27 +2226,14 @@ test.suite('Opcode', () => {
 						const {builder, cg, wasm} = setupScript(`{
 							List.<int>((2, 3, 5));
 						}`, {codegen: false});
-						const {reftype, util, Value, Tuple: VmTuple, List} = cg.vm;
-						const destlist_get: binaryen.ExpressionRef = wasm.local.get(2, reftype.List);
-						const srcref_get:   binaryen.ExpressionRef = wasm.local.get(3, reftype.TupleInternal);
+						const {reftype, Value, List} = cg.vm;
 						builder.instructions.slice(0, 2).forEach((instr) => instr.codegen(cg));
 						return assertEqualBins(
 							builder.instructions[2].codegen(cg),
-							wasm.block(null, [
-								wasm.local.set(2, Value.cast(wasm.local.get(0, reftype.Value), reftype.List)),
-								wasm.local.set(3, VmTuple.field(Value.cast(wasm.local.get(1, reftype.Value), reftype.Tuple)).internal),
-								List.adjustCapacity(
-									destlist_get,
-									util.capacityNeeded(wasm.array.len(srcref_get)),
-								),
-								wasm.array.copy(
-									List.field(destlist_get).internal,
-									wasm.i32.const(0),
-									srcref_get,
-									wasm.i32.const(0),
-									wasm.array.len(srcref_get),
-								),
-							]),
+							List.copyFromTuple(
+								Value.cast(wasm.local.get(0, reftype.Value), reftype.List),
+								Value.cast(wasm.local.get(1, reftype.Value), reftype.Tuple),
+							),
 						);
 					});
 					test.test('List argument.', () => {
@@ -2254,26 +2241,13 @@ test.suite('Opcode', () => {
 							List.<int>([2, 3, 5]);
 						}`, {codegen: false});
 						const {reftype, Value, List} = cg.vm;
-						const destlist_get: binaryen.ExpressionRef = wasm.local.get(2, reftype.List);
-						const srcref_get:   binaryen.ExpressionRef = wasm.local.get(3, reftype.ListInternal);
 						builder.instructions.slice(0, 2).forEach((instr) => instr.codegen(cg));
 						return assertEqualBins(
 							builder.instructions[2].codegen(cg),
-							wasm.block(null, [
-								wasm.local.set(2, Value.cast(wasm.local.get(0, reftype.Value), reftype.List)),
-								wasm.local.set(3, List.field(Value.cast(wasm.local.get(1, reftype.Value), reftype.List)).internal),
-								List.adjustCapacity(
-									destlist_get,
-									wasm.array.len(srcref_get),
-								),
-								wasm.array.copy(
-									List.field(destlist_get).internal,
-									wasm.i32.const(0),
-									srcref_get,
-									wasm.i32.const(0),
-									wasm.array.len(srcref_get),
-								),
-							]),
+							List.copyFromList(
+								Value.cast(wasm.local.get(0, reftype.Value), reftype.List),
+								Value.cast(wasm.local.get(1, reftype.Value), reftype.List),
+							),
 						);
 					});
 					test.test('Set argument.', () => {
@@ -2357,27 +2331,14 @@ test.suite('Opcode', () => {
 						const {builder, cg, wasm} = setupScript(`{
 							Dict.<int>((a= 2, b= 3, c= 5));
 						}`, {codegen: false});
-						const {reftype, util, Value, Record: VmRecord, Dict} = cg.vm;
-						const destdict_get: binaryen.ExpressionRef = wasm.local.get(2, reftype.Dict);
-						const srcref_get:   binaryen.ExpressionRef = wasm.local.get(3, reftype.RecordInternal);
+						const {reftype, Value, Dict} = cg.vm;
 						builder.instructions.slice(0, 2).forEach((instr) => instr.codegen(cg));
 						return assertEqualBins(
 							builder.instructions[2].codegen(cg),
-							wasm.block(null, [
-								wasm.local.set(2, Value.cast(wasm.local.get(0, reftype.Value), reftype.Dict)),
-								wasm.local.set(3, VmRecord.field(Value.cast(wasm.local.get(1, reftype.Value), reftype.Record)).internal),
-								Dict.adjustCapacity(
-									destdict_get,
-									util.capacityNeeded(wasm.array.len(srcref_get)),
-								),
-								wasm.array.copy(
-									Dict.field(destdict_get).internal,
-									wasm.i32.const(0),
-									srcref_get,
-									wasm.i32.const(0),
-									wasm.array.len(srcref_get),
-								),
-							]),
+							Dict.copyFromRecord(
+								Value.cast(wasm.local.get(0, reftype.Value), reftype.Dict),
+								Value.cast(wasm.local.get(1, reftype.Value), reftype.Record),
+							),
 						);
 					});
 					test.test('List argument.', () => {
@@ -2423,26 +2384,13 @@ test.suite('Opcode', () => {
 							Dict.<int>([a= 2, b= 3, c= 5]);
 						}`, {codegen: false});
 						const {reftype, Value, Dict} = cg.vm;
-						const destdict_get: binaryen.ExpressionRef = wasm.local.get(2, reftype.Dict);
-						const srcref_get:   binaryen.ExpressionRef = wasm.local.get(3, reftype.DictInternal);
 						builder.instructions.slice(0, 2).forEach((instr) => instr.codegen(cg));
 						return assertEqualBins(
 							builder.instructions[2].codegen(cg),
-							wasm.block(null, [
-								wasm.local.set(2, Value.cast(wasm.local.get(0, reftype.Value), reftype.Dict)),
-								wasm.local.set(3, Dict.field(Value.cast(wasm.local.get(1, reftype.Value), reftype.Dict)).internal),
-								Dict.adjustCapacity(
-									destdict_get,
-									wasm.array.len(srcref_get),
-								),
-								wasm.array.copy(
-									Dict.field(destdict_get).internal,
-									wasm.i32.const(0),
-									srcref_get,
-									wasm.i32.const(0),
-									wasm.array.len(srcref_get),
-								),
-							]),
+							Dict.copyFromDict(
+								Value.cast(wasm.local.get(0, reftype.Value), reftype.Dict),
+								Value.cast(wasm.local.get(1, reftype.Value), reftype.Dict),
+							),
 						);
 					});
 					test.test('Set argument.', () => {
@@ -2591,26 +2539,13 @@ test.suite('Opcode', () => {
 							Set.<int>({2, 3, 5});
 						}`, {codegen: false});
 						const {reftype, Value, Map: VmMap} = cg.vm;
-						const destset_get: binaryen.ExpressionRef = wasm.local.get(3, reftype.Map);
-						const srcref_get:  binaryen.ExpressionRef = wasm.local.get(4, reftype.MapInternal);
 						builder.instructions.slice(0, 2).forEach((instr) => instr.codegen(cg));
 						return assertEqualBins(
 							builder.instructions[2].codegen(cg),
-							wasm.block(null, [
-								wasm.local.set(3, Value.cast(wasm.local.get(0, reftype.Value), reftype.Map)),
-								wasm.local.set(4, VmMap.field(Value.cast(wasm.local.get(2, reftype.Value), reftype.Map)).internal), // index 1 = nonempty map setup (implementation of Set)
-								VmMap.adjustCapacity(
-									destset_get,
-									wasm.array.len(srcref_get),
-								),
-								wasm.array.copy(
-									VmMap.field(destset_get).internal,
-									wasm.i32.const(0),
-									srcref_get,
-									wasm.i32.const(0),
-									wasm.array.len(srcref_get),
-								),
-							]),
+							VmMap.copyFromMap(
+								Value.cast(wasm.local.get(0, reftype.Value), reftype.Map),
+								Value.cast(wasm.local.get(2, reftype.Value), reftype.Map),
+							),
 						);
 					});
 				});
@@ -2717,27 +2652,14 @@ test.suite('Opcode', () => {
 						const {builder, cg, wasm} = setupScript(`{
 							Map.<float, int>({1.414 -> 2, 1.732 -> 3, 2.236 -> 5});
 						}`, {codegen: false});
-						const {Value, Map: VmMap} = cg.vm;
-						const destmap_get: binaryen.ExpressionRef = wasm.local.get(3, cg.vm.reftype.Map);
-						const srcref_get:  binaryen.ExpressionRef = wasm.local.get(4, cg.vm.reftype.MapInternal);
+						const {reftype, Value, Map: VmMap} = cg.vm;
 						builder.instructions.slice(0, 2).forEach((instr) => instr.codegen(cg));
 						return assertEqualBins(
 							builder.instructions[2].codegen(cg),
-							wasm.block(null, [
-								wasm.local.set(3, Value.cast(wasm.local.get(0, cg.vm.reftype.Value), cg.vm.reftype.Map)),
-								wasm.local.set(4, VmMap.field(Value.cast(wasm.local.get(2, cg.vm.reftype.Value), cg.vm.reftype.Map)).internal), // index 1 = nonempty map setup (implementation of Set)
-								VmMap.adjustCapacity(
-									destmap_get,
-									wasm.array.len(srcref_get),
-								),
-								wasm.array.copy(
-									VmMap.field(destmap_get).internal,
-									wasm.i32.const(0),
-									srcref_get,
-									wasm.i32.const(0),
-									wasm.array.len(srcref_get),
-								),
-							]),
+							VmMap.copyFromMap(
+								Value.cast(wasm.local.get(0, reftype.Value), reftype.Map),
+								Value.cast(wasm.local.get(2, reftype.Value), reftype.Map),
+							),
 						);
 					});
 				});
