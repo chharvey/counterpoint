@@ -122,7 +122,7 @@ export class Instance extends Value {
 					case IntrinsicName.STRING:    { return cg.vm.op.isString(code); }
 					case IntrinsicName.OBJECT:    { return cg.vm.op.isObject(code); }
 					case IntrinsicName.LIST:      { return cg.vm.op.isCplList(code); }
-					case IntrinsicName.DICT:      { return cg.vm.op.isDict(code); }
+					case IntrinsicName.DICT:      { return cg.vm.op.isCplDict(code); }
 					case IntrinsicName.SET:       { return cg.vm.op.isMap(code); }
 					case IntrinsicName.MAP:       { return cg.vm.op.isMap(code); }
 					case IntrinsicName.EXCEPTION: { return cg.vm.op.isException(code); }
@@ -147,7 +147,7 @@ export class Instance extends Value {
 					case IntrinsicName.STRING:    { return cg.vm.op.asString(code); }
 					case IntrinsicName.OBJECT:    { return cg.vm.op.asObject(code); }
 					case IntrinsicName.LIST:      { return cg.vm.op.asCplList(code); }
-					case IntrinsicName.DICT:      { return cg.vm.op.asDict(code); }
+					case IntrinsicName.DICT:      { return cg.vm.op.asCplDict(code); }
 					case IntrinsicName.SET:       { return cg.vm.op.asMap(code); }
 					case IntrinsicName.MAP:       { return cg.vm.op.asMap(code); }
 					case IntrinsicName.EXCEPTION: { return cg.vm.op.asException(code); }

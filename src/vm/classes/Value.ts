@@ -35,7 +35,9 @@ export class Value implements HasFuncData {
 			['Value#boolFromI32',  {name: 'Value.bool-from-i32', param: binaryen.Type.i32,   result: reftype.Value}],
 			['Value#stringify',    {name: 'Value.stringify',     param: reftype.Value,       result: reftype.String}],
 			['Value#fromList',     {name: 'Value.from-list',     param: reftype.List,        result: reftype.Value}],
+			['Value#fromDict',     {name: 'Value.from-dict',     param: reftype.Dict,        result: reftype.Value}],
 			['Value#asList',       {name: 'Value.as-list',       param: reftype.Value,       result: reftype.List}],
+			['Value#asDict',       {name: 'Value.as-dict',       param: reftype.Value,       result: reftype.Dict}],
 		]);
 	}
 
@@ -109,8 +111,18 @@ export class Value implements HasFuncData {
 		return this.vm.mod.wasm.call('Value.from-list', [list], this.vm.reftype.Value);
 	}
 
+	/** Creates a new value holding the given Dict. */
+	public fromDict(list: binaryen.ExpressionRef /* (ref $Dict) */): binaryen.ExpressionRef /* (ref $Value) */ {
+		return this.vm.mod.wasm.call('Value.from-dict', [list], this.vm.reftype.Value);
+	}
+
 	/** Returns the value as a List. */
 	public asList(value: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $List) */ {
 		return this.vm.mod.wasm.call('Value.as-list', [value], this.vm.reftype.List);
+	}
+
+	/** Returns the value as a Dict. */
+	public asDict(value: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Dict) */ {
+		return this.vm.mod.wasm.call('Value.as-dict', [value], this.vm.reftype.Dict);
 	}
 }

@@ -54,9 +54,20 @@
 		)
 	)
 )
+(func $Value.from-dict (export "Value#fromDict") (param (ref $Dict)) (result (ref $Value))
+	(return_call $Value.new-composite
+		(struct.new $CplDict
+			(call $Object.ctr-plus-plus)
+			(local.get 0)
+		)
+	)
+)
 
 
 
 (func $Value.as-list (export "Value#asList") (param (ref $Value)) (result (ref $List))
 	(struct.get $CplList $list (ref.cast (ref $CplList) (struct.get $Value $composite (local.get 0))))
+)
+(func $Value.as-dict (export "Value#asDict") (param (ref $Value)) (result (ref $Dict))
+	(struct.get $CplDict $dict (ref.cast (ref $CplDict) (struct.get $Value $composite (local.get 0))))
 )
