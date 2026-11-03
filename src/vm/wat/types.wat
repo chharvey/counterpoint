@@ -24,12 +24,9 @@
 
 
 
-	;; # Compound Internals: storage of data
-	(type $StringInternal (array (mut i32))) ;; mutable to allow construction of templates
-	(type $TupleInternal  (array (ref $Value)))
-	(type $RecordInternal (array (ref $Property)))
+	;; # Implementations
+	;; these implementations are used to build up Counterpoint objects.
 
-	;; # Collection Internals: storage of items/properties
 	;; mutable to allow reassigning array entries, nullable because array can be sparse
 	(type $ListInternal (array (mut (ref null $Value))))
 	(type $DictInternal (array (mut (ref null $Property))))
@@ -43,21 +40,27 @@
 
 
 	;; # Compound Value Types
+	(type $StringInternal (array (mut i32))) ;; mutable to allow construction of templates
+	(type $TupleInternal  (array (ref $Value)))
+	(type $RecordInternal (array (ref $Property)))
+
+	;; precursors to Counterpoint types
 	(type $String (sub final $Composite (struct (field $internal (ref $StringInternal)))))
 	(type $Tuple  (sub final $Composite (struct (field $internal (ref $TupleInternal)))))
 	(type $Record (sub final $Composite (struct (field $internal (ref $RecordInternal)))))
 
 
 
-	;; # Counterpoint Classes
+	;; # Reference Types
+	;; these are written here until we can build a core library in Counterpoint
 
-	;; a Counterpoint object; precursor to the `Object` root class
+	;; precursor to the Counterpoint `Object` root class
 	(type $Object (sub $Composite (struct
 		;; unique id for hashing
 		(field $id i64)
 	)))
 
-	;; precursor to the `List` class
+	;; precursor to the Counterpoint `List` class
 	(type $List (sub final $Object (struct
 		;; --- inherited ---
 		;; unique id for hashing
@@ -70,7 +73,7 @@
 		(field $internal (mut (ref $ListInternal)))
 	)))
 
-	;; precursor to the `Dict` class
+	;; precursor to the Counterpoint `Dict` class
 	(type $Dict (sub final $Object (struct
 		;; --- inherited ---
 		;; unique id for hashing
@@ -83,7 +86,7 @@
 		(field $internal (mut (ref $DictInternal)))
 	)))
 
-	;; precursor to the `Map` class
+	;; precursor to the Counterpoint `Map` class
 	(type $Map (sub final $Object (struct
 		;; --- inherited ---
 		;; unique id for hashing
@@ -96,7 +99,7 @@
 		(field $internal (mut (ref $MapInternal)))
 	)))
 
-	;; precursor to the `Exception` class
+	;; precursor to the Counterpoint `Exception` class
 	(type $Exception (sub final $Object (struct
 		;; --- inherited ---
 		;; unique id for hashing
@@ -109,7 +112,7 @@
 		(field $cause (ref null $Exception))
 	)))
 
-	;; precursor to the `Maybe` class
+	;; precursor to the Counterpoint `Maybe` class
 	(type $Maybe (sub final $Object (struct
 		;; --- inherited ---
 		;; unique id for hashing
@@ -120,7 +123,7 @@
 		(field $value (ref null $Value))
 	)))
 
-	;; precursor to the `Result` class
+	;; precursor to the Counterpoint `Result` class
 	(type $Result (sub final $Object (struct
 		;; --- inherited ---
 		;; unique id for hashing
@@ -133,7 +136,7 @@
 		(field $reason (ref null $Exception))
 	)))
 
-	;; precursor to the `Function` class
+	;; precursor to the Counterpoint `Function` class
 	(type $Function (sub final $Object (struct
 		;; --- inherited ---
 		;; unique id for hashing

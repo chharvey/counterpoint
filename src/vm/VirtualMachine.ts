@@ -24,13 +24,13 @@ type TypeKey = (
 	| 'Value'
 	| 'Property'
 	| 'Case'
-	| 'StringInternal'
-	| 'TupleInternal'
-	| 'RecordInternal'
 	| 'ListInternal'
 	| 'DictInternal'
 	| 'MapInternal'
 	| 'Composite'
+	| 'StringInternal'
+	| 'TupleInternal'
+	| 'RecordInternal'
 	| 'String'
 	| 'Tuple'
 	| 'Record'
@@ -88,11 +88,8 @@ const TYPES: {
 } = (() => {
 	const tb = new binaryen.TypeBuilder();
 
-	/* (type $Composite ...) */
 	const i_composite: number = tb.getSize();
 	tb.grow(1);
-	tb.setStructType(i_composite, []);
-	tb.setOpen(i_composite);
 
 	/* (type $Value ...) */
 	const i_value: number = tb.getSize();
@@ -118,36 +115,6 @@ const TYPES: {
 		/* $ant */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_value), false)),
 		/* $con */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_value), false)),
 	]);
-
-	/* (type $StringInternal ...) */
-	const i_string_internal: number = tb.getSize();
-	tb.grow(1);
-	tb.setArrayType(
-		i_string_internal,
-		binaryen.Type.i32,
-		binaryen.PackedType.i8,
-		true,
-	);
-
-	/* (type $TupleInternal ...) */
-	const i_tuple_internal: number = tb.getSize();
-	tb.grow(1);
-	tb.setArrayType(
-		i_tuple_internal,
-		tb.getTempRefType(tb.getTempHeapType(i_value), false),
-		binaryen.PackedType.notPacked,
-		false,
-	);
-
-	/* (type $RecordInternal ...) */
-	const i_record_internal: number = tb.getSize();
-	tb.grow(1);
-	tb.setArrayType(
-		i_record_internal,
-		tb.getTempRefType(tb.getTempHeapType(i_property), false),
-		binaryen.PackedType.notPacked,
-		false,
-	);
 
 	/* (type $ListInternal ...) */
 	const i_list_internal: number = tb.getSize();
@@ -177,6 +144,40 @@ const TYPES: {
 		tb.getTempRefType(tb.getTempHeapType(i_case), true),
 		binaryen.PackedType.notPacked,
 		true,
+	);
+
+	/* (type $Composite ...) */
+	tb.setStructType(i_composite, []);
+	tb.setOpen(i_composite);
+
+	/* (type $StringInternal ...) */
+	const i_string_internal: number = tb.getSize();
+	tb.grow(1);
+	tb.setArrayType(
+		i_string_internal,
+		binaryen.Type.i32,
+		binaryen.PackedType.i8,
+		true,
+	);
+
+	/* (type $TupleInternal ...) */
+	const i_tuple_internal: number = tb.getSize();
+	tb.grow(1);
+	tb.setArrayType(
+		i_tuple_internal,
+		tb.getTempRefType(tb.getTempHeapType(i_value), false),
+		binaryen.PackedType.notPacked,
+		false,
+	);
+
+	/* (type $RecordInternal ...) */
+	const i_record_internal: number = tb.getSize();
+	tb.grow(1);
+	tb.setArrayType(
+		i_record_internal,
+		tb.getTempRefType(tb.getTempHeapType(i_property), false),
+		binaryen.PackedType.notPacked,
+		false,
 	);
 
 	/* (type $String ...) */
@@ -287,13 +288,13 @@ const TYPES: {
 			Value:          heaptypes[i_value],
 			Property:       heaptypes[i_property],
 			Case:           heaptypes[i_case],
-			StringInternal: heaptypes[i_string_internal],
-			TupleInternal:  heaptypes[i_tuple_internal],
-			RecordInternal: heaptypes[i_record_internal],
 			ListInternal:   heaptypes[i_list_internal],
 			DictInternal:   heaptypes[i_dict_internal],
 			MapInternal:    heaptypes[i_map_internal],
 			Composite:      heaptypes[i_composite],
+			StringInternal: heaptypes[i_string_internal],
+			TupleInternal:  heaptypes[i_tuple_internal],
+			RecordInternal: heaptypes[i_record_internal],
 			String:         heaptypes[i_string],
 			Tuple:          heaptypes[i_tuple],
 			Record:         heaptypes[i_record],
@@ -311,13 +312,13 @@ const TYPES: {
 			Value:          binaryen.getTypeFromHeapType(heaptypes[i_value],           false),
 			Property:       binaryen.getTypeFromHeapType(heaptypes[i_property],        false),
 			Case:           binaryen.getTypeFromHeapType(heaptypes[i_case],            false),
-			StringInternal: binaryen.getTypeFromHeapType(heaptypes[i_string_internal], false),
-			TupleInternal:  binaryen.getTypeFromHeapType(heaptypes[i_tuple_internal],  false),
-			RecordInternal: binaryen.getTypeFromHeapType(heaptypes[i_record_internal], false),
 			ListInternal:   binaryen.getTypeFromHeapType(heaptypes[i_list_internal],   false),
 			DictInternal:   binaryen.getTypeFromHeapType(heaptypes[i_dict_internal],   false),
 			MapInternal:    binaryen.getTypeFromHeapType(heaptypes[i_map_internal],    false),
 			Composite:      binaryen.getTypeFromHeapType(heaptypes[i_composite],       false),
+			StringInternal: binaryen.getTypeFromHeapType(heaptypes[i_string_internal], false),
+			TupleInternal:  binaryen.getTypeFromHeapType(heaptypes[i_tuple_internal],  false),
+			RecordInternal: binaryen.getTypeFromHeapType(heaptypes[i_record_internal], false),
 			String:         binaryen.getTypeFromHeapType(heaptypes[i_string],          false),
 			Tuple:          binaryen.getTypeFromHeapType(heaptypes[i_tuple],           false),
 			Record:         binaryen.getTypeFromHeapType(heaptypes[i_record],          false),
