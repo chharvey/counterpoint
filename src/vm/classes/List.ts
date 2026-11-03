@@ -146,6 +146,11 @@ export class List implements HasFuncData {
 
 	/**
 	 * Fill the destination List with items from the source Map (as a Set).
+	 *
+	 * NOTE: This method iterates over the Set in internal array order, and inserts them into the List in that order.
+	 * The items in the resulting List do not necessarily appear in the same order as they were inserted into the Set.
+	 * This may be surprising to programmers who expect the copy to preserve order;
+	 * however, Set semantics explicitly state that programmers should not expect iteration to occur in any particular order.
 	 */
 	public fillFromSet(dest: binaryen.ExpressionRef /* (ref $List) */, src: binaryen.ExpressionRef /* (ref $Map) */): binaryen.ExpressionRef /* void */ {
 		return this.vm.mod.wasm.call('List.fill-from-set', [dest, src], binaryen.Type.none);
