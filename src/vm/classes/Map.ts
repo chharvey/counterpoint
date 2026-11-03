@@ -52,6 +52,36 @@ class VmMap implements HasFuncData {
 				param:  binaryen.createType([reftype.Map, reftype.Value]),
 				result: reftypeNull.Value,
 			}],
+			['Map#copyFromMap', {
+				name:   'Map.copy-from-map',
+				param:  binaryen.createType([reftype.Map, reftype.Map]),
+				result: binaryen.Type.none,
+			}],
+			['Map#fillSetFromTuple', {
+				name:   'Map.fill-set-from-tuple',
+				param:  binaryen.createType([reftype.Map, reftype.Tuple]),
+				result: binaryen.Type.none,
+			}],
+			['Map#fillSetFromList', {
+				name:   'Map.fill-set-from-list',
+				param:  binaryen.createType([reftype.Map, reftype.List]),
+				result: binaryen.Type.none,
+			}],
+			['Map#fillFromTuple', {
+				name:   'Map.fill-from-tuple',
+				param:  binaryen.createType([reftype.Map, reftype.Tuple]),
+				result: binaryen.Type.none,
+			}],
+			['Map#fillFromList', {
+				name:   'Map.fill-from-list',
+				param:  binaryen.createType([reftype.Map, reftype.List]),
+				result: binaryen.Type.none,
+			}],
+			['Map#fillFromSet', {
+				name:   'Map.fill-from-set',
+				param:  binaryen.createType([reftype.Map, reftype.Map]),
+				result: binaryen.Type.none,
+			}],
 		]);
 	}
 
@@ -135,6 +165,48 @@ class VmMap implements HasFuncData {
 	 */
 	public delete(map: binaryen.ExpressionRef /* (ref $Map) */, ant: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref null $Value) */ {
 		return this.vm.mod.wasm.call('Map.delete', [map, ant], this.vm.reftypeNull.Value);
+	}
+
+	/**
+	 * Copy the cases from a given source Map into the destination Map.
+	 */
+	public copyFromMap(dest: binaryen.ExpressionRef /* (ref $Map) */, src: binaryen.ExpressionRef /* (ref $Map) */): binaryen.ExpressionRef /* void */ {
+		return this.vm.mod.wasm.call('Map.copy-from-map', [dest, src], binaryen.Type.none);
+	}
+
+	/**
+	 * Fill the destination Map (as a Set) with cases from the source Tuple.
+	 */
+	public fillSetFromTuple(dest: binaryen.ExpressionRef /* (ref $Map) */, src: binaryen.ExpressionRef /* (ref $Tuple) */): binaryen.ExpressionRef /* void */ {
+		return this.vm.mod.wasm.call('Map.fill-set-from-tuple', [dest, src], binaryen.Type.none);
+	}
+
+	/**
+	 * Fill the destination Map (as a Set) with cases from the source List.
+	 */
+	public fillSetFromList(dest: binaryen.ExpressionRef /* (ref $Map) */, src: binaryen.ExpressionRef /* (ref $List) */): binaryen.ExpressionRef /* void */ {
+		return this.vm.mod.wasm.call('Map.fill-set-from-list', [dest, src], binaryen.Type.none);
+	}
+
+	/**
+	 * Fill the destination Map with cases from the source Tuple.
+	 */
+	public fillFromTuple(dest: binaryen.ExpressionRef /* (ref $Map) */, src: binaryen.ExpressionRef /* (ref $Tuple) */): binaryen.ExpressionRef /* void */ {
+		return this.vm.mod.wasm.call('Map.fill-from-tuple', [dest, src], binaryen.Type.none);
+	}
+
+	/**
+	 * Fill the destination Map with cases from the source List.
+	 */
+	public fillFromList(dest: binaryen.ExpressionRef /* (ref $Map) */, src: binaryen.ExpressionRef /* (ref $List) */): binaryen.ExpressionRef /* void */ {
+		return this.vm.mod.wasm.call('Map.fill-from-list', [dest, src], binaryen.Type.none);
+	}
+
+	/**
+	 * Fill the destination Map with cases from the source Map (as a Set).
+	 */
+	public fillFromSet(dest: binaryen.ExpressionRef /* (ref $Map) */, src: binaryen.ExpressionRef /* (ref $Map) */): binaryen.ExpressionRef /* void */ {
+		return this.vm.mod.wasm.call('Map.fill-from-set', [dest, src], binaryen.Type.none);
 	}
 }
 export {VmMap as Map};

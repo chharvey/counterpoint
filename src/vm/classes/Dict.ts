@@ -52,6 +52,36 @@ export class Dict implements HasFuncData {
 				param:  binaryen.createType([reftype.Dict, binaryen.Type.i64]),
 				result: reftypeNull.Value,
 			}],
+			['Dict#copyFromRecord', {
+				name:   'Dict.copy-from-record',
+				param:  binaryen.createType([reftype.Dict, reftype.Record]),
+				result: binaryen.Type.none,
+			}],
+			['Dict#copyFromDict', {
+				name:   'Dict.copy-from-dict',
+				param:  binaryen.createType([reftype.Dict, reftype.Dict]),
+				result: binaryen.Type.none,
+			}],
+			['Dict#fillFromTuple', {
+				name:   'Dict.fill-from-tuple',
+				param:  binaryen.createType([reftype.Dict, reftype.Tuple]),
+				result: binaryen.Type.none,
+			}],
+			['Dict#fillFromList', {
+				name:   'Dict.fill-from-list',
+				param:  binaryen.createType([reftype.Dict, reftype.List]),
+				result: binaryen.Type.none,
+			}],
+			['Dict#fillFromSet', {
+				name:   'Dict.fill-from-set',
+				param:  binaryen.createType([reftype.Dict, reftype.Map]),
+				result: binaryen.Type.none,
+			}],
+			['Dict#fillFromMap', {
+				name:   'Dict.fill-from-map',
+				param:  binaryen.createType([reftype.Dict, reftype.Map]),
+				result: binaryen.Type.none,
+			}],
 		]);
 	}
 
@@ -135,5 +165,47 @@ export class Dict implements HasFuncData {
 	 */
 	public delete(dict: binaryen.ExpressionRef /* (ref $Dict) */, key: binaryen.ExpressionRef /* i64 */): binaryen.ExpressionRef /* (ref null $Value) */ {
 		return this.vm.mod.wasm.call('Dict.delete', [dict, key], this.vm.reftypeNull.Value);
+	}
+
+	/**
+	 * Copy the properties from a given source Record into the destination Dict.
+	 */
+	public copyFromRecord(dest: binaryen.ExpressionRef /* (ref $Dict) */, src: binaryen.ExpressionRef /* (ref $Record) */): binaryen.ExpressionRef /* void */ {
+		return this.vm.mod.wasm.call('Dict.copy-from-record', [dest, src], binaryen.Type.none);
+	}
+
+	/**
+	 * Copy the properties from a given source Dict into the destination Dict.
+	 */
+	public copyFromDict(dest: binaryen.ExpressionRef /* (ref $Dict) */, src: binaryen.ExpressionRef /* (ref $Dict) */): binaryen.ExpressionRef /* void */ {
+		return this.vm.mod.wasm.call('Dict.copy-from-dict', [dest, src], binaryen.Type.none);
+	}
+
+	/**
+	 * Fill the destination Dict with properties from the source Tuple.
+	 */
+	public fillFromTuple(dest: binaryen.ExpressionRef /* (ref $Dict) */, src: binaryen.ExpressionRef /* (ref $Tuple) */): binaryen.ExpressionRef /* void */ {
+		return this.vm.mod.wasm.call('Dict.fill-from-tuple', [dest, src], binaryen.Type.none);
+	}
+
+	/**
+	 * Fill the destination Dict with properties from the source List.
+	 */
+	public fillFromList(dest: binaryen.ExpressionRef /* (ref $Dict) */, src: binaryen.ExpressionRef /* (ref $List) */): binaryen.ExpressionRef /* void */ {
+		return this.vm.mod.wasm.call('Dict.fill-from-list', [dest, src], binaryen.Type.none);
+	}
+
+	/**
+	 * Fill the destination Dict with properties from the source Map (as a Set).
+	 */
+	public fillFromSet(dest: binaryen.ExpressionRef /* (ref $Dict) */, src: binaryen.ExpressionRef /* (ref $Map) */): binaryen.ExpressionRef /* void */ {
+		return this.vm.mod.wasm.call('Dict.fill-from-set', [dest, src], binaryen.Type.none);
+	}
+
+	/**
+	 * Fill the destination Dict with properties from the source Map.
+	 */
+	public fillFromMap(dest: binaryen.ExpressionRef /* (ref $Dict) */, src: binaryen.ExpressionRef /* (ref $Map) */): binaryen.ExpressionRef /* void */ {
+		return this.vm.mod.wasm.call('Dict.fill-from-map', [dest, src], binaryen.Type.none);
 	}
 }
