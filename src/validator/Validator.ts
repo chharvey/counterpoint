@@ -224,7 +224,12 @@ export class Validator {
 
 	/** Try to find the identifier name(s) of the given hash value. */
 	public static unhashIdentifierId(i: bigint): string {
-		return [...this.#hashStringMemo].filter(([_, value]) => value === i - Validator.MIN_VALUE_IDENTIFIER).map(([key]) => key).join();
+		return (
+			i >= Validator.MIN_VALUE_IDENTIFIER ? [...this.#hashStringMemo].filter(([_, value]) => value === i - Validator.MIN_VALUE_IDENTIFIER).map(([key]) => key).join() :
+			i >= Validator.MIN_VALUE_INTRINSIC  ? INTRINSICS[Number(i - Validator.MIN_VALUE_INTRINSIC)] :
+			i >= Validator.MIN_VALUE_KEYWORD    ? KEYWORDS[Number(i - Validator.MIN_VALUE_KEYWORD)] :
+			''
+		) || '';
 	}
 
 	/**
