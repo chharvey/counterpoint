@@ -57,6 +57,11 @@ export class List implements HasFuncData {
 				param:  binaryen.createType([reftype.List, reftype.List]),
 				result: binaryen.Type.none,
 			}],
+			['List#fillFromSet', {
+				name:   'List.fill-from-set',
+				param:  binaryen.createType([reftype.List, reftype.Map]),
+				result: binaryen.Type.none,
+			}],
 		]);
 	}
 
@@ -137,5 +142,12 @@ export class List implements HasFuncData {
 	 */
 	public copyFromList(dest: binaryen.ExpressionRef /* (ref $List) */, src: binaryen.ExpressionRef /* (ref $List) */): binaryen.ExpressionRef /* void */ {
 		return this.vm.mod.wasm.call('List.copy-from-list', [dest, src], binaryen.Type.none);
+	}
+
+	/**
+	 * Fill the destination List with items from the source Map (as a Set).
+	 */
+	public fillFromSet(dest: binaryen.ExpressionRef /* (ref $List) */, src: binaryen.ExpressionRef /* (ref $Map) */): binaryen.ExpressionRef /* void */ {
+		return this.vm.mod.wasm.call('List.fill-from-set', [dest, src], binaryen.Type.none);
 	}
 }

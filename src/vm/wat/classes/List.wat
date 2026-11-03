@@ -143,3 +143,32 @@
 		(array.len (local.get $src-internal))
 	)
 )
+
+
+
+(func $List.fill-from-set (export "List#fillFromSet") (param $dest (ref $List)) (param $src (ref $Map))
+	(local $src-internal (ref $MapInternal))
+	(local $j            i32)
+	(local $i            i32)
+	(local $item         (ref null $Case))
+
+	(local.set $src-internal (struct.get $Map $internal (local.get $src)))
+	(local.set $j (i32.const 0))
+
+	(block $exit
+		(local.set $i (i32.const 0))
+		(loop $repeat
+			(br_if $exit (i32.gt_u (local.get $i) (array.len (local.get $src-internal))))
+			(local.set $item (array.get $MapInternal (local.get $src-internal) (local.get $i)))
+			(if
+				(i32.eqz (ref.is_null (local.get $item)))
+				(then
+					(call $List.set (local.get $dest) (local.get $j) (struct.get $Case $ant (local.get $item)))
+					(local.set $j (i32.add (local.get $j) (i32.const 1)))
+				)
+			)
+			(local.set $i (i32.add (local.get $i) (i32.const 1)))
+			(br $repeat)
+		)
+	)
+)

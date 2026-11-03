@@ -260,3 +260,93 @@
 		(array.len (local.get $src-internal))
 	)
 )
+
+
+
+(func $Dict.fill-from-tuple (export "Dict#fillFromTuple") (param $dest (ref $Dict)) (param $src (ref $Tuple))
+	(local $src-internal (ref $TupleInternal))
+	(local $i            i32)
+	(local $item         (ref $Value))
+
+	(local.set $src-internal (struct.get $Tuple $internal (local.get $src)))
+
+	(block $exit
+		(local.set $i (i32.const 0))
+		(loop $repeat
+			(br_if $exit (i32.gt_u (local.get $i) (array.len (local.get $src-internal))))
+			(local.set $item (array.get $TupleInternal (local.get $src-internal) (local.get $i)))
+			(call $Dict.set (local.get $dest) (call $Property.from-tuple
+				(struct.get $Tuple $internal (ref.cast (ref $Tuple) (struct.get $Value $composite (local.get $item))))
+			))
+			(local.set $i (i32.add (local.get $i) (i32.const 1)))
+			(br $repeat)
+		)
+	)
+)
+(func $Dict.fill-from-list (export "Dict#fillFromList") (param $dest (ref $Dict)) (param $src (ref $List))
+	(local $src-internal (ref $ListInternal))
+	(local $i            i32)
+	(local $item         (ref null $Value))
+
+	(local.set $src-internal (struct.get $List $internal (local.get $src)))
+
+	(block $exit
+		(local.set $i (i32.const 0))
+		(loop $repeat
+			(br_if $exit (i32.gt_u (local.get $i) (array.len (local.get $src-internal))))
+			(local.set $item (array.get $ListInternal (local.get $src-internal) (local.get $i)))
+			(if
+				(i32.eqz (ref.is_null (local.get $item)))
+				(then (call $Dict.set (local.get $dest) (call $Property.from-tuple
+					(struct.get $Tuple $internal (ref.cast (ref $Tuple) (struct.get $Value $composite (local.get $item))))
+				)))
+			)
+			(local.set $i (i32.add (local.get $i) (i32.const 1)))
+			(br $repeat)
+		)
+	)
+)
+(func $Dict.fill-from-set (export "Dict#fillFromSet") (param $dest (ref $Dict)) (param $src (ref $Map))
+	(local $src-internal (ref $MapInternal))
+	(local $i            i32)
+	(local $item         (ref null $Case))
+
+	(local.set $src-internal (struct.get $Map  $internal (local.get $src)))
+
+	(block $exit
+		(local.set $i (i32.const 0))
+		(loop $repeat
+			(br_if $exit (i32.gt_u (local.get $i) (array.len (local.get $src-internal))))
+			(local.set $item (array.get $MapInternal (local.get $src-internal) (local.get $i)))
+			(if
+				(i32.eqz (ref.is_null (local.get $item)))
+				(then (call $Dict.set (local.get $dest) (call $Property.from-tuple
+					(struct.get $Tuple $internal (ref.cast (ref $Tuple) (struct.get $Value $composite (struct.get $Case $ant (local.get $item)))))
+				)))
+			)
+			(local.set $i (i32.add (local.get $i) (i32.const 1)))
+			(br $repeat)
+		)
+	)
+)
+(func $Dict.fill-from-map (export "Dict#fillFromMap") (param $dest (ref $Dict)) (param $src (ref $Map))
+	(local $src-internal (ref $MapInternal))
+	(local $i            i32)
+	(local $item         (ref null $Case))
+
+	(local.set $src-internal (struct.get $Map  $internal (local.get $src)))
+
+	(block $exit
+		(local.set $i (i32.const 0))
+		(loop $repeat
+			(br_if $exit (i32.gt_u (local.get $i) (array.len (local.get $src-internal))))
+			(local.set $item (array.get $MapInternal (local.get $src-internal) (local.get $i)))
+			(if
+				(i32.eqz (ref.is_null (local.get $item)))
+				(then (call $Dict.set (local.get $dest) (call $Property.from-case (ref.as_non_null (local.get $item)))))
+			)
+			(local.set $i (i32.add (local.get $i) (i32.const 1)))
+			(br $repeat)
+		)
+	)
+)

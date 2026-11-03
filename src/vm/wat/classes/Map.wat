@@ -244,3 +244,114 @@
 		(array.len (local.get $src-internal))
 	)
 )
+
+
+
+(func $Map.fill-set-from-tuple (export "Map#fillSetFromTuple") (param $dest (ref $Map)) (param $src (ref $Tuple))
+	(local $src-internal (ref $TupleInternal))
+	(local $i            i32)
+	(local $item         (ref $Value))
+
+	(local.set $src-internal (struct.get $Tuple $internal (local.get $src)))
+
+	(block $exit
+		(local.set $i (i32.const 0))
+		(loop $repeat
+			(br_if $exit (i32.gt_u (local.get $i) (array.len (local.get $src-internal))))
+			(local.set $item (array.get $TupleInternal (local.get $src-internal) (local.get $i)))
+			(call $Map.set (local.get $dest) (local.get $item) (call $Value.new-primitive (global.get $Vect.NULL)))
+			(local.set $i (i32.add (local.get $i) (i32.const 1)))
+			(br $repeat)
+		)
+	)
+)
+(func $Map.fill-set-from-list (export "Map#fillSetFromList") (param $dest (ref $Map)) (param $src (ref $List))
+	(local $src-internal (ref $ListInternal))
+	(local $i            i32)
+	(local $item         (ref null $Value))
+
+	(local.set $src-internal (struct.get $List $internal (local.get $src)))
+
+	(block $exit
+		(local.set $i (i32.const 0))
+		(loop $repeat
+			(br_if $exit (i32.gt_u (local.get $i) (array.len (local.get $src-internal))))
+			(local.set $item (array.get $ListInternal (local.get $src-internal) (local.get $i)))
+			(if
+				(i32.eqz (ref.is_null (local.get $item)))
+				(then (call $Map.set (local.get $dest) (ref.as_non_null (local.get $item)) (call $Value.new-primitive (global.get $Vect.NULL))))
+			)
+			(local.set $i (i32.add (local.get $i) (i32.const 1)))
+			(br $repeat)
+		)
+	)
+)
+
+
+
+(func $Map.fill-from-tuple (export "Map#fillFromTuple") (param $dest (ref $Map)) (param $src (ref $Tuple))
+	(local $src-internal (ref $TupleInternal))
+	(local $i            i32)
+	(local $item         (ref $Value))
+
+	(local.set $src-internal (struct.get $Tuple $internal (local.get $src)))
+
+	(block $exit
+		(local.set $i (i32.const 0))
+		(loop $repeat
+			(br_if $exit (i32.gt_u (local.get $i) (array.len (local.get $src-internal))))
+			(local.set $item (array.get $TupleInternal (local.get $src-internal) (local.get $i)))
+			(call $Map.set (local.get $dest) (call $Case.from-tuple
+				(struct.get $Tuple $internal (ref.cast (ref $Tuple) (struct.get $Value $composite (local.get $item))))
+			))
+			(local.set $i (i32.add (local.get $i) (i32.const 1)))
+			(br $repeat)
+		)
+	)
+)
+(func $Map.fill-from-list (export "Map#fillFromList") (param $dest (ref $Map)) (param $src (ref $List))
+	(local $src-internal (ref $ListInternal))
+	(local $i            i32)
+	(local $item         (ref null $Value))
+
+	(local.set $src-internal (struct.get $List $internal (local.get $src)))
+
+	(block $exit
+		(local.set $i (i32.const 0))
+		(loop $repeat
+			(br_if $exit (i32.gt_u (local.get $i) (array.len (local.get $src-internal))))
+			(local.set $item (array.get $ListInternal (local.get $src-internal) (local.get $i)))
+			(if
+				(i32.eqz (ref.is_null (local.get $item)))
+				(then (call $Map.set (local.get $dest) (call $Case.from-tuple
+					(struct.get $Tuple $internal (ref.cast (ref $Tuple) (struct.get $Value $composite (local.get $item))))
+				)))
+			)
+			(local.set $i (i32.add (local.get $i) (i32.const 1)))
+			(br $repeat)
+		)
+	)
+)
+(func $Map.fill-from-set (export "Map#fillFromSet") (param $dest (ref $Map)) (param $src (ref $Map))
+	(local $src-internal (ref $MapInternal))
+	(local $i            i32)
+	(local $item         (ref null $Case))
+
+	(local.set $src-internal (struct.get $Map $internal (local.get $src)))
+
+	(block $exit
+		(local.set $i (i32.const 0))
+		(loop $repeat
+			(br_if $exit (i32.gt_u (local.get $i) (array.len (local.get $src-internal))))
+			(local.set $item (array.get $MapInternal (local.get $src-internal) (local.get $i)))
+			(if
+				(i32.eqz (ref.is_null (local.get $item)))
+				(then (call $Map.set (local.get $dest) (call $Case.from-tuple
+					(struct.get $Tuple $internal (ref.cast (ref $Tuple) (struct.get $Value $composite (struct.get $Case $ant (local.get $item)))))
+				)))
+			)
+			(local.set $i (i32.add (local.get $i) (i32.const 1)))
+			(br $repeat)
+		)
+	)
+)
