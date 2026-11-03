@@ -43,3 +43,20 @@
 		(else (call $Value.new-primitive (global.get $Vect.FALSE)))
 	)
 )
+
+
+
+(func $Value.from-list (export "Value#fromList") (param (ref $List)) (result (ref $Value))
+	(return_call $Value.new-composite
+		(struct.new $CplList
+			(call $Object.ctr-plus-plus)
+			(local.get 0)
+		)
+	)
+)
+
+
+
+(func $Value.as-list (export "Value#asList") (param (ref $Value)) (result (ref $List))
+	(struct.get $CplList $list (ref.cast (ref $CplList) (struct.get $Value $composite (local.get 0))))
+)

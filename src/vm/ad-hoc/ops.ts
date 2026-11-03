@@ -31,7 +31,7 @@ export function ops(vm: VirtualMachine) {
 					['op::isTuple',       {name: 'op:is-tuple',       param: reftype.Value,  result: reftype.Value}],
 					['op::isRecord',      {name: 'op:is-record',      param: reftype.Value,  result: reftype.Value}],
 					['op::isObject',      {name: 'op:is-object',      param: reftype.Value,  result: reftype.Value}],
-					['op::isList',        {name: 'op:is-list',        param: reftype.Value,  result: reftype.Value}],
+					['op::isCplList',     {name: 'op:is-cpl-list',    param: reftype.Value,  result: reftype.Value}],
 					['op::isDict',        {name: 'op:is-dict',        param: reftype.Value,  result: reftype.Value}],
 					['op::isMap',         {name: 'op:is-map',         param: reftype.Value,  result: reftype.Value}],
 					['op::isException',   {name: 'op:is-exception',   param: reftype.Value,  result: reftype.Value}],
@@ -49,7 +49,7 @@ export function ops(vm: VirtualMachine) {
 					['op::asFloat',       {name: 'op:as-float',       param: reftype.Value,  result: reftype.Value}],
 					['op::asString',      {name: 'op:as-string',      param: reftype.Value,  result: reftype.Value}],
 					['op::asObject',      {name: 'op:as-object',      param: reftype.Value,  result: reftype.Value}],
-					['op::asList',        {name: 'op:as-list',        param: reftype.Value,  result: reftype.Value}],
+					['op::asCplList',     {name: 'op:as-cpllist',     param: reftype.Value,  result: reftype.Value}],
 					['op::asDict',        {name: 'op:as-dict',        param: reftype.Value,  result: reftype.Value}],
 					['op::asMap',         {name: 'op:as-map',         param: reftype.Value,  result: reftype.Value}],
 					['op::asException',   {name: 'op:as-exception',   param: reftype.Value,  result: reftype.Value}],
@@ -167,9 +167,9 @@ export function ops(vm: VirtualMachine) {
 			vm.mod.wasm.call('op:is-object', [param0], vm.reftype.Value)
 		),
 
-		/** Is the value a composite `List` type? */
-		isList: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
-			vm.mod.wasm.call('op:is-list', [param0], vm.reftype.Value)
+		/** Is the value a composite `CplList` type? */
+		isCplList: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
+			vm.mod.wasm.call('op:is-cpl-list', [param0], vm.reftype.Value)
 		),
 
 		/** Is the value a composite `Dict` type? */
@@ -257,9 +257,9 @@ export function ops(vm: VirtualMachine) {
 			vm.mod.wasm.call('op:as-object', [param0], vm.reftype.Value)
 		),
 
-		/** Cast the value to type `List`. */
-		asList: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
-			vm.mod.wasm.call('op:as-list', [param0], vm.reftype.Value)
+		/** Cast the value to type `CplList`. */
+		asCplList: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
+			vm.mod.wasm.call('op:as-cpl-list', [param0], vm.reftype.Value)
 		),
 
 		/** Cast the value to type `Dict`. */

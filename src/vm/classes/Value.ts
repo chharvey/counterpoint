@@ -34,6 +34,8 @@ export class Value implements HasFuncData {
 			['Value#boolToI32',    {name: 'Value.bool-to-i32',   param: reftype.Value,       result: binaryen.Type.i32}],
 			['Value#boolFromI32',  {name: 'Value.bool-from-i32', param: binaryen.Type.i32,   result: reftype.Value}],
 			['Value#stringify',    {name: 'Value.stringify',     param: reftype.Value,       result: reftype.String}],
+			['Value#fromList',     {name: 'Value.from-list',     param: reftype.List,        result: reftype.Value}],
+			['Value#asList',       {name: 'Value.as-list',       param: reftype.Value,       result: reftype.List}],
 		]);
 	}
 
@@ -100,5 +102,15 @@ export class Value implements HasFuncData {
 	/** Return a string representation of the value. */
 	public stringify(value: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $String) */ {
 		return this.vm.mod.wasm.call('Value.stringify', [value], this.vm.reftype.String);
+	}
+
+	/** Creates a new value holding the given List. */
+	public fromList(list: binaryen.ExpressionRef /* (ref $List) */): binaryen.ExpressionRef /* (ref $Value) */ {
+		return this.vm.mod.wasm.call('Value.from-list', [list], this.vm.reftype.Value);
+	}
+
+	/** Returns the value as a List. */
+	public asList(value: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $List) */ {
+		return this.vm.mod.wasm.call('Value.as-list', [value], this.vm.reftype.List);
 	}
 }
