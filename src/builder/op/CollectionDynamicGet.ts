@@ -117,7 +117,7 @@ export class CollectionDynamicGet extends Value {
 		switch (this.name) {
 			case TypeName.LIST: {
 				return List.get(
-					cast_collection(reftype.List),
+					VmValue.asList(collection),
 					wasm.i32.wrap_i64(Vect.asInt(VmValue.field(accessor).primitive)),
 				);
 			}

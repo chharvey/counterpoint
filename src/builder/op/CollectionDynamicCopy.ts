@@ -193,24 +193,24 @@ export class CollectionDynamicCopy extends Instruction {
 					// List.<T>((t, t, t));
 					case this.source.type instanceof TYPE.Tuple: {
 						return List.copyFromTuple(
-							Value.cast(code_dest, reftype.List),
-							Value.cast(code_src,  reftype.Tuple),
+							Value.asList(code_dest),
+							Value.cast(code_src, reftype.Tuple),
 						);
 					}
 					// List.<T>([t, t, t]);
 					// List.<T>(List.<T>((t, t, t)));
 					case this.source.type instanceof TYPE.List: {
 						return List.copyFromList(
-							Value.cast(code_dest, reftype.List),
-							Value.cast(code_src,  reftype.List),
+							Value.asList(code_dest),
+							Value.asList(code_src),
 						);
 					}
 					// List.<T>({t, t, t});
 					// List.<T>(Set.<T>((t, t, t)));
 					case this.source.type instanceof TYPE.Set: {
 						return List.fillFromSet(
-							Value.cast(code_dest, reftype.List),
-							Value.cast(code_src,  reftype.Map),
+							Value.asList(code_dest),
+							Value.cast(code_src, reftype.Map),
 						);
 					}
 					default: {
@@ -239,7 +239,7 @@ export class CollectionDynamicCopy extends Instruction {
 					case this.source.type instanceof TYPE.List: {
 						return Dict.fillFromList(
 							Value.cast(code_dest, reftype.Dict),
-							Value.cast(code_src,  reftype.List),
+							Value.asList(code_src),
 						);
 					}
 					// Dict.<T>([a= t, b= t, c= t]);
@@ -285,7 +285,7 @@ export class CollectionDynamicCopy extends Instruction {
 					case this.source.type instanceof TYPE.List: {
 						return VmMap.fillSetFromList(
 							Value.cast(code_dest, reftype.Map),
-							Value.cast(code_src,  reftype.List),
+							Value.asList(code_src),
 						);
 					}
 					// Set.<T>({t, t, t});
@@ -315,7 +315,7 @@ export class CollectionDynamicCopy extends Instruction {
 					case this.source.type instanceof TYPE.List: {
 						return VmMap.fillFromList(
 							Value.cast(code_dest, reftype.Map),
-							Value.cast(code_src,  reftype.List),
+							Value.asList(code_src),
 						);
 					}
 					// Map.<K, V>({ (k, v), (k, v), (k, v) });

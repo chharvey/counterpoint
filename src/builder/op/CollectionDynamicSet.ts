@@ -117,7 +117,7 @@ export class CollectionDynamicSet extends Instruction {
 		switch (this.name) {
 			case TypeName.LIST: {
 				return List.set(
-					cast_collection(reftype.List),
+					Value.asList(collection),
 					wasm.i32.wrap_i64(Vect.asInt(Value.field(accessor).primitive)),
 					value,
 				);

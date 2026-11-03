@@ -129,7 +129,6 @@ test.suite('CodeGenerator', () => {
 			assertEqualBins(
 				cg.codegenList(),
 				wasm.struct.new([
-					cg.vm.Object.ctrPlusPlus(),
 					wasm.i32.const(0),
 					wasm.array.new_fixed(
 						cg.vm.heaptype.ListInternal,
@@ -146,7 +145,6 @@ test.suite('CodeGenerator', () => {
 					genConst(cg, 3.3),
 				]),
 				wasm.struct.new([
-					cg.vm.Object.ctrPlusPlus(),
 					wasm.i32.const(3),
 					wasm.array.new_fixed(
 						cg.vm.heaptype.ListInternal,

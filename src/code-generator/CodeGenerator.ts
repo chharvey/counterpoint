@@ -268,7 +268,7 @@ export class CodeGenerator {
 	 * @return      `(struct.new $List <count> (array.new_fixed $ListInternal <...items>))`
 	 */
 	public codegenList(items: readonly (binaryen.ExpressionRef /* (ref $Value) */)[] = []): binaryen.ExpressionRef /* (ref $List) */ {
-		const {vm: {heaptype, Object: VmObject}, mod: {wasm}} = this;
+		const {vm: {heaptype}, mod: {wasm}} = this;
 		let capacity: number = 8;
 		while (items.length > capacity * CodeGenerator.#LOAD_FACTOR) {
 			capacity *= 2;
@@ -278,7 +278,6 @@ export class CodeGenerator {
 			(_, i) => items[i] ?? wasm.ref.null(heaptype.Value),
 		);
 		return wasm.struct.new([
-			VmObject.ctrPlusPlus(),
 			wasm.i32.const(items.length),
 			wasm.array.new_fixed(heaptype.ListInternal, entries),
 		], heaptype.List);

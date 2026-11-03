@@ -1259,7 +1259,7 @@ test.suite('Opcode', () => {
 					}`);
 					return assertEqualBins(
 						new AST.ExprVisitorBuild(builder).visit((stmts[0] as AST.STMT.StatementExpression).expr!).codegen(cg),
-						cg.vm.Value.newComposite(cg.codegenList()),
+						cg.vm.Value.fromList(cg.codegenList()),
 					);
 				});
 				test.test('nonempty LIST.NEW', () => {
@@ -1269,7 +1269,7 @@ test.suite('Opcode', () => {
 					}`);
 					return assertEqualBins(
 						new AST.ExprVisitorBuild(builder).visit((stmts[1] as AST.STMT.StatementExpression).expr!).codegen(cg),
-						cg.vm.Value.newComposite(cg.codegenList([
+						cg.vm.Value.fromList(cg.codegenList([
 							wasm.local.get(0, cg.vm.reftypeNull.Value),
 							genConst(cg, 4.2),
 							wasm.local.get(1, cg.vm.reftypeNull.Value),
@@ -1595,10 +1595,10 @@ test.suite('Opcode', () => {
 						list.[-1];
 					}`);
 					const {reftype, Vect, Value, List} = cg.vm;
-					const list_cast: binaryen.ExpressionRef = Value.cast(wasm.local.get(1, reftype.Value), reftype.List);
+					const list_cast: binaryen.ExpressionRef = Value.asList(wasm.local.get(1, reftype.Value));
 					return assertEqualBins(builder.instructions.slice(4).map((instr) => instr.codegen(cg)), [
 						wasm.drop(List.get(
-							Value.cast(wasm.local.get(2, reftype.Value), reftype.List),
+							Value.asList(wasm.local.get(2, reftype.Value)),
 							wasm.i32.wrap(Vect.asInt(Value.field(wasm.local.get(3, reftype.Value)).primitive)),
 						)),
 						wasm.drop(List.get(
@@ -1796,13 +1796,13 @@ test.suite('Opcode', () => {
 						val list: [int] = [x, 43, 44];
 						list;
 					}`);
-					const {reftype, Vect, Value, List} = cg.vm;
+					const {Vect, Value, List} = cg.vm;
 					// there exists no syntax for List count, so constructing it manually
 					const list = new AST.ExprVisitorBuild(builder).visit((stmts[2] as AST.STMT.StatementExpression).expr!) as OP.Get;
 					const unop = new OP.Unop(OP.OpCode.LIST_COUNT, list, TYPE.NAT);
 					return assertEqualBins(
 						unop.codegen(cg),
-						Value.newPrimitive(Vect.newNat(wasm.i64.extend_i32_u(List.count(Value.cast(list.codegen(cg), reftype.List))))),
+						Value.newPrimitive(Vect.newNat(wasm.i64.extend_i32_u(List.count(Value.asList(list.codegen(cg)))))),
 					);
 				});
 				test.test('DICT.COUNT', () => {
@@ -2127,17 +2127,17 @@ test.suite('Opcode', () => {
 					const {reftype, Vect, Value, List} = cg.vm;
 					return assertEqualBins(builder.instructions.slice(4).map((instr) => instr.codegen(cg)), [
 						List.set(
-							Value.cast(wasm.local.get(2, reftype.Value), reftype.List),
+							Value.asList(wasm.local.get(2, reftype.Value)),
 							wasm.i32.wrap_i64(Vect.asInt(Value.field(wasm.local.get(3, reftype.Value)).primitive)),
 							genConst(cg, 45n),
 						),
 						List.set(
-							Value.cast(wasm.local.get(1, reftype.Value), reftype.List),
+							Value.asList(wasm.local.get(1, reftype.Value)),
 							wasm.i32.wrap_i64(Vect.asInt(Value.field(genConst(cg, 0n)).primitive)),
 							genConst(cg, 46n),
 						),
 						List.set(
-							Value.cast(wasm.local.get(1, reftype.Value), reftype.List),
+							Value.asList(wasm.local.get(1, reftype.Value)),
 							wasm.i32.wrap_i64(Vect.asInt(Value.field(genConst(cg, 2n)).primitive)),
 							genConst(cg, 47n),
 						),
@@ -2231,8 +2231,8 @@ test.suite('Opcode', () => {
 						return assertEqualBins(
 							builder.instructions[2].codegen(cg),
 							List.copyFromTuple(
-								Value.cast(wasm.local.get(0, reftype.Value), reftype.List),
-								Value.cast(wasm.local.get(1, reftype.Value), reftype.Tuple),
+								Value.asList(wasm.local.get(0, reftype.Value)),
+								Value.cast  (wasm.local.get(1, reftype.Value), reftype.Tuple),
 							),
 						);
 					});
@@ -2245,8 +2245,8 @@ test.suite('Opcode', () => {
 						return assertEqualBins(
 							builder.instructions[2].codegen(cg),
 							List.copyFromList(
-								Value.cast(wasm.local.get(0, reftype.Value), reftype.List),
-								Value.cast(wasm.local.get(1, reftype.Value), reftype.List),
+								Value.asList(wasm.local.get(0, reftype.Value)),
+								Value.asList(wasm.local.get(1, reftype.Value)),
 							),
 						);
 					});
@@ -2259,8 +2259,8 @@ test.suite('Opcode', () => {
 						return assertEqualBins(
 							builder.instructions[2].codegen(cg),
 							List.fillFromSet(
-								Value.cast(wasm.local.get(0, reftype.Value), reftype.List),
-								Value.cast(wasm.local.get(2, reftype.Value), reftype.Map), // index 1 = nonempty map setup (implementation of Set)
+								Value.asList(wasm.local.get(0, reftype.Value)),
+								Value.cast  (wasm.local.get(2, reftype.Value), reftype.Map), // index 1 = nonempty map setup (implementation of Set)
 							),
 						);
 					});
@@ -2303,8 +2303,8 @@ test.suite('Opcode', () => {
 						return assertEqualBins(
 							builder.instructions[5].codegen(cg),
 							Dict.fillFromList(
-								Value.cast(wasm.local.get(0, reftype.Value), reftype.Dict),
-								Value.cast(wasm.local.get(4, reftype.Value), reftype.List),
+								Value.cast  (wasm.local.get(0, reftype.Value), reftype.Dict),
+								Value.asList(wasm.local.get(4, reftype.Value)),
 							),
 						);
 					});
@@ -2375,8 +2375,8 @@ test.suite('Opcode', () => {
 						return assertEqualBins(
 							builder.instructions[2].codegen(cg),
 							VmMap.fillSetFromList(
-								Value.cast(wasm.local.get(0, reftype.Value), reftype.Map),
-								Value.cast(wasm.local.get(1, reftype.Value), reftype.List),
+								Value.cast  (wasm.local.get(0, reftype.Value), reftype.Map),
+								Value.asList(wasm.local.get(1, reftype.Value)),
 							),
 						);
 					});
@@ -2419,8 +2419,8 @@ test.suite('Opcode', () => {
 						return assertEqualBins(
 							builder.instructions[5].codegen(cg),
 							VmMap.fillFromList(
-								Value.cast(wasm.local.get(0, reftype.Value), reftype.Map),
-								Value.cast(wasm.local.get(4, reftype.Value), reftype.List),
+								Value.cast  (wasm.local.get(0, reftype.Value), reftype.Map),
+								Value.asList(wasm.local.get(4, reftype.Value)),
 							),
 						);
 					});
