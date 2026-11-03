@@ -20,9 +20,9 @@ const inputs = Promise.all([
 	'classes/Value.wat',
 	'classes/Property.wat',
 	'classes/Case.wat',
+	'classes/List.wat',
 	'classes/Record.wat',
 	'classes/Object.wat',
-	'classes/List.wat',
 	'classes/Dict.wat',
 	'classes/Map.wat',
 ].map((filename) => fs.promises.readFile(rel_path(`../src/vm/wat/${filename}`), 'utf8')));

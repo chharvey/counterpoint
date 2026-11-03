@@ -32,6 +32,13 @@
 	(type $DictInternal (array (mut (ref null $Property))))
 	(type $MapInternal  (array (mut (ref null $Case))))
 
+	(type $List (struct
+		;; number of items currently in the array (for total capacity, get its `(array.len)`); mutable to allow array mutation
+		(field $size (mut i32))
+		;; the array of List items; mutable to allow reallocation
+		(field $internal (mut (ref $ListInternal)))
+	))
+
 
 
 	;; abstract root of all non-primitives. the type of `$Value.$composite`
@@ -61,16 +68,14 @@
 	)))
 
 	;; precursor to the Counterpoint `List` class
-	(type $List (sub final $Object (struct
+	(type $CplList (sub final $Object (struct
 		;; --- inherited ---
 		;; unique id for hashing
 		(field $id i64)
 
 		;; --- own ---
-		;; number of items currently in the array (for total capacity, get its `(array.len)`); mutable to allow array mutation
-		(field $size (mut i32))
-		;; the array of List items; mutable to allow reallocation
-		(field $internal (mut (ref $ListInternal)))
+		;; the underlying implementation
+		(field $list (ref $List))
 	)))
 
 	;; precursor to the Counterpoint `Dict` class

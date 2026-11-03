@@ -5,11 +5,11 @@ import {Vect} from './classes/Vect.ts';
 import {Value} from './classes/Value.ts';
 import {Property} from './classes/Property.ts';
 import {Case} from './classes/Case.ts';
+import {List} from './classes/List.ts';
 import {String as VmString} from './classes/String.ts';
 import {Tuple as VmTuple} from './classes/Tuple.ts';
 import {Record as VmRecord} from './classes/Record.ts';
 import {Object as VmObject} from './classes/Object.ts';
-import {List} from './classes/List.ts';
 import {Dict} from './classes/Dict.ts';
 import {Map as VmMap} from './classes/Map.ts';
 import {Exception} from './classes/Exception.ts';
@@ -27,6 +27,7 @@ type TypeKey = (
 	| 'ListInternal'
 	| 'DictInternal'
 	| 'MapInternal'
+	| 'List'
 	| 'Composite'
 	| 'StringInternal'
 	| 'TupleInternal'
@@ -35,7 +36,6 @@ type TypeKey = (
 	| 'Tuple'
 	| 'Record'
 	| 'Object'
-	| 'List'
 	| 'Dict'
 	| 'Map'
 	| 'Exception'
@@ -146,6 +146,14 @@ const TYPES: {
 		true,
 	);
 
+	/* (type $List ...) */
+	const i_list: number = tb.getSize();
+	tb.grow(1);
+	tb.setStructType(i_list, [
+		/* $size */     TypeBuilder_makeField(binaryen.Type.i32, 'notPacked', true),
+		/* $internal */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_list_internal), false), 'notPacked', true),
+	]);
+
 	/* (type $Composite ...) */
 	tb.setStructType(i_composite, []);
 	tb.setOpen(i_composite);
@@ -213,15 +221,14 @@ const TYPES: {
 	tb.setSubType(i_object, tb.getTempHeapType(i_composite));
 	tb.setOpen(i_object);
 
-	/* (type $List ...) */
-	const i_list: number = tb.getSize();
+	/* (type $CplList ...) */
+	const i_cpl_list: number = tb.getSize();
 	tb.grow(1);
-	tb.setStructType(i_list, [
-		/* $id */       TypeBuilder_makeField(binaryen.Type.i64),
-		/* $size */     TypeBuilder_makeField(binaryen.Type.i32, 'notPacked', true),
-		/* $internal */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_list_internal), false), 'notPacked', true),
+	tb.setStructType(i_cpl_list, [
+		/* $id */   TypeBuilder_makeField(binaryen.Type.i64),
+		/* $list */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_list), false)),
 	]);
-	tb.setSubType(i_list, tb.getTempHeapType(i_object));
+	tb.setSubType(i_cpl_list, tb.getTempHeapType(i_object));
 
 	/* (type $Dict ...) */
 	const i_dict: number = tb.getSize();
@@ -291,6 +298,7 @@ const TYPES: {
 			ListInternal:   heaptypes[i_list_internal],
 			DictInternal:   heaptypes[i_dict_internal],
 			MapInternal:    heaptypes[i_map_internal],
+			List:           heaptypes[i_list],
 			Composite:      heaptypes[i_composite],
 			StringInternal: heaptypes[i_string_internal],
 			TupleInternal:  heaptypes[i_tuple_internal],
@@ -299,7 +307,6 @@ const TYPES: {
 			Tuple:          heaptypes[i_tuple],
 			Record:         heaptypes[i_record],
 			Object:         heaptypes[i_object],
-			List:           heaptypes[i_list],
 			Dict:           heaptypes[i_dict],
 			Map:            heaptypes[i_map],
 			Exception:      heaptypes[i_exception],
@@ -315,6 +322,7 @@ const TYPES: {
 			ListInternal:   binaryen.getTypeFromHeapType(heaptypes[i_list_internal],   false),
 			DictInternal:   binaryen.getTypeFromHeapType(heaptypes[i_dict_internal],   false),
 			MapInternal:    binaryen.getTypeFromHeapType(heaptypes[i_map_internal],    false),
+			List:           binaryen.getTypeFromHeapType(heaptypes[i_list],            false),
 			Composite:      binaryen.getTypeFromHeapType(heaptypes[i_composite],       false),
 			StringInternal: binaryen.getTypeFromHeapType(heaptypes[i_string_internal], false),
 			TupleInternal:  binaryen.getTypeFromHeapType(heaptypes[i_tuple_internal],  false),
@@ -323,7 +331,6 @@ const TYPES: {
 			Tuple:          binaryen.getTypeFromHeapType(heaptypes[i_tuple],           false),
 			Record:         binaryen.getTypeFromHeapType(heaptypes[i_record],          false),
 			Object:         binaryen.getTypeFromHeapType(heaptypes[i_object],          false),
-			List:           binaryen.getTypeFromHeapType(heaptypes[i_list],            false),
 			Dict:           binaryen.getTypeFromHeapType(heaptypes[i_dict],            false),
 			Map:            binaryen.getTypeFromHeapType(heaptypes[i_map],             false),
 			Exception:      binaryen.getTypeFromHeapType(heaptypes[i_exception],       false),
@@ -377,11 +384,11 @@ export class VirtualMachine {
 	public readonly Value     = new Value(this);
 	public readonly Property  = new Property(this);
 	public readonly Case      = new Case(this);
+	public readonly List      = new List(this);
 	public readonly String    = new VmString(this);
 	public readonly Tuple     = new VmTuple(this);
 	public readonly Record    = new VmRecord(this);
 	public readonly Object    = new VmObject(this);
-	public readonly List      = new List(this);
 	public readonly Dict      = new Dict(this);
 	public readonly Map       = new VmMap(this);
 	public readonly Exception = new Exception(this);
