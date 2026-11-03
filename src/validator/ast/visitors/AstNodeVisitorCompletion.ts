@@ -40,7 +40,7 @@ export class AstNodeVisitorCompletion extends AstNodeVisitor<CompletionKind> {
 
 	@memoizePerNode
 	public override visitBlock(node: Block): CompletionKind {
-		return CompletionKind_max(node.children.map((c) => this.visit(c)));
+		return this.#subNodesMax(node);
 	}
 
 	@memoizePerNode

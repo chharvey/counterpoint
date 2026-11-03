@@ -68,7 +68,7 @@ export class AstNodeVisitorTypeCheck extends AstNodeVisitor<void> {
 
 	public override visitBlock(node: Block): void {
 		this.defaultVisit(node);
-		if (!!node.parent && is_Functionlike(node.parent) && this.#astNodeVisitorCompletion.visit(node) !== CompletionKind.RETURN_OR_PANIC) {
+		if (node.parent && is_Functionlike(node.parent) && this.#astNodeVisitorCompletion.visit(node) !== CompletionKind.RETURN_OR_PANIC) {
 			throw new AssignmentErrorFunctionExit(node.parent);
 		}
 	}
