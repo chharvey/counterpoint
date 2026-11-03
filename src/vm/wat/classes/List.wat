@@ -108,3 +108,38 @@
 
 	(local.get $item)
 )
+
+
+
+(func $List.copy-from-tuple (export "List#copyFromTuple") (param $dest (ref $List)) (param $src (ref $Tuple))
+	(local $dest-internal (ref $ListInternal))
+	(local $src-internal  (ref $TupleInternal))
+
+	(local.set $dest-internal (struct.get $List  $internal (local.get $dest)))
+	(local.set $src-internal  (struct.get $Tuple $internal (local.get $src)))
+
+	(call $List.adjust-capacity (local.get $dest) (call $util:capacity-needed (array.len (local.get $src-internal))))
+	(array.copy $ListInternal $TupleInternal
+		(local.get $dest-internal)
+		(i32.const 0)
+		(local.get $src-internal)
+		(i32.const 0)
+		(array.len (local.get $src-internal))
+	)
+)
+(func $List.copy-from-list (export "List#copyFromList") (param $dest (ref $List)) (param $src (ref $List))
+	(local $dest-internal (ref $ListInternal))
+	(local $src-internal  (ref $ListInternal))
+
+	(local.set $dest-internal (struct.get $List $internal (local.get $dest)))
+	(local.set $src-internal  (struct.get $List $internal (local.get $src)))
+
+	(call $List.adjust-capacity (local.get $dest) (array.len (local.get $src-internal)))
+	(array.copy $ListInternal $ListInternal
+		(local.get $dest-internal)
+		(i32.const 0)
+		(local.get $src-internal)
+		(i32.const 0)
+		(array.len (local.get $src-internal))
+	)
+)

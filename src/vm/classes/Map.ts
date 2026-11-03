@@ -52,6 +52,11 @@ class VmMap implements HasFuncData {
 				param:  binaryen.createType([reftype.Map, reftype.Value]),
 				result: reftypeNull.Value,
 			}],
+			['Map#copyFromMap', {
+				name:   'Map.copy-from-map',
+				param:  binaryen.createType([reftype.Map, reftype.Map]),
+				result: binaryen.Type.none,
+			}],
 		]);
 	}
 
@@ -135,6 +140,13 @@ class VmMap implements HasFuncData {
 	 */
 	public delete(map: binaryen.ExpressionRef /* (ref $Map) */, ant: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref null $Value) */ {
 		return this.vm.mod.wasm.call('Map.delete', [map, ant], this.vm.reftypeNull.Value);
+	}
+
+	/**
+	 * Copy the cases from a given source Map into the destination Map.
+	 */
+	public copyFromMap(dest: binaryen.ExpressionRef /* (ref $Map) */, src: binaryen.ExpressionRef /* (ref $Map) */): binaryen.ExpressionRef /* void */ {
+		return this.vm.mod.wasm.call('Map.copy-from-map', [dest, src], binaryen.Type.none);
 	}
 }
 export {VmMap as Map};

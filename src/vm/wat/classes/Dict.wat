@@ -225,3 +225,38 @@
 
 	(struct.get $Property $val (local.get $prop))
 )
+
+
+
+(func $Dict.copy-from-record (export "Dict#copyFromRecord") (param $dest (ref $Dict)) (param $src (ref $Record))
+	(local $dest-internal (ref $DictInternal))
+	(local $src-internal  (ref $RecordInternal))
+
+	(local.set $dest-internal (struct.get $Dict   $internal (local.get $dest)))
+	(local.set $src-internal  (struct.get $Record $internal (local.get $src)))
+
+	(call $Dict.adjust-capacity (local.get $dest) (call $util:capacity-needed (array.len (local.get $src-internal))))
+	(array.copy $DictInternal $RecordInternal
+		(local.get $dest-internal)
+		(i32.const 0)
+		(local.get $src-internal)
+		(i32.const 0)
+		(array.len (local.get $src-internal))
+	)
+)
+(func $Dict.copy-from-dict (export "Dict#copyFromDict") (param $dest (ref $Dict)) (param $src (ref $Dict))
+	(local $dest-internal (ref $DictInternal))
+	(local $src-internal  (ref $DictInternal))
+
+	(local.set $dest-internal (struct.get $Dict $internal (local.get $dest)))
+	(local.set $src-internal  (struct.get $Dict $internal (local.get $src)))
+
+	(call $Dict.adjust-capacity (local.get $dest) (array.len (local.get $src-internal)))
+	(array.copy $DictInternal $DictInternal
+		(local.get $dest-internal)
+		(i32.const 0)
+		(local.get $src-internal)
+		(i32.const 0)
+		(array.len (local.get $src-internal))
+	)
+)

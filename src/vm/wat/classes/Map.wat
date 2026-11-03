@@ -225,3 +225,22 @@
 
 	(struct.get $Case $con (local.get $case))
 )
+
+
+
+(func $Map.copy-from-map (export "Dict#copyFromMap") (param $dest (ref $Map)) (param $src (ref $Map))
+	(local $dest-internal (ref $MapInternal))
+	(local $src-internal  (ref $MapInternal))
+
+	(local.set $dest-internal (struct.get $Map $internal (local.get $dest)))
+	(local.set $src-internal  (struct.get $Map $internal (local.get $src)))
+
+	(call $Map.adjust-capacity (local.get $dest) (array.len (local.get $src-internal)))
+	(array.copy $MapInternal $MapInternal
+		(local.get $dest-internal)
+		(i32.const 0)
+		(local.get $src-internal)
+		(i32.const 0)
+		(array.len (local.get $src-internal))
+	)
+)
