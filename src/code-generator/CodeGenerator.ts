@@ -419,22 +419,19 @@ export class CodeGenerator {
 			this.mod.imports.addGlobal(data.name, extern_mod_name, export_name, data.type, false)
 		));
 		[
-			this.vm.util      .funcImportDataMap,
-			this.vm.op        .funcImportDataMap,
-			this.vm.Vect      .funcImportDataMap,
-			this.vm.Value     .funcImportDataMap,
-			this.vm.Property  .funcImportDataMap,
-			this.vm.Case      .funcImportDataMap,
-			this.vm.List      .funcImportDataMap,
-			this.vm.Dict      .funcImportDataMap,
-			this.vm.Map       .funcImportDataMap,
-			this.vm.String    .funcImportDataMap,
-			this.vm.Tuple     .funcImportDataMap,
-			this.vm.Record    .funcImportDataMap,
-			this.vm.Object    .funcImportDataMap,
-			this.vm.Exception .funcImportDataMap,
-			this.vm.Maybe     .funcImportDataMap,
-			this.vm.Result    .funcImportDataMap,
+			this.vm.util     .funcImportDataMap,
+			this.vm.op       .funcImportDataMap,
+			this.vm.Vect     .funcImportDataMap,
+			this.vm.Value    .funcImportDataMap,
+			this.vm.Property .funcImportDataMap,
+			this.vm.Case     .funcImportDataMap,
+			this.vm.List     .funcImportDataMap,
+			this.vm.Dict     .funcImportDataMap,
+			this.vm.Map      .funcImportDataMap,
+			this.vm.String   .funcImportDataMap,
+			this.vm.Tuple    .funcImportDataMap,
+			this.vm.Record   .funcImportDataMap,
+			this.vm.Object   .funcImportDataMap,
 		].forEach((datamap) => datamap.forEach((data, export_name) => (
 			this.mod.imports.addFunction(data.name, extern_mod_name, export_name, data.param, data.result)
 		)));

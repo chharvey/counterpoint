@@ -12,9 +12,6 @@ import {String as VmString} from './classes/String.ts';
 import {Tuple as VmTuple} from './classes/Tuple.ts';
 import {Record as VmRecord} from './classes/Record.ts';
 import {Object as VmObject} from './classes/Object.ts';
-import {Exception} from './classes/Exception.ts';
-import {Maybe} from './classes/Maybe.ts';
-import {Result} from './classes/Result.ts';
 import {utils} from './ad-hoc/utils.ts';
 import {ops} from './ad-hoc/ops.ts';
 
@@ -405,9 +402,6 @@ export class VirtualMachine {
 	public readonly Tuple     = new VmTuple(this);
 	public readonly Record    = new VmRecord(this);
 	public readonly Object    = new VmObject(this);
-	public readonly Exception = new Exception(this);
-	public readonly Maybe     = new Maybe(this);
-	public readonly Result    = new Result(this);
 
 
 	public constructor() {
