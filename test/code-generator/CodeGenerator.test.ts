@@ -258,6 +258,7 @@ test.suite('CodeGenerator', () => {
 			const message:   binaryen.ExpressionRef /* (ref $String) */    = cg.vm.Value.asString(genConst(cg, 'message'));
 			const expected1: binaryen.ExpressionRef /* (ref $Exception) */ = wasm.struct.new([
 				cg.vm.Object.ctrPlusPlus(),
+				cg.codegenDict(),
 				message,
 				wasm.ref.null(cg.vm.heaptype.Exception),
 			], cg.vm.heaptype.Exception);
@@ -269,6 +270,7 @@ test.suite('CodeGenerator', () => {
 				cg.codegenException(message, expected1),
 				wasm.struct.new([
 					cg.vm.Object.ctrPlusPlus(),
+					cg.codegenDict(),
 					message,
 					expected1,
 				], cg.vm.heaptype.Exception),
@@ -280,6 +282,7 @@ test.suite('CodeGenerator', () => {
 				cg.codegenMaybe(),
 				wasm.struct.new([
 					cg.vm.Object.ctrPlusPlus(),
+					cg.codegenDict(),
 					wasm.ref.null(cg.vm.heaptype.Value),
 				], cg.vm.heaptype.Maybe),
 			);
@@ -287,6 +290,7 @@ test.suite('CodeGenerator', () => {
 				cg.codegenMaybe(genConst(cg, 42)),
 				wasm.struct.new([
 					cg.vm.Object.ctrPlusPlus(),
+					cg.codegenDict(),
 					genConst(cg, 42),
 				], cg.vm.heaptype.Maybe),
 			);
@@ -299,6 +303,7 @@ test.suite('CodeGenerator', () => {
 				cg.codegenResult(false, excp),
 				wasm.struct.new([
 					cg.vm.Object.ctrPlusPlus(),
+					cg.codegenDict(),
 					wasm.ref.null(cg.vm.heaptype.Value),
 					excp,
 				], cg.vm.heaptype.Maybe),
@@ -307,6 +312,7 @@ test.suite('CodeGenerator', () => {
 				cg.codegenResult(true, value),
 				wasm.struct.new([
 					cg.vm.Object.ctrPlusPlus(),
+					cg.codegenDict(),
 					value,
 					wasm.ref.null(cg.vm.heaptype.Exception),
 				], cg.vm.heaptype.Maybe),
@@ -318,6 +324,7 @@ test.suite('CodeGenerator', () => {
 				cg.codegenFunction(3n),
 				wasm.struct.new([
 					cg.vm.Object.ctrPlusPlus(),
+					cg.codegenDict(),
 					wasm.i32.const(3),
 				], cg.vm.heaptype.Function),
 			);

@@ -225,12 +225,15 @@ const TYPES: {
 	]);
 	tb.setSubType(i_record, tb.getTempHeapType(i_composite));
 
+	const fields_object = [
+		/* $id */     TypeBuilder_makeField(binaryen.Type.i64),
+		/* $fields */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_dict), false)),
+	];
+
 	/* (type $Object ...) */
 	const i_object: number = tb.getSize();
 	tb.grow(1);
-	tb.setStructType(i_object, [
-		/* $id */ TypeBuilder_makeField(binaryen.Type.i64),
-	]);
+	tb.setStructType(i_object, fields_object);
 	tb.setSubType(i_object, tb.getTempHeapType(i_composite));
 	tb.setOpen(i_object);
 
@@ -238,7 +241,7 @@ const TYPES: {
 	const i_cpl_list: number = tb.getSize();
 	tb.grow(1);
 	tb.setStructType(i_cpl_list, [
-		/* $id */   TypeBuilder_makeField(binaryen.Type.i64),
+		...fields_object,
 		/* $list */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_list), false)),
 	]);
 	tb.setSubType(i_cpl_list, tb.getTempHeapType(i_object));
@@ -247,7 +250,7 @@ const TYPES: {
 	const i_cpl_dict: number = tb.getSize();
 	tb.grow(1);
 	tb.setStructType(i_cpl_dict, [
-		/* $id */   TypeBuilder_makeField(binaryen.Type.i64),
+		...fields_object,
 		/* $dict */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_dict), false)),
 	]);
 	tb.setSubType(i_cpl_dict, tb.getTempHeapType(i_object));
@@ -256,7 +259,7 @@ const TYPES: {
 	const i_cpl_map: number = tb.getSize();
 	tb.grow(1);
 	tb.setStructType(i_cpl_map, [
-		/* $id */  TypeBuilder_makeField(binaryen.Type.i64),
+		...fields_object,
 		/* $map */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_map), false)),
 	]);
 	tb.setSubType(i_cpl_map, tb.getTempHeapType(i_object));
@@ -265,7 +268,7 @@ const TYPES: {
 	const i_exception: number = tb.getSize();
 	tb.grow(1);
 	tb.setStructType(i_exception, [
-		/* $id */      TypeBuilder_makeField(binaryen.Type.i64),
+		...fields_object,
 		/* $message */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_string),    false)),
 		/* $cause */   TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_exception), true)),
 	]);
@@ -275,7 +278,7 @@ const TYPES: {
 	const i_maybe: number = tb.getSize();
 	tb.grow(1);
 	tb.setStructType(i_maybe, [
-		/* $id */    TypeBuilder_makeField(binaryen.Type.i64),
+		...fields_object,
 		/* $value */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_value), true)),
 	]);
 	tb.setSubType(i_maybe, tb.getTempHeapType(i_object));
@@ -284,7 +287,7 @@ const TYPES: {
 	const i_result: number = tb.getSize();
 	tb.grow(1);
 	tb.setStructType(i_result, [
-		/* $id */     TypeBuilder_makeField(binaryen.Type.i64),
+		...fields_object,
 		/* $value */  TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_value),     true)),
 		/* $reason */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_exception), true)),
 	]);
@@ -294,7 +297,7 @@ const TYPES: {
 	const i_function: number = tb.getSize();
 	tb.grow(1);
 	tb.setStructType(i_function, [
-		/* $id */    TypeBuilder_makeField(binaryen.Type.i64),
+		...fields_object,
 		/* $arity */ TypeBuilder_makeField(binaryen.Type.i32, 'notPacked', true),
 	]);
 	tb.setSubType(i_function, tb.getTempHeapType(i_object));

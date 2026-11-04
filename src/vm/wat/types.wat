@@ -53,37 +53,36 @@
 
 
 
+	;; # Composite Types
 	;; abstract root of all non-primitives. the type of `$Value.$composite`
 	(type $Composite (sub (struct)))
 
-
-
-	;; # Compound Value Types
 	(type $StringInternal (array (mut i32))) ;; mutable to allow construction of templates
 	(type $TupleInternal  (array (ref $Value)))
 	(type $RecordInternal (array (ref $Property)))
 
-	;; precursors to Counterpoint types
 	(type $String (sub final $Composite (struct (field $internal (ref $StringInternal)))))
 	(type $Tuple  (sub final $Composite (struct (field $internal (ref $TupleInternal)))))
 	(type $Record (sub final $Composite (struct (field $internal (ref $RecordInternal)))))
 
-
-
-	;; # Reference Types
-	;; these are written here until we can build a core library in Counterpoint
-
-	;; precursor to the Counterpoint `Object` root class
 	(type $Object (sub $Composite (struct
 		;; unique id for hashing
 		(field $id i64)
+		;; each instance has a set of fields
+		(field $fields (ref $Dict))
 	)))
+
+
+
+	;; # Reference Types
+	;; These are written here until we can build a core library in Counterpoint.
+	;; They are only temporary, and resemble what the actual Counterpoint source code will look like.
 
 	;; precursor to the Counterpoint `List` class
 	(type $CplList (sub final $Object (struct
 		;; --- inherited ---
-		;; unique id for hashing
 		(field $id i64)
+		(field $fields (ref $Dict))
 
 		;; --- own ---
 		;; the underlying implementation
@@ -93,8 +92,8 @@
 	;; precursor to the Counterpoint `Dict` class
 	(type $CplDict (sub final $Object (struct
 		;; --- inherited ---
-		;; unique id for hashing
 		(field $id i64)
+		(field $fields (ref $Dict))
 
 		;; --- own ---
 		;; the underlying implementation
@@ -104,8 +103,8 @@
 	;; precursor to the Counterpoint `Map` class
 	(type $CplMap (sub final $Object (struct
 		;; --- inherited ---
-		;; unique id for hashing
 		(field $id i64)
+		(field $fields (ref $Dict))
 
 		;; --- own ---
 		;; the underlying implementation
@@ -115,8 +114,8 @@
 	;; precursor to the Counterpoint `Exception` class
 	(type $Exception (sub final $Object (struct
 		;; --- inherited ---
-		;; unique id for hashing
 		(field $id i64)
+		(field $fields (ref $Dict))
 
 		;; --- own ---
 		;; the error message
@@ -128,8 +127,8 @@
 	;; precursor to the Counterpoint `Maybe` class
 	(type $Maybe (sub final $Object (struct
 		;; --- inherited ---
-		;; unique id for hashing
 		(field $id i64)
+		(field $fields (ref $Dict))
 
 		;; --- own ---
 		;; the potentially held value
@@ -139,8 +138,8 @@
 	;; precursor to the Counterpoint `Result` class
 	(type $Result (sub final $Object (struct
 		;; --- inherited ---
-		;; unique id for hashing
 		(field $id i64)
+		(field $fields (ref $Dict))
 
 		;; --- own ---
 		;; the success value
@@ -152,8 +151,8 @@
 	;; precursor to the Counterpoint `Function` class
 	(type $Function (sub final $Object (struct
 		;; --- inherited ---
-		;; unique id for hashing
 		(field $id i64)
+		(field $fields (ref $Dict))
 
 		;; --- own ---
 		;; number of functional parameters
