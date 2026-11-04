@@ -34,7 +34,7 @@ test.suite('Declaration', () => {
 				const goal: AST.Goal = AST.Goal.fromSource(`{
 					type T = int;
 				}`);
-				const id: bigint = Validator.cookTokenIdentifier('T');
+				const id: bigint = Validator.keyId('T');
 				assert.ok(!goal.block!.validator.hasSymbol(id));
 				goal.varCheck();
 				assert.ok(goal.block!.validator.hasSymbol(id));
@@ -96,9 +96,9 @@ test.suite('Declaration', () => {
 					val mut b:  int = 42;
 					val mut c?: int;
 				}`);
-				const id_a: bigint = Validator.cookTokenIdentifier('a');
-				const id_b: bigint = Validator.cookTokenIdentifier('b');
-				const id_c: bigint = Validator.cookTokenIdentifier('c');
+				const id_a: bigint = Validator.keyId('a');
+				const id_b: bigint = Validator.keyId('b');
+				const id_c: bigint = Validator.keyId('c');
 				assert.ok(!goal.block!.validator.hasSymbol(id_a));
 				assert.ok(!goal.block!.validator.hasSymbol(id_b));
 				assert.ok(!goal.block!.validator.hasSymbol(id_c));
@@ -351,13 +351,13 @@ test.suite('Declaration', () => {
 					], [
 						TYPE.Tuple.fromTypes([
 							typeUnit(42n),
-							TYPE.Record.fromTypes(new Map([[Validator.cookTokenIdentifier('x'), typeUnit('hello')]])),
+							TYPE.Record.fromTypes(new Map([[Validator.keyId('x'), typeUnit('hello')]])),
 							new TYPE.Dict(TYPE.BOOL, true),
 						]),
 						TYPE.Record.fromTypes(new Map([
-							[Validator.cookTokenIdentifier('a'), TYPE.INT],
-							[Validator.cookTokenIdentifier('b'), TYPE.Tuple.fromTypes([TYPE.STR])],
-							[Validator.cookTokenIdentifier('c'), new TYPE.List(TYPE.BOOL, true)],
+							[Validator.keyId('a'), TYPE.INT],
+							[Validator.keyId('b'), TYPE.Tuple.fromTypes([TYPE.STR])],
+							[Validator.keyId('c'), new TYPE.List(TYPE.BOOL, true)],
 						])),
 					]);
 				});
@@ -629,9 +629,9 @@ test.suite('Declaration', () => {
 				const {stmts, visitors} = setupScript(`{
 					func f(a: float, mut b: str): void { return; };
 				}`, {typeCheck: false});
-				const id_f: bigint = Validator.cookTokenIdentifier('f');
-				const id_a: bigint = Validator.cookTokenIdentifier('a');
-				const id_b: bigint = Validator.cookTokenIdentifier('b');
+				const id_f: bigint = Validator.keyId('f');
+				const id_a: bigint = Validator.keyId('a');
+				const id_b: bigint = Validator.keyId('b');
 				const fn = stmts[0] as AST.STMT.DeclarationFunction;
 				assert.ok(fn.validator.hasSymbol(id_f));
 				assert.ok(fn.block.validator.hasSymbol(id_a));
@@ -664,7 +664,7 @@ test.suite('Declaration', () => {
 					func f($b: nat): void { "2"; return; }
 				}`, {typeCheck: false});
 				const {validator} = goal.block!;
-				const id_f: bigint = Validator.cookTokenIdentifier('f');
+				const id_f: bigint = Validator.keyId('f');
 				assert.ok(validator.hasSymbol(id_f));
 				const info_f: SymbolSchema | undefined = validator.getSymbol(id_f);
 				assert_instanceof(info_f, SymbolSchemaFunc);
@@ -674,7 +674,7 @@ test.suite('Declaration', () => {
 				return assertEqualTypes(info_f.types, [
 					new TYPE.Function(TYPE.Tuple.fromTypes([TYPE.INT])),
 					new TYPE.Function(new TYPE.Tuple(), TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>([
-						[Validator.cookTokenIdentifier('b'), TYPE.NAT],
+						[Validator.keyId('b'), TYPE.NAT],
 					]))),
 				]);
 			});

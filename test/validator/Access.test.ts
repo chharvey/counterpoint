@@ -74,7 +74,7 @@ test.suite('Access', () => {
 				]);
 			});
 			test.test('chained maybe access does not unwrap recursively.', () => {
-				const propid: bigint = Validator.cookTokenIdentifier('prop');
+				const propid: bigint = Validator.keyId('prop');
 				const prop1: TYPE.Tuple = TYPE.Tuple.fromTypes([TYPE.BOOL]);       // (bool,)
 				const prop2 = new TYPE.Tuple([{type: TYPE.BOOL, optional: true}]); // (?: bool)
 				return testExprTypes(`{
@@ -96,7 +96,7 @@ test.suite('Access', () => {
 				]);
 			});
 			test.test('chained result access does not unwrap recursively.', () => {
-				const propid: bigint = Validator.cookTokenIdentifier('prop');
+				const propid: bigint = Validator.keyId('prop');
 				return testExprTypes(`{
 					val bound1: (prop: (float,)!)! = Ok.<(prop: Result.<(float,)>)>((prop= Ok.<(float,)>((4.2,))));
 					val bound2: (str,)!! = Ok.<Result.<(str,)>>(Ok.<(str,)>(("hello",)));
@@ -345,10 +345,10 @@ test.suite('Access', () => {
 					val mut tup: (   A,     B,       int) & (   C,  ?: D)        = ((a= "tup.0.a", c= "tup.0.c"), (b= "tup.1.b", d= "tup.1.d"), 42);
 					val mut rec: (x: A, y?: int, z?: B)   & (x: C,        z?: D) = (x= (a= "rec.x.a", c= "rec.x.c"), y= 42, z= (b= "rec.z.b", d= "rec.z.d"));
 				`;
-				const A: TYPE.Record = TYPE.Record.fromTypes(new Map([[Validator.cookTokenIdentifier('a'), TYPE.STR]]));
-				const B: TYPE.Record = TYPE.Record.fromTypes(new Map([[Validator.cookTokenIdentifier('b'), TYPE.STR]]));
-				const C: TYPE.Record = TYPE.Record.fromTypes(new Map([[Validator.cookTokenIdentifier('c'), TYPE.STR]]));
-				const D: TYPE.Record = TYPE.Record.fromTypes(new Map([[Validator.cookTokenIdentifier('d'), TYPE.STR]]));
+				const A: TYPE.Record = TYPE.Record.fromTypes(new Map([[Validator.keyId('a'), TYPE.STR]]));
+				const B: TYPE.Record = TYPE.Record.fromTypes(new Map([[Validator.keyId('b'), TYPE.STR]]));
+				const C: TYPE.Record = TYPE.Record.fromTypes(new Map([[Validator.keyId('c'), TYPE.STR]]));
+				const D: TYPE.Record = TYPE.Record.fromTypes(new Map([[Validator.keyId('d'), TYPE.STR]]));
 				test.test('every constituent has the entry and it’s required in some constituent.', () => {
 					testExprTypes(`{
 						${DECLS}

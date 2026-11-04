@@ -684,7 +684,7 @@ test.suite('Operation', () => {
 			});
 			test.test('returns `nothing` when condition is `nothing`.', () => {
 				const ternary: AST.EXPR.OperationTernary = AST.EXPR.OperationTernary.fromSource('if n as <nothing> then true else false');
-				ternary.validator.addSymbol(new SymbolSchemaVar(Validator.cookTokenIdentifier('n'), (ternary.operand0 as AST.EXPR.Claim).operand, false, false));
+				ternary.validator.addSymbol(new SymbolSchemaVar(Validator.keyId('n'), (ternary.operand0 as AST.EXPR.Claim).operand, false, false));
 				return assert.ok(VISITOR.visit(ternary).isBottomType);
 			});
 			test.test('throws when condition is not a subtype of `boolean`.', () => {
