@@ -2110,7 +2110,7 @@ test.suite('Opcode', () => {
 				const cg = new CodeGenerator();
 				assertEqualBins(
 					new OP.Decl(new Builder().newTemp(TYPE.INT)).codegen(cg),
-					cg.mod.wasm.local.set(0, cg.vm.Value.newDefault()),
+					cg.mod.wasm.local.set(0, cg.mod.wasm.struct.new_default(cg.vm.heaptype.Value)),
 				);
 			});
 
