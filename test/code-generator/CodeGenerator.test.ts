@@ -330,6 +330,31 @@ test.suite('CodeGenerator', () => {
 			);
 		});
 
+		test.suite('#codegenObject', () => {
+			test.test('empty.', () => {
+				assertEqualBins(
+					cg.codegenObject(),
+					wasm.struct.new([
+						cg.vm.Object.ctrPlusPlus(),
+						cg.codegenDict(),
+					], cg.vm.heaptype.Object),
+				);
+			});
+			test.test('with fields.', () => {
+				const field_map = new Map<bigint, binaryen.ExpressionRef>([
+					[0x100n, cg.newProperty(0x100n, genConst(cg, 42n))],
+					[0x101n, cg.newProperty(0x101n, genConst(cg, 'hello'))],
+				]);
+				return assertEqualBins(
+					cg.codegenObject(cg.codegenDict(field_map)),
+					wasm.struct.new([
+						cg.vm.Object.ctrPlusPlus(),
+						cg.codegenDict(field_map),
+					], cg.vm.heaptype.Object),
+				);
+			});
+		});
+
 		test.test('Records: hashing collisions are resolved in source order.', () => {
 			`{
 				% sym  | id  | mod 3

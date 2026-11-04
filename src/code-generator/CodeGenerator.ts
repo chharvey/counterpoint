@@ -414,6 +414,19 @@ export class CodeGenerator {
 	}
 
 	/**
+	 * Return a new `$Object` from a given set of fields.
+	 * @param fields an optional Dict of field ids and values
+	 * @return       `(struct.new $Object <fields>)`
+	 */
+	public codegenObject(fields?: binaryen.ExpressionRef /* (ref $Dict) */): binaryen.ExpressionRef /* (ref $Object) */ {
+		const {vm: {heaptype, Object: VmObject}, mod: {wasm}} = this;
+		return wasm.struct.new([
+			VmObject.ctrPlusPlus(),
+			fields ?? this.codegenDict(),
+		], heaptype.Object);
+	}
+
+	/**
 	 * Prepare the main function in this binaryen Module, then performs validation.
 	 * The main function should contain generated code for a program.
 	 * @param body the body of the main function
