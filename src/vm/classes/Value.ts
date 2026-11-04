@@ -36,8 +36,10 @@ export class Value implements HasFuncData {
 			['Value#stringify',    {name: 'Value.stringify',     param: reftype.Value,       result: reftype.String}],
 			['Value#fromList',     {name: 'Value.from-list',     param: reftype.List,        result: reftype.Value}],
 			['Value#fromDict',     {name: 'Value.from-dict',     param: reftype.Dict,        result: reftype.Value}],
+			['Value#fromMap',      {name: 'Value.from-map',      param: reftype.Map,         result: reftype.Value}],
 			['Value#asList',       {name: 'Value.as-list',       param: reftype.Value,       result: reftype.List}],
 			['Value#asDict',       {name: 'Value.as-dict',       param: reftype.Value,       result: reftype.Dict}],
+			['Value#asMap',        {name: 'Value.as-map',        param: reftype.Value,       result: reftype.Map}],
 		]);
 	}
 
@@ -116,6 +118,11 @@ export class Value implements HasFuncData {
 		return this.vm.mod.wasm.call('Value.from-dict', [list], this.vm.reftype.Value);
 	}
 
+	/** Creates a new value holding the given Map. */
+	public fromMap(list: binaryen.ExpressionRef /* (ref $Map) */): binaryen.ExpressionRef /* (ref $Value) */ {
+		return this.vm.mod.wasm.call('Value.from-map', [list], this.vm.reftype.Value);
+	}
+
 	/** Returns the value as a List. */
 	public asList(value: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $List) */ {
 		return this.vm.mod.wasm.call('Value.as-list', [value], this.vm.reftype.List);
@@ -124,5 +131,10 @@ export class Value implements HasFuncData {
 	/** Returns the value as a Dict. */
 	public asDict(value: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Dict) */ {
 		return this.vm.mod.wasm.call('Value.as-dict', [value], this.vm.reftype.Dict);
+	}
+
+	/** Returns the value as a Map. */
+	public asMap(value: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Map) */ {
+		return this.vm.mod.wasm.call('Value.as-map', [value], this.vm.reftype.Map);
 	}
 }

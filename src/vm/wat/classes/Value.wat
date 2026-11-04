@@ -62,6 +62,14 @@
 		)
 	)
 )
+(func $Value.from-map (export "Value#fromMap") (param (ref $Map)) (result (ref $Value))
+	(return_call $Value.new-composite
+		(struct.new $CplMap
+			(call $Object.ctr-plus-plus)
+			(local.get 0)
+		)
+	)
+)
 
 
 
@@ -70,4 +78,7 @@
 )
 (func $Value.as-dict (export "Value#asDict") (param (ref $Value)) (result (ref $Dict))
 	(struct.get $CplDict $dict (ref.cast (ref $CplDict) (struct.get $Value $composite (local.get 0))))
+)
+(func $Value.as-map (export "Value#asMap") (param (ref $Value)) (result (ref $Map))
+	(struct.get $CplMap $map (ref.cast (ref $CplMap) (struct.get $Value $composite (local.get 0))))
 )

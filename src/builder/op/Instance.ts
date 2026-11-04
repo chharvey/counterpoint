@@ -123,8 +123,8 @@ export class Instance extends Value {
 					case IntrinsicName.OBJECT:    { return cg.vm.op.isObject(code); }
 					case IntrinsicName.LIST:      { return cg.vm.op.isCplList(code); }
 					case IntrinsicName.DICT:      { return cg.vm.op.isCplDict(code); }
-					case IntrinsicName.SET:       { return cg.vm.op.isMap(code); }
-					case IntrinsicName.MAP:       { return cg.vm.op.isMap(code); }
+					case IntrinsicName.SET:       { return cg.vm.op.isCplMap(code); }
+					case IntrinsicName.MAP:       { return cg.vm.op.isCplMap(code); }
 					case IntrinsicName.EXCEPTION: { return cg.vm.op.isException(code); }
 					case IntrinsicName.MAYBE:     { return cg.vm.op.isMaybe(code); }
 					case IntrinsicName.NONE:      { return cg.vm.op.isNone(code); }
@@ -148,8 +148,8 @@ export class Instance extends Value {
 					case IntrinsicName.OBJECT:    { return cg.vm.op.asObject(code); }
 					case IntrinsicName.LIST:      { return cg.vm.op.asCplList(code); }
 					case IntrinsicName.DICT:      { return cg.vm.op.asCplDict(code); }
-					case IntrinsicName.SET:       { return cg.vm.op.asMap(code); }
-					case IntrinsicName.MAP:       { return cg.vm.op.asMap(code); }
+					case IntrinsicName.SET:       { return cg.vm.op.asCplMap(code); }
+					case IntrinsicName.MAP:       { return cg.vm.op.asCplMap(code); }
 					case IntrinsicName.EXCEPTION: { return cg.vm.op.asException(code); }
 					case IntrinsicName.MAYBE:     { return cg.vm.op.asMaybe(code); }
 					case IntrinsicName.NONE:      { return cg.vm.op.asNone(code); }
