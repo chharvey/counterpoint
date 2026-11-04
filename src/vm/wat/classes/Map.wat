@@ -141,14 +141,14 @@
 	(call $Map.find (local.get $map) (local.get $ant))
 	(local.set $case)
 	(drop)
-	(if (result (ref $Value))
-		(i32.or
+	(if
+		(i32.eqz (i32.or
 			(ref.is_null (local.get $case))
 			(call $Case.is-tombstone (local.get $case))
-		)
-		(then (call $Value.new-primitive (global.get $Vect.NULL)))
-		(else (struct.get $Case $con (local.get $case)))
+		))
+		(then (return (struct.get $Case $con (local.get $case))))
 	)
+	(unreachable)
 )
 
 

@@ -118,7 +118,7 @@ class VmMap implements HasFuncData {
 
 	/**
 	 * Get a Map consequent given an antecedent.
-	 * If there is no consequent at the given antecedent, Counterpoint’s `null` value is returned.
+	 * If there is no consequent at the given antecedent, a trap occurs.
 	 */
 	public get(map: binaryen.ExpressionRef /* (ref $Map) */, ant: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ {
 		return this.vm.mod.wasm.call('Map.get', [map, ant], this.vm.reftype.Value);

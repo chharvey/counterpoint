@@ -79,7 +79,7 @@ export class List implements HasFuncData {
 	 * Get a List item given an index.
 	 * The provided index must be non-negative and strictly less than the List’s length
 	 * (but may be greater than its count).
-	 * If there is no item at the given index, Counterpoint’s `null` value is returned.
+	 * If there is no item at the given index, a trap occurs.
 	 */
 	public get(list: binaryen.ExpressionRef /* (ref $List) */, index: binaryen.ExpressionRef /* i32 */): binaryen.ExpressionRef /* (ref $Value) */ {
 		return this.vm.mod.wasm.call('List.get', [list, index], this.vm.reftype.Value);

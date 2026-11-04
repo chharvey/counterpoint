@@ -31,11 +31,11 @@
 	;; item at the specified index.
 	(local $item (ref null $Value))
 	(local.set $item (array.get $ListInternal (struct.get $List $internal (local.get $list)) (local.get $index)))
-	(if (result (ref $Value))
-		(ref.is_null (local.get $item))
-		(then (call $Value.new-primitive (global.get $Vect.NULL)))
-		(else (ref.as_non_null (local.get $item)))
+	(if
+		(i32.eqz (ref.is_null (local.get $item)))
+		(then (return (ref.as_non_null (local.get $item))))
 	)
+	(unreachable)
 )
 
 

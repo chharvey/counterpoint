@@ -141,14 +141,14 @@
 	(call $Dict.find (local.get $dict) (local.get $key))
 	(local.set $prop)
 	(drop)
-	(if (result (ref $Value))
-		(i32.or
+	(if
+		(i32.eqz (i32.or
 			(ref.is_null (local.get $prop))
 			(call $Property.is-tombstone (local.get $prop))
-		)
-		(then (call $Value.new-primitive (global.get $Vect.NULL)))
-		(else (struct.get $Property $val (local.get $prop)))
+		))
+		(then (return (struct.get $Property $val (local.get $prop))))
 	)
+	(unreachable)
 )
 
 

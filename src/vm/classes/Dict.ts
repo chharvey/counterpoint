@@ -118,7 +118,7 @@ export class Dict implements HasFuncData {
 
 	/**
 	 * Get a Dict value given a key.
-	 * If there is no value at the given key, Counterpoint’s `null` value is returned.
+	 * If there is no value at the given key, a trap occurs.
 	 */
 	public get(dict: binaryen.ExpressionRef /* (ref $Dict) */, key: binaryen.ExpressionRef /* i64 */): binaryen.ExpressionRef /* (ref $Value) */ {
 		return this.vm.mod.wasm.call('Dict.get', [dict, key], this.vm.reftype.Value);
