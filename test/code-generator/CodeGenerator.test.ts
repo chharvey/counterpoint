@@ -223,14 +223,13 @@ test.suite('CodeGenerator', () => {
 			assertEqualBins(
 				cg.codegenMap(),
 				wasm.struct.new([
-					cg.vm.Object.ctrPlusPlus(),
 					wasm.i32.const(0),
 					wasm.array.new_default(cg.vm.heaptype.MapInternal, wasm.i32.const(8)),
 				], cg.vm.heaptype.Map),
 			);
 		});
 		test.test('`#codegenMap` (block) containing (struct.new) with id, count, and internal array, with (call $Map.set).', () => {
-			const {Object: VmObject, Map: VmMap} = cg.vm;
+			const {Map: VmMap} = cg.vm;
 			const map_get: binaryen.ExpressionRef = wasm.local.get(0, cg.vm.reftype.Map);
 			return assertEqualBins(
 				cg.codegenMap(new Map([
@@ -242,7 +241,6 @@ test.suite('CodeGenerator', () => {
 				])),
 				wasm.block(null, [
 					wasm.local.set(0, wasm.struct.new([
-						VmObject.ctrPlusPlus(),
 						wasm.i32.const(5),
 						wasm.array.new_default(cg.vm.heaptype.MapInternal, wasm.i32.const(8)),
 					], cg.vm.heaptype.Map)),

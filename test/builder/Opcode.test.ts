@@ -1284,7 +1284,7 @@ test.suite('Opcode', () => {
 					}`);
 					return assert.strictEqual(
 						binaryen.emitText(new AST.ExprVisitorBuild(builder).visit((stmts[0] as AST.STMT.StatementExpression).expr!).codegen(cg)),
-						binaryen.emitText(cg.vm.Value.newComposite(cg.codegenMap())).replaceAll('$1', '$0'),
+						binaryen.emitText(cg.vm.Value.fromMap(cg.codegenSet())).replaceAll('$1', '$0'),
 					);
 				});
 				test.test('nonempty SET.NEW', () => {
@@ -1294,7 +1294,7 @@ test.suite('Opcode', () => {
 					}`);
 					return assert.strictEqual(
 						binaryen.emitText(new AST.ExprVisitorBuild(builder).visit((stmts[1] as AST.STMT.StatementExpression).expr!).codegen(cg)),
-						binaryen.emitText(cg.vm.Value.newComposite(cg.codegenSet([
+						binaryen.emitText(cg.vm.Value.fromMap(cg.codegenSet([
 							wasm.local.get(0, cg.vm.reftype.Value),
 							genConst(cg, 4.2),
 							wasm.local.get(1, cg.vm.reftype.Value),
@@ -1434,7 +1434,7 @@ test.suite('Opcode', () => {
 					const cg = new CodeGenerator();
 					return assert.strictEqual(
 						binaryen.emitText(new OP.MapNew(new Map(), new TYPE.Map(TYPE.INT, TYPE.FLOAT)).codegen(cg)),
-						binaryen.emitText(cg.vm.Value.newComposite(cg.codegenMap())).replaceAll('$1', '$0'),
+						binaryen.emitText(cg.vm.Value.fromMap(cg.codegenMap())).replaceAll('$1', '$0'),
 					);
 				});
 				test.test('nonempty MAP.NEW', () => {
@@ -1444,7 +1444,7 @@ test.suite('Opcode', () => {
 					}`);
 					return assert.strictEqual(
 						binaryen.emitText(new AST.ExprVisitorBuild(builder).visit((stmts[1] as AST.STMT.StatementExpression).expr!).codegen(cg)),
-						binaryen.emitText(cg.vm.Value.newComposite(cg.codegenMap(new Map([
+						binaryen.emitText(cg.vm.Value.fromMap(cg.codegenMap(new Map([
 							[genConst(cg, 1.1), wasm.local.get(0, cg.vm.reftype.Value)],
 							[genConst(cg, 2.2), genConst(cg, 4.2)],
 							[genConst(cg, 3.3), wasm.local.get(1, cg.vm.reftype.Value)],
@@ -1654,7 +1654,7 @@ test.suite('Opcode', () => {
 					return assertEqualBins(builder.instructions.slice(1).map((instr) => instr.codegen(cg)), [
 						wasm.drop(wasm.block(null, [
 							wasm.local.set(2, wasm.tuple.extract(VmMap.find(
-								Value.cast(base, reftype.Map),
+								Value.asMap(base),
 								genConst(cg, 4.2),
 							), 1)),
 							wasm.if(
@@ -1668,7 +1668,7 @@ test.suite('Opcode', () => {
 						], reftype.Value)),
 						wasm.drop(wasm.block(null, [
 							wasm.local.set(3, wasm.tuple.extract(VmMap.find(
-								Value.cast(base, reftype.Map),
+								Value.asMap(base),
 								genConst(cg, 3.3),
 							), 1)),
 							wasm.if(
@@ -1689,7 +1689,7 @@ test.suite('Opcode', () => {
 						map.[3.3];
 					}`);
 					const {reftype, Value, Map: VmMap} = cg.vm;
-					const map_cast: binaryen.ExpressionRef = Value.cast(wasm.local.get(1, reftype.Value), reftype.Map); // index 0 = nonempty map setup
+					const map_cast: binaryen.ExpressionRef = Value.asMap(wasm.local.get(1, reftype.Value)); // index 0 = nonempty map setup
 					return assertEqualBins(builder.instructions.slice(1).map((instr) => instr.codegen(cg)), [
 						wasm.drop(VmMap.get(
 							map_cast,
@@ -1826,13 +1826,13 @@ test.suite('Opcode', () => {
 						val 'set': {int} = {x, 43, 44};
 						'set';
 					}`);
-					const {reftype, Vect, Value, Map: VmMap} = cg.vm;
+					const {Vect, Value, Map: VmMap} = cg.vm;
 					// there exists no syntax for Set count, so constructing it manually
 					const set  = new AST.ExprVisitorBuild(builder).visit((stmts[2] as AST.STMT.StatementExpression).expr!) as OP.Get;
 					const unop = new OP.Unop(OP.OpCode.SET_COUNT, set, TYPE.NAT);
 					return assertEqualBins(
 						unop.codegen(cg),
-						Value.newPrimitive(Vect.newNat(wasm.i64.extend_i32_u(VmMap.count(Value.cast(set.codegen(cg), reftype.Map))))),
+						Value.newPrimitive(Vect.newNat(wasm.i64.extend_i32_u(VmMap.count(Value.asMap(set.codegen(cg)))))),
 					);
 				});
 				test.test('MAP.COUNT', () => {
@@ -1841,13 +1841,13 @@ test.suite('Opcode', () => {
 						val map: {float -> int} = {1.1 -> x, 2.2 -> 43, 3.3 -> 44};
 						map;
 					}`);
-					const {reftype, Vect, Value, Map: VmMap} = cg.vm;
+					const {Vect, Value, Map: VmMap} = cg.vm;
 					// there exists no syntax for Map count, so constructing it manually
 					const map  = new AST.ExprVisitorBuild(builder).visit((stmts[2] as AST.STMT.StatementExpression).expr!) as OP.Get;
 					const unop = new OP.Unop(OP.OpCode.MAP_COUNT, map, TYPE.NAT);
 					return assertEqualBins(
 						unop.codegen(cg),
-						Value.newPrimitive(Vect.newNat(wasm.i64.extend_i32_u(VmMap.count(Value.cast(map.codegen(cg), reftype.Map))))),
+						Value.newPrimitive(Vect.newNat(wasm.i64.extend_i32_u(VmMap.count(Value.asMap(map.codegen(cg)))))),
 					);
 				});
 				test.test('MAYBE.UNWRAP', () => {
@@ -2186,7 +2186,7 @@ test.suite('Opcode', () => {
 					builder.instructions[0].codegen(cg);
 					return assertEqualBins(builder.instructions.slice(1).map((instr) => instr.codegen(cg)), [
 						wasm.block(null, [
-							wasm.local.set(2, Value.cast(base, reftype.Map)),
+							wasm.local.set(2, Value.asMap(base)),
 							wasm.local.set(3, genConst(cg, 4.2)),
 							wasm.if(
 								Vect.isConst(Value.field(genConst(cg, false)).primitive, true),
@@ -2195,7 +2195,7 @@ test.suite('Opcode', () => {
 							),
 						]),
 						wasm.block(null, [
-							wasm.local.set(4, Value.cast(base, reftype.Map)),
+							wasm.local.set(4, Value.asMap(base)),
 							wasm.local.set(5, genConst(cg, 3.3)),
 							wasm.if(
 								Vect.isConst(Value.field(genConst(cg, true)).primitive, true),
@@ -2214,8 +2214,8 @@ test.suite('Opcode', () => {
 					const {reftype, Value, Map: VmMap} = cg.vm;
 					const base: binaryen.ExpressionRef = wasm.local.get(1, reftype.Value); // index 0 = nonempty map setup
 					return assertEqualBins(builder.instructions.slice(1).map((instr) => instr.codegen(cg)), [
-						VmMap.set(Value.cast(base, reftype.Map), genConst(cg, 4.2), genConst(cg, 21n)),
-						VmMap.set(Value.cast(base, reftype.Map), genConst(cg, 3.3), genConst(cg, 21n)),
+						VmMap.set(Value.asMap(base), genConst(cg, 4.2), genConst(cg, 21n)),
+						VmMap.set(Value.asMap(base), genConst(cg, 3.3), genConst(cg, 21n)),
 					]);
 				});
 			});
@@ -2260,7 +2260,7 @@ test.suite('Opcode', () => {
 							builder.instructions[2].codegen(cg),
 							List.fillFromSet(
 								Value.asList(wasm.local.get(0, reftype.Value)),
-								Value.cast  (wasm.local.get(2, reftype.Value), reftype.Map), // index 1 = nonempty map setup (implementation of Set)
+								Value.asMap (wasm.local.get(2, reftype.Value)), // index 1 = nonempty map setup (implementation of Set)
 							),
 						);
 					});
@@ -2332,7 +2332,7 @@ test.suite('Opcode', () => {
 							builder.instructions[5].codegen(cg),
 							Dict.fillFromSet(
 								Value.asDict(wasm.local.get(0, reftype.Value)),
-								Value.cast  (wasm.local.get(5, reftype.Value), reftype.Map), // index 4 = nonempty map setup (implementation of Set)
+								Value.asMap (wasm.local.get(5, reftype.Value)), // index 4 = nonempty map setup (implementation of Set)
 							),
 						);
 					});
@@ -2346,7 +2346,7 @@ test.suite('Opcode', () => {
 							builder.instructions[2].codegen(cg),
 							Dict.fillFromMap(
 								Value.asDict(wasm.local.get(0, reftype.Value)),
-								Value.cast  (wasm.local.get(2, reftype.Value), reftype.Map), // index 1 = nonempty map setup
+								Value.asMap (wasm.local.get(2, reftype.Value)), // index 1 = nonempty map setup
 							),
 						);
 					});
@@ -2361,8 +2361,8 @@ test.suite('Opcode', () => {
 						return assertEqualBins(
 							builder.instructions[2].codegen(cg),
 							VmMap.fillSetFromTuple(
-								Value.cast(wasm.local.get(0, reftype.Value), reftype.Map),
-								Value.cast(wasm.local.get(1, reftype.Value), reftype.Tuple),
+								Value.asMap(wasm.local.get(0, reftype.Value)),
+								Value.cast (wasm.local.get(1, reftype.Value), reftype.Tuple),
 							),
 						);
 					});
@@ -2375,7 +2375,7 @@ test.suite('Opcode', () => {
 						return assertEqualBins(
 							builder.instructions[2].codegen(cg),
 							VmMap.fillSetFromList(
-								Value.cast  (wasm.local.get(0, reftype.Value), reftype.Map),
+								Value.asMap (wasm.local.get(0, reftype.Value)),
 								Value.asList(wasm.local.get(1, reftype.Value)),
 							),
 						);
@@ -2389,8 +2389,8 @@ test.suite('Opcode', () => {
 						return assertEqualBins(
 							builder.instructions[2].codegen(cg),
 							VmMap.copyFromMap(
-								Value.cast(wasm.local.get(0, reftype.Value), reftype.Map),
-								Value.cast(wasm.local.get(2, reftype.Value), reftype.Map),
+								Value.asMap(wasm.local.get(0, reftype.Value)),
+								Value.asMap(wasm.local.get(2, reftype.Value)),
 							),
 						);
 					});
@@ -2405,8 +2405,8 @@ test.suite('Opcode', () => {
 						return assertEqualBins(
 							builder.instructions[5].codegen(cg),
 							VmMap.fillFromTuple(
-								Value.cast(wasm.local.get(0, reftype.Value), reftype.Map),
-								Value.cast(wasm.local.get(4, reftype.Value), reftype.Tuple),
+								Value.asMap(wasm.local.get(0, reftype.Value)),
+								Value.cast (wasm.local.get(4, reftype.Value), reftype.Tuple),
 							),
 						);
 					});
@@ -2419,7 +2419,7 @@ test.suite('Opcode', () => {
 						return assertEqualBins(
 							builder.instructions[5].codegen(cg),
 							VmMap.fillFromList(
-								Value.cast  (wasm.local.get(0, reftype.Value), reftype.Map),
+								Value.asMap (wasm.local.get(0, reftype.Value)),
 								Value.asList(wasm.local.get(4, reftype.Value)),
 							),
 						);
@@ -2433,8 +2433,8 @@ test.suite('Opcode', () => {
 						return assertEqualBins(
 							builder.instructions[5].codegen(cg),
 							VmMap.fillFromSet(
-								Value.cast(wasm.local.get(0, reftype.Value), reftype.Map),
-								Value.cast(wasm.local.get(5, reftype.Value), reftype.Map), // index 4 = nonempty map setup (implementation of Set)
+								Value.asMap(wasm.local.get(0, reftype.Value)),
+								Value.asMap(wasm.local.get(5, reftype.Value)), // index 4 = nonempty map setup (implementation of Set)
 							),
 						);
 					});
@@ -2447,8 +2447,8 @@ test.suite('Opcode', () => {
 						return assertEqualBins(
 							builder.instructions[2].codegen(cg),
 							VmMap.copyFromMap(
-								Value.cast(wasm.local.get(0, reftype.Value), reftype.Map),
-								Value.cast(wasm.local.get(2, reftype.Value), reftype.Map),
+								Value.asMap(wasm.local.get(0, reftype.Value)),
+								Value.asMap(wasm.local.get(2, reftype.Value)),
 							),
 						);
 					});

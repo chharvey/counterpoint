@@ -113,7 +113,6 @@ export class CollectionDynamicSet extends Instruction {
 		const collection: binaryen.ExpressionRef = this.collection.codegen(cg);
 		const accessor:   binaryen.ExpressionRef = this.accessor.codegen(cg);
 		const value:      binaryen.ExpressionRef = this.value.codegen(cg);
-		const cast_collection = (rt: binaryen.Type): binaryen.ExpressionRef => Value.cast(collection, rt);
 		switch (this.name) {
 			case TypeName.LIST: {
 				return List.set(
@@ -130,7 +129,7 @@ export class CollectionDynamicSet extends Instruction {
 				);
 			}
 			case TypeName.SET: {
-				const base: Local = cg.newLocal(cast_collection(reftype.Map));
+				const base: Local = cg.newLocal(Value.asMap(collection));
 				const xsor: Local = cg.newLocal(accessor, reftype.Value);
 				return wasm.block(null, [
 					base.set(),
@@ -151,7 +150,7 @@ export class CollectionDynamicSet extends Instruction {
 			}
 			case TypeName.MAP: {
 				return VmMap.set(
-					cast_collection(reftype.Map),
+					Value.asMap(collection),
 					accessor,
 					value,
 				);

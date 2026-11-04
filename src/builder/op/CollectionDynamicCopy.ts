@@ -210,7 +210,7 @@ export class CollectionDynamicCopy extends Instruction {
 					case this.source.type instanceof TYPE.Set: {
 						return List.fillFromSet(
 							Value.asList(code_dest),
-							Value.cast(code_src, reftype.Map),
+							Value.asMap(code_src),
 						);
 					}
 					default: {
@@ -255,7 +255,7 @@ export class CollectionDynamicCopy extends Instruction {
 					case this.source.type instanceof TYPE.Set: {
 						return Dict.fillFromSet(
 							Value.asDict(code_dest),
-							Value.cast(code_src, reftype.Map),
+							Value.asMap(code_src),
 						);
 					}
 					// Dict.<T>({@a -> t, @b -> t, @c -> t});
@@ -263,7 +263,7 @@ export class CollectionDynamicCopy extends Instruction {
 					case this.source.type instanceof TYPE.Map: {
 						return Dict.fillFromMap(
 							Value.asDict(code_dest),
-							Value.cast(code_src, reftype.Map),
+							Value.asMap(code_src),
 						);
 					}
 					default: {
@@ -276,15 +276,15 @@ export class CollectionDynamicCopy extends Instruction {
 					// Set.<T>((t, t, t));
 					case this.source.type instanceof TYPE.Tuple: {
 						return VmMap.fillSetFromTuple(
-							Value.cast(code_dest, reftype.Map),
-							Value.cast(code_src,  reftype.Tuple),
+							Value.asMap(code_dest),
+							Value.cast(code_src, reftype.Tuple),
 						);
 					}
 					// Set.<T>([t, t, t]);
 					// Set.<T>(List.<T>((t, t, t)));
 					case this.source.type instanceof TYPE.List: {
 						return VmMap.fillSetFromList(
-							Value.cast(code_dest, reftype.Map),
+							Value.asMap(code_dest),
 							Value.asList(code_src),
 						);
 					}
@@ -292,8 +292,8 @@ export class CollectionDynamicCopy extends Instruction {
 					// Set.<T>(Set.<T>((t, t, t)));
 					case this.source.type instanceof TYPE.Set: {
 						return VmMap.copyFromMap(
-							Value.cast(code_dest, reftype.Map),
-							Value.cast(code_src,  reftype.Map),
+							Value.asMap(code_dest),
+							Value.asMap(code_src),
 						);
 					}
 					default: {
@@ -306,15 +306,15 @@ export class CollectionDynamicCopy extends Instruction {
 					// Map.<K, V>(( (k, v), (k, v), (k, v) ));
 					case this.source.type instanceof TYPE.Tuple: {
 						return VmMap.fillFromTuple(
-							Value.cast(code_dest, reftype.Map),
-							Value.cast(code_src,  reftype.Tuple),
+							Value.asMap(code_dest),
+							Value.cast(code_src, reftype.Tuple),
 						);
 					}
 					// Map.<K, V>([ (k, v), (k, v), (k, v) ]);
 					// Map.<K, V>(List.<(K, V)>(( (k, v), (k, v), (k, v) )));
 					case this.source.type instanceof TYPE.List: {
 						return VmMap.fillFromList(
-							Value.cast(code_dest, reftype.Map),
+							Value.asMap(code_dest),
 							Value.asList(code_src),
 						);
 					}
@@ -322,16 +322,16 @@ export class CollectionDynamicCopy extends Instruction {
 					// Map.<K, V>(Set.<(K, V)>(( (k, v), (k, v), (k, v) )));
 					case this.source.type instanceof TYPE.Set: {
 						return VmMap.fillFromSet(
-							Value.cast(code_dest, reftype.Map),
-							Value.cast(code_src,  reftype.Map),
+							Value.asMap(code_dest),
+							Value.asMap(code_src),
 						);
 					}
 					// Map.<K, V>({k -> v, k -> v, k -> v});
 					// Map.<K, V>(Map.<K, V>(( (k, v), (k, v), (k, v) )));
 					case this.source.type instanceof TYPE.Map: {
 						return VmMap.copyFromMap(
-							Value.cast(code_dest, reftype.Map),
-							Value.cast(code_src,  reftype.Map),
+							Value.asMap(code_dest),
+							Value.asMap(code_src),
 						);
 					}
 					default: {

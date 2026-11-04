@@ -326,13 +326,12 @@ export class CodeGenerator {
 	 * @return      `(struct.new $Map <count> (array.new_fixed $MapInternal <...cases>))`
 	 */
 	public codegenMap(cases: ReadonlyMap<binaryen.ExpressionRef /* (ref $Value) */, binaryen.ExpressionRef /* (ref $Value) */> = new Map()): binaryen.ExpressionRef /* (ref $Map) */ {
-		const {vm: {heaptype, reftype, Object: VmObject, Map: VmMap}, mod: {wasm}} = this;
+		const {vm: {heaptype, reftype, Map: VmMap}, mod: {wasm}} = this;
 		let capacity: number = 8;
 		while (cases.size > capacity * CodeGenerator.#LOAD_FACTOR) {
 			capacity *= 2;
 		}
 		const map_obj = wasm.struct.new([
-			VmObject.ctrPlusPlus(),
 			wasm.i32.const(cases.size),
 			wasm.array.new_default(heaptype.MapInternal, wasm.i32.const(capacity)),
 		], heaptype.Map);
