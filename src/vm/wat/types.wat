@@ -44,6 +44,12 @@
 		;; the array of Dict properties; mutable to allow reallocation
 		(field $internal (mut (ref $DictInternal)))
 	))
+	(type $Map (struct
+		;; number of items currently in the array, including tombstones (for total capacity, get its `(array.len)`); mutable to allow array mutation
+		(field $size (mut i32))
+		;; the array of Map cases; mutable to allow reallocation
+		(field $internal (mut (ref $MapInternal)))
+	))
 
 
 
@@ -96,16 +102,14 @@
 	)))
 
 	;; precursor to the Counterpoint `Map` class
-	(type $Map (sub final $Object (struct
+	(type $CplMap (sub final $Object (struct
 		;; --- inherited ---
 		;; unique id for hashing
 		(field $id i64)
 
 		;; --- own ---
-		;; number of items currently in the array, including tombstones (for total capacity, get its `(array.len)`); mutable to allow array mutation
-		(field $size (mut i32))
-		;; the array of Map cases; mutable to allow reallocation
-		(field $internal (mut (ref $MapInternal)))
+		;; the underlying implementation
+		(field $map (ref $Map))
 	)))
 
 	;; precursor to the Counterpoint `Exception` class

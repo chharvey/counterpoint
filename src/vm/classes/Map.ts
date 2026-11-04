@@ -8,14 +8,6 @@ import type {
 
 
 
-/** Struct field constant indices. */
-const FIELD = {
-	/** `$Map.$size`     */ SIZE:     1,
-	/** `$Map.$internal` */ INTERNAL: 2,
-} as const;
-
-
-
 /** Precursor to the Counterpoint `Map` class. */
 class VmMap implements HasFuncData {
 	public constructor(private readonly vm: VirtualMachine) {}
@@ -85,23 +77,6 @@ class VmMap implements HasFuncData {
 		]);
 	}
 
-
-	public field(ref: binaryen.ExpressionRef /* (ref null $Map) */): {
-		/** @return `(struct.get $Map $size     <ref>)` */ readonly size:     binaryen.ExpressionRef /* i32 */,
-		/** @return `(struct.get $Map $internal <ref>)` */ readonly internal: binaryen.ExpressionRef /* (ref $MapInternal) */,
-
-		/** @return `(struct.set $Map $size     <ref> <val>)` */ setSize    (val: binaryen.ExpressionRef /* i32 */):                binaryen.ExpressionRef /* void */,
-		/** @return `(struct.set $Map $internal <ref> <val>)` */ setInternal(val: binaryen.ExpressionRef /* (ref $MapInternal) */): binaryen.ExpressionRef /* void */,
-	} {
-		const {mod: {wasm}, reftype} = this.vm;
-		return {
-			get size()     { return wasm.struct.get(FIELD.SIZE,     ref, binaryen.Type.i32); },
-			get internal() { return wasm.struct.get(FIELD.INTERNAL, ref, reftype.MapInternal); },
-
-			setSize(val)     { return wasm.struct.set(FIELD.SIZE,     ref, val); },
-			setInternal(val) { return wasm.struct.set(FIELD.INTERNAL, ref, val); },
-		};
-	}
 
 	/**
 	 * Returns the number of “live” elements in the Map.
