@@ -28,11 +28,6 @@ export class Maybe<T extends Value = Value> extends Value {
 		}
 	}
 
-	/** @implements Value */
-	public override get isEmpty(): boolean {
-		return !this.value;
-	}
-
 	public get isNone(): boolean {
 		return !this.value;
 	}
