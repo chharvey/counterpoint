@@ -108,3 +108,67 @@
 
 	(local.get $item)
 )
+
+
+
+(func $List.copy-from-tuple (export "List#copyFromTuple") (param $dest (ref $List)) (param $src (ref $Tuple))
+	(local $dest-internal (ref $ListInternal))
+	(local $src-internal  (ref $TupleInternal))
+
+	(local.set $dest-internal (struct.get $List  $internal (local.get $dest)))
+	(local.set $src-internal  (struct.get $Tuple $internal (local.get $src)))
+
+	(call $List.adjust-capacity (local.get $dest) (call $util:capacity-needed (array.len (local.get $src-internal))))
+	(array.copy $ListInternal $TupleInternal
+		(local.get $dest-internal)
+		(i32.const 0)
+		(local.get $src-internal)
+		(i32.const 0)
+		(array.len (local.get $src-internal))
+	)
+)
+(func $List.copy-from-list (export "List#copyFromList") (param $dest (ref $List)) (param $src (ref $List))
+	(local $dest-internal (ref $ListInternal))
+	(local $src-internal  (ref $ListInternal))
+
+	(local.set $dest-internal (struct.get $List $internal (local.get $dest)))
+	(local.set $src-internal  (struct.get $List $internal (local.get $src)))
+
+	(call $List.adjust-capacity (local.get $dest) (array.len (local.get $src-internal)))
+	(array.copy $ListInternal $ListInternal
+		(local.get $dest-internal)
+		(i32.const 0)
+		(local.get $src-internal)
+		(i32.const 0)
+		(array.len (local.get $src-internal))
+	)
+)
+
+
+
+(func $List.fill-from-set (export "List#fillFromSet") (param $dest (ref $List)) (param $src (ref $Map))
+	(local $src-internal (ref $MapInternal))
+	(local $j            i32)
+	(local $i            i32)
+	(local $item         (ref null $Case))
+
+	(local.set $src-internal (struct.get $Map $internal (local.get $src)))
+	(local.set $j (i32.const 0))
+
+	(block $exit
+		(local.set $i (i32.const 0))
+		(loop $repeat
+			(br_if $exit (i32.gt_u (local.get $i) (array.len (local.get $src-internal))))
+			(local.set $item (array.get $MapInternal (local.get $src-internal) (local.get $i)))
+			(if
+				(i32.eqz (ref.is_null (local.get $item)))
+				(then
+					(call $List.set (local.get $dest) (local.get $j) (struct.get $Case $ant (local.get $item)))
+					(local.set $j (i32.add (local.get $j) (i32.const 1)))
+				)
+			)
+			(local.set $i (i32.add (local.get $i) (i32.const 1)))
+			(br $repeat)
+		)
+	)
+)

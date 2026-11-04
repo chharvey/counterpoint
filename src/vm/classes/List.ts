@@ -8,14 +8,6 @@ import type {
 
 
 
-/** Struct field constant indices. */
-const FIELD = {
-	/** `$List.$size`     */ SIZE:     1,
-	/** `$List.$internal` */ INTERNAL: 2,
-} as const;
-
-
-
 /** Precursor to the Counterpoint `List` class. */
 export class List implements HasFuncData {
 	public constructor(private readonly vm: VirtualMachine) {}
@@ -47,26 +39,24 @@ export class List implements HasFuncData {
 				param:  binaryen.createType([reftype.List, binaryen.Type.i32]),
 				result: reftype.Value,
 			}],
+			['List#copyFromTuple', {
+				name:   'List.copy-from-tuple',
+				param:  binaryen.createType([reftype.List, reftype.Tuple]),
+				result: binaryen.Type.none,
+			}],
+			['List#copyFromList', {
+				name:   'List.copy-from-list',
+				param:  binaryen.createType([reftype.List, reftype.List]),
+				result: binaryen.Type.none,
+			}],
+			['List#fillFromSet', {
+				name:   'List.fill-from-set',
+				param:  binaryen.createType([reftype.List, reftype.Map]),
+				result: binaryen.Type.none,
+			}],
 		]);
 	}
 
-
-	public field(ref: binaryen.ExpressionRef /* (ref null $List) */): {
-		/** @return `(struct.get $List $size     <ref>)` */ readonly size:     binaryen.ExpressionRef /* i32 */,
-		/** @return `(struct.get $List $internal <ref>)` */ readonly internal: binaryen.ExpressionRef /* (ref $ListInternal) */,
-
-		/** @return `(struct.set $List $size     <ref> <val>)` */ setSize    (val: binaryen.ExpressionRef /* i32 */):                 binaryen.ExpressionRef /* void */,
-		/** @return `(struct.set $List $internal <ref> <val>)` */ setInternal(val: binaryen.ExpressionRef /* (ref $ListInternal) */): binaryen.ExpressionRef /* void */,
-	} {
-		const {mod: {wasm}, reftype} = this.vm;
-		return {
-			get size()     { return wasm.struct.get(FIELD.SIZE,     ref, binaryen.Type.i32); },
-			get internal() { return wasm.struct.get(FIELD.INTERNAL, ref, reftype.ListInternal); },
-
-			setSize(val)     { return wasm.struct.set(FIELD.SIZE,     ref, val); },
-			setInternal(val) { return wasm.struct.set(FIELD.INTERNAL, ref, val); },
-		};
-	}
 
 	/**
 	 * Returns the number of “live” elements in the List.
@@ -113,5 +103,31 @@ export class List implements HasFuncData {
 	 */
 	public delete(list: binaryen.ExpressionRef /* (ref $List) */, index: binaryen.ExpressionRef /* i32 */): binaryen.ExpressionRef /* (ref $Value) */ {
 		return this.vm.mod.wasm.call('List.delete', [list, index], this.vm.reftype.Value);
+	}
+
+	/**
+	 * Copy the items from a given source Tuple into the destination List.
+	 */
+	public copyFromTuple(dest: binaryen.ExpressionRef /* (ref $List) */, src: binaryen.ExpressionRef /* (ref $Tuple) */): binaryen.ExpressionRef /* void */ {
+		return this.vm.mod.wasm.call('List.copy-from-tuple', [dest, src], binaryen.Type.none);
+	}
+
+	/**
+	 * Copy the items from a given source List into the destination List.
+	 */
+	public copyFromList(dest: binaryen.ExpressionRef /* (ref $List) */, src: binaryen.ExpressionRef /* (ref $List) */): binaryen.ExpressionRef /* void */ {
+		return this.vm.mod.wasm.call('List.copy-from-list', [dest, src], binaryen.Type.none);
+	}
+
+	/**
+	 * Fill the destination List with items from the source Map (as a Set).
+	 *
+	 * NOTE: This method iterates over the Set in internal array order, and inserts them into the List in that order.
+	 * The items in the resulting List do not necessarily appear in the same order as they were inserted into the Set.
+	 * This may be surprising to programmers who expect the copy to preserve order;
+	 * however, Set semantics explicitly state that programmers should not expect iteration to occur in any particular order.
+	 */
+	public fillFromSet(dest: binaryen.ExpressionRef /* (ref $List) */, src: binaryen.ExpressionRef /* (ref $Map) */): binaryen.ExpressionRef /* void */ {
+		return this.vm.mod.wasm.call('List.fill-from-set', [dest, src], binaryen.Type.none);
 	}
 }

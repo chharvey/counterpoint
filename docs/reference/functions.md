@@ -52,8 +52,8 @@ The function below does nothing but evaluate a string when called.
 Typically, void functions will have observable side-effects, such as modifying non-local variables.
 ```cpl
 func my_void_function(message: str): void {
-	"""Here is the message: {{ message }}""";
-	%                          ^ parameter
+	"""Here is the message: {{message}}""";
+	%                         ^ parameter
 	return;
 }
 my_void_function("Hello world!"); % evaluates the string
@@ -183,8 +183,8 @@ For example, inside an IIFE we can perform prerequisite computations before retu
 ```cpl
 val message: str = (\(): str {
 	val mut m: str = "";
-	set m = """{{ m }}Hello """;
-	set m = """{{ m }}world!""";
+	set m = """{{m}}Hello """;
+	set m = """{{m}}world!""";
 	return m;
 })();
 % `m` is not visible outside the function
@@ -380,7 +380,7 @@ func iterate(list: [float], callback: \(item: float) => void): void {
 And a caller might use it as so:
 ```cpl
 iterate([2.0, 4.0, 8.0, 16.0], \($item: float): void {
-	"""2 to the {{ item }} power is {{ 2.0 ^ item }}""";
+	"""2 to the {{item}} power is {{2.0 ^ item}}""";
 	return;
 });
 ```
@@ -388,7 +388,7 @@ If the caller doesn’t like `item` as the callback parameter name,
 they can [alias](#named-parameters-and-arguments) it to a more sensible name:
 ```cpl
 iterate([2.0, 4.0, 8.0, 16.0], (item= n: float): void {
-	"""2 to the {{ n }} power is {{ 2.0 ^ n }}""";
+	"""2 to the {{n}} power is {{2.0 ^ n}}""";
 	return;
 });
 ```
@@ -408,7 +408,7 @@ func iterate(list: [float], callback: \(float) => void): void {
 
 iterate([2.0, 4.0, 8.0, 16.0], \(n: float): void {
 %                                ^ no parameter aliasing necessary
-	"""2 to the {{ n }} power is {{ 2.0 ^ n }}""";
+	"""2 to the {{n}} power is {{2.0 ^ n}}""";
 	return;
 });
 ```
@@ -424,7 +424,7 @@ This might be counter-intuitive for some programmers who are used to evaluation 
 ```cpl
 func say_all(message1: str, message2: str): void {
 	print("printing...");
-	return print("""{{ message1 }} {{ message2 }}""");
+	return print("""{{message1}} {{message2}}""");
 }
 func say_hello(): str {
 	print("hello");
@@ -449,7 +449,7 @@ func say_all(message1: \() => str, message2: \() => str): void {
 	% call in any order you like
 	val w: str = message2();
 	val h: str = message1();
-	return print("""{{ h }} {{ w }}""");
+	return print("""{{h}} {{w}}""");
 }
 func say_hello(): str {
 	print("hello");

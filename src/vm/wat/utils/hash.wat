@@ -169,7 +169,7 @@
 
 
 ;; hash an $Object.
-;; Applies to all Objects, including Lists, Dicts, and Maps.
+;; Applies to all reference Objects.
 ;; Returns its id.
 (func $!Object.hash (param $obj (ref $Object)) (result i64)
 	(struct.get $Object $id (local.get $obj))

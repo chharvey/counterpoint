@@ -268,7 +268,7 @@ export class CodeGenerator {
 	 * @return      `(struct.new $List <count> (array.new_fixed $ListInternal <...items>))`
 	 */
 	public codegenList(items: readonly (binaryen.ExpressionRef /* (ref $Value) */)[] = []): binaryen.ExpressionRef /* (ref $List) */ {
-		const {vm: {heaptype, Object: VmObject}, mod: {wasm}} = this;
+		const {vm: {heaptype}, mod: {wasm}} = this;
 		let capacity: number = 8;
 		while (items.length > capacity * CodeGenerator.#LOAD_FACTOR) {
 			capacity *= 2;
@@ -278,7 +278,6 @@ export class CodeGenerator {
 			(_, i) => items[i] ?? wasm.ref.null(heaptype.Value),
 		);
 		return wasm.struct.new([
-			VmObject.ctrPlusPlus(),
 			wasm.i32.const(items.length),
 			wasm.array.new_fixed(heaptype.ListInternal, entries),
 		], heaptype.List);
@@ -292,7 +291,7 @@ export class CodeGenerator {
 	 * @return      `(struct.new $Dict <count> (array.new_fixed $DictInternal <...props>))`
 	 */
 	public codegenDict(props: ReadonlyMap<bigint, binaryen.ExpressionRef /* (ref $Property) */> = new Map()): binaryen.ExpressionRef /* (ref $Dict) */ {
-		const {vm: {heaptype, Object: VmObject}, mod: {wasm}} = this;
+		const {vm: {heaptype}, mod: {wasm}} = this;
 		let capacity: number = 8;
 		while (props.size > capacity * CodeGenerator.#LOAD_FACTOR) {
 			capacity *= 2;
@@ -300,7 +299,6 @@ export class CodeGenerator {
 		const entries = new Array<binaryen.ExpressionRef | undefined>(capacity).fill(undefined);
 		props.forEach((code, id) => insert_entry(entries, Number(id) % entries.length, code));
 		return wasm.struct.new([
-			VmObject.ctrPlusPlus(),
 			wasm.i32.const(props.size),
 			wasm.array.new_fixed(
 				heaptype.DictInternal,
@@ -328,13 +326,12 @@ export class CodeGenerator {
 	 * @return      `(struct.new $Map <count> (array.new_fixed $MapInternal <...cases>))`
 	 */
 	public codegenMap(cases: ReadonlyMap<binaryen.ExpressionRef /* (ref $Value) */, binaryen.ExpressionRef /* (ref $Value) */> = new Map()): binaryen.ExpressionRef /* (ref $Map) */ {
-		const {vm: {heaptype, reftype, Object: VmObject, Map: VmMap}, mod: {wasm}} = this;
+		const {vm: {heaptype, reftype, Map: VmMap}, mod: {wasm}} = this;
 		let capacity: number = 8;
 		while (cases.size > capacity * CodeGenerator.#LOAD_FACTOR) {
 			capacity *= 2;
 		}
 		const map_obj = wasm.struct.new([
-			VmObject.ctrPlusPlus(),
 			wasm.i32.const(cases.size),
 			wasm.array.new_default(heaptype.MapInternal, wasm.i32.const(capacity)),
 		], heaptype.Map);
@@ -422,22 +419,19 @@ export class CodeGenerator {
 			this.mod.imports.addGlobal(data.name, extern_mod_name, export_name, data.type, false)
 		));
 		[
-			this.vm.util      .funcImportDataMap,
-			this.vm.op        .funcImportDataMap,
-			this.vm.Vect      .funcImportDataMap,
-			this.vm.Value     .funcImportDataMap,
-			this.vm.Property  .funcImportDataMap,
-			this.vm.Case      .funcImportDataMap,
-			this.vm.String    .funcImportDataMap,
-			this.vm.Tuple     .funcImportDataMap,
-			this.vm.Record    .funcImportDataMap,
-			this.vm.Object    .funcImportDataMap,
-			this.vm.List      .funcImportDataMap,
-			this.vm.Dict      .funcImportDataMap,
-			this.vm.Map       .funcImportDataMap,
-			this.vm.Exception .funcImportDataMap,
-			this.vm.Maybe     .funcImportDataMap,
-			this.vm.Result    .funcImportDataMap,
+			this.vm.util     .funcImportDataMap,
+			this.vm.op       .funcImportDataMap,
+			this.vm.Vect     .funcImportDataMap,
+			this.vm.Value    .funcImportDataMap,
+			this.vm.Property .funcImportDataMap,
+			this.vm.Case     .funcImportDataMap,
+			this.vm.List     .funcImportDataMap,
+			this.vm.Dict     .funcImportDataMap,
+			this.vm.Map      .funcImportDataMap,
+			this.vm.String   .funcImportDataMap,
+			this.vm.Tuple    .funcImportDataMap,
+			this.vm.Record   .funcImportDataMap,
+			this.vm.Object   .funcImportDataMap,
 		].forEach((datamap) => datamap.forEach((data, export_name) => (
 			this.mod.imports.addFunction(data.name, extern_mod_name, export_name, data.param, data.result)
 		)));

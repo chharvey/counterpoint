@@ -109,7 +109,6 @@ export class CollectionDynamicGet extends Value {
 
 		const collection: binaryen.ExpressionRef = this.collection.codegen(cg);
 		const accessor:   binaryen.ExpressionRef = this.accessor.codegen(cg);
-		const cast_collection = (rt: binaryen.Type): binaryen.ExpressionRef => VmValue.cast(collection, rt);
 		/*
 		 * The IR already handled logic for if the collection itself is nullish, so assume by this point it’s not.
 		 * But we still need to check for nullish values in the collection.
@@ -117,19 +116,19 @@ export class CollectionDynamicGet extends Value {
 		switch (this.name) {
 			case TypeName.LIST: {
 				return List.get(
-					cast_collection(reftype.List),
+					VmValue.asList(collection),
 					wasm.i32.wrap_i64(Vect.asInt(VmValue.field(accessor).primitive)),
 				);
 			}
 			case TypeName.DICT: {
 				return Dict.get(
-					cast_collection(reftype.Dict),
+					VmValue.asDict(collection),
 					Vect.asNat(VmValue.field(accessor).primitive),
 				);
 			}
 			case TypeName.SET: {
 				const maybe_case: Local = cg.newLocal(wasm.tuple.extract(VmMap.find(
-					cast_collection(reftype.Map),
+					VmValue.asMap(collection),
 					accessor,
 				), 1));
 
@@ -148,7 +147,7 @@ export class CollectionDynamicGet extends Value {
 			}
 			case TypeName.MAP: {
 				return VmMap.get(
-					cast_collection(reftype.Map),
+					VmValue.asMap(collection),
 					accessor,
 				);
 			}
