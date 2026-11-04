@@ -182,7 +182,7 @@ export class CollectionDynamicCopy extends Instruction {
 
 	@memoizeMethod
 	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
-		const {reftype, Value, List, Dict, Map: VmMap} = cg.vm;
+		const {Value, List, Dict, Map: VmMap} = cg.vm;
 
 		const code_dest: binaryen.ExpressionRef = this.destination.codegen(cg);
 		const code_src:  binaryen.ExpressionRef = this.source     .codegen(cg);
@@ -193,24 +193,24 @@ export class CollectionDynamicCopy extends Instruction {
 					// List.<T>((t, t, t));
 					case this.source.type instanceof TYPE.Tuple: {
 						return List.copyFromTuple(
-							Value.cast(code_dest, reftype.List),
-							Value.cast(code_src,  reftype.Tuple),
+							Value.asList(code_dest),
+							Value.asTuple(code_src),
 						);
 					}
 					// List.<T>([t, t, t]);
 					// List.<T>(List.<T>((t, t, t)));
 					case this.source.type instanceof TYPE.List: {
 						return List.copyFromList(
-							Value.cast(code_dest, reftype.List),
-							Value.cast(code_src,  reftype.List),
+							Value.asList(code_dest),
+							Value.asList(code_src),
 						);
 					}
 					// List.<T>({t, t, t});
 					// List.<T>(Set.<T>((t, t, t)));
 					case this.source.type instanceof TYPE.Set: {
 						return List.fillFromSet(
-							Value.cast(code_dest, reftype.List),
-							Value.cast(code_src,  reftype.Map),
+							Value.asList(code_dest),
+							Value.asMap(code_src),
 						);
 					}
 					default: {
@@ -223,47 +223,47 @@ export class CollectionDynamicCopy extends Instruction {
 					// Dict.<T>(( (@a, t), (@b, t), (@c, t) ));
 					case this.source.type instanceof TYPE.Tuple: {
 						return Dict.fillFromTuple(
-							Value.cast(code_dest, reftype.Dict),
-							Value.cast(code_src,  reftype.Tuple),
+							Value.asDict(code_dest),
+							Value.asTuple(code_src),
 						);
 					}
 					// Dict.<T>((a= t, b= t, c= t));
 					case this.source.type instanceof TYPE.Record: {
 						return Dict.copyFromRecord(
-							Value.cast(code_dest, reftype.Dict),
-							Value.cast(code_src,  reftype.Record),
+							Value.asDict(code_dest),
+							Value.asRecord(code_src),
 						);
 					}
 					// Dict.<T>([ (@a, t), (@b, t), (@c, t) ]);
 					// Dict.<T>(List.<(sym, T)>(( (@a, t), (@b, t), (@c, t) )));
 					case this.source.type instanceof TYPE.List: {
 						return Dict.fillFromList(
-							Value.cast(code_dest, reftype.Dict),
-							Value.cast(code_src,  reftype.List),
+							Value.asDict(code_dest),
+							Value.asList(code_src),
 						);
 					}
 					// Dict.<T>([a= t, b= t, c= t]);
 					// Dict.<T>(Dict.<T>( (a= t, b= t, c= t) ));
 					case this.source.type instanceof TYPE.Dict: {
 						return Dict.copyFromDict(
-							Value.cast(code_dest, reftype.Dict),
-							Value.cast(code_src,  reftype.Dict),
+							Value.asDict(code_dest),
+							Value.asDict(code_src),
 						);
 					}
 					// Dict.<T>({ (@a, t), (@b, t), (@c, t) });
 					// Dict.<T>(Set.<(sym, T)>(( (@a, t), (@b, t), (@c, t) )));
 					case this.source.type instanceof TYPE.Set: {
 						return Dict.fillFromSet(
-							Value.cast(code_dest, reftype.Dict),
-							Value.cast(code_src,  reftype.Map),
+							Value.asDict(code_dest),
+							Value.asMap(code_src),
 						);
 					}
 					// Dict.<T>({@a -> t, @b -> t, @c -> t});
 					// Dict.<T>(Map.<sym, T>(( (@a, t), (@b, t), (@c, t) )));
 					case this.source.type instanceof TYPE.Map: {
 						return Dict.fillFromMap(
-							Value.cast(code_dest, reftype.Dict),
-							Value.cast(code_src,  reftype.Map),
+							Value.asDict(code_dest),
+							Value.asMap(code_src),
 						);
 					}
 					default: {
@@ -276,24 +276,24 @@ export class CollectionDynamicCopy extends Instruction {
 					// Set.<T>((t, t, t));
 					case this.source.type instanceof TYPE.Tuple: {
 						return VmMap.fillSetFromTuple(
-							Value.cast(code_dest, reftype.Map),
-							Value.cast(code_src,  reftype.Tuple),
+							Value.asMap(code_dest),
+							Value.asTuple(code_src),
 						);
 					}
 					// Set.<T>([t, t, t]);
 					// Set.<T>(List.<T>((t, t, t)));
 					case this.source.type instanceof TYPE.List: {
 						return VmMap.fillSetFromList(
-							Value.cast(code_dest, reftype.Map),
-							Value.cast(code_src,  reftype.List),
+							Value.asMap(code_dest),
+							Value.asList(code_src),
 						);
 					}
 					// Set.<T>({t, t, t});
 					// Set.<T>(Set.<T>((t, t, t)));
 					case this.source.type instanceof TYPE.Set: {
 						return VmMap.copyFromMap(
-							Value.cast(code_dest, reftype.Map),
-							Value.cast(code_src,  reftype.Map),
+							Value.asMap(code_dest),
+							Value.asMap(code_src),
 						);
 					}
 					default: {
@@ -306,32 +306,32 @@ export class CollectionDynamicCopy extends Instruction {
 					// Map.<K, V>(( (k, v), (k, v), (k, v) ));
 					case this.source.type instanceof TYPE.Tuple: {
 						return VmMap.fillFromTuple(
-							Value.cast(code_dest, reftype.Map),
-							Value.cast(code_src,  reftype.Tuple),
+							Value.asMap(code_dest),
+							Value.asTuple(code_src),
 						);
 					}
 					// Map.<K, V>([ (k, v), (k, v), (k, v) ]);
 					// Map.<K, V>(List.<(K, V)>(( (k, v), (k, v), (k, v) )));
 					case this.source.type instanceof TYPE.List: {
 						return VmMap.fillFromList(
-							Value.cast(code_dest, reftype.Map),
-							Value.cast(code_src,  reftype.List),
+							Value.asMap(code_dest),
+							Value.asList(code_src),
 						);
 					}
 					// Map.<K, V>({ (k, v), (k, v), (k, v) });
 					// Map.<K, V>(Set.<(K, V)>(( (k, v), (k, v), (k, v) )));
 					case this.source.type instanceof TYPE.Set: {
 						return VmMap.fillFromSet(
-							Value.cast(code_dest, reftype.Map),
-							Value.cast(code_src,  reftype.Map),
+							Value.asMap(code_dest),
+							Value.asMap(code_src),
 						);
 					}
 					// Map.<K, V>({k -> v, k -> v, k -> v});
 					// Map.<K, V>(Map.<K, V>(( (k, v), (k, v), (k, v) )));
 					case this.source.type instanceof TYPE.Map: {
 						return VmMap.copyFromMap(
-							Value.cast(code_dest, reftype.Map),
-							Value.cast(code_src,  reftype.Map),
+							Value.asMap(code_dest),
+							Value.asMap(code_src),
 						);
 					}
 					default: {

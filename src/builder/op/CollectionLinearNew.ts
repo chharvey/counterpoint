@@ -61,8 +61,8 @@ export class CollectionLinearNew extends Value {
 	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
 		switch (this.name) {
 			case TypeName.TUPLE: { return cg.vm.Value.newComposite(cg.codegenTuple (this.items.map((item) => item.codegen(cg)))); }
-			case TypeName.LIST:  { return cg.vm.Value.newComposite(cg.codegenList  (this.items.map((item) => item.codegen(cg)))); }
-			case TypeName.SET:   { return cg.vm.Value.newComposite(cg.codegenSet   (this.items.map((item) => item.codegen(cg)))); }
+			case TypeName.LIST:  { return cg.vm.Value.fromList    (cg.codegenList  (this.items.map((item) => item.codegen(cg)))); }
+			case TypeName.SET:   { return cg.vm.Value.fromMap     (cg.codegenSet   (this.items.map((item) => item.codegen(cg)))); }
 		}
 	}
 }

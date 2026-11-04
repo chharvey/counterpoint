@@ -8,14 +8,6 @@ import type {
 
 
 
-/** Struct field constant indices. */
-const FIELD = {
-	/** `$List.$size`     */ SIZE:     1,
-	/** `$List.$internal` */ INTERNAL: 2,
-} as const;
-
-
-
 /** Precursor to the Counterpoint `List` class. */
 export class List implements HasFuncData {
 	public constructor(private readonly vm: VirtualMachine) {}
@@ -65,23 +57,6 @@ export class List implements HasFuncData {
 		]);
 	}
 
-
-	public field(ref: binaryen.ExpressionRef /* (ref null $List) */): {
-		/** @return `(struct.get $List $size     <ref>)` */ readonly size:     binaryen.ExpressionRef /* i32 */,
-		/** @return `(struct.get $List $internal <ref>)` */ readonly internal: binaryen.ExpressionRef /* (ref $ListInternal) */,
-
-		/** @return `(struct.set $List $size     <ref> <val>)` */ setSize    (val: binaryen.ExpressionRef /* i32 */):                 binaryen.ExpressionRef /* void */,
-		/** @return `(struct.set $List $internal <ref> <val>)` */ setInternal(val: binaryen.ExpressionRef /* (ref $ListInternal) */): binaryen.ExpressionRef /* void */,
-	} {
-		const {mod: {wasm}, reftype} = this.vm;
-		return {
-			get size()     { return wasm.struct.get(FIELD.SIZE,     ref, binaryen.Type.i32); },
-			get internal() { return wasm.struct.get(FIELD.INTERNAL, ref, reftype.ListInternal); },
-
-			setSize(val)     { return wasm.struct.set(FIELD.SIZE,     ref, val); },
-			setInternal(val) { return wasm.struct.set(FIELD.INTERNAL, ref, val); },
-		};
-	}
 
 	/**
 	 * Returns the number of “live” elements in the List.

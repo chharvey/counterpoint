@@ -8,14 +8,6 @@ import type {
 
 
 
-/** Struct field constant indices. */
-const FIELD = {
-	/** `$Case.$ant` */ ANT: 0,
-	/** `$Case.$con` */ CON: 1,
-} as const;
-
-
-
 /** An entry in a Map. */
 export class Case implements HasFuncData {
 	public constructor(private readonly vm: VirtualMachine) {}
@@ -29,17 +21,6 @@ export class Case implements HasFuncData {
 		]);
 	}
 
-
-	public field(ref: binaryen.ExpressionRef /* (ref null $Case) */): {
-		/** @return `(struct.get $Case $ant <ref>)` */ readonly ant: binaryen.ExpressionRef /* (ref $Value) */,
-		/** @return `(struct.get $Case $con <ref>)` */ readonly con: binaryen.ExpressionRef /* (ref $Value) */,
-	} {
-		const {mod: {wasm}, reftype} = this.vm;
-		return {
-			get ant() { return wasm.struct.get(FIELD.ANT, ref, reftype.Value); },
-			get con() { return wasm.struct.get(FIELD.CON, ref, reftype.Value); },
-		};
-	}
 
 	/**
 	 * Returns whether a Case is a “tombstone”, that is, whether it represents a deletion in a Map.

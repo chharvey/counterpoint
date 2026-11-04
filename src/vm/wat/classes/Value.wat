@@ -43,3 +43,54 @@
 		(else (call $Value.new-primitive (global.get $Vect.FALSE)))
 	)
 )
+
+
+
+(func $Value.from-list (export "Value#fromList") (param (ref $List)) (result (ref $Value))
+	(return_call $Value.new-composite
+		(struct.new $CplList
+			(call $Object.ctr-plus-plus)
+			(local.get 0)
+		)
+	)
+)
+(func $Value.from-dict (export "Value#fromDict") (param (ref $Dict)) (result (ref $Value))
+	(return_call $Value.new-composite
+		(struct.new $CplDict
+			(call $Object.ctr-plus-plus)
+			(local.get 0)
+		)
+	)
+)
+(func $Value.from-map (export "Value#fromMap") (param (ref $Map)) (result (ref $Value))
+	(return_call $Value.new-composite
+		(struct.new $CplMap
+			(call $Object.ctr-plus-plus)
+			(local.get 0)
+		)
+	)
+)
+
+
+
+(func $Value.as-list (export "Value#asList") (param (ref $Value)) (result (ref $List))
+	(struct.get $CplList $list (ref.cast (ref $CplList) (struct.get $Value $composite (local.get 0))))
+)
+(func $Value.as-dict (export "Value#asDict") (param (ref $Value)) (result (ref $Dict))
+	(struct.get $CplDict $dict (ref.cast (ref $CplDict) (struct.get $Value $composite (local.get 0))))
+)
+(func $Value.as-map (export "Value#asMap") (param (ref $Value)) (result (ref $Map))
+	(struct.get $CplMap $map (ref.cast (ref $CplMap) (struct.get $Value $composite (local.get 0))))
+)
+
+
+
+(func $Value.as-string (export "Value#asString") (param (ref $Value)) (result (ref $String))
+	(ref.cast (ref $String) (struct.get $Value $composite (local.get 0)))
+)
+(func $Value.as-tuple (export "Value#asTuple") (param (ref $Value)) (result (ref $Tuple))
+	(ref.cast (ref $Tuple) (struct.get $Value $composite (local.get 0)))
+)
+(func $Value.as-record (export "Value#asRecord") (param (ref $Value)) (result (ref $Record))
+	(ref.cast (ref $Record) (struct.get $Value $composite (local.get 0)))
+)

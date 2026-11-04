@@ -8,14 +8,6 @@ import type {
 
 
 
-/** Struct field constant indices. */
-const FIELD = {
-	/** `$Dict.$size`     */ SIZE:     1,
-	/** `$Dict.$internal` */ INTERNAL: 2,
-} as const;
-
-
-
 /** Precursor to the Counterpoint `Dict` class. */
 export class Dict implements HasFuncData {
 	public constructor(private readonly vm: VirtualMachine) {}
@@ -85,23 +77,6 @@ export class Dict implements HasFuncData {
 		]);
 	}
 
-
-	public field(ref: binaryen.ExpressionRef /* (ref null $Dict) */): {
-		/** @return `(struct.get $Dict $size     <ref>)` */ readonly size:     binaryen.ExpressionRef /* i32 */,
-		/** @return `(struct.get $Dict $internal <ref>)` */ readonly internal: binaryen.ExpressionRef /* (ref $DictInternal) */,
-
-		/** @return `(struct.set $Dict $size     <ref> <val>)` */ setSize    (val: binaryen.ExpressionRef /* i32 */):                 binaryen.ExpressionRef /* void */,
-		/** @return `(struct.set $Dict $internal <ref> <val>)` */ setInternal(val: binaryen.ExpressionRef /* (ref $DictInternal) */): binaryen.ExpressionRef /* void */,
-	} {
-		const {mod: {wasm}, reftype} = this.vm;
-		return {
-			get size()     { return wasm.struct.get(FIELD.SIZE,     ref, binaryen.Type.i32); },
-			get internal() { return wasm.struct.get(FIELD.INTERNAL, ref, reftype.DictInternal); },
-
-			setSize(val)     { return wasm.struct.set(FIELD.SIZE,     ref, val); },
-			setInternal(val) { return wasm.struct.set(FIELD.INTERNAL, ref, val); },
-		};
-	}
 
 	/**
 	 * Returns the number of “live” elements in the Dict.

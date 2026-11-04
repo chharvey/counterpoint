@@ -31,9 +31,9 @@ export function ops(vm: VirtualMachine) {
 					['op::isTuple',       {name: 'op:is-tuple',       param: reftype.Value,  result: reftype.Value}],
 					['op::isRecord',      {name: 'op:is-record',      param: reftype.Value,  result: reftype.Value}],
 					['op::isObject',      {name: 'op:is-object',      param: reftype.Value,  result: reftype.Value}],
-					['op::isList',        {name: 'op:is-list',        param: reftype.Value,  result: reftype.Value}],
-					['op::isDict',        {name: 'op:is-dict',        param: reftype.Value,  result: reftype.Value}],
-					['op::isMap',         {name: 'op:is-map',         param: reftype.Value,  result: reftype.Value}],
+					['op::isCplList',     {name: 'op:is-cpl-list',    param: reftype.Value,  result: reftype.Value}],
+					['op::isCplDict',     {name: 'op:is-cpl-dict',    param: reftype.Value,  result: reftype.Value}],
+					['op::isCplMap',      {name: 'op:is-cpl-map',     param: reftype.Value,  result: reftype.Value}],
 					['op::isException',   {name: 'op:is-exception',   param: reftype.Value,  result: reftype.Value}],
 					['op::isMaybe',       {name: 'op:is-maybe',       param: reftype.Value,  result: reftype.Value}],
 					['op::isNone',        {name: 'op:is-none',        param: reftype.Value,  result: reftype.Value}],
@@ -49,9 +49,9 @@ export function ops(vm: VirtualMachine) {
 					['op::asFloat',       {name: 'op:as-float',       param: reftype.Value,  result: reftype.Value}],
 					['op::asString',      {name: 'op:as-string',      param: reftype.Value,  result: reftype.Value}],
 					['op::asObject',      {name: 'op:as-object',      param: reftype.Value,  result: reftype.Value}],
-					['op::asList',        {name: 'op:as-list',        param: reftype.Value,  result: reftype.Value}],
-					['op::asDict',        {name: 'op:as-dict',        param: reftype.Value,  result: reftype.Value}],
-					['op::asMap',         {name: 'op:as-map',         param: reftype.Value,  result: reftype.Value}],
+					['op::asCplList',     {name: 'op:as-cpllist',     param: reftype.Value,  result: reftype.Value}],
+					['op::asCplDict',     {name: 'op:as-cpl-dict',    param: reftype.Value,  result: reftype.Value}],
+					['op::asCplMap',      {name: 'op:as-cpl-map',     param: reftype.Value,  result: reftype.Value}],
 					['op::asException',   {name: 'op:as-exception',   param: reftype.Value,  result: reftype.Value}],
 					['op::asMaybe',       {name: 'op:as-maybe',       param: reftype.Value,  result: reftype.Value}],
 					['op::asNone',        {name: 'op:as-none',        param: reftype.Value,  result: reftype.Value}],
@@ -167,19 +167,19 @@ export function ops(vm: VirtualMachine) {
 			vm.mod.wasm.call('op:is-object', [param0], vm.reftype.Value)
 		),
 
-		/** Is the value a composite `List` type? */
-		isList: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
-			vm.mod.wasm.call('op:is-list', [param0], vm.reftype.Value)
+		/** Is the value a composite `CplList` type? */
+		isCplList: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
+			vm.mod.wasm.call('op:is-cpl-list', [param0], vm.reftype.Value)
 		),
 
-		/** Is the value a composite `Dict` type? */
-		isDict: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
-			vm.mod.wasm.call('op:is-dict', [param0], vm.reftype.Value)
+		/** Is the value a composite `CplDict` type? */
+		isCplDict: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
+			vm.mod.wasm.call('op:is-cpl-dict', [param0], vm.reftype.Value)
 		),
 
-		/** Is the value a composite `Map` type? */
-		isMap: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
-			vm.mod.wasm.call('op:is-map', [param0], vm.reftype.Value)
+		/** Is the value a composite `CplMap` type? */
+		isCplMap: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
+			vm.mod.wasm.call('op:is-cpl-map', [param0], vm.reftype.Value)
 		),
 
 		/** Is the value a composite `Exception` type? */
@@ -257,19 +257,19 @@ export function ops(vm: VirtualMachine) {
 			vm.mod.wasm.call('op:as-object', [param0], vm.reftype.Value)
 		),
 
-		/** Cast the value to type `List`. */
-		asList: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
-			vm.mod.wasm.call('op:as-list', [param0], vm.reftype.Value)
+		/** Cast the value to type `CplList`. */
+		asCplList: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
+			vm.mod.wasm.call('op:as-cpl-list', [param0], vm.reftype.Value)
 		),
 
-		/** Cast the value to type `Dict`. */
-		asDict: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
-			vm.mod.wasm.call('op:as-dict', [param0], vm.reftype.Value)
+		/** Cast the value to type `CplDict`. */
+		asCplDict: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
+			vm.mod.wasm.call('op:as-cpl-dict', [param0], vm.reftype.Value)
 		),
 
-		/** Cast the value to type `Map`. */
-		asMap: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
-			vm.mod.wasm.call('op:as-map', [param0], vm.reftype.Value)
+		/** Cast the value to type `CplMap`. */
+		asCplMap: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
+			vm.mod.wasm.call('op:as-cpl-map', [param0], vm.reftype.Value)
 		),
 
 		/** Cast the value to type `Exception`. */

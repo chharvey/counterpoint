@@ -50,16 +50,14 @@ Codegen((RECORD.NEW `pairs`)) := (call $Value.new-composite
 	(struct.new $Record (array.new_fixed $RecordInternal `pairs.count` `pairs.hashMap("(struct.new $Property (i64.const `pairs[i].0`) `Codegen(pairs[i].1)`)")`))
 );
 
-Codegen((LIST.NEW)) := (call $Value.new-composite
+Codegen((LIST.NEW)) := (call $Value.from-list
 	(struct.new $List
-		(call $Object.ctr-plus-plus)
 		(i32.const 0)
 		(array.new_default $ListInternal (i32.const 8))
 	)
 );
-Codegen((LIST.NEW `values`)) := (call $Value.new-composite
+Codegen((LIST.NEW `values`)) := (call $Value.from-list
 	(struct.new $List
-		(call $Object.ctr-plus-plus)
 		(i32.const `values.count`)
 		(array.new_fixed $ListInternal `CapacityNeeded(values.count)`
 			`values.pad(CapacityNeeded(values.count), "(ref.null $Value)").map(Codegen)`
@@ -67,16 +65,14 @@ Codegen((LIST.NEW `values`)) := (call $Value.new-composite
 	)
 );
 
-Codegen((DICT.NEW)) := (call $Value.new-composite
+Codegen((DICT.NEW)) := (call $Value.from-dict
 	(struct.new $Dict
-		(call $Object.ctr-plus-plus)
 		(i32.const 0)
 		(array.new_default $DictInternal (i32.const 8))
 	)
 );
-Codegen((DICT.NEW `pairs`)) := (call $Value.new-composite
+Codegen((DICT.NEW `pairs`)) := (call $Value.from-dict
 	(struct.new $Dict
-		(call $Object.ctr-plus-plus)
 		(i32.const `pairs.count`)
 		(array.new_fixed $DictInternal `CapacityNeeded(pairs.count)`
 			`pairs.pad(CapacityNeeded(pairs.count), "(ref.null $Property)").hashMap("(struct.new $Property
@@ -88,17 +84,15 @@ Codegen((DICT.NEW `pairs`)) := (call $Value.new-composite
 );
 
 // `Set<T>`s are implemented as `Map<T, null>`s
-Codegen((SET.NEW)) := (call $Value.new-composite
+Codegen((SET.NEW)) := (call $Value.from-map
 	(struct.new $Map
-		(call $Object.ctr-plus-plus)
 		(i32.const 0)
 		(array.new_default $MapInternal (i32.const 8))
 	)
 );
-Codegen((SET.NEW `values`)) := (call $Value.new-composite
+Codegen((SET.NEW `values`)) := (call $Value.from-map
 	(block (result (ref $Map))
 		(local.set $map (struct.new $Map
-			(call $Object.ctr-plus-plus)
 			(i32.const `values.count`)
 			(array.new_default $MapInternal `CapacityNeeded(values.count)`)
 		))
@@ -107,17 +101,15 @@ Codegen((SET.NEW `values`)) := (call $Value.new-composite
 	)
 );
 
-Codegen((MAP.NEW)) := (call $Value.new-composite
+Codegen((MAP.NEW)) := (call $Value.from-map
 	(struct.new $Map
-		(call $Object.ctr-plus-plus)
 		(i32.const 0)
 		(array.new_default $MapInternal (i32.const 8))
 	)
 );
-Codegen((MAP.NEW `pairs`)) := (call $Value.new-composite
+Codegen((MAP.NEW `pairs`)) := (call $Value.from-map
 	(block (result (ref $Map))
 		(local.set $map (struct.new $Map
-			(call $Object.ctr-plus-plus)
 			(i32.const `pairs.count`)
 			(array.new_default $MapInternal `CapacityNeeded(pairs.count)`)
 		))
@@ -189,19 +181,19 @@ Codegen((RECORD.GET `key` `obj`)) := (call $Record.get
 );
 
 Codegen((LIST.GET `obj` `accessor`)) := (call $List.get
-	(ref.cast (ref $List) (struct.get $Value $composite `Codegen(obj)`))
+	(call $Value.as-list             `Codegen(obj)`)
 	(i32.wrap_i64 (call $Vect.as-int (struct.get $Value $primitive `Codegen(accessor)`)))
 );
 
 Codegen((DICT.GET `obj` `accessor`)) := (call $Dict.get
-	(ref.cast (ref $Dict) (struct.get $Value $composite `Codegen(obj)`))
+	(call $Value.as-dict `Codegen(obj)`)
 	(call $Vect.as-nat (struct.get $Value $primitive `Codegen(accessor)`))
 );
 
 Codegen((SET.GET `obj` `accessor`)) := (block (result (ref $Value))
 	(local.set $maybe-case
 		(call $Map.find
-			(ref.cast (ref $Map) (struct.get $Value $composite `Codegen(obj)`))
+			(call $Value.as-map `Codegen(obj)`)
 			`Codegen(accessor)`
 		)
 	)
@@ -216,7 +208,7 @@ Codegen((SET.GET `obj` `accessor`)) := (block (result (ref $Value))
 );
 
 Codegen((MAP.GET `obj` `accessor`)) := (call $Map.get
-	(ref.cast (ref $Map) (struct.get $Value $composite `Codegen(obj)`))
+	(call $Value.as-map `Codegen(obj)`)
 	`Codegen(accessor)`
 );
 
@@ -234,22 +226,22 @@ Codegen((NEG `v`)) := (call $op:negate   `Codegen(v)`);
 
 Codegen((LIST.COUNT `obj`)) := (call $Value.new-primitive
 	(call $Vect.new-nat
-		(i64.extend_i32_u (call $List.count (ref.cast (ref $List) (struct.get $Value $composite `Codegen(obj)`))))
+		(i64.extend_i32_u (call $List.count (call $Value.as-list `Codegen(obj)`)))
 	)
 );
 Codegen((DICT.COUNT `obj`)) := (call $Value.new-primitive
 	(call $Vect.new-nat
-		(i64.extend_i32_u (call $Dict.count (ref.cast (ref $Dict) (struct.get $Value $composite `Codegen(obj)`))))
+		(i64.extend_i32_u (call $Dict.count (call $Value.as-dict `Codegen(obj)`)))
 	)
 );
 Codegen((SET.COUNT `obj`)) := (call $Value.new-primitive
 	(call $Vect.new-nat
-		(i64.extend_i32_u (call $Map.count (ref.cast (ref $Map) (struct.get $Value $composite `Codegen(obj)`))))
+		(i64.extend_i32_u (call $Map.count (call $Value.as-map `Codegen(obj)`)))
 	)
 );
 Codegen((MAP.COUNT `obj`)) := (call $Value.new-primitive
 	(call $Vect.new-nat
-		(i64.extend_i32_u (call $Map.count (ref.cast (ref $Map) (struct.get $Value $composite `Codegen(obj)`))))
+		(i64.extend_i32_u (call $Map.count (call $Value.as-map `Codegen(obj)`)))
 	)
 );
 
@@ -263,10 +255,10 @@ Codegen((INSTANCEOF "Natural"   `v`)) := (call $op:is-nat       `Codegen(v)`);
 Codegen((INSTANCEOF "Float"     `v`)) := (call $op:is-float     `Codegen(v)`);
 Codegen((INSTANCEOF "String"    `v`)) := (call $op:is-string    `Codegen(v)`);
 Codegen((INSTANCEOF "Object"    `v`)) := (call $op:is-object    `Codegen(v)`);
-Codegen((INSTANCEOF "List"      `v`)) := (call $op:is-list      `Codegen(v)`);
-Codegen((INSTANCEOF "Dict"      `v`)) := (call $op:is-dict      `Codegen(v)`);
-Codegen((INSTANCEOF "Set"       `v`)) := (call $op:is-map       `Codegen(v)`);
-Codegen((INSTANCEOF "Map"       `v`)) := (call $op:is-map       `Codegen(v)`);
+Codegen((INSTANCEOF "List"      `v`)) := (call $op:is-cpl-list  `Codegen(v)`);
+Codegen((INSTANCEOF "Dict"      `v`)) := (call $op:is-cpl-dict  `Codegen(v)`);
+Codegen((INSTANCEOF "Set"       `v`)) := (call $op:is-cpl-map   `Codegen(v)`);
+Codegen((INSTANCEOF "Map"       `v`)) := (call $op:is-cpl-map   `Codegen(v)`);
 Codegen((INSTANCEOF "Exception" `v`)) := (call $op:is-exception `Codegen(v)`);
 Codegen((INSTANCEOF "Maybe"     `v`)) := (call $op:is-maybe     `Codegen(v)`);
 Codegen((INSTANCEOF "None"      `v`)) := (call $op:is-none      `Codegen(v)`);
@@ -284,10 +276,10 @@ Codegen((CAST "Natural"   `v`)) := (call $op:as-nat       `Codegen(v)`);
 Codegen((CAST "Float"     `v`)) := (call $op:as-float     `Codegen(v)`);
 Codegen((CAST "String"    `v`)) := (call $op:as-string    `Codegen(v)`);
 Codegen((CAST "Object"    `v`)) := (call $op:as-object    `Codegen(v)`);
-Codegen((CAST "List"      `v`)) := (call $op:as-list      `Codegen(v)`);
-Codegen((CAST "Dict"      `v`)) := (call $op:as-dict      `Codegen(v)`);
-Codegen((CAST "Set"       `v`)) := (call $op:as-map       `Codegen(v)`);
-Codegen((CAST "Map"       `v`)) := (call $op:as-map       `Codegen(v)`);
+Codegen((CAST "List"      `v`)) := (call $op:as-cpl-list  `Codegen(v)`);
+Codegen((CAST "Dict"      `v`)) := (call $op:as-cpl-dict  `Codegen(v)`);
+Codegen((CAST "Set"       `v`)) := (call $op:as-cpl-map   `Codegen(v)`);
+Codegen((CAST "Map"       `v`)) := (call $op:as-cpl-map   `Codegen(v)`);
 Codegen((CAST "Exception" `v`)) := (call $op:as-exception `Codegen(v)`);
 Codegen((CAST "Maybe"     `v`)) := (call $op:as-maybe     `Codegen(v)`);
 Codegen((CAST "None"      `v`)) := (call $op:as-none      `Codegen(v)`);
@@ -337,19 +329,19 @@ Codegen((DECL `id` `type`))     := (local.set ‹index› `id` (struct.new_defau
 Codegen((SET  `id` `v`))        := (local.set ‹index› `id` `Codegen(v)`);
 
 Codegen((LIST.SET `obj` `accessor` `v`)) := (call $List.set
-	(ref.cast (ref $List) (struct.get $Value $composite `Codegen(obj)`))
+	(call $Value.as-list `Codegen(obj)`)
 	(i32.wrap_i64 (i64x2.extract_lane 1 (struct.get $Value $primitive `Codegen(accessor)`)))
 	`Codegen(v)`
 );
 
 Codegen((DICT.SET `obj` `accessor` `v`)) := (call $Dict.set
-	(ref.cast (ref $Dict) (struct.get $Value $composite `Codegen(obj)`))
+	(call $Value.as-dict `Codegen(obj)`)
 	(i64x2.extract_lane 1 (struct.get $Value $primitive `Codegen(accessor)`))
 	`Codegen(v)`
 );
 
 Codegen((SET.SET `obj` `accessor` `v`)) := (block
-	(local.set $base     (ref.cast (ref $Map) (struct.get $Value $composite `Codegen(obj)`)))
+	(local.set $base     (call $Value.as-map `Codegen(obj)`))
 	(local.set $accessor `Codegen(accessor)`)
 	(if
 		(call $Vect.is-true (struct.get $Value $primitive `Codegen(v)`))
@@ -366,77 +358,77 @@ Codegen((SET.SET `obj` `accessor` `v`)) := (block
 );
 
 Codegen((MAP.SET `obj` `accessor` `v`)) := (call $Map.set
-	(ref.cast (ref $Map) (struct.get $Value $composite `Codegen(obj)`))
+	(call $Value.as-map `Codegen(obj)`)
 	`Codegen(accessor)`
 	`Codegen(v)`
 );
 
 Codegen((LIST.COPY `dest` `src:Tuple`)) := (call $List.copy-from-tuple
-	(ref.cast (ref $List)  (struct.get $Value $composite `Codegen(dest)`))
+	(call $Value.as-list   `Codegen(dest)`)
 	(ref.cast (ref $Tuple) (struct.get $Value $composite `Codegen(src)`))
 );
 Codegen((LIST.COPY `dest` `src:List`)) := (call $List.copy-from-list
-	(ref.cast (ref $List) (struct.get $Value $composite `Codegen(dest)`))
-	(ref.cast (ref $List) (struct.get $Value $composite `Codegen(src)`))
+	(call $Value.as-list `Codegen(dest)`)
+	(call $Value.as-list `Codegen(src)`)
 );
 Codegen((LIST.COPY `dest` `src:Set`)) := (call $List.fill-from-set
-	(ref.cast (ref $List) (struct.get $Value $composite `Codegen(dest)`))
-	(ref.cast (ref $Map)  (struct.get $Value $composite `Codegen(src)`))
+	(call $Value.as-list `Codegen(dest)`)
+	(call $Value.as-map  `Codegen(src)`)
 );
 
 Codegen((DICT.COPY `dest` `src:Tuple`)) := (call $Dict.fill-from-tuple
-	(ref.cast (ref $Dict)  (struct.get $Value $composite `Codegen(dest)`))
+	(call $Value.as-dict   `Codegen(dest)`)
 	(ref.cast (ref $Tuple) (struct.get $Value $composite `Codegen(src)`))
 );
 Codegen((DICT.COPY `dest` `src:Record`)) := (call $Dict.copy-from-record
-	(ref.cast (ref $Dict)   (struct.get $Value $composite `Codegen(dest)`))
+	(call $Value.as-dict    `Codegen(dest)`)
 	(ref.cast (ref $Record) (struct.get $Value $composite `Codegen(src)`))
 );
 Codegen((DICT.COPY `dest` `src:List`)) := (call $Dict.fill-from-list
-	(ref.cast (ref $Dict) (struct.get $Value $composite `Codegen(dest)`))
-	(ref.cast (ref $List) (struct.get $Value $composite `Codegen(src)`))
+	(call $Value.as-dict `Codegen(dest)`)
+	(call $Value.as-list `Codegen(src)`)
 );
 Codegen((DICT.COPY `dest` `src:Dict`)) := (call $Dict.copy-from-dict
-	(ref.cast (ref $Dict) (struct.get $Value $composite `Codegen(dest)`))
-	(ref.cast (ref $Dict) (struct.get $Value $composite `Codegen(src)`))
+	(call $Value.as-dict `Codegen(dest)`)
+	(call $Value.as-dict `Codegen(src)`)
 );
 Codegen((DICT.COPY `dest` `src:Set`)) := (call $Dict.fill-from-set
-	(ref.cast (ref $Dict) (struct.get $Value $composite `Codegen(dest)`))
-	(ref.cast (ref $Map)  (struct.get $Value $composite `Codegen(src)`))
+	(call $Value.as-dict `Codegen(dest)`)
+	(call $Value.as-map  `Codegen(src)`)
 );
 Codegen((DICT.COPY `dest` `src:Map`)) := (call $Dict.fill-from-map
-	(ref.cast (ref $Dict) (struct.get $Value $composite `Codegen(dest)`))
-	(ref.cast (ref $Map)  (struct.get $Value $composite `Codegen(src)`))
+	(call $Value.as-dict `Codegen(dest)`)
+	(call $Value.as-map  `Codegen(src)`)
 );
 
 Codegen((SET.COPY `dest` `src:Tuple`)) := (call $Map.fill-set-from-tuple
-	(ref.cast (ref $Map)   (struct.get $Value $composite `Codegen(dest)`))
+	(call $Value.as-map    `Codegen(dest)`)
 	(ref.cast (ref $Tuple) (struct.get $Value $composite `Codegen(src)`))
 );
 Codegen((SET.COPY `dest` `src:List`)) := (call $Map.fill-set-from-list
-	(ref.cast (ref $Map) (struct.get $Value $composite `Codegen(dest)`))
-	(ref.cast (ref $List) (struct.get $Value $composite `Codegen(src)`))
+	(call $Value.as-map  `Codegen(dest)`)
+	(call $Value.as-list `Codegen(src)`)
 );
 Codegen((SET.COPY `dest` `src:Set`)) := (call $Map.copy-from-map
-	(ref.cast (ref $Map) (struct.get $Value $composite `Codegen(dest)`))
-	(ref.cast (ref $Map) (struct.get $Value $composite `Codegen(src)`))
+	(call $Value.as-map `Codegen(dest)`)
+	(call $Value.as-map `Codegen(src)`)
 );
 
 Codegen((MAP.COPY `dest` `src:Tuple`)) := (call $Map.fill-from-tuple
-	(ref.cast (ref $Map)   (struct.get $Value $composite `Codegen(dest)`))
+	(call $value.as-map    `Codegen(dest)`)
 	(ref.cast (ref $Tuple) (struct.get $Value $composite `Codegen(src)`))
 );
 Codegen((MAP.COPY `dest` `src:List`)) := (call $Map.fill-from-list
-	(ref.cast (ref $Map)  (struct.get $Value $composite `Codegen(dest)`))
-	(ref.cast (ref $List) (struct.get $Value $composite `Codegen(src)`))
+	(call $value.as-map  `Codegen(dest)`)
+	(call $Value.as-list `Codegen(src)`)
 );
 Codegen((MAP.COPY `dest` `src:Set`)) := (call $Map.fill-from-set
-	(ref.cast (ref $Map) (struct.get $Value $composite `Codegen(dest)`))
-	(ref.cast (ref $Map) (struct.get $Value $composite `Codegen(src)`))
+	(call $value.as-map `Codegen(dest)`)
+	(call $value.as-map `Codegen(src)`)
 );
 Codegen((MAP.COPY `dest` `src:Map`)) := (call $Map.copy-from-map
-	(ref.cast (ref $Map) (struct.get $Value $composite `Codegen(dest)`))
-	(ref.cast (ref $Map) (struct.get $Value $composite `Codegen(src)`))
+	(call $value.as-map `Codegen(dest)`)
+	(call $value.as-map `Codegen(src)`)
 );
 
 Codegen((RETURN `value` nil)) := (return `Codegen(value)`  (ref.null $Exception));
