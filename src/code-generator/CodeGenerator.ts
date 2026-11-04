@@ -291,7 +291,7 @@ export class CodeGenerator {
 	 * @return      `(struct.new $Dict <count> (array.new_fixed $DictInternal <...props>))`
 	 */
 	public codegenDict(props: ReadonlyMap<bigint, binaryen.ExpressionRef /* (ref $Property) */> = new Map()): binaryen.ExpressionRef /* (ref $Dict) */ {
-		const {vm: {heaptype, Object: VmObject}, mod: {wasm}} = this;
+		const {vm: {heaptype}, mod: {wasm}} = this;
 		let capacity: number = 8;
 		while (props.size > capacity * CodeGenerator.#LOAD_FACTOR) {
 			capacity *= 2;
@@ -299,7 +299,6 @@ export class CodeGenerator {
 		const entries = new Array<binaryen.ExpressionRef | undefined>(capacity).fill(undefined);
 		props.forEach((code, id) => insert_entry(entries, Number(id) % entries.length, code));
 		return wasm.struct.new([
-			VmObject.ctrPlusPlus(),
 			wasm.i32.const(props.size),
 			wasm.array.new_fixed(
 				heaptype.DictInternal,

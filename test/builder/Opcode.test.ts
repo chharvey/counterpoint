@@ -1373,7 +1373,7 @@ test.suite('Opcode', () => {
 					const cg = new CodeGenerator();
 					return assertEqualBins(
 						new OP.DictNew(new Map(), new TYPE.Dict(TYPE.INT)).codegen(cg),
-						cg.vm.Value.newComposite(cg.codegenDict()),
+						cg.vm.Value.fromDict(cg.codegenDict()),
 					);
 				});
 				test.test('nonempty DICT.NEW', () => {
@@ -1388,7 +1388,7 @@ test.suite('Opcode', () => {
 					const id_e: bigint = Validator.cookTokenIdentifier('e');
 					return assertEqualBins(
 						new AST.ExprVisitorBuild(builder).visit((stmts[1] as AST.STMT.StatementExpression).expr!).codegen(cg),
-						cg.vm.Value.newComposite(cg.codegenDict(new Map([
+						cg.vm.Value.fromDict(cg.codegenDict(new Map([
 							[id_a, cg.newProperty(id_a, wasm.local.get(0, cg.vm.reftype.Value))],
 							[id_b, cg.newProperty(id_b, genConst(cg, 4.2))],
 							[id_c, cg.newProperty(id_c, wasm.local.get(1, cg.vm.reftype.Value))],
@@ -1423,7 +1423,7 @@ test.suite('Opcode', () => {
 							[id_b,   cg.newProperty(id_b,   genConst(cg, 42n))],
 							[id_c,   cg.newProperty(id_c,   genConst(cg, 4.2))],
 							[id_aaa, cg.newProperty(id_aaa, genConst(cg))],
-						])].map((props) => cg.vm.Value.newComposite(cg.codegenDict(props))),
+						])].map((props) => cg.vm.Value.fromDict(cg.codegenDict(props))),
 					);
 				});
 			});
@@ -1625,10 +1625,10 @@ test.suite('Opcode', () => {
 						dict.[@c];
 					}`);
 					const {reftype, Vect, Value, Dict} = cg.vm;
-					const dict_cast: binaryen.ExpressionRef = Value.cast(wasm.local.get(1, reftype.Value), reftype.Dict);
+					const dict_cast: binaryen.ExpressionRef = Value.asDict(wasm.local.get(1, reftype.Value));
 					return assertEqualBins(builder.instructions.slice(3).map((instr) => instr.codegen(cg)), [
 						wasm.drop(Dict.get(
-							Value.cast(wasm.local.get(2, reftype.Value), reftype.Dict),
+							Value.asDict(wasm.local.get(2, reftype.Value)),
 							Vect.asNat(Value.field(genConst(cg, 'b', 'sym')).primitive),
 						)),
 						wasm.drop(Dict.get(
@@ -1811,13 +1811,13 @@ test.suite('Opcode', () => {
 						val dict: [:int] = [a= x, b= 43, c= 44];
 						dict;
 					}`);
-					const {reftype, Vect, Value, Dict} = cg.vm;
+					const {Vect, Value, Dict} = cg.vm;
 					// there exists no syntax for Dict count, so constructing it manually
 					const dict = new AST.ExprVisitorBuild(builder).visit((stmts[2] as AST.STMT.StatementExpression).expr!) as OP.Get;
 					const unop = new OP.Unop(OP.OpCode.DICT_COUNT, dict, TYPE.NAT);
 					return assertEqualBins(
 						unop.codegen(cg),
-						Value.newPrimitive(Vect.newNat(wasm.i64.extend_i32_u(Dict.count(Value.cast(dict.codegen(cg), reftype.Dict))))),
+						Value.newPrimitive(Vect.newNat(wasm.i64.extend_i32_u(Dict.count(Value.asDict(dict.codegen(cg)))))),
 					);
 				});
 				test.test('SET.COUNT', () => {
@@ -2155,17 +2155,17 @@ test.suite('Opcode', () => {
 					const {reftype, Vect, Value, Dict} = cg.vm;
 					return assertEqualBins(builder.instructions.slice(3).map((instr) => instr.codegen(cg)), [
 						Dict.set(
-							Value.cast(wasm.local.get(2, reftype.Value), reftype.Dict),
+							Value.asDict(wasm.local.get(2, reftype.Value)),
 							Vect.asNat(Value.field(genConst(cg, 'b', 'sym')).primitive),
 							genConst(cg, 45n),
 						),
 						Dict.set(
-							Value.cast(wasm.local.get(1, reftype.Value), reftype.Dict),
+							Value.asDict(wasm.local.get(1, reftype.Value)),
 							Vect.asNat(Value.field(genConst(cg, 'a', 'sym')).primitive),
 							genConst(cg, 46n),
 						),
 						Dict.set(
-							Value.cast(wasm.local.get(1, reftype.Value), reftype.Dict),
+							Value.asDict(wasm.local.get(1, reftype.Value)),
 							Vect.asNat(Value.field(genConst(cg, 'c', 'sym')).primitive),
 							genConst(cg, 47n),
 						),
@@ -2275,8 +2275,8 @@ test.suite('Opcode', () => {
 						return assertEqualBins(
 							builder.instructions[5].codegen(cg),
 							Dict.fillFromTuple(
-								Value.cast(wasm.local.get(0, reftype.Value), reftype.Dict),
-								Value.cast(wasm.local.get(4, reftype.Value), reftype.Tuple),
+								Value.asDict(wasm.local.get(0, reftype.Value)),
+								Value.cast  (wasm.local.get(4, reftype.Value), reftype.Tuple),
 							),
 						);
 					});
@@ -2289,8 +2289,8 @@ test.suite('Opcode', () => {
 						return assertEqualBins(
 							builder.instructions[2].codegen(cg),
 							Dict.copyFromRecord(
-								Value.cast(wasm.local.get(0, reftype.Value), reftype.Dict),
-								Value.cast(wasm.local.get(1, reftype.Value), reftype.Record),
+								Value.asDict(wasm.local.get(0, reftype.Value)),
+								Value.cast  (wasm.local.get(1, reftype.Value), reftype.Record),
 							),
 						);
 					});
@@ -2303,7 +2303,7 @@ test.suite('Opcode', () => {
 						return assertEqualBins(
 							builder.instructions[5].codegen(cg),
 							Dict.fillFromList(
-								Value.cast  (wasm.local.get(0, reftype.Value), reftype.Dict),
+								Value.asDict(wasm.local.get(0, reftype.Value)),
 								Value.asList(wasm.local.get(4, reftype.Value)),
 							),
 						);
@@ -2317,8 +2317,8 @@ test.suite('Opcode', () => {
 						return assertEqualBins(
 							builder.instructions[2].codegen(cg),
 							Dict.copyFromDict(
-								Value.cast(wasm.local.get(0, reftype.Value), reftype.Dict),
-								Value.cast(wasm.local.get(1, reftype.Value), reftype.Dict),
+								Value.asDict(wasm.local.get(0, reftype.Value)),
+								Value.asDict(wasm.local.get(1, reftype.Value)),
 							),
 						);
 					});
@@ -2331,8 +2331,8 @@ test.suite('Opcode', () => {
 						return assertEqualBins(
 							builder.instructions[5].codegen(cg),
 							Dict.fillFromSet(
-								Value.cast(wasm.local.get(0, reftype.Value), reftype.Dict),
-								Value.cast(wasm.local.get(5, reftype.Value), reftype.Map), // index 4 = nonempty map setup (implementation of Set)
+								Value.asDict(wasm.local.get(0, reftype.Value)),
+								Value.cast  (wasm.local.get(5, reftype.Value), reftype.Map), // index 4 = nonempty map setup (implementation of Set)
 							),
 						);
 					});
@@ -2345,8 +2345,8 @@ test.suite('Opcode', () => {
 						return assertEqualBins(
 							builder.instructions[2].codegen(cg),
 							Dict.fillFromMap(
-								Value.cast(wasm.local.get(0, reftype.Value), reftype.Dict),
-								Value.cast(wasm.local.get(2, reftype.Value), reftype.Map), // index 1 = nonempty map setup
+								Value.asDict(wasm.local.get(0, reftype.Value)),
+								Value.cast  (wasm.local.get(2, reftype.Value), reftype.Map), // index 1 = nonempty map setup
 							),
 						);
 					});

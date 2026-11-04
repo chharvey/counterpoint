@@ -123,7 +123,7 @@ export class CollectionDynamicGet extends Value {
 			}
 			case TypeName.DICT: {
 				return Dict.get(
-					cast_collection(reftype.Dict),
+					VmValue.asDict(collection),
 					Vect.asNat(VmValue.field(accessor).primitive),
 				);
 			}

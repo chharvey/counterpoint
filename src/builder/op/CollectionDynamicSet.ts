@@ -124,7 +124,7 @@ export class CollectionDynamicSet extends Instruction {
 			}
 			case TypeName.DICT: {
 				return Dict.set(
-					cast_collection(reftype.Dict),
+					Value.asDict(collection),
 					Vect.asNat(Value.field(accessor).primitive),
 					value,
 				);

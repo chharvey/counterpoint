@@ -162,7 +162,6 @@ test.suite('CodeGenerator', () => {
 			assertEqualBins(
 				cg.codegenDict(),
 				wasm.struct.new([
-					cg.vm.Object.ctrPlusPlus(),
 					wasm.i32.const(0),
 					wasm.array.new_fixed(
 						cg.vm.heaptype.DictInternal,
@@ -181,7 +180,6 @@ test.suite('CodeGenerator', () => {
 					[0x10an, cg.newProperty(0x10an, genConst(cg, 5.5))],
 				])),
 				wasm.struct.new([
-					cg.vm.Object.ctrPlusPlus(),
 					wasm.i32.const(5),
 					wasm.array.new_fixed(
 						cg.vm.heaptype.DictInternal,
@@ -489,7 +487,6 @@ test.suite('CodeGenerator', () => {
 					WASM_NULL,
 					WASM_NULL,
 				]].map((entries) => wasm.struct.new([
-					cg.vm.Object.ctrPlusPlus(),
 					wasm.i32.const(3),
 					wasm.array.new_fixed(cg.vm.heaptype.DictInternal, entries),
 				], cg.vm.heaptype.Dict)),

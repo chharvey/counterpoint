@@ -223,22 +223,22 @@ export class CollectionDynamicCopy extends Instruction {
 					// Dict.<T>(( (@a, t), (@b, t), (@c, t) ));
 					case this.source.type instanceof TYPE.Tuple: {
 						return Dict.fillFromTuple(
-							Value.cast(code_dest, reftype.Dict),
-							Value.cast(code_src,  reftype.Tuple),
+							Value.asDict(code_dest),
+							Value.cast(code_src, reftype.Tuple),
 						);
 					}
 					// Dict.<T>((a= t, b= t, c= t));
 					case this.source.type instanceof TYPE.Record: {
 						return Dict.copyFromRecord(
-							Value.cast(code_dest, reftype.Dict),
-							Value.cast(code_src,  reftype.Record),
+							Value.asDict(code_dest),
+							Value.cast(code_src, reftype.Record),
 						);
 					}
 					// Dict.<T>([ (@a, t), (@b, t), (@c, t) ]);
 					// Dict.<T>(List.<(sym, T)>(( (@a, t), (@b, t), (@c, t) )));
 					case this.source.type instanceof TYPE.List: {
 						return Dict.fillFromList(
-							Value.cast(code_dest, reftype.Dict),
+							Value.asDict(code_dest),
 							Value.asList(code_src),
 						);
 					}
@@ -246,24 +246,24 @@ export class CollectionDynamicCopy extends Instruction {
 					// Dict.<T>(Dict.<T>( (a= t, b= t, c= t) ));
 					case this.source.type instanceof TYPE.Dict: {
 						return Dict.copyFromDict(
-							Value.cast(code_dest, reftype.Dict),
-							Value.cast(code_src,  reftype.Dict),
+							Value.asDict(code_dest),
+							Value.asDict(code_src),
 						);
 					}
 					// Dict.<T>({ (@a, t), (@b, t), (@c, t) });
 					// Dict.<T>(Set.<(sym, T)>(( (@a, t), (@b, t), (@c, t) )));
 					case this.source.type instanceof TYPE.Set: {
 						return Dict.fillFromSet(
-							Value.cast(code_dest, reftype.Dict),
-							Value.cast(code_src,  reftype.Map),
+							Value.asDict(code_dest),
+							Value.cast(code_src, reftype.Map),
 						);
 					}
 					// Dict.<T>({@a -> t, @b -> t, @c -> t});
 					// Dict.<T>(Map.<sym, T>(( (@a, t), (@b, t), (@c, t) )));
 					case this.source.type instanceof TYPE.Map: {
 						return Dict.fillFromMap(
-							Value.cast(code_dest, reftype.Dict),
-							Value.cast(code_src,  reftype.Map),
+							Value.asDict(code_dest),
+							Value.cast(code_src, reftype.Map),
 						);
 					}
 					default: {
