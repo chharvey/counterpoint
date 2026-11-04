@@ -135,7 +135,7 @@ export class Dict implements HasFuncData {
 	/**
 	 * Delete a Dict Property with the given key.
 	 * If a Property with the given key exists, it is removed and its value is returned;
-	 * otherwise null is returned and the Dict is not mutated.
+	 * otherwise `(ref.null $Value)` is returned and the Dict is not mutated.
 	 * This method removes the Property first (if found), then reallocates if necessary.
 	 */
 	public delete(dict: binaryen.ExpressionRef /* (ref $Dict) */, key: binaryen.ExpressionRef /* i64 */): binaryen.ExpressionRef /* (ref null $Value) */ {

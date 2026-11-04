@@ -135,7 +135,7 @@ class VmMap implements HasFuncData {
 	/**
 	 * Delete a Map Case with the given antecedent.
 	 * If a Case with the given antecedent exists, it is removed and its consequent is returned;
-	 * otherwise null is returned and the Map is not mutated.
+	 * otherwise `(ref.null $Value)` is returned and the Map is not mutated.
 	 * This method removes the Case first (if found), then reallocates if necessary.
 	 */
 	public delete(map: binaryen.ExpressionRef /* (ref $Map) */, ant: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref null $Value) */ {
