@@ -46,7 +46,7 @@ export class TupleHas extends Value {
 	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
 		return cg.vm.Value.boolFromI32(cg.mod.wasm.i32.lt_u(
 			cg.mod.wasm.i32.const(Number(this.accessor)),
-			cg.mod.wasm.array.len(cg.vm.Value.cast(this.tuple.codegen(cg), cg.vm.reftype.Tuple)),
+			cg.mod.wasm.array.len(cg.vm.Value.asTuple(this.tuple.codegen(cg))),
 		));
 	}
 }

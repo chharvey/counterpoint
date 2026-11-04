@@ -66,6 +66,7 @@ export class Value implements HasFuncData {
 	 * @param value   the expression to cast
 	 * @param reftype the type to cast to
 	 * @return        `(ref.cast (struct.get $Value $composite <value>) <reftype>)`
+	 * @deprecated    use `Value#as*` or `wasm.ref.cast()`
 	 */
 	public cast(value: binaryen.ExpressionRef /* (ref $Value) */, reftype: binaryen.Type): binaryen.ExpressionRef /* <reftype> */ {
 		return this.vm.mod.wasm.ref.cast(this.field(value).composite, reftype);

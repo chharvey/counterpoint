@@ -182,7 +182,7 @@ export class CollectionDynamicCopy extends Instruction {
 
 	@memoizeMethod
 	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
-		const {reftype, Value, List, Dict, Map: VmMap} = cg.vm;
+		const {Value, List, Dict, Map: VmMap} = cg.vm;
 
 		const code_dest: binaryen.ExpressionRef = this.destination.codegen(cg);
 		const code_src:  binaryen.ExpressionRef = this.source     .codegen(cg);
@@ -194,7 +194,7 @@ export class CollectionDynamicCopy extends Instruction {
 					case this.source.type instanceof TYPE.Tuple: {
 						return List.copyFromTuple(
 							Value.asList(code_dest),
-							Value.cast(code_src, reftype.Tuple),
+							Value.asTuple(code_src),
 						);
 					}
 					// List.<T>([t, t, t]);
@@ -224,14 +224,14 @@ export class CollectionDynamicCopy extends Instruction {
 					case this.source.type instanceof TYPE.Tuple: {
 						return Dict.fillFromTuple(
 							Value.asDict(code_dest),
-							Value.cast(code_src, reftype.Tuple),
+							Value.asTuple(code_src),
 						);
 					}
 					// Dict.<T>((a= t, b= t, c= t));
 					case this.source.type instanceof TYPE.Record: {
 						return Dict.copyFromRecord(
 							Value.asDict(code_dest),
-							Value.cast(code_src, reftype.Record),
+							Value.asRecord(code_src),
 						);
 					}
 					// Dict.<T>([ (@a, t), (@b, t), (@c, t) ]);
@@ -277,7 +277,7 @@ export class CollectionDynamicCopy extends Instruction {
 					case this.source.type instanceof TYPE.Tuple: {
 						return VmMap.fillSetFromTuple(
 							Value.asMap(code_dest),
-							Value.cast(code_src, reftype.Tuple),
+							Value.asTuple(code_src),
 						);
 					}
 					// Set.<T>([t, t, t]);
@@ -307,7 +307,7 @@ export class CollectionDynamicCopy extends Instruction {
 					case this.source.type instanceof TYPE.Tuple: {
 						return VmMap.fillFromTuple(
 							Value.asMap(code_dest),
-							Value.cast(code_src, reftype.Tuple),
+							Value.asTuple(code_src),
 						);
 					}
 					// Map.<K, V>([ (k, v), (k, v), (k, v) ]);

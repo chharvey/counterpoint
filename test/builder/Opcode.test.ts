@@ -1170,7 +1170,7 @@ test.suite('Opcode', () => {
 					genConst(cg, ', you have '),
 					wasm.local.get(3, reftype.Value),
 					genConst(cg, ' new messages.'),
-				].map((code) => VmString.field(Value.cast(code, reftype.String)).internal);
+				].map((code) => VmString.field(Value.asString(code)).internal);
 
 				const RESULT_IDX =  9;
 				const OFFSET_IDX = 10;
@@ -1459,14 +1459,14 @@ test.suite('Opcode', () => {
 				const cg = new CodeGenerator();
 				const {vm: {reftype, Value}} = cg;
 				const actual = new OP.ExcpNew(new OP.Const(new VALUE.String('hello')));
-				const expected: binaryen.ExpressionRef /* (ref $Value) */ = Value.newComposite(cg.codegenException(Value.cast(genConst(cg, 'hello'), reftype.String)));
+				const expected: binaryen.ExpressionRef /* (ref $Value) */ = Value.newComposite(cg.codegenException(Value.asString(genConst(cg, 'hello'))));
 				return assertEqualBins([
 					actual,
 					new OP.ExcpNew(new OP.Const(new VALUE.String('world')), actual),
 				].map((opcode) => opcode.codegen(cg)), [
 					expected,
 					Value.newComposite(cg.codegenException(
-						Value.cast(genConst(cg, 'world'), reftype.String),
+						Value.asString(genConst(cg, 'world')),
 						Value.cast(expected, reftype.Exception),
 					)),
 				]);
@@ -1501,12 +1501,12 @@ test.suite('Opcode', () => {
 				// there exists no syntax for Tuple has, so constructing it manually
 				const tuple = new AST.ExprVisitorBuild(new Builder()).visit(AST.EXPR.Tuple.fromSource('(10, 20)'));
 				const cg    = new CodeGenerator();
-				const {vm: {reftype, Value}, mod: {wasm}} = cg;
+				const {vm: {Value}, mod: {wasm}} = cg;
 				xjs.Array.forEachAggregated([1n, 2n], (idx) => assertEqualBins(
 					new OP.TupleHas(tuple, idx).codegen(cg),
 					Value.boolFromI32(wasm.i32.lt_u(
 						wasm.i32.const(Number(idx)),
-						wasm.array.len(Value.cast(tuple.codegen(cg), reftype.Tuple)),
+						wasm.array.len(Value.asTuple(tuple.codegen(cg))),
 					)),
 				));
 			});
@@ -1515,13 +1515,13 @@ test.suite('Opcode', () => {
 				// there exists no syntax for Record has, so constructing it manually
 				const record = new AST.ExprVisitorBuild(new Builder()).visit(AST.EXPR.Record.fromSource('(a= 10, c= 20)'));
 				const cg     = new CodeGenerator();
-				const {vm: {reftype, Value, Record}, mod: {wasm}} = cg;
+				const {vm: {Value, Record}, mod: {wasm}} = cg;
 				return xjs.Array.forEachAggregated(['a', 'b'], (keysrc) => {
 					const keyid: bigint = Validator.cookTokenIdentifier(keysrc);
 					return assertEqualBins(
 						new OP.RecordHas(record, {keyid, keysrc}).codegen(cg),
 						Value.boolFromI32(Record.hasKey(
-							Value.cast(record.codegen(cg), reftype.Record),
+							Value.asRecord(record.codegen(cg)),
 							wasm.i64.const(keyid),
 						)),
 					);
@@ -1540,17 +1540,17 @@ test.suite('Opcode', () => {
 				const {reftype, Value, Tuple: VmTuple} = cg.vm;
 				return assertEqualBins(builder.instructions.slice(3).map((instr) => instr.codegen(cg)), [
 					wasm.drop(wasm.array.get(
-						VmTuple.field(Value.cast(wasm.local.get(2, reftype.Value), reftype.Tuple)).internal,
+						VmTuple.field(Value.asTuple(wasm.local.get(2, reftype.Value))).internal,
 						wasm.i32.const(2),
 						reftype.Value,
 					)),
 					wasm.drop(wasm.array.get(
-						VmTuple.field(Value.cast(wasm.local.get(1, reftype.Value), reftype.Tuple)).internal,
+						VmTuple.field(Value.asTuple(wasm.local.get(1, reftype.Value))).internal,
 						wasm.i32.const(0),
 						reftype.Value,
 					)),
 					wasm.drop(wasm.array.get(
-						VmTuple.field(Value.cast(wasm.local.get(1, reftype.Value), reftype.Tuple)).internal,
+						VmTuple.field(Value.asTuple(wasm.local.get(1, reftype.Value))).internal,
 						wasm.i32.const(1),
 						reftype.Value,
 					)),
@@ -1569,15 +1569,15 @@ test.suite('Opcode', () => {
 				const {reftype, Value, Record: VmRecord} = cg.vm;
 				return assertEqualBins(builder.instructions.slice(3).map((instr) => instr.codegen(cg)), [
 					wasm.drop(VmRecord.get(
-						Value.cast(wasm.local.get(2, reftype.Value), reftype.Record),
+						Value.asRecord(wasm.local.get(2, reftype.Value)),
 						wasm.i64.const(Validator.cookTokenIdentifier('c')),
 					)),
 					wasm.drop(VmRecord.get(
-						Value.cast(wasm.local.get(1, reftype.Value), reftype.Record),
+						Value.asRecord(wasm.local.get(1, reftype.Value)),
 						wasm.i64.const(Validator.cookTokenIdentifier('a')),
 					)),
 					wasm.drop(VmRecord.get(
-						Value.cast(wasm.local.get(1, reftype.Value), reftype.Record),
+						Value.asRecord(wasm.local.get(1, reftype.Value)),
 						wasm.i64.const(Validator.cookTokenIdentifier('b')),
 					)),
 				]);
@@ -1877,7 +1877,7 @@ test.suite('Opcode', () => {
 						z~!;
 					}`);
 					const {reftype, op, Value} = cg.vm;
-					const excp: binaryen.ExpressionRef /* (ref $Value) */ = Value.newComposite(cg.codegenException(Value.cast(genConst(cg, '42'), reftype.String)));
+					const excp: binaryen.ExpressionRef /* (ref $Value) */ = Value.newComposite(cg.codegenException(Value.asString(genConst(cg, '42'))));
 					return assertEqualBins(builder.instructions.map((instr) => instr.codegen(cg)), [
 						wasm.local.set(0, excp),
 						wasm.local.set(1, Value.newComposite(cg.codegenResult(false, Value.cast(wasm.local.get(0, reftype.Value), reftype.Exception)))),
@@ -2231,8 +2231,8 @@ test.suite('Opcode', () => {
 						return assertEqualBins(
 							builder.instructions[2].codegen(cg),
 							List.copyFromTuple(
-								Value.asList(wasm.local.get(0, reftype.Value)),
-								Value.cast  (wasm.local.get(1, reftype.Value), reftype.Tuple),
+								Value.asList (wasm.local.get(0, reftype.Value)),
+								Value.asTuple(wasm.local.get(1, reftype.Value)),
 							),
 						);
 					});
@@ -2276,7 +2276,7 @@ test.suite('Opcode', () => {
 							builder.instructions[5].codegen(cg),
 							Dict.fillFromTuple(
 								Value.asDict(wasm.local.get(0, reftype.Value)),
-								Value.cast  (wasm.local.get(4, reftype.Value), reftype.Tuple),
+								Value.asTuple(wasm.local.get(4, reftype.Value)),
 							),
 						);
 					});
@@ -2290,7 +2290,7 @@ test.suite('Opcode', () => {
 							builder.instructions[2].codegen(cg),
 							Dict.copyFromRecord(
 								Value.asDict(wasm.local.get(0, reftype.Value)),
-								Value.cast  (wasm.local.get(1, reftype.Value), reftype.Record),
+								Value.asRecord(wasm.local.get(1, reftype.Value)),
 							),
 						);
 					});
@@ -2361,8 +2361,8 @@ test.suite('Opcode', () => {
 						return assertEqualBins(
 							builder.instructions[2].codegen(cg),
 							VmMap.fillSetFromTuple(
-								Value.asMap(wasm.local.get(0, reftype.Value)),
-								Value.cast (wasm.local.get(1, reftype.Value), reftype.Tuple),
+								Value.asMap  (wasm.local.get(0, reftype.Value)),
+								Value.asTuple(wasm.local.get(1, reftype.Value)),
 							),
 						);
 					});
@@ -2405,8 +2405,8 @@ test.suite('Opcode', () => {
 						return assertEqualBins(
 							builder.instructions[5].codegen(cg),
 							VmMap.fillFromTuple(
-								Value.asMap(wasm.local.get(0, reftype.Value)),
-								Value.cast (wasm.local.get(4, reftype.Value), reftype.Tuple),
+								Value.asMap  (wasm.local.get(0, reftype.Value)),
+								Value.asTuple(wasm.local.get(4, reftype.Value)),
 							),
 						);
 					});
