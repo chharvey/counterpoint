@@ -32,6 +32,7 @@ export function identical(
  * - Result
  * - ValueFunction
  * - ValueClass
+ * - ValueObject
  */
 export abstract class Value {
 	/** Whether this value is of a reference type or a value type. */
