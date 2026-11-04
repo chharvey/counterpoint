@@ -40,6 +40,9 @@ export class Value implements HasFuncData {
 			['Value#asList',       {name: 'Value.as-list',       param: reftype.Value,       result: reftype.List}],
 			['Value#asDict',       {name: 'Value.as-dict',       param: reftype.Value,       result: reftype.Dict}],
 			['Value#asMap',        {name: 'Value.as-map',        param: reftype.Value,       result: reftype.Map}],
+			['Value#asString',     {name: 'Value.as-string',     param: reftype.Value,       result: reftype.String}],
+			['Value#asTuple',      {name: 'Value.as-tuple',      param: reftype.Value,       result: reftype.Tuple}],
+			['Value#asRecord',     {name: 'Value.as-record',     param: reftype.Value,       result: reftype.Record}],
 		]);
 	}
 
@@ -136,5 +139,20 @@ export class Value implements HasFuncData {
 	/** Returns the value as a Map. */
 	public asMap(value: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Map) */ {
 		return this.vm.mod.wasm.call('Value.as-map', [value], this.vm.reftype.Map);
+	}
+
+	/** Returns the value as a String. */
+	public asString(value: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $String) */ {
+		return this.vm.mod.wasm.call('Value.as-string', [value], this.vm.reftype.String);
+	}
+
+	/** Returns the value as a Tuple. */
+	public asTuple(value: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Tuple) */ {
+		return this.vm.mod.wasm.call('Value.as-tuple', [value], this.vm.reftype.Tuple);
+	}
+
+	/** Returns the value as a Record. */
+	public asRecord(value: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Record) */ {
+		return this.vm.mod.wasm.call('Value.as-record', [value], this.vm.reftype.Record);
 	}
 }

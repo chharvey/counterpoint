@@ -82,3 +82,15 @@
 (func $Value.as-map (export "Value#asMap") (param (ref $Value)) (result (ref $Map))
 	(struct.get $CplMap $map (ref.cast (ref $CplMap) (struct.get $Value $composite (local.get 0))))
 )
+
+
+
+(func $Value.as-string (export "Value#asString") (param (ref $Value)) (result (ref $String))
+	(ref.cast (ref $String) (struct.get $Value $composite (local.get 0)))
+)
+(func $Value.as-tuple (export "Value#asTuple") (param (ref $Value)) (result (ref $Tuple))
+	(ref.cast (ref $Tuple) (struct.get $Value $composite (local.get 0)))
+)
+(func $Value.as-record (export "Value#asRecord") (param (ref $Value)) (result (ref $Record))
+	(ref.cast (ref $Record) (struct.get $Value $composite (local.get 0)))
+)
