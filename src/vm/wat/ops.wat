@@ -948,6 +948,16 @@
 				(ref.cast (ref $Result) (local.get $ref1))
 			)))
 		)
+		(if
+			(i32.and
+				(ref.test (ref $Object) (local.get $ref0))
+				(ref.test (ref $Object) (local.get $ref1))
+			)
+			(then (br $exit (call $!Object.equal
+				(ref.cast (ref $Object) (local.get $ref0))
+				(ref.cast (ref $Object) (local.get $ref1))
+			)))
+		)
 		(i32.const 0)
 	))
 )
@@ -1351,6 +1361,17 @@
 		(ref.as_non_null (local.get $value0))
 		(ref.as_non_null (local.get $value1))
 	))
+)
+;; Returns whether two Objects are equal —
+;; whether they have identical constructors and equal field dicts.
+(func $!Object.equal (param (ref $Object) (ref $Object)) (result i32)
+	(i32.and
+		(i32.const 1) ;; TODO: compare object constructors by identity
+		(call $!Dict.equal
+			(struct.get $Object $fields (local.get 0))
+			(struct.get $Object $fields (local.get 1))
+		)
+	)
 )
 
 
