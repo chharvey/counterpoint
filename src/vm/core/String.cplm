@@ -18,7 +18,7 @@ public class String {
 	public new (refobj: Object) {
 		this(refobj.'%%toString%%'());
 	}
-	public new (arg: anything) { % catch-all for all other value objects (tuples, records, etc)
+	public new (arg: anything) {
 		if 'op::isTuple'(arg) as :bool: then {
 			% loop through tuple internal array and stringify each value
 			panic "TODO: not yet supported";

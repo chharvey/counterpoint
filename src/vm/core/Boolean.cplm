@@ -5,6 +5,7 @@ public class Boolean {
 		this(!!arg);
 	}
 
+
 	internal toString(): str
 		=> if this.data then "true" else "false";
 }

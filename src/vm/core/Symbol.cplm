@@ -1,6 +1,7 @@
 %%% Wrapper class for `sym`-type values. %%%
 public class Symbol {
-	private new (private readonly data: sym) {;}
+	public new (private readonly data: sym) {;}
+
 
 	internal toString(): str {
 		panic "TODO: not yet supported";

@@ -85,96 +85,40 @@ const VARIANCE = {
  * API for all core lib classes.
  */
 export const CLASS_API = new Map<CoreLibName, ClassSignature>([
-	/*
-	 * ```cpl
-	 * declare class Null {}
-	 * ```
-	 */
 	[CoreLibName.NULL, {
 		returnType: () => TYPE.NULL,
 		supertype:  TYPE.NULL,
 	}],
-
-	/*
-	 * ```cpl
-	 * declare class Boolean {
-	 * 	new (?: anything);
-	 * }
-	 * ```
-	 */
 	[CoreLibName.BOOLEAN, {
 		overloads:  () => [{positional: new TYPE.Tuple([{type: TYPE.ANYTHING, optional: true}])}],
 		returnType: () => TYPE.BOOL,
 		supertype:  TYPE.BOOL,
 	}],
-
-	/*
-	 * ```cpl
-	 * declare class Symbol {}
-	 * ```
-	 */
 	[CoreLibName.SYMBOL, {
+		overloads:  () => [{positional: new TYPE.Tuple([{type: TYPE.SYM, optional: false}])}],
 		returnType: () => TYPE.SYM,
 		supertype:  TYPE.SYM,
 	}],
-
-	/*
-	 * ```cpl
-	 * declare class Integer {
-	 * 	new (?: int | nat | float);
-	 * }
-	 * ```
-	 */
 	[CoreLibName.INTEGER, {
 		overloads:  () => [{positional: new TYPE.Tuple([{type: TYPE.NUMBER, optional: true}])}],
 		returnType: () => TYPE.INT,
 		supertype:  TYPE.INT,
 	}],
-
-	/*
-	 * ```cpl
-	 * declare class Natural {
-	 * 	new (?: int | nat | float);
-	 * }
-	 * ```
-	 */
 	[CoreLibName.NATURAL, {
 		overloads:  () => [{positional: new TYPE.Tuple([{type: TYPE.NUMBER, optional: true}])}],
 		returnType: () => TYPE.NAT,
 		supertype:  TYPE.NAT,
 	}],
-
-	/*
-	 * ```cpl
-	 * declare class Float {
-	 * 	new (?: int | nat | float);
-	 * }
-	 * ```
-	 */
 	[CoreLibName.FLOAT, {
 		overloads:  () => [{positional: new TYPE.Tuple([{type: TYPE.NUMBER, optional: true}])}],
 		returnType: () => TYPE.FLOAT,
 		supertype:  TYPE.FLOAT,
 	}],
-
-	/*
-	 * ```cpl
-	 * declare class String {
-	 * 	new (?: anything);
-	 * }
-	 * ```
-	 */
 	[CoreLibName.STRING, {
 		overloads:  () => [{positional: new TYPE.Tuple([{type: TYPE.ANYTHING, optional: true}])}],
 		returnType: () => TYPE.STR,
 		supertype:  TYPE.STR,
 	}],
-
-	/*
-	 * ```cpl
-	 * declare class open Object {}
-	 * ```
-	 */
 	[CoreLibName.OBJECT, {
 		returnType: () => TYPE.OBJ,
 		supertype:  TYPE.OBJ,
