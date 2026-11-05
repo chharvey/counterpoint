@@ -249,39 +249,42 @@ test.suite('CodeGenerator', () => {
 			);
 		});
 
-		test.suite('#codegenObject', () => {
-			test.test('empty.', () => {
-				assertEqualBins(
-					cg.codegenObject(),
-					wasm.struct.new([
-						cg.vm.Object.ctrPlusPlus(),
-						cg.mod.wasm.ref.null(cg.vm.heaptype.Class),
-						cg.codegenDict(),
-					], cg.vm.heaptype.Object),
-				);
-			});
-			test.test('with fields.', () => {
-				const field_map = new Map<bigint, binaryen.ExpressionRef>([
-					[0x100n, cg.newProperty(0x100n, genConst(cg, 42n))],
-					[0x101n, cg.newProperty(0x101n, genConst(cg, 'hello'))],
-				]);
-				return assertEqualBins(
-					cg.codegenObject(cg.codegenDict(field_map)),
-					wasm.struct.new([
-						cg.vm.Object.ctrPlusPlus(),
-						cg.mod.wasm.ref.null(cg.vm.heaptype.Class),
-						cg.codegenDict(field_map),
-					], cg.vm.heaptype.Object),
-				);
-			});
+		test.test('#codegenObject', () => {
+			/** The class named `Class` — it has a null `$class` field. */
+			const the_class_class: binaryen.ExpressionRef /* (ref $Class) */ = cg.codegenClass();
+			/** The class named `Object` — its `$class` field points to the class named `Class`. */
+			const the_object_class: binaryen.ExpressionRef /* (ref $Class) */ = cg.codegenClass(the_class_class);
+			/** A new Object instance — its `$class` field points to the class named `Object`. */
+			const new_object: binaryen.ExpressionRef /* (ref $Object) */ = cg.codegenObject(the_object_class);
+			return assertEqualBins(
+				new_object,
+				wasm.struct.new([
+					cg.vm.Object.ctrPlusPlus(),
+					the_object_class,
+					cg.codegenDict(),
+				], cg.vm.heaptype.Object),
+			);
 		});
 
 		test.test('#codegenClass', () => {
+			/** The class named `Class` — it has a null `$class` field. */
+			const the_class_class: binaryen.ExpressionRef /* (ref $Class) */ = cg.codegenClass();
+			/** The class named `Object` — its `$class` field points to the class named `Class`. */
+			const the_object_class: binaryen.ExpressionRef /* (ref $Class) */ = cg.codegenClass(the_class_class);
+			const expected0: binaryen.ExpressionRef /* (ref $Class) */ = wasm.struct.new([
+				cg.vm.Object.ctrPlusPlus(),
+				cg.mod.wasm.ref.null(cg.vm.heaptype.Class),
+				cg.codegenDict(),
+			], cg.vm.heaptype.Class);
 			assertEqualBins(
-				cg.codegenClass(),
+				the_class_class,
+				expected0,
+			);
+			return assertEqualBins(
+				the_object_class,
 				wasm.struct.new([
 					cg.vm.Object.ctrPlusPlus(),
-					cg.mod.wasm.ref.null(cg.vm.heaptype.Class),
+					expected0,
 					cg.codegenDict(),
 				], cg.vm.heaptype.Class),
 			);
