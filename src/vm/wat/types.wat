@@ -65,6 +65,15 @@
 	(type $Tuple  (sub final $Composite (struct (field $internal (ref $TupleInternal)))))
 	(type $Record (sub final $Composite (struct (field $internal (ref $RecordInternal)))))
 
+	;; an instance of any Counterpoint “data class”
+	;; (these are called “data values”)
+	(type $Data (sub final $Composite (struct
+		;; each instance has a set of fields
+		(field $fields (ref $Dict))
+	)))
+
+	;; an instance of the Counterpoint `Object` class (or any subclass)
+	;; (these are called “reference objects”)
 	(type $Object (sub $Composite (struct
 		;; unique id for hashing
 		(field $id i64)

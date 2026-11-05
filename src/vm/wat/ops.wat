@@ -709,6 +709,16 @@
 				(ref.cast (ref $Record) (local.get $ref1))
 			)))
 		)
+		(if
+			(i32.and
+				(ref.test (ref $Data) (local.get $ref0))
+				(ref.test (ref $Data) (local.get $ref1))
+			)
+			(then (br $exit (call $!Data.identical
+				(ref.cast (ref $Data) (local.get $ref0))
+				(ref.cast (ref $Data) (local.get $ref1))
+			)))
+		)
 		(i32.const 0)
 	))
 )
@@ -816,6 +826,14 @@
 	)
 	(i32.const 1)
 )
+;; Returns whether two data values are identical by value —
+;; whether they have identical constructors and field dicts that have identical properties.
+(func $!Data.identical (param (ref $Data) (ref $Data)) (result i32)
+	(i32.and
+		(i32.const 1) ;; TODO: compare object constructors by identity
+		(i32.const 1) ;; TODO: shallow-identical dicts
+	)
+)
 
 
 
@@ -885,6 +903,16 @@
 			(then (br $exit (call $!Record.equal
 				(ref.cast (ref $Record) (local.get $ref0))
 				(ref.cast (ref $Record) (local.get $ref1))
+			)))
+		)
+		(if
+			(i32.and
+				(ref.test (ref $Data) (local.get $ref0))
+				(ref.test (ref $Data) (local.get $ref1))
+			)
+			(then (br $exit (call $!Data.equal
+				(ref.cast (ref $Data) (local.get $ref0))
+				(ref.cast (ref $Data) (local.get $ref1))
 			)))
 		)
 		(if
@@ -1360,6 +1388,17 @@
 		(ref.as_non_null (local.get $value0))
 		(ref.as_non_null (local.get $value1))
 	))
+)
+;; Returns whether two data values are identical by value —
+;; whether they have identical constructors and equal field dicts.
+(func $!Data.equal (param (ref $Data) (ref $Data)) (result i32)
+	(i32.and
+		(i32.const 1) ;; TODO: compare object constructors by identity
+		(call $!Dict.equal
+			(struct.get $Data $fields (local.get 0))
+			(struct.get $Data $fields (local.get 1))
+		)
+	)
 )
 ;; Returns whether two Objects are equal —
 ;; whether they have identical constructors and equal field dicts.

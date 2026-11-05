@@ -34,6 +34,7 @@ type TypeKey = (
 	| 'String'
 	| 'Tuple'
 	| 'Record'
+	| 'Data'
 	| 'Object'
 	| 'Exception'
 	| 'Maybe'
@@ -225,6 +226,14 @@ const TYPES: {
 	]);
 	tb.setSubType(i_record, tb.getTempHeapType(i_composite));
 
+	/* (type $Data ...) */
+	const i_data: number = tb.getSize();
+	tb.grow(1);
+	tb.setStructType(i_data, [
+		/* $fields */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_dict), false)),
+	]);
+	tb.setSubType(i_data, tb.getTempHeapType(i_composite));
+
 	const fields_object = [
 		/* $id */     TypeBuilder_makeField(binaryen.Type.i64),
 		/* $fields */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_dict), false)),
@@ -322,6 +331,7 @@ const TYPES: {
 			String:         heaptypes[i_string],
 			Tuple:          heaptypes[i_tuple],
 			Record:         heaptypes[i_record],
+			Data:           heaptypes[i_data],
 			Object:         heaptypes[i_object],
 			Exception:      heaptypes[i_exception],
 			Maybe:          heaptypes[i_maybe],
@@ -346,6 +356,7 @@ const TYPES: {
 			String:         binaryen.getTypeFromHeapType(heaptypes[i_string],          false),
 			Tuple:          binaryen.getTypeFromHeapType(heaptypes[i_tuple],           false),
 			Record:         binaryen.getTypeFromHeapType(heaptypes[i_record],          false),
+			Data:           binaryen.getTypeFromHeapType(heaptypes[i_data],            false),
 			Object:         binaryen.getTypeFromHeapType(heaptypes[i_object],          false),
 			Exception:      binaryen.getTypeFromHeapType(heaptypes[i_exception],       false),
 			Maybe:          binaryen.getTypeFromHeapType(heaptypes[i_maybe],           false),
