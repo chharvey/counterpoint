@@ -66,23 +66,24 @@
 	(type $Tuple  (sub final $Composite (struct (field $internal (ref $TupleInternal)))))
 	(type $Record (sub final $Composite (struct (field $internal (ref $RecordInternal)))))
 
-	;; an instance of any Counterpoint “data class”
-	;; (these are called “data values”)
 	(type $Data (sub final $Composite (struct
 		;; pointer to the constructor class
 		(field $class (mut (ref null $Class)))
 		;; each instance has a set of fields
 		(field $fields (ref $Dict))
 	)))
-
-	;; an instance of the Counterpoint `Object` class (or any subclass)
-	;; (these are called “reference objects”)
 	(type $Object (sub $Composite (struct
 		;; unique id for hashing
 		(field $id i64)
 		;; pointer to the constructor class
 		(field $class (mut (ref null $Class)))
 		;; each instance has a set of fields
+		(field $fields (ref $Dict))
+	)))
+	(type $Class (sub final $Object (struct
+		;; --- inherited ---
+		(field $id i64)
+		(field $class (mut (ref null $Class)))
 		(field $fields (ref $Dict))
 	)))
 
@@ -178,13 +179,5 @@
 		;; --- own ---
 		;; number of functional parameters
 		(field $arity (mut i32))
-	)))
-
-	;; precursor to the Counterpoint `Class` class
-	(type $Class (sub final $Object (struct
-		;; --- inherited ---
-		(field $id i64)
-		(field $class (mut (ref null $Class)))
-		(field $fields (ref $Dict))
 	)))
 )

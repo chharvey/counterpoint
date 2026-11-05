@@ -249,6 +249,44 @@ test.suite('CodeGenerator', () => {
 			);
 		});
 
+		test.suite('#codegenObject', () => {
+			test.test('empty.', () => {
+				assertEqualBins(
+					cg.codegenObject(),
+					wasm.struct.new([
+						cg.vm.Object.ctrPlusPlus(),
+						cg.mod.wasm.ref.null(cg.vm.heaptype.Class),
+						cg.codegenDict(),
+					], cg.vm.heaptype.Object),
+				);
+			});
+			test.test('with fields.', () => {
+				const field_map = new Map<bigint, binaryen.ExpressionRef>([
+					[0x100n, cg.newProperty(0x100n, genConst(cg, 42n))],
+					[0x101n, cg.newProperty(0x101n, genConst(cg, 'hello'))],
+				]);
+				return assertEqualBins(
+					cg.codegenObject(cg.codegenDict(field_map)),
+					wasm.struct.new([
+						cg.vm.Object.ctrPlusPlus(),
+						cg.mod.wasm.ref.null(cg.vm.heaptype.Class),
+						cg.codegenDict(field_map),
+					], cg.vm.heaptype.Object),
+				);
+			});
+		});
+
+		test.test('#codegenClass', () => {
+			assertEqualBins(
+				cg.codegenClass(),
+				wasm.struct.new([
+					cg.vm.Object.ctrPlusPlus(),
+					cg.mod.wasm.ref.null(cg.vm.heaptype.Class),
+					cg.codegenDict(),
+				], cg.vm.heaptype.Class),
+			);
+		});
+
 		test.test('#codegenException', () => {
 			const message:   binaryen.ExpressionRef /* (ref $String) */    = cg.vm.Value.asString(genConst(cg, 'message'));
 			const expected1: binaryen.ExpressionRef /* (ref $Exception) */ = wasm.struct.new([
@@ -330,44 +368,6 @@ test.suite('CodeGenerator', () => {
 					wasm.i32.const(3),
 				], cg.vm.heaptype.Function),
 			);
-		});
-
-		test.test('#codegenClass', () => {
-			assertEqualBins(
-				cg.codegenClass(),
-				wasm.struct.new([
-					cg.vm.Object.ctrPlusPlus(),
-					cg.mod.wasm.ref.null(cg.vm.heaptype.Class),
-					cg.codegenDict(),
-				], cg.vm.heaptype.Class),
-			);
-		});
-
-		test.suite('#codegenObject', () => {
-			test.test('empty.', () => {
-				assertEqualBins(
-					cg.codegenObject(),
-					wasm.struct.new([
-						cg.vm.Object.ctrPlusPlus(),
-						cg.mod.wasm.ref.null(cg.vm.heaptype.Class),
-						cg.codegenDict(),
-					], cg.vm.heaptype.Object),
-				);
-			});
-			test.test('with fields.', () => {
-				const field_map = new Map<bigint, binaryen.ExpressionRef>([
-					[0x100n, cg.newProperty(0x100n, genConst(cg, 42n))],
-					[0x101n, cg.newProperty(0x101n, genConst(cg, 'hello'))],
-				]);
-				return assertEqualBins(
-					cg.codegenObject(cg.codegenDict(field_map)),
-					wasm.struct.new([
-						cg.vm.Object.ctrPlusPlus(),
-						cg.mod.wasm.ref.null(cg.vm.heaptype.Class),
-						cg.codegenDict(field_map),
-					], cg.vm.heaptype.Object),
-				);
-			});
 		});
 
 		test.test('Records: hashing collisions are resolved in source order.', () => {

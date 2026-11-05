@@ -334,6 +334,34 @@ export class CodeGenerator {
 	}
 
 	/**
+	 * Return a new `$Object` from a given set of fields.
+	 * @param fields an optional Dict of field ids and values
+	 * @return       `(struct.new $Object <fields>)`
+	 */
+	public codegenObject(fields?: binaryen.ExpressionRef /* (ref $Dict) */): binaryen.ExpressionRef /* (ref $Object) */ {
+		const {vm: {heaptype, Object: VmObject}, mod: {wasm}} = this;
+		return wasm.struct.new([
+			VmObject.ctrPlusPlus(),
+			wasm.ref.null(heaptype.Class),
+			fields ?? this.codegenDict(),
+		], heaptype.Object);
+	}
+
+	/**
+	 * Return a new `$Class`.
+	 * @param fields an optional Dict of field ids and values
+	 * @return       `(struct.new $Object <fields>)`
+	 */
+	public codegenClass(): binaryen.ExpressionRef /* (ref $Class) */ {
+		const {vm: {heaptype, Object: VmObject}, mod: {wasm}} = this;
+		return wasm.struct.new([
+			VmObject.ctrPlusPlus(),
+			wasm.ref.null(heaptype.Class),
+			this.codegenDict(),
+		], heaptype.Class);
+	}
+
+	/**
 	 * Return a new `$Exception` from a given message and optional cause.
 	 * @param message the error message
 	 * @param value   the optional cause; if not given, `(ref.null $Exception)` is used
@@ -403,29 +431,6 @@ export class CodeGenerator {
 			this.codegenDict(),
 			wasm.i32.const(Number(arity)),
 		], heaptype.Function);
-	}
-
-	public codegenClass(): binaryen.ExpressionRef /* (ref $Class) */ {
-		const {vm: {heaptype, Object: VmObject}, mod: {wasm}} = this;
-		return wasm.struct.new([
-			VmObject.ctrPlusPlus(),
-			wasm.ref.null(heaptype.Class),
-			this.codegenDict(),
-		], heaptype.Class);
-	}
-
-	/**
-	 * Return a new `$Object` from a given set of fields.
-	 * @param fields an optional Dict of field ids and values
-	 * @return       `(struct.new $Object <fields>)`
-	 */
-	public codegenObject(fields?: binaryen.ExpressionRef /* (ref $Dict) */): binaryen.ExpressionRef /* (ref $Object) */ {
-		const {vm: {heaptype, Object: VmObject}, mod: {wasm}} = this;
-		return wasm.struct.new([
-			VmObject.ctrPlusPlus(),
-			wasm.ref.null(heaptype.Class),
-			fields ?? this.codegenDict(),
-		], heaptype.Object);
 	}
 
 	/**

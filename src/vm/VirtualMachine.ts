@@ -36,11 +36,11 @@ type TypeKey = (
 	| 'Record'
 	| 'Data'
 	| 'Object'
+	| 'Class'
 	| 'Exception'
 	| 'Maybe'
 	| 'Result'
 	| 'Function'
-	| 'Class'
 );
 
 
@@ -48,7 +48,7 @@ type TypeKey = (
 type HeaptypeRegistry = Readonly<Record<TypeKey, binaryen.HeapType>>;
 type ReftypeRegistry  = Readonly<Record<TypeKey, binaryen.Type>>;
 
-type ReftypeNullRegistry = Readonly<Record<TypeKey & ('Value' | 'Property' | 'Case' | 'Composite' | 'Exception' | 'Class'), binaryen.Type>>;
+type ReftypeNullRegistry = Readonly<Record<TypeKey & ('Value' | 'Property' | 'Case' | 'Composite' | 'Class' | 'Exception'), binaryen.Type>>;
 
 
 
@@ -256,6 +256,12 @@ const TYPES: {
 	tb.setSubType(i_object, tb.getTempHeapType(i_composite));
 	tb.setOpen(i_object);
 
+	/* (type $Class ...) */
+	tb.setStructType(i_class, [
+		...fields_object,
+	]);
+	tb.setSubType(i_class, tb.getTempHeapType(i_object));
+
 	/* (type $CplList ...) */
 	const i_cpl_list: number = tb.getSize();
 	tb.grow(1);
@@ -321,12 +327,6 @@ const TYPES: {
 	]);
 	tb.setSubType(i_function, tb.getTempHeapType(i_object));
 
-	/* (type $Class ...) */
-	tb.setStructType(i_class, [
-		...fields_object,
-	]);
-	tb.setSubType(i_class, tb.getTempHeapType(i_object));
-
 	tb.createRecGroup(0, tb.getSize());
 	const heaptypes: readonly binaryen.HeapType[] = tb.buildAndDispose();
 
@@ -350,11 +350,11 @@ const TYPES: {
 			Record:         heaptypes[i_record],
 			Data:           heaptypes[i_data],
 			Object:         heaptypes[i_object],
+			Class:          heaptypes[i_class],
 			Exception:      heaptypes[i_exception],
 			Maybe:          heaptypes[i_maybe],
 			Result:         heaptypes[i_result],
 			Function:       heaptypes[i_function],
-			Class:          heaptypes[i_class],
 		},
 
 		reftypeRegistry: {
@@ -376,11 +376,11 @@ const TYPES: {
 			Record:         binaryen.getTypeFromHeapType(heaptypes[i_record],          false),
 			Data:           binaryen.getTypeFromHeapType(heaptypes[i_data],            false),
 			Object:         binaryen.getTypeFromHeapType(heaptypes[i_object],          false),
+			Class:          binaryen.getTypeFromHeapType(heaptypes[i_class],           false),
 			Exception:      binaryen.getTypeFromHeapType(heaptypes[i_exception],       false),
 			Maybe:          binaryen.getTypeFromHeapType(heaptypes[i_maybe],           false),
 			Result:         binaryen.getTypeFromHeapType(heaptypes[i_result],          false),
 			Function:       binaryen.getTypeFromHeapType(heaptypes[i_function],        false),
-			Class:          binaryen.getTypeFromHeapType(heaptypes[i_class],           false),
 		},
 
 		reftypeNullRegistry: {
@@ -388,8 +388,8 @@ const TYPES: {
 			Property:  binaryen.getTypeFromHeapType(heaptypes[i_property],  true), // only used as the fields of `$DictInternal`
 			Case:      binaryen.getTypeFromHeapType(heaptypes[i_case],      true), // only used as the fields of `$MapInternal`
 			Composite: binaryen.getTypeFromHeapType(heaptypes[i_composite], true), // only used as the fields of `$Value`
-			Exception: binaryen.getTypeFromHeapType(heaptypes[i_exception], true), // only used as the fields of `$Exception` and `$Result`
 			Class:     binaryen.getTypeFromHeapType(heaptypes[i_class],     true), // only used as the fields of `$Class`
+			Exception: binaryen.getTypeFromHeapType(heaptypes[i_exception], true), // only used as the fields of `$Exception` and `$Result`
 		},
 	};
 })();
