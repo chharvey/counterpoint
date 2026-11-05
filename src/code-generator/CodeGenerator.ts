@@ -335,28 +335,32 @@ export class CodeGenerator {
 
 	/**
 	 * Return a new `$Object` from a given set of fields.
-	 * @param fields an optional Dict of field ids and values
-	 * @return       `(struct.new $Object <fields>)`
+	 * @param class_ the constructor of the `$Object` object
+	 * @param fields an optional Map of field ids and properties
+	 * @return       `(struct.new $Object <class> <fields?>)`
 	 */
-	public codegenObject(fields?: binaryen.ExpressionRef /* (ref $Dict) */): binaryen.ExpressionRef /* (ref $Object) */ {
+	public codegenObject(
+		class_: binaryen.ExpressionRef /* (ref $Class) */,
+		fields: ReadonlyMap<bigint, binaryen.ExpressionRef /* (ref $Property) */> = new Map(),
+	): binaryen.ExpressionRef /* (ref $Object) */ {
 		const {vm: {heaptype, Object: VmObject}, mod: {wasm}} = this;
 		return wasm.struct.new([
 			VmObject.ctrPlusPlus(),
-			wasm.ref.null(heaptype.Class),
-			fields ?? this.codegenDict(),
+			class_,
+			this.codegenDict(fields),
 		], heaptype.Object);
 	}
 
 	/**
 	 * Return a new `$Class`.
-	 * @param fields an optional Dict of field ids and values
-	 * @return       `(struct.new $Object <fields>)`
+	 * @param class_ optional constructor of the `$Class` object
+	 * @return       `(struct.new $Class <class_?>)`
 	 */
-	public codegenClass(): binaryen.ExpressionRef /* (ref $Class) */ {
+	public codegenClass(class_?: binaryen.ExpressionRef /* (ref $Class) */): binaryen.ExpressionRef /* (ref $Class) */ {
 		const {vm: {heaptype, Object: VmObject}, mod: {wasm}} = this;
 		return wasm.struct.new([
 			VmObject.ctrPlusPlus(),
-			wasm.ref.null(heaptype.Class),
+			class_ ?? wasm.ref.null(heaptype.Class),
 			this.codegenDict(),
 		], heaptype.Class);
 	}

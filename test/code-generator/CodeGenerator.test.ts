@@ -250,41 +250,65 @@ test.suite('CodeGenerator', () => {
 		});
 
 		test.suite('#codegenObject', () => {
+			let class_: binaryen.ExpressionRef/* (ref $Class) */;
+			test.beforeEach(() => {
+				class_ = cg.codegenClass(); // e.g., the `Object` class
+			});
 			test.test('empty.', () => {
 				assertEqualBins(
-					cg.codegenObject(),
+					cg.codegenObject(class_),
 					wasm.struct.new([
 						cg.vm.Object.ctrPlusPlus(),
-						cg.mod.wasm.ref.null(cg.vm.heaptype.Class),
+						cg.codegenClass(),
 						cg.codegenDict(),
 					], cg.vm.heaptype.Object),
 				);
 			});
 			test.test('with fields.', () => {
-				const field_map = new Map<bigint, binaryen.ExpressionRef>([
+				const field_map = new Map<bigint, binaryen.ExpressionRef /* (ref $Property) */>([
 					[0x100n, cg.newProperty(0x100n, genConst(cg, 42n))],
 					[0x101n, cg.newProperty(0x101n, genConst(cg, 'hello'))],
 				]);
 				return assertEqualBins(
-					cg.codegenObject(cg.codegenDict(field_map)),
+					cg.codegenObject(class_, field_map),
 					wasm.struct.new([
 						cg.vm.Object.ctrPlusPlus(),
-						cg.mod.wasm.ref.null(cg.vm.heaptype.Class),
+						cg.codegenClass(),
 						cg.codegenDict(field_map),
 					], cg.vm.heaptype.Object),
 				);
 			});
 		});
 
-		test.test('#codegenClass', () => {
-			assertEqualBins(
-				cg.codegenClass(),
-				wasm.struct.new([
-					cg.vm.Object.ctrPlusPlus(),
-					cg.mod.wasm.ref.null(cg.vm.heaptype.Class),
-					cg.codegenDict(),
-				], cg.vm.heaptype.Class),
-			);
+		test.suite('#codegenClass', () => {
+			let class_: binaryen.ExpressionRef/* (ref $Class) */;
+			test.beforeEach(() => {
+				class_ = cg.codegenClass(); // e.g., the `Class` class or some other metaclass
+			});
+			test.test('classless.', () => {
+				assertEqualBins(
+					cg.codegenClass(),
+					wasm.struct.new([
+						cg.vm.Object.ctrPlusPlus(),
+						cg.mod.wasm.ref.null(cg.vm.heaptype.Class),
+						cg.codegenDict(),
+					], cg.vm.heaptype.Class),
+				);
+			});
+			test.test('instance of a given class.', () => {
+				assertEqualBins(
+					cg.codegenClass(class_),
+					wasm.struct.new([
+						cg.vm.Object.ctrPlusPlus(),
+						wasm.struct.new([
+							cg.vm.Object.ctrPlusPlus(),
+							cg.mod.wasm.ref.null(cg.vm.heaptype.Class),
+							cg.codegenDict(),
+						], cg.vm.heaptype.Class),
+						cg.codegenDict(),
+					], cg.vm.heaptype.Class),
+				);
+			});
 		});
 
 		test.test('#codegenException', () => {
