@@ -1,4 +1,4 @@
-from "cplvm" import ('::op::toFloat');
+from "core/vm" import ('op::toFloat');
 
 
 
@@ -6,7 +6,7 @@ from "cplvm" import ('::op::toFloat');
 public class Float {
 	public new (private readonly data: float) {;}
 	public new (arg: int | nat) {
-		this('::op::toFloat'(arg) as :float:);
+		this('op::toFloat'(arg) as :float:);
 	}
 
 	internal toString(radix?: nat = +10): Result[str, RangeException] {
