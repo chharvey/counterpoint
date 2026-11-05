@@ -3,10 +3,6 @@ from "./utils" import (
 	DIGITS,
 	mod,
 );
-from "./Natural" import (
-	DIGITS,
-	Natural,
-);
 
 
 

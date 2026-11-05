@@ -1,6 +1,6 @@
 from "core/vm" import (
-	'op::isTuple',
-	'op::isRecord',
+	'Value#newComposite',
+	'Value#stringify',
 );
 from "./Object" import type (Object);
 from "./Exception" import (Exception);
@@ -20,12 +20,6 @@ public class String {
 		this(refobj.'%%toString%%'());
 	}
 	public new (arg: anything) {
-		if 'op::isTuple'(arg) as :bool: then {
-			% loop through tuple internal array and stringify each value
-			panic Exception("TODO: not yet supported");
-		} else if 'op::isRecord'(arg) as :bool: then {
-			% loop through record internal array and stringify each property
-			panic Exception("TODO: not yet supported");
-		};
+		return 'Value#newComposite'('Value#stringify'(arg)) as :str:;
 	}
 }
