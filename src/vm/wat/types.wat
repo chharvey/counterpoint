@@ -2,6 +2,7 @@
 	;; # Dynamic Operation Types
 	(type $i64.relop (func (param i64 i64) (result i32)))
 	(type $f64.relop (func (param f64 f64) (result i32)))
+	(type $Value.relop (func (param (ref $Value) (ref $Value)) (result (ref $Value))))
 
 
 

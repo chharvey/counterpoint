@@ -1,10 +1,12 @@
 import type {TYPE} from '../index.ts';
 import {
+	language_values_identical,
 	strictEqual,
 	instanceOf,
 	memoizeBinOp,
 } from '../utils-private.ts';
 import {Value} from './Value.ts';
+import {CollectionKeyed} from './CollectionKeyed.ts';
 import {Dict} from './Dict.ts';
 
 
@@ -34,8 +36,7 @@ export class Data extends Value {
 	public override identical(value: Value): boolean {
 		const data = value as Data;
 		// TODO: check constructors by identity
-		// TODO: check for shallow-identity of field dicts
-		return !!data;
+		return CollectionKeyed.samenessDfn(this.fields, data.fields, language_values_identical);
 	}
 
 	public override toType(): TYPE.Type {
