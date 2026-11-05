@@ -356,6 +356,7 @@ export class CodeGenerator {
 		const {vm: {heaptype, Object: VmObject}, mod: {wasm}} = this;
 		return wasm.struct.new([
 			VmObject.ctrPlusPlus(),
+			wasm.ref.null(heaptype.Class),
 			this.codegenDict(),
 			message,
 			cause ?? wasm.ref.null(heaptype.Exception),
@@ -371,6 +372,7 @@ export class CodeGenerator {
 		const {vm: {heaptype, Object: VmObject}, mod: {wasm}} = this;
 		return wasm.struct.new([
 			VmObject.ctrPlusPlus(),
+			wasm.ref.null(heaptype.Class),
 			this.codegenDict(),
 			value ?? wasm.ref.null(heaptype.Value),
 		], heaptype.Maybe);
@@ -388,11 +390,13 @@ export class CodeGenerator {
 		const {vm: {heaptype, Object: VmObject}, mod: {wasm}} = this;
 		return wasm.struct.new(is_ok ? [
 			VmObject.ctrPlusPlus(),
+			wasm.ref.null(heaptype.Class),
 			this.codegenDict(),
 			argument,
 			wasm.ref.null(heaptype.Exception),
 		] : [
 			VmObject.ctrPlusPlus(),
+			wasm.ref.null(heaptype.Class),
 			this.codegenDict(),
 			wasm.ref.null(heaptype.Value),
 			argument,
@@ -408,6 +412,7 @@ export class CodeGenerator {
 		const {vm: {heaptype, Object: VmObject}, mod: {wasm}} = this;
 		return wasm.struct.new([
 			VmObject.ctrPlusPlus(),
+			wasm.ref.null(heaptype.Class),
 			this.codegenDict(),
 			wasm.i32.const(Number(arity)),
 		], heaptype.Function);
@@ -417,6 +422,7 @@ export class CodeGenerator {
 		const {vm: {heaptype, Object: VmObject}, mod: {wasm}} = this;
 		return wasm.struct.new([
 			VmObject.ctrPlusPlus(),
+			wasm.ref.null(heaptype.Class),
 			this.codegenDict(),
 		], heaptype.Class);
 	}
@@ -430,6 +436,7 @@ export class CodeGenerator {
 		const {vm: {heaptype, Object: VmObject}, mod: {wasm}} = this;
 		return wasm.struct.new([
 			VmObject.ctrPlusPlus(),
+			wasm.ref.null(heaptype.Class),
 			fields ?? this.codegenDict(),
 		], heaptype.Object);
 	}

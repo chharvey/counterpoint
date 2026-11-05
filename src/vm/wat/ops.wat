@@ -830,7 +830,10 @@
 ;; whether they have identical constructors and field dicts that have identical properties.
 (func $!Data.identical (param (ref $Data) (ref $Data)) (result i32)
 	(i32.and
-		(i32.const 1) ;; TODO: compare object constructors by identity
+		(ref.eq
+			(struct.get $Data $class (local.get 0))
+			(struct.get $Data $class (local.get 1))
+		)
 		(call $!Dict.equal
 			(struct.get $Data $fields (local.get 0))
 			(struct.get $Data $fields (local.get 1))
@@ -1418,7 +1421,10 @@
 ;; whether they have identical constructors and equal field dicts.
 (func $!Data.equal (param (ref $Data) (ref $Data)) (result i32)
 	(i32.and
-		(i32.const 1) ;; TODO: compare object constructors by identity
+		(ref.eq
+			(struct.get $Data $class (local.get 0))
+			(struct.get $Data $class (local.get 1))
+		)
 		(call $!Dict.equal
 			(struct.get $Data $fields (local.get 0))
 			(struct.get $Data $fields (local.get 1))
@@ -1430,7 +1436,10 @@
 ;; whether they have identical constructors and equal field dicts.
 (func $!Object.equal (param (ref $Object) (ref $Object)) (result i32)
 	(i32.and
-		(i32.const 1) ;; TODO: compare object constructors by identity
+		(ref.eq
+			(struct.get $Object $class (local.get 0))
+			(struct.get $Object $class (local.get 1))
+		)
 		(call $!Dict.equal
 			(struct.get $Object $fields (local.get 0))
 			(struct.get $Object $fields (local.get 1))

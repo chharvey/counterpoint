@@ -69,6 +69,8 @@
 	;; an instance of any Counterpoint “data class”
 	;; (these are called “data values”)
 	(type $Data (sub final $Composite (struct
+		;; pointer to the constructor class
+		(field $class (mut (ref null $Class)))
 		;; each instance has a set of fields
 		(field $fields (ref $Dict))
 	)))
@@ -78,6 +80,8 @@
 	(type $Object (sub $Composite (struct
 		;; unique id for hashing
 		(field $id i64)
+		;; pointer to the constructor class
+		(field $class (mut (ref null $Class)))
 		;; each instance has a set of fields
 		(field $fields (ref $Dict))
 	)))
@@ -92,6 +96,7 @@
 	(type $CplList (sub final $Object (struct
 		;; --- inherited ---
 		(field $id i64)
+		(field $class (mut (ref null $Class)))
 		(field $fields (ref $Dict))
 
 		;; --- own ---
@@ -103,6 +108,7 @@
 	(type $CplDict (sub final $Object (struct
 		;; --- inherited ---
 		(field $id i64)
+		(field $class (mut (ref null $Class)))
 		(field $fields (ref $Dict))
 
 		;; --- own ---
@@ -114,6 +120,7 @@
 	(type $CplMap (sub final $Object (struct
 		;; --- inherited ---
 		(field $id i64)
+		(field $class (mut (ref null $Class)))
 		(field $fields (ref $Dict))
 
 		;; --- own ---
@@ -125,6 +132,7 @@
 	(type $Exception (sub final $Object (struct
 		;; --- inherited ---
 		(field $id i64)
+		(field $class (mut (ref null $Class)))
 		(field $fields (ref $Dict))
 
 		;; --- own ---
@@ -138,6 +146,7 @@
 	(type $Maybe (sub final $Object (struct
 		;; --- inherited ---
 		(field $id i64)
+		(field $class (mut (ref null $Class)))
 		(field $fields (ref $Dict))
 
 		;; --- own ---
@@ -149,6 +158,7 @@
 	(type $Result (sub final $Object (struct
 		;; --- inherited ---
 		(field $id i64)
+		(field $class (mut (ref null $Class)))
 		(field $fields (ref $Dict))
 
 		;; --- own ---
@@ -162,6 +172,7 @@
 	(type $Function (sub final $Object (struct
 		;; --- inherited ---
 		(field $id i64)
+		(field $class (mut (ref null $Class)))
 		(field $fields (ref $Dict))
 
 		;; --- own ---
@@ -173,6 +184,7 @@
 	(type $Class (sub final $Object (struct
 		;; --- inherited ---
 		(field $id i64)
+		(field $class (mut (ref null $Class)))
 		(field $fields (ref $Dict))
 	)))
 )

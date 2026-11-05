@@ -8,6 +8,7 @@ import {
 import {Value} from './Value.ts';
 import {CollectionKeyed} from './CollectionKeyed.ts';
 import {Dict} from './Dict.ts';
+import type {Class as ValueClass} from './Class.ts';
 
 
 
@@ -16,18 +17,16 @@ import {Dict} from './Dict.ts';
  * (which are pass-by-value and have no identity).
  */
 export class Data extends Value {
-	// TODO: `constructor` field
-
-	public readonly fields = new Dict<Value>();
-
-
-	public constructor(private readonly type: TYPE.Type) {
+	public constructor(
+		private readonly class_: ValueClass,
+		private readonly fields = new Dict<Value>(),
+	) {
 		super();
 	}
 
 
 	public override toString(): string {
-		return `<instance ${this.fields}>`;
+		return `<${this.class_} instance ${this.fields}>`;
 	}
 
 	@strictEqual
@@ -35,11 +34,13 @@ export class Data extends Value {
 	@instanceOf(() => Data)
 	public override identical(value: Value): boolean {
 		const data = value as Data;
-		// TODO: check constructors by identity
-		return CollectionKeyed.samenessDfn(this.fields, data.fields, language_values_identical);
+		return (
+			this.class_.identical(data.class_) &&
+			CollectionKeyed.samenessDfn(this.fields, data.fields, language_values_identical)
+		);
 	}
 
 	public override toType(): TYPE.Type {
-		return this.type;
+		return this.class_.instanceType;
 	}
 }

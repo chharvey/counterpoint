@@ -48,7 +48,7 @@ type TypeKey = (
 type HeaptypeRegistry = Readonly<Record<TypeKey, binaryen.HeapType>>;
 type ReftypeRegistry  = Readonly<Record<TypeKey, binaryen.Type>>;
 
-type ReftypeNullRegistry = Readonly<Record<TypeKey & ('Value' | 'Property' | 'Case' | 'Composite' | 'Exception'), binaryen.Type>>;
+type ReftypeNullRegistry = Readonly<Record<TypeKey & ('Value' | 'Property' | 'Case' | 'Composite' | 'Exception' | 'Class'), binaryen.Type>>;
 
 
 
@@ -87,7 +87,12 @@ const TYPES: {
 } = (() => {
 	const tb = new binaryen.TypeBuilder();
 
+	// allocates first due to subtype and field order
 	const i_composite: number = tb.getSize();
+	tb.grow(1);
+	const i_object: number = tb.getSize();
+	tb.grow(1);
+	const i_class: number = tb.getSize();
 	tb.grow(1);
 
 	/* (type $Value ...) */
@@ -231,18 +236,18 @@ const TYPES: {
 	const i_data: number = tb.getSize();
 	tb.grow(1);
 	tb.setStructType(i_data, [
+		/* $class */  TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_class), true), 'notPacked', true),
 		/* $fields */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_dict), false)),
 	]);
 	tb.setSubType(i_data, tb.getTempHeapType(i_composite));
 
 	const fields_object = [
 		/* $id */     TypeBuilder_makeField(binaryen.Type.i64),
+		/* $class */  TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_class), true), 'notPacked', true),
 		/* $fields */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_dict), false)),
 	];
 
 	/* (type $Object ...) */
-	const i_object: number = tb.getSize();
-	tb.grow(1);
 	tb.setStructType(i_object, fields_object);
 	tb.setSubType(i_object, tb.getTempHeapType(i_composite));
 	tb.setOpen(i_object);
@@ -313,13 +318,12 @@ const TYPES: {
 	tb.setSubType(i_function, tb.getTempHeapType(i_object));
 
 	/* (type $Class ...) */
-	const i_class: number = tb.getSize();
-	tb.grow(1);
 	tb.setStructType(i_class, [
 		...fields_object,
 	]);
 	tb.setSubType(i_class, tb.getTempHeapType(i_object));
 
+	tb.createRecGroup(0, tb.getSize());
 	const heaptypes: readonly binaryen.HeapType[] = tb.buildAndDispose();
 
 	return {
@@ -381,6 +385,7 @@ const TYPES: {
 			Case:      binaryen.getTypeFromHeapType(heaptypes[i_case],      true), // only used as the fields of `$MapInternal`
 			Composite: binaryen.getTypeFromHeapType(heaptypes[i_composite], true), // only used as the fields of `$Value`
 			Exception: binaryen.getTypeFromHeapType(heaptypes[i_exception], true), // only used as the fields of `$Exception` and `$Result`
+			Class:     binaryen.getTypeFromHeapType(heaptypes[i_class],     true), // only used as the fields of `$Class`
 		},
 	};
 })();

@@ -50,6 +50,7 @@
 	(return_call $Value.new-composite
 		(struct.new $CplList
 			(call $Object.ctr-plus-plus)
+			(ref.null $Class)
 			(struct.new $Dict
 				(i32.const 0)
 				(array.new_default $DictInternal (i32.const 8))
@@ -62,6 +63,7 @@
 	(return_call $Value.new-composite
 		(struct.new $CplDict
 			(call $Object.ctr-plus-plus)
+			(ref.null $Class)
 			(struct.new $Dict
 				(i32.const 0)
 				(array.new_default $DictInternal (i32.const 8))
@@ -74,6 +76,7 @@
 	(return_call $Value.new-composite
 		(struct.new $CplMap
 			(call $Object.ctr-plus-plus)
+			(ref.null $Class)
 			(struct.new $Dict
 				(i32.const 0)
 				(array.new_default $DictInternal (i32.const 8))
