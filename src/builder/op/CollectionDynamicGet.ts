@@ -140,8 +140,8 @@ export class CollectionDynamicGet extends Value {
 							wasm.ref.is_null(maybe_case.get()),
 							Case.isTombstone(maybe_case.get()),
 						),
-						cg.getConst(false),
-						cg.getConst(true),
+						VmValue.FALSE,
+						VmValue.TRUE,
 					),
 				], reftype.Value);
 			}

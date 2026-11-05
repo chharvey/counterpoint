@@ -1,3 +1,21 @@
+(global $Value.NULL (export "Value#NULL") (ref $Value) (struct.new $Value
+	(i32.const 1)
+	(global.get $Vect.NULL)
+	(ref.null $Composite)
+))
+(global $Value.FALSE (export "Value#FALSE") (ref $Value) (struct.new $Value
+	(i32.const 1)
+	(global.get $Vect.FALSE)
+	(ref.null $Composite)
+))
+(global $Value.TRUE (export "Value#TRUE") (ref $Value) (struct.new $Value
+	(i32.const 1)
+	(global.get $Vect.TRUE)
+	(ref.null $Composite)
+))
+
+
+
 (func $Value.new-primitive (export "Value#newPrimitive") (param $primitive v128) (result (ref $Value))
 	(struct.new $Value
 		(i32.const 1)
@@ -39,8 +57,8 @@
 (func $Value.bool-from-i32 (export "Value#boolFromI32") (param $bool i32) (result (ref $Value))
 	(if (result (ref $Value))
 		(local.get $bool)
-		(then (call $Value.new-primitive (global.get $Vect.TRUE)))
-		(else (call $Value.new-primitive (global.get $Vect.FALSE)))
+		(then (global.get $Value.TRUE))
+		(else (global.get $Value.FALSE))
 	)
 )
 

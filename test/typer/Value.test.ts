@@ -344,7 +344,7 @@ test.suite('Value', () => {
 			const cg = new CodeGenerator();
 			return assertEqualBins(
 				VALUE.NULL.codegen(cg),
-				cg.vm.Value.newPrimitive(cg.vm.Vect.NULL),
+				cg.vm.Value.NULL,
 			);
 		});
 
@@ -354,8 +354,8 @@ test.suite('Value', () => {
 				VALUE.FALSE.codegen(cg),
 				VALUE.TRUE .codegen(cg),
 			], [
-				cg.vm.Value.newPrimitive(cg.vm.Vect.FALSE),
-				cg.vm.Value.newPrimitive(cg.vm.Vect.TRUE),
+				cg.vm.Value.FALSE,
+				cg.vm.Value.TRUE,
 			]);
 		});
 

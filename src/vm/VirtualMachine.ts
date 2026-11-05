@@ -416,11 +416,7 @@ export class VirtualMachine {
 	/** A registry of reference-null types. */
 	public readonly reftypeNull: ReftypeNullRegistry;
 
-	public readonly globalImportDataMap: ReadonlyMap<string, {readonly name: string, readonly type: binaryen.Type}> = new Map([
-		['Vect#NULL',  {name: 'Vect.NULL',  type: binaryen.Type.v128}],
-		['Vect#FALSE', {name: 'Vect.FALSE', type: binaryen.Type.v128}],
-		['Vect#TRUE',  {name: 'Vect.TRUE',  type: binaryen.Type.v128}],
-	]);
+	public readonly globalImportDataMap: ReadonlyMap<string, {readonly name: string, readonly type: binaryen.Type}>;
 
 	public readonly util = utils(this);
 	public readonly op   = ops(this);
@@ -448,5 +444,14 @@ export class VirtualMachine {
 			reftypeRegistry:     this.reftype,
 			reftypeNullRegistry: this.reftypeNull,
 		} = TYPES);
+
+		this.globalImportDataMap = new Map([
+			['Vect#NULL',   {name: 'Vect.NULL',   type: binaryen.Type.v128}],
+			['Vect#FALSE',  {name: 'Vect.FALSE',  type: binaryen.Type.v128}],
+			['Vect#TRUE',   {name: 'Vect.TRUE',   type: binaryen.Type.v128}],
+			['Value#NULL',  {name: 'Value.NULL',  type: this.reftype.Value}],
+			['Value#FALSE', {name: 'Value.FALSE', type: this.reftype.Value}],
+			['Value#TRUE',  {name: 'Value.TRUE',  type: this.reftype.Value}],
+		]);
 	}
 }

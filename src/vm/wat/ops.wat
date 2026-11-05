@@ -853,7 +853,7 @@
 	;; identical values are necessarily equal
 	(if
 		(call $Value.bool-to-i32 (call $op:id (local.get 0) (local.get 1)))
-		(then (return_call $Value.new-primitive (global.get $Vect.TRUE)))
+		(then (return (global.get $Value.TRUE)))
 	)
 
 	(local.set $vect0 (struct.get $Value $primitive (local.get 0)))
