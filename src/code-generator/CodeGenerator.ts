@@ -50,9 +50,6 @@ export class CodeGenerator {
 	static readonly #LOAD_FACTOR = 7 / 8;
 
 
-	/** A registry of constant WASM expressions. */
-	readonly #constRegistry: ReadonlyMap<null | boolean, binaryen.ExpressionRef>;
-
 	/** A set containing data of WASM local variables. */
 	readonly #locals = new Set<Local>();
 
@@ -66,16 +63,6 @@ export class CodeGenerator {
 	public constructor(public readonly vm: VirtualMachine = new VirtualMachine()) {
 		this.mod = new binaryen.Module();
 		this.mod.features = vm.mod.features;
-
-		this.#constRegistry = new Map<null | boolean, binaryen.ExpressionRef>([
-			[null,  this.vm.Value.newPrimitive(this.vm.Vect.NULL)],
-			[false, this.vm.Value.newPrimitive(this.vm.Vect.FALSE)],
-			[true,  this.vm.Value.newPrimitive(this.vm.Vect.TRUE)],
-		]);
-	}
-
-	public getConst(key: null | boolean): binaryen.ExpressionRef {
-		return this.#constRegistry.get(key)!;
 	}
 
 	/**
@@ -315,7 +302,7 @@ export class CodeGenerator {
 	 * @return      `(struct.new $Map <count> (array.new_fixed $MapInternal <...cases>))`
 	 */
 	public codegenSet(items: readonly (binaryen.ExpressionRef /* (ref $Value) */)[] = []): binaryen.ExpressionRef /* (ref $Map) */ {
-		return this.codegenMap(new Map(items.map((item) => [item, this.getConst(null)])));
+		return this.codegenMap(new Map(items.map((item) => [item, this.vm.Value.NULL])));
 	}
 
 	/**
@@ -356,6 +343,7 @@ export class CodeGenerator {
 		const {vm: {heaptype, Object: VmObject}, mod: {wasm}} = this;
 		return wasm.struct.new([
 			VmObject.ctrPlusPlus(),
+			wasm.ref.null(heaptype.Class),
 			this.codegenDict(),
 			message,
 			cause ?? wasm.ref.null(heaptype.Exception),
@@ -371,6 +359,7 @@ export class CodeGenerator {
 		const {vm: {heaptype, Object: VmObject}, mod: {wasm}} = this;
 		return wasm.struct.new([
 			VmObject.ctrPlusPlus(),
+			wasm.ref.null(heaptype.Class),
 			this.codegenDict(),
 			value ?? wasm.ref.null(heaptype.Value),
 		], heaptype.Maybe);
@@ -388,11 +377,13 @@ export class CodeGenerator {
 		const {vm: {heaptype, Object: VmObject}, mod: {wasm}} = this;
 		return wasm.struct.new(is_ok ? [
 			VmObject.ctrPlusPlus(),
+			wasm.ref.null(heaptype.Class),
 			this.codegenDict(),
 			argument,
 			wasm.ref.null(heaptype.Exception),
 		] : [
 			VmObject.ctrPlusPlus(),
+			wasm.ref.null(heaptype.Class),
 			this.codegenDict(),
 			wasm.ref.null(heaptype.Value),
 			argument,
@@ -408,9 +399,19 @@ export class CodeGenerator {
 		const {vm: {heaptype, Object: VmObject}, mod: {wasm}} = this;
 		return wasm.struct.new([
 			VmObject.ctrPlusPlus(),
+			wasm.ref.null(heaptype.Class),
 			this.codegenDict(),
 			wasm.i32.const(Number(arity)),
 		], heaptype.Function);
+	}
+
+	public codegenClass(): binaryen.ExpressionRef /* (ref $Class) */ {
+		const {vm: {heaptype, Object: VmObject}, mod: {wasm}} = this;
+		return wasm.struct.new([
+			VmObject.ctrPlusPlus(),
+			wasm.ref.null(heaptype.Class),
+			this.codegenDict(),
+		], heaptype.Class);
 	}
 
 	/**
@@ -422,6 +423,7 @@ export class CodeGenerator {
 		const {vm: {heaptype, Object: VmObject}, mod: {wasm}} = this;
 		return wasm.struct.new([
 			VmObject.ctrPlusPlus(),
+			wasm.ref.null(heaptype.Class),
 			fields ?? this.codegenDict(),
 		], heaptype.Object);
 	}

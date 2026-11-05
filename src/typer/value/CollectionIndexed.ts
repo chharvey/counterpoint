@@ -11,7 +11,7 @@ import {Collection} from './Collection.ts';
  * - List
  */
 export abstract class CollectionIndexed<T extends Value = Value> extends Collection {
-	protected static samenessDfn<T extends Value = Value>(
+	public static samenessDfn<T extends Value = Value>(
 		a:          CollectionIndexed<T>,
 		b:          CollectionIndexed<T>,
 		comparator: (a: T, b: T) => boolean,

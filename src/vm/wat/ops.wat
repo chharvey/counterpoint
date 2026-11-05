@@ -611,7 +611,7 @@
 
 
 
-(func $op:id (export "op::id") (param (ref $Value) (ref $Value)) (result (ref $Value))
+(func $op:id (export "op::id") (type $Value.relop) (param (ref $Value) (ref $Value)) (result (ref $Value))
 	(local $vect0 v128)
 	(local $vect1 v128)
 	(local $ref0 (ref null $Composite))
@@ -707,6 +707,16 @@
 			(then (br $exit (call $!Record.identical
 				(ref.cast (ref $Record) (local.get $ref0))
 				(ref.cast (ref $Record) (local.get $ref1))
+			)))
+		)
+		(if
+			(i32.and
+				(ref.test (ref $Data) (local.get $ref0))
+				(ref.test (ref $Data) (local.get $ref1))
+			)
+			(then (br $exit (call $!Data.identical
+				(ref.cast (ref $Data) (local.get $ref0))
+				(ref.cast (ref $Data) (local.get $ref1))
 			)))
 		)
 		(i32.const 0)
@@ -816,10 +826,25 @@
 	)
 	(i32.const 1)
 )
+;; Returns whether two data values are identical by value —
+;; whether they have identical constructors and field dicts that have identical properties.
+(func $!Data.identical (param (ref $Data) (ref $Data)) (result i32)
+	(i32.and
+		(ref.eq
+			(struct.get $Data $class (local.get 0))
+			(struct.get $Data $class (local.get 1))
+		)
+		(call $!Dict.equal
+			(struct.get $Data $fields (local.get 0))
+			(struct.get $Data $fields (local.get 1))
+			(i32.const 1) ;; shallow-identical dicts
+		)
+	)
+)
 
 
 
-(func $op:eq (export "op::eq") (param (ref $Value) (ref $Value)) (result (ref $Value))
+(func $op:eq (export "op::eq") (type $Value.relop) (param (ref $Value) (ref $Value)) (result (ref $Value))
 	(local $vect0 v128)
 	(local $vect1 v128)
 	(local $ref0 (ref null $Composite))
@@ -828,7 +853,7 @@
 	;; identical values are necessarily equal
 	(if
 		(call $Value.bool-to-i32 (call $op:id (local.get 0) (local.get 1)))
-		(then (return_call $Value.new-primitive (global.get $Vect.TRUE)))
+		(then (return (global.get $Value.TRUE)))
 	)
 
 	(local.set $vect0 (struct.get $Value $primitive (local.get 0)))
@@ -889,12 +914,23 @@
 		)
 		(if
 			(i32.and
+				(ref.test (ref $Data) (local.get $ref0))
+				(ref.test (ref $Data) (local.get $ref1))
+			)
+			(then (br $exit (call $!Data.equal
+				(ref.cast (ref $Data) (local.get $ref0))
+				(ref.cast (ref $Data) (local.get $ref1))
+			)))
+		)
+		(if
+			(i32.and
 				(ref.test (ref $CplList) (local.get $ref0))
 				(ref.test (ref $CplList) (local.get $ref1))
 			)
 			(then (br $exit (call $!List.equal
 				(call $Value.as-list (local.get 0))
 				(call $Value.as-list (local.get 1))
+				(i32.const 0)
 			)))
 		)
 		(if
@@ -905,6 +941,7 @@
 			(then (br $exit (call $!Dict.equal
 				(call $Value.as-dict (local.get 0))
 				(call $Value.as-dict (local.get 1))
+				(i32.const 0)
 			)))
 		)
 		(if
@@ -915,6 +952,7 @@
 			(then (br $exit (call $!Map.equal
 				(call $Value.as-map (local.get 0))
 				(call $Value.as-map (local.get 1))
+				(i32.const 0)
 			)))
 		)
 		(if
@@ -1039,7 +1077,8 @@
 )
 ;; Returns whether two Lists are equal —
 ;; whether they have equal items at the same indices.
-(func $!List.equal (param $list0 (ref $List)) (param $list1 (ref $List)) (result i32)
+;; provide shallow=1 to compare items shallowly (identity rather than equality).
+(func $!List.equal (param $list0 (ref $List)) (param $list1 (ref $List)) (param $shallow i32) (result i32)
 	(local $i         i32)
 	(local $internal0 (ref $ListInternal))
 	(local $internal1 (ref $ListInternal))
@@ -1095,9 +1134,14 @@
 							(i32.eqz (ref.is_null (local.get $item0)))
 							(i32.eqz (ref.is_null (local.get $item1)))
 						)
-						(i32.eqz (call $Value.bool-to-i32 (call $op:eq
+						(i32.eqz (call $Value.bool-to-i32 (call_ref $Value.relop
 							(ref.cast (ref $Value) (local.get $item0))
 							(ref.cast (ref $Value) (local.get $item1))
+							(if (result (ref $Value.relop))
+								(local.get $shallow)
+								(then (ref.func $op:id))
+								(else (ref.func $op:eq))
+							)
 						)))
 					)
 				)
@@ -1112,7 +1156,8 @@
 )
 ;; Returns whether two Dicts are equal —
 ;; whether they have equal values at the same keys.
-(func $!Dict.equal (param $dict0 (ref $Dict)) (param $dict1 (ref $Dict)) (result i32)
+;; provide shallow=1 to compare values shallowly (identity rather than equality).
+(func $!Dict.equal (param $dict0 (ref $Dict)) (param $dict1 (ref $Dict)) (param $shallow i32) (result i32)
 	(local $i         i32)
 	(local $internal0 (ref $DictInternal))
 	(local $internal1 (ref $DictInternal))
@@ -1156,9 +1201,14 @@
 					)
 
 					(if
-						(i32.eqz (call $Value.bool-to-i32 (call $op:eq
+						(i32.eqz (call $Value.bool-to-i32 (call_ref $Value.relop
 							(struct.get $Property $val (local.get $prop0))
 							(struct.get $Property $val (local.get $prop1))
+							(if (result (ref $Value.relop))
+								(local.get $shallow)
+								(then (ref.func $op:id))
+								(else (ref.func $op:eq))
+							)
 						)))
 						(then (return (i32.const 0)))
 					)
@@ -1172,7 +1222,8 @@
 )
 ;; Returns whether two Maps are equal —
 ;; whether they have equal consequents at equal antecedents.
-(func $!Map.equal (param $map0 (ref $Map)) (param $map1 (ref $Map)) (result i32)
+;; provide shallow=1 to compare antecedents and consequents shallowly (identity rather than equality).
+(func $!Map.equal (param $map0 (ref $Map)) (param $map1 (ref $Map)) (param $shallow i32) (result i32)
 	(local $i         i32)
 	(local $internal0 (ref $MapInternal))
 	(local $internal1 (ref $MapInternal))
@@ -1216,9 +1267,14 @@
 					)
 
 					(if
-						(i32.eqz (call $Value.bool-to-i32 (call $op:eq
+						(i32.eqz (call $Value.bool-to-i32 (call_ref $Value.relop
 							(struct.get $Case $con (local.get $case0))
 							(struct.get $Case $con (local.get $case1))
+							(if (result (ref $Value.relop))
+								(local.get $shallow)
+								(then (ref.func $op:id))
+								(else (ref.func $op:eq))
+							)
 						)))
 						(then (return (i32.const 0)))
 					)
@@ -1361,14 +1417,33 @@
 		(ref.as_non_null (local.get $value1))
 	))
 )
+;; Returns whether two data values are identical by value —
+;; whether they have identical constructors and equal field dicts.
+(func $!Data.equal (param (ref $Data) (ref $Data)) (result i32)
+	(i32.and
+		(ref.eq
+			(struct.get $Data $class (local.get 0))
+			(struct.get $Data $class (local.get 1))
+		)
+		(call $!Dict.equal
+			(struct.get $Data $fields (local.get 0))
+			(struct.get $Data $fields (local.get 1))
+			(i32.const 0)
+		)
+	)
+)
 ;; Returns whether two Objects are equal —
 ;; whether they have identical constructors and equal field dicts.
 (func $!Object.equal (param (ref $Object) (ref $Object)) (result i32)
 	(i32.and
-		(i32.const 1) ;; TODO: compare object constructors by identity
+		(ref.eq
+			(struct.get $Object $class (local.get 0))
+			(struct.get $Object $class (local.get 1))
+		)
 		(call $!Dict.equal
 			(struct.get $Object $fields (local.get 0))
 			(struct.get $Object $fields (local.get 1))
+			(i32.const 0)
 		)
 	)
 )

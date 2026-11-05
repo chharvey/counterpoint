@@ -34,11 +34,13 @@ type TypeKey = (
 	| 'String'
 	| 'Tuple'
 	| 'Record'
+	| 'Data'
 	| 'Object'
 	| 'Exception'
 	| 'Maybe'
 	| 'Result'
 	| 'Function'
+	| 'Class'
 );
 
 
@@ -46,25 +48,29 @@ type TypeKey = (
 type HeaptypeRegistry = Readonly<Record<TypeKey, binaryen.HeapType>>;
 type ReftypeRegistry  = Readonly<Record<TypeKey, binaryen.Type>>;
 
-type ReftypeNullRegistry = Readonly<Record<TypeKey & ('Value' | 'Property' | 'Case' | 'Composite' | 'Exception'), binaryen.Type>>;
+type ReftypeNullRegistry = Readonly<Record<TypeKey & ('Value' | 'Property' | 'Case' | 'Composite' | 'Exception' | 'Class'), binaryen.Type>>;
 
 
 
 /**
  * Create a new struct field for a `TypeBuilder`.
- * @param typ        the field type
- * @param packedType one of `'notPacked' | 'i8' | 'i16'` @default `'notPacked'`
- * @param mutable    Can the field be reassigned?        @default `false`
+ * @param type_        the field type
+ * @param mutable    Can the field be reassigned? @default `false`
+ * @param packedType whether the type is packed   @default `binaryen.PackedType.notPacked`
  */
-function TypeBuilder_makeField(typ: binaryen.Type, packedType: 'notPacked' | 'i8' | 'i16' = 'notPacked', mutable: boolean = false): {
+function make_struct_field(
+	type_:      binaryen.Type,
+	mutable:    boolean = false,
+	packedType: binaryen.PackedType = binaryen.PackedType.notPacked,
+): {
 	type:       binaryen.Type,
-	packedType: binaryen.PackedType,
 	mutable:    boolean,
+	packedType: binaryen.PackedType,
 } {
 	return {
-		type:       typ,
-		packedType: binaryen.PackedType[packedType],
 		mutable,
+		packedType,
+		type: type_,
 	};
 }
 
@@ -85,32 +91,37 @@ const TYPES: {
 } = (() => {
 	const tb = new binaryen.TypeBuilder();
 
+	// allocates first due to subtype and field order
 	const i_composite: number = tb.getSize();
+	tb.grow(1);
+	const i_object: number = tb.getSize();
+	tb.grow(1);
+	const i_class: number = tb.getSize();
 	tb.grow(1);
 
 	/* (type $Value ...) */
 	const i_value: number = tb.getSize();
 	tb.grow(1);
 	tb.setStructType(i_value, [
-		/* $tag */       TypeBuilder_makeField(binaryen.Type.i32, 'i8'),
-		/* $primitive */ TypeBuilder_makeField(binaryen.Type.v128),
-		/* $composite */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_composite), true)),
+		/* $tag */       make_struct_field(binaryen.Type.i32, false, binaryen.PackedType.i8),
+		/* $primitive */ make_struct_field(binaryen.Type.v128),
+		/* $composite */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_composite), true)),
 	]);
 
 	/* (type $Property ...) */
 	const i_property: number = tb.getSize();
 	tb.grow(1);
 	tb.setStructType(i_property, [
-		/* $key */ TypeBuilder_makeField(binaryen.Type.i64),
-		/* $val */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_value), false)),
+		/* $key */ make_struct_field(binaryen.Type.i64),
+		/* $val */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_value), false)),
 	]);
 
 	/* (type $Case ...) */
 	const i_case: number = tb.getSize();
 	tb.grow(1);
 	tb.setStructType(i_case, [
-		/* $ant */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_value), false)),
-		/* $con */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_value), false)),
+		/* $ant */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_value), false)),
+		/* $con */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_value), false)),
 	]);
 
 	/* (type $ListInternal ...) */
@@ -147,24 +158,24 @@ const TYPES: {
 	const i_list: number = tb.getSize();
 	tb.grow(1);
 	tb.setStructType(i_list, [
-		/* $size */     TypeBuilder_makeField(binaryen.Type.i32, 'notPacked', true),
-		/* $internal */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_list_internal), false), 'notPacked', true),
+		/* $size */     make_struct_field(binaryen.Type.i32, true),
+		/* $internal */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_list_internal), false), true),
 	]);
 
 	/* (type $Dict ...) */
 	const i_dict: number = tb.getSize();
 	tb.grow(1);
 	tb.setStructType(i_dict, [
-		/* $size */     TypeBuilder_makeField(binaryen.Type.i32, 'notPacked', true),
-		/* $internal */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_dict_internal), false), 'notPacked', true),
+		/* $size */     make_struct_field(binaryen.Type.i32, true),
+		/* $internal */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_dict_internal), false), true),
 	]);
 
 	/* (type $Map ...) */
 	const i_map: number = tb.getSize();
 	tb.grow(1);
 	tb.setStructType(i_map, [
-		/* $size */     TypeBuilder_makeField(binaryen.Type.i32, 'notPacked', true),
-		/* $internal */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_map_internal), false), 'notPacked', true),
+		/* $size */     make_struct_field(binaryen.Type.i32, true),
+		/* $internal */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_map_internal), false), true),
 	]);
 
 	/* (type $Composite ...) */
@@ -205,7 +216,7 @@ const TYPES: {
 	const i_string: number = tb.getSize();
 	tb.grow(1);
 	tb.setStructType(i_string, [
-		/* $internal */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_string_internal), false)),
+		/* $internal */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_string_internal), false)),
 	]);
 	tb.setSubType(i_string, tb.getTempHeapType(i_composite));
 
@@ -213,7 +224,7 @@ const TYPES: {
 	const i_tuple: number = tb.getSize();
 	tb.grow(1);
 	tb.setStructType(i_tuple, [
-		/* $internal */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_tuple_internal), false)),
+		/* $internal */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_tuple_internal), false)),
 	]);
 	tb.setSubType(i_tuple, tb.getTempHeapType(i_composite));
 
@@ -221,18 +232,26 @@ const TYPES: {
 	const i_record: number = tb.getSize();
 	tb.grow(1);
 	tb.setStructType(i_record, [
-		/* $internal */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_record_internal), false)),
+		/* $internal */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_record_internal), false)),
 	]);
 	tb.setSubType(i_record, tb.getTempHeapType(i_composite));
 
+	/* (type $Data ...) */
+	const i_data: number = tb.getSize();
+	tb.grow(1);
+	tb.setStructType(i_data, [
+		/* $class */  make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_class), true), true),
+		/* $fields */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_dict), false)),
+	]);
+	tb.setSubType(i_data, tb.getTempHeapType(i_composite));
+
 	const fields_object = [
-		/* $id */     TypeBuilder_makeField(binaryen.Type.i64),
-		/* $fields */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_dict), false)),
+		/* $id */     make_struct_field(binaryen.Type.i64),
+		/* $class */  make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_class), true), true),
+		/* $fields */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_dict), false)),
 	];
 
 	/* (type $Object ...) */
-	const i_object: number = tb.getSize();
-	tb.grow(1);
 	tb.setStructType(i_object, fields_object);
 	tb.setSubType(i_object, tb.getTempHeapType(i_composite));
 	tb.setOpen(i_object);
@@ -242,7 +261,7 @@ const TYPES: {
 	tb.grow(1);
 	tb.setStructType(i_cpl_list, [
 		...fields_object,
-		/* $list */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_list), false)),
+		/* $list */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_list), false)),
 	]);
 	tb.setSubType(i_cpl_list, tb.getTempHeapType(i_object));
 
@@ -251,7 +270,7 @@ const TYPES: {
 	tb.grow(1);
 	tb.setStructType(i_cpl_dict, [
 		...fields_object,
-		/* $dict */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_dict), false)),
+		/* $dict */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_dict), false)),
 	]);
 	tb.setSubType(i_cpl_dict, tb.getTempHeapType(i_object));
 
@@ -260,7 +279,7 @@ const TYPES: {
 	tb.grow(1);
 	tb.setStructType(i_cpl_map, [
 		...fields_object,
-		/* $map */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_map), false)),
+		/* $map */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_map), false)),
 	]);
 	tb.setSubType(i_cpl_map, tb.getTempHeapType(i_object));
 
@@ -269,8 +288,8 @@ const TYPES: {
 	tb.grow(1);
 	tb.setStructType(i_exception, [
 		...fields_object,
-		/* $message */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_string),    false)),
-		/* $cause */   TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_exception), true)),
+		/* $message */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_string),    false)),
+		/* $cause */   make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_exception), true)),
 	]);
 	tb.setSubType(i_exception, tb.getTempHeapType(i_object));
 
@@ -279,7 +298,7 @@ const TYPES: {
 	tb.grow(1);
 	tb.setStructType(i_maybe, [
 		...fields_object,
-		/* $value */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_value), true)),
+		/* $value */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_value), true)),
 	]);
 	tb.setSubType(i_maybe, tb.getTempHeapType(i_object));
 
@@ -288,8 +307,8 @@ const TYPES: {
 	tb.grow(1);
 	tb.setStructType(i_result, [
 		...fields_object,
-		/* $value */  TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_value),     true)),
-		/* $reason */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_exception), true)),
+		/* $value */  make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_value),     true)),
+		/* $reason */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_exception), true)),
 	]);
 	tb.setSubType(i_result, tb.getTempHeapType(i_object));
 
@@ -298,10 +317,17 @@ const TYPES: {
 	tb.grow(1);
 	tb.setStructType(i_function, [
 		...fields_object,
-		/* $arity */ TypeBuilder_makeField(binaryen.Type.i32, 'notPacked', true),
+		/* $arity */ make_struct_field(binaryen.Type.i32, true),
 	]);
 	tb.setSubType(i_function, tb.getTempHeapType(i_object));
 
+	/* (type $Class ...) */
+	tb.setStructType(i_class, [
+		...fields_object,
+	]);
+	tb.setSubType(i_class, tb.getTempHeapType(i_object));
+
+	tb.createRecGroup(0, tb.getSize());
 	const heaptypes: readonly binaryen.HeapType[] = tb.buildAndDispose();
 
 	return {
@@ -322,11 +348,13 @@ const TYPES: {
 			String:         heaptypes[i_string],
 			Tuple:          heaptypes[i_tuple],
 			Record:         heaptypes[i_record],
+			Data:           heaptypes[i_data],
 			Object:         heaptypes[i_object],
 			Exception:      heaptypes[i_exception],
 			Maybe:          heaptypes[i_maybe],
 			Result:         heaptypes[i_result],
 			Function:       heaptypes[i_function],
+			Class:          heaptypes[i_class],
 		},
 
 		reftypeRegistry: {
@@ -346,11 +374,13 @@ const TYPES: {
 			String:         binaryen.getTypeFromHeapType(heaptypes[i_string],          false),
 			Tuple:          binaryen.getTypeFromHeapType(heaptypes[i_tuple],           false),
 			Record:         binaryen.getTypeFromHeapType(heaptypes[i_record],          false),
+			Data:           binaryen.getTypeFromHeapType(heaptypes[i_data],            false),
 			Object:         binaryen.getTypeFromHeapType(heaptypes[i_object],          false),
 			Exception:      binaryen.getTypeFromHeapType(heaptypes[i_exception],       false),
 			Maybe:          binaryen.getTypeFromHeapType(heaptypes[i_maybe],           false),
 			Result:         binaryen.getTypeFromHeapType(heaptypes[i_result],          false),
 			Function:       binaryen.getTypeFromHeapType(heaptypes[i_function],        false),
+			Class:          binaryen.getTypeFromHeapType(heaptypes[i_class],           false),
 		},
 
 		reftypeNullRegistry: {
@@ -359,6 +389,7 @@ const TYPES: {
 			Case:      binaryen.getTypeFromHeapType(heaptypes[i_case],      true), // only used as the fields of `$MapInternal`
 			Composite: binaryen.getTypeFromHeapType(heaptypes[i_composite], true), // only used as the fields of `$Value`
 			Exception: binaryen.getTypeFromHeapType(heaptypes[i_exception], true), // only used as the fields of `$Exception` and `$Result`
+			Class:     binaryen.getTypeFromHeapType(heaptypes[i_class],     true), // only used as the fields of `$Class`
 		},
 	};
 })();
@@ -385,11 +416,7 @@ export class VirtualMachine {
 	/** A registry of reference-null types. */
 	public readonly reftypeNull: ReftypeNullRegistry;
 
-	public readonly globalImportDataMap: ReadonlyMap<string, {readonly name: string, readonly type: binaryen.Type}> = new Map([
-		['Vect#NULL',  {name: 'Vect.NULL',  type: binaryen.Type.v128}],
-		['Vect#FALSE', {name: 'Vect.FALSE', type: binaryen.Type.v128}],
-		['Vect#TRUE',  {name: 'Vect.TRUE',  type: binaryen.Type.v128}],
-	]);
+	public readonly globalImportDataMap: ReadonlyMap<string, {readonly name: string, readonly type: binaryen.Type}>;
 
 	public readonly util = utils(this);
 	public readonly op   = ops(this);
@@ -417,5 +444,11 @@ export class VirtualMachine {
 			reftypeRegistry:     this.reftype,
 			reftypeNullRegistry: this.reftypeNull,
 		} = TYPES);
+
+		this.globalImportDataMap = new Map([
+			['Value#NULL',  {name: 'Value.NULL',  type: this.reftype.Value}],
+			['Value#FALSE', {name: 'Value.FALSE', type: this.reftype.Value}],
+			['Value#TRUE',  {name: 'Value.TRUE',  type: this.reftype.Value}],
+		]);
 	}
 }

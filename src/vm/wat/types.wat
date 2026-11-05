@@ -2,6 +2,7 @@
 	;; # Dynamic Operation Types
 	(type $i64.relop (func (param i64 i64) (result i32)))
 	(type $f64.relop (func (param f64 f64) (result i32)))
+	(type $Value.relop (func (param (ref $Value) (ref $Value)) (result (ref $Value))))
 
 
 
@@ -65,9 +66,22 @@
 	(type $Tuple  (sub final $Composite (struct (field $internal (ref $TupleInternal)))))
 	(type $Record (sub final $Composite (struct (field $internal (ref $RecordInternal)))))
 
+	;; an instance of any Counterpoint “data class”
+	;; (these are called “data values”)
+	(type $Data (sub final $Composite (struct
+		;; pointer to the constructor class
+		(field $class (mut (ref null $Class)))
+		;; each instance has a set of fields
+		(field $fields (ref $Dict))
+	)))
+
+	;; an instance of the Counterpoint `Object` class (or any subclass)
+	;; (these are called “reference objects”)
 	(type $Object (sub $Composite (struct
 		;; unique id for hashing
 		(field $id i64)
+		;; pointer to the constructor class
+		(field $class (mut (ref null $Class)))
 		;; each instance has a set of fields
 		(field $fields (ref $Dict))
 	)))
@@ -82,6 +96,7 @@
 	(type $CplList (sub final $Object (struct
 		;; --- inherited ---
 		(field $id i64)
+		(field $class (mut (ref null $Class)))
 		(field $fields (ref $Dict))
 
 		;; --- own ---
@@ -93,6 +108,7 @@
 	(type $CplDict (sub final $Object (struct
 		;; --- inherited ---
 		(field $id i64)
+		(field $class (mut (ref null $Class)))
 		(field $fields (ref $Dict))
 
 		;; --- own ---
@@ -104,6 +120,7 @@
 	(type $CplMap (sub final $Object (struct
 		;; --- inherited ---
 		(field $id i64)
+		(field $class (mut (ref null $Class)))
 		(field $fields (ref $Dict))
 
 		;; --- own ---
@@ -115,6 +132,7 @@
 	(type $Exception (sub final $Object (struct
 		;; --- inherited ---
 		(field $id i64)
+		(field $class (mut (ref null $Class)))
 		(field $fields (ref $Dict))
 
 		;; --- own ---
@@ -128,6 +146,7 @@
 	(type $Maybe (sub final $Object (struct
 		;; --- inherited ---
 		(field $id i64)
+		(field $class (mut (ref null $Class)))
 		(field $fields (ref $Dict))
 
 		;; --- own ---
@@ -139,6 +158,7 @@
 	(type $Result (sub final $Object (struct
 		;; --- inherited ---
 		(field $id i64)
+		(field $class (mut (ref null $Class)))
 		(field $fields (ref $Dict))
 
 		;; --- own ---
@@ -152,10 +172,19 @@
 	(type $Function (sub final $Object (struct
 		;; --- inherited ---
 		(field $id i64)
+		(field $class (mut (ref null $Class)))
 		(field $fields (ref $Dict))
 
 		;; --- own ---
 		;; number of functional parameters
 		(field $arity (mut i32))
+	)))
+
+	;; precursor to the Counterpoint `Class` class
+	(type $Class (sub final $Object (struct
+		;; --- inherited ---
+		(field $id i64)
+		(field $class (mut (ref null $Class)))
+		(field $fields (ref $Dict))
 	)))
 )

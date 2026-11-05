@@ -33,13 +33,11 @@ test.suite('CodeGenerator', () => {
 				cg.newVect(wasm.i64.const(42n)),
 				cg.newVect(wasm.i64.const(42n), {unsigned: true}),
 				cg.newVect(wasm.f64.const(4.2)),
-				cg.newVect(Vect.TRUE),
 				cg.newVect(Vect.newInt(wasm.i64.const(42n))),
 			], ([
 				Vect.newInt(wasm.i64.const(42n)),
 				Vect.newNat(wasm.i64.const(42n)),
 				Vect.newFloat(wasm.f64.const(4.2)),
-				Vect.TRUE,
 				Vect.newInt(wasm.i64.const(42n)),
 			]));
 		});
@@ -54,16 +52,13 @@ test.suite('CodeGenerator', () => {
 			);
 		});
 		test.test('returns `(struct.new $Property)`.', () => {
-			const {Vect, Value} = cg.vm;
 			assertEqualBins([
 				cg.newProperty(0x102n, genConst(cg)),
 				cg.newProperty(0x103n, genConst(cg, 42n)),
-				cg.newProperty(0x104n, Value.newPrimitive(Vect.FALSE)),
 				cg.newProperty(0x105n, genConst(cg, 4.2)),
 			], ([
 				[0x102n, genConst(cg)],
 				[0x103n, genConst(cg, 42n)],
-				[0x104n, Value.newPrimitive(Vect.FALSE)],
 				[0x105n, genConst(cg, 4.2)],
 			] as const).map(([id, code]) => wasm.struct.new([
 				wasm.i64.const(id),
@@ -258,6 +253,7 @@ test.suite('CodeGenerator', () => {
 			const message:   binaryen.ExpressionRef /* (ref $String) */    = cg.vm.Value.asString(genConst(cg, 'message'));
 			const expected1: binaryen.ExpressionRef /* (ref $Exception) */ = wasm.struct.new([
 				cg.vm.Object.ctrPlusPlus(),
+				cg.mod.wasm.ref.null(cg.vm.heaptype.Class),
 				cg.codegenDict(),
 				message,
 				wasm.ref.null(cg.vm.heaptype.Exception),
@@ -270,6 +266,7 @@ test.suite('CodeGenerator', () => {
 				cg.codegenException(message, expected1),
 				wasm.struct.new([
 					cg.vm.Object.ctrPlusPlus(),
+					cg.mod.wasm.ref.null(cg.vm.heaptype.Class),
 					cg.codegenDict(),
 					message,
 					expected1,
@@ -282,6 +279,7 @@ test.suite('CodeGenerator', () => {
 				cg.codegenMaybe(),
 				wasm.struct.new([
 					cg.vm.Object.ctrPlusPlus(),
+					cg.mod.wasm.ref.null(cg.vm.heaptype.Class),
 					cg.codegenDict(),
 					wasm.ref.null(cg.vm.heaptype.Value),
 				], cg.vm.heaptype.Maybe),
@@ -290,6 +288,7 @@ test.suite('CodeGenerator', () => {
 				cg.codegenMaybe(genConst(cg, 42)),
 				wasm.struct.new([
 					cg.vm.Object.ctrPlusPlus(),
+					cg.mod.wasm.ref.null(cg.vm.heaptype.Class),
 					cg.codegenDict(),
 					genConst(cg, 42),
 				], cg.vm.heaptype.Maybe),
@@ -303,6 +302,7 @@ test.suite('CodeGenerator', () => {
 				cg.codegenResult(false, excp),
 				wasm.struct.new([
 					cg.vm.Object.ctrPlusPlus(),
+					cg.mod.wasm.ref.null(cg.vm.heaptype.Class),
 					cg.codegenDict(),
 					wasm.ref.null(cg.vm.heaptype.Value),
 					excp,
@@ -312,6 +312,7 @@ test.suite('CodeGenerator', () => {
 				cg.codegenResult(true, value),
 				wasm.struct.new([
 					cg.vm.Object.ctrPlusPlus(),
+					cg.mod.wasm.ref.null(cg.vm.heaptype.Class),
 					cg.codegenDict(),
 					value,
 					wasm.ref.null(cg.vm.heaptype.Exception),
@@ -319,14 +320,26 @@ test.suite('CodeGenerator', () => {
 			);
 		});
 
-		test.test('`#codegenFunction` (struct.new) with id and arity.', () => {
+		test.test('#codegenFunction', () => {
 			assertEqualBins(
 				cg.codegenFunction(3n),
 				wasm.struct.new([
 					cg.vm.Object.ctrPlusPlus(),
+					cg.mod.wasm.ref.null(cg.vm.heaptype.Class),
 					cg.codegenDict(),
 					wasm.i32.const(3),
 				], cg.vm.heaptype.Function),
+			);
+		});
+
+		test.test('#codegenClass', () => {
+			assertEqualBins(
+				cg.codegenClass(),
+				wasm.struct.new([
+					cg.vm.Object.ctrPlusPlus(),
+					cg.mod.wasm.ref.null(cg.vm.heaptype.Class),
+					cg.codegenDict(),
+				], cg.vm.heaptype.Class),
 			);
 		});
 
@@ -336,6 +349,7 @@ test.suite('CodeGenerator', () => {
 					cg.codegenObject(),
 					wasm.struct.new([
 						cg.vm.Object.ctrPlusPlus(),
+						cg.mod.wasm.ref.null(cg.vm.heaptype.Class),
 						cg.codegenDict(),
 					], cg.vm.heaptype.Object),
 				);
@@ -349,6 +363,7 @@ test.suite('CodeGenerator', () => {
 					cg.codegenObject(cg.codegenDict(field_map)),
 					wasm.struct.new([
 						cg.vm.Object.ctrPlusPlus(),
+						cg.mod.wasm.ref.null(cg.vm.heaptype.Class),
 						cg.codegenDict(field_map),
 					], cg.vm.heaptype.Object),
 				);

@@ -46,6 +46,10 @@ export class Value implements HasFuncData {
 		]);
 	}
 
+	public get NULL():  binaryen.ExpressionRef /* (ref $Value) */ { return this.vm.mod.wasm.global.get('Value.NULL',  this.vm.reftype.Value); }
+	public get FALSE(): binaryen.ExpressionRef /* (ref $Value) */ { return this.vm.mod.wasm.global.get('Value.FALSE', this.vm.reftype.Value); }
+	public get TRUE():  binaryen.ExpressionRef /* (ref $Value) */ { return this.vm.mod.wasm.global.get('Value.TRUE',  this.vm.reftype.Value); }
+
 
 	public field(ref: binaryen.ExpressionRef /* (ref null $Value) */): {
 		/** @return `(struct.get $Value $tag       <ref>)` */ readonly tag:       binaryen.ExpressionRef /* i32 */,

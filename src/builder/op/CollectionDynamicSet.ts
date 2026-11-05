@@ -139,7 +139,7 @@ export class CollectionDynamicSet extends Instruction {
 						VmMap.set(
 							base.get(),
 							xsor.get(),
-							cg.getConst(null),
+							Value.NULL,
 						),
 						wasm.drop(VmMap.delete(
 							base.get(),

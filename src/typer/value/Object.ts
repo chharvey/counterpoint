@@ -1,4 +1,4 @@
-import {TYPE} from '../index.ts';
+import type {TYPE} from '../index.ts';
 import {
 	strictEqual,
 	instanceOf,
@@ -9,25 +9,28 @@ import {
 	Value,
 } from './Value.ts';
 import {Dict} from './Dict.ts';
+import type {Class as ValueClass} from './Class.ts';
 
 
 
 /**
- * Represents a general instance of a Counterpoint Object.
+ * Represents a general instance of the Counterpoint `Object` class (or any subclass).
  *
  * Note: Use this class for constructing user-defined objects,
- * i.e. not instances of List, Dict, etc.
+ * i.e. not instances of the built-in `List`, `Dict`, etc.
  */
 class ValueObject extends Value {
-	public readonly id: bigint = 0n; // TODO: interpreter object ids
-
-	// TODO: constructor
-
-	public readonly fields = new Dict<Value>();
+	public constructor(
+		private readonly id:     bigint,
+		private readonly class_: ValueClass,
+		private readonly fields = new Dict<Value>(),
+	) {
+		super();
+	}
 
 
 	public override toString(): string {
-		return `<Object instance ${this.id.toString(16)}>`;
+		return `<${this.class_} instance ${this.id.toString(16)}>`;
 	}
 
 	@strictEqual
@@ -36,12 +39,14 @@ class ValueObject extends Value {
 	@instanceOf(() => ValueObject)
 	public override equal(value: Value): boolean {
 		const obj = value as ValueObject;
-		// TODO: check constructors by identity
-		return this.fields.equal(obj.fields);
+		return (
+			this.class_.identical(obj.class_) &&
+			this.fields.equal(obj.fields)
+		);
 	}
 
 	public override toType(): TYPE.Type {
-		return TYPE.OBJ;
+		return this.class_.instanceType;
 	}
 }
-export type {ValueObject as Object};
+export {ValueObject as Object};

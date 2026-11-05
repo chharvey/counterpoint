@@ -1,5 +1,5 @@
 import * as assert from 'node:assert';
-import * as binaryen from 'binaryen.ts';
+import type * as binaryen from 'binaryen.ts';
 import type {CodeGenerator} from '../../index.ts';
 import {
 	assert_instanceof,
@@ -160,19 +160,19 @@ export class Unop extends Value {
 			if (t0.isDefinitelyFalsy) {
 				return wasm.block(null, [
 					wasm.drop(arg0),
-					Vect.TRUE,
-				], binaryen.Type.v128);
+					cg.vm.Value.TRUE,
+				], cg.vm.reftype.Value);
 			} else if (t0.isDefinitelyTruthy) {
 				return wasm.block(null, [
 					wasm.drop(arg0),
-					Vect.FALSE,
-				], binaryen.Type.v128);
+					cg.vm.Value.FALSE,
+				], cg.vm.reftype.Value);
 			}
 		} else if (this.operator === Operator.EMP && t0.isDefinitelyFalsy) {
 			return wasm.block(null, [
 				wasm.drop(arg0),
-				Vect.TRUE,
-			], binaryen.Type.v128);
+				cg.vm.Value.TRUE,
+			], cg.vm.reftype.Value);
 		}
 		return 0;
 	}

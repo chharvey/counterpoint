@@ -1,8 +1,8 @@
 Codegen((TRAP)) := (unreachable);
 
-Codegen((NULL.CONST null))  := (call $Value.new-primitive (global.get $Vect.NULL));
-Codegen((BOOL.CONST false)) := (call $Value.new-primitive (global.get $Vect.FALSE));
-Codegen((BOOL.CONST true))  := (call $Value.new-primitive (global.get $Vect.TRUE));
+Codegen((NULL.CONST null))  := (global.get $Value.NULL);
+Codegen((BOOL.CONST false)) := (global.get $Value.FALSE);
+Codegen((BOOL.CONST true))  := (global.get $Value.TRUE);
 
 Codegen((SYM.CONST   `v`)) := (call $Value.new-primitive (call $Vect.new-nat   (i64.const `v.id`)));
 Codegen((INT.CONST   `v`)) := (call $Value.new-primitive (call $Vect.new-int   (i64.const `v.data`)));

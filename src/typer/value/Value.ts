@@ -32,6 +32,7 @@ export function identical(
  * - Result
  * - ValueFunction
  * - ValueClass
+ * - Data
  * - ValueObject
  */
 export abstract class Value {

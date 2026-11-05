@@ -9,7 +9,10 @@ import {Value} from './Value.ts';
  * @final
  */
 class ValueClass extends Value {
-	public constructor(private readonly source: string) {
+	public constructor(
+		public  readonly instanceType: TYPE.Type,
+		private readonly source:       string,
+	) {
 		super();
 	}
 
