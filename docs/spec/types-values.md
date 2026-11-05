@@ -348,7 +348,7 @@ which makes them composite values under the hood.
 The **Object** type contains all references to Counterpoint Language Values.
 All reference types are subtypes of **Object**,
 and all reference objects are instances of [`Object`](./intrinsics.md#object).
-Some specific built-in subtypes of **Object** are described in the [Intrinsics](./intrinsics.md) chapter.
+Some specific built-in subtypes of **Object** are described in the [Core Library](./intrinsics.md) chapter.
 
 
 ### Compound Types
