@@ -168,4 +168,11 @@
 		;; number of functional parameters
 		(field $arity (mut i32))
 	)))
+
+	;; precursor to the Counterpoint `Class` class
+	(type $Class (sub final $Object (struct
+		;; --- inherited ---
+		(field $id i64)
+		(field $fields (ref $Dict))
+	)))
 )

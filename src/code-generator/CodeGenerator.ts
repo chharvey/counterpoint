@@ -413,6 +413,14 @@ export class CodeGenerator {
 		], heaptype.Function);
 	}
 
+	public codegenClass(): binaryen.ExpressionRef /* (ref $Class) */ {
+		const {vm: {heaptype, Object: VmObject}, mod: {wasm}} = this;
+		return wasm.struct.new([
+			VmObject.ctrPlusPlus(),
+			this.codegenDict(),
+		], heaptype.Class);
+	}
+
 	/**
 	 * Return a new `$Object` from a given set of fields.
 	 * @param fields an optional Dict of field ids and values

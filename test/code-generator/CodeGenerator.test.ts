@@ -319,7 +319,7 @@ test.suite('CodeGenerator', () => {
 			);
 		});
 
-		test.test('`#codegenFunction` (struct.new) with id and arity.', () => {
+		test.test('#codegenFunction', () => {
 			assertEqualBins(
 				cg.codegenFunction(3n),
 				wasm.struct.new([
@@ -327,6 +327,16 @@ test.suite('CodeGenerator', () => {
 					cg.codegenDict(),
 					wasm.i32.const(3),
 				], cg.vm.heaptype.Function),
+			);
+		});
+
+		test.test('#codegenClass', () => {
+			assertEqualBins(
+				cg.codegenClass(),
+				wasm.struct.new([
+					cg.vm.Object.ctrPlusPlus(),
+					cg.codegenDict(),
+				], cg.vm.heaptype.Class),
 			);
 		});
 

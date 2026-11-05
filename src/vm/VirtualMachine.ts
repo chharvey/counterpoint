@@ -40,6 +40,7 @@ type TypeKey = (
 	| 'Maybe'
 	| 'Result'
 	| 'Function'
+	| 'Class'
 );
 
 
@@ -311,6 +312,14 @@ const TYPES: {
 	]);
 	tb.setSubType(i_function, tb.getTempHeapType(i_object));
 
+	/* (type $Class ...) */
+	const i_class: number = tb.getSize();
+	tb.grow(1);
+	tb.setStructType(i_class, [
+		...fields_object,
+	]);
+	tb.setSubType(i_class, tb.getTempHeapType(i_object));
+
 	const heaptypes: readonly binaryen.HeapType[] = tb.buildAndDispose();
 
 	return {
@@ -337,6 +346,7 @@ const TYPES: {
 			Maybe:          heaptypes[i_maybe],
 			Result:         heaptypes[i_result],
 			Function:       heaptypes[i_function],
+			Class:          heaptypes[i_class],
 		},
 
 		reftypeRegistry: {
@@ -362,6 +372,7 @@ const TYPES: {
 			Maybe:          binaryen.getTypeFromHeapType(heaptypes[i_maybe],           false),
 			Result:         binaryen.getTypeFromHeapType(heaptypes[i_result],          false),
 			Function:       binaryen.getTypeFromHeapType(heaptypes[i_function],        false),
+			Class:          binaryen.getTypeFromHeapType(heaptypes[i_class],           false),
 		},
 
 		reftypeNullRegistry: {
