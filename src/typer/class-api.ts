@@ -1,5 +1,5 @@
 import * as TYPE from './type/index.ts';
-import {IntrinsicName} from '../parser/index.ts';
+import {CoreLibName} from '../parser/index.ts';
 
 
 
@@ -82,15 +82,15 @@ const VARIANCE = {
 
 
 /**
- * API for all intrinsic classes.
+ * API for all core lib classes.
  */
-export const CLASS_API = new Map<IntrinsicName, ClassSignature>([
+export const CLASS_API = new Map<CoreLibName, ClassSignature>([
 	/*
 	 * ```cpl
 	 * declare class Null {}
 	 * ```
 	 */
-	[IntrinsicName.NULL, {
+	[CoreLibName.NULL, {
 		returnType: () => TYPE.NULL,
 		supertype:  TYPE.NULL,
 	}],
@@ -102,7 +102,7 @@ export const CLASS_API = new Map<IntrinsicName, ClassSignature>([
 	 * }
 	 * ```
 	 */
-	[IntrinsicName.BOOLEAN, {
+	[CoreLibName.BOOLEAN, {
 		overloads:  () => [{positional: new TYPE.Tuple([{type: TYPE.ANYTHING, optional: true}])}],
 		returnType: () => TYPE.BOOL,
 		supertype:  TYPE.BOOL,
@@ -113,7 +113,7 @@ export const CLASS_API = new Map<IntrinsicName, ClassSignature>([
 	 * declare class Symbol {}
 	 * ```
 	 */
-	[IntrinsicName.SYMBOL, {
+	[CoreLibName.SYMBOL, {
 		returnType: () => TYPE.SYM,
 		supertype:  TYPE.SYM,
 	}],
@@ -125,7 +125,7 @@ export const CLASS_API = new Map<IntrinsicName, ClassSignature>([
 	 * }
 	 * ```
 	 */
-	[IntrinsicName.INTEGER, {
+	[CoreLibName.INTEGER, {
 		overloads:  () => [{positional: new TYPE.Tuple([{type: TYPE.NUMBER, optional: true}])}],
 		returnType: () => TYPE.INT,
 		supertype:  TYPE.INT,
@@ -138,7 +138,7 @@ export const CLASS_API = new Map<IntrinsicName, ClassSignature>([
 	 * }
 	 * ```
 	 */
-	[IntrinsicName.NATURAL, {
+	[CoreLibName.NATURAL, {
 		overloads:  () => [{positional: new TYPE.Tuple([{type: TYPE.NUMBER, optional: true}])}],
 		returnType: () => TYPE.NAT,
 		supertype:  TYPE.NAT,
@@ -151,7 +151,7 @@ export const CLASS_API = new Map<IntrinsicName, ClassSignature>([
 	 * }
 	 * ```
 	 */
-	[IntrinsicName.FLOAT, {
+	[CoreLibName.FLOAT, {
 		overloads:  () => [{positional: new TYPE.Tuple([{type: TYPE.NUMBER, optional: true}])}],
 		returnType: () => TYPE.FLOAT,
 		supertype:  TYPE.FLOAT,
@@ -164,7 +164,7 @@ export const CLASS_API = new Map<IntrinsicName, ClassSignature>([
 	 * }
 	 * ```
 	 */
-	[IntrinsicName.STRING, {
+	[CoreLibName.STRING, {
 		overloads:  () => [{positional: new TYPE.Tuple([{type: TYPE.ANYTHING, optional: true}])}],
 		returnType: () => TYPE.STR,
 		supertype:  TYPE.STR,
@@ -175,7 +175,7 @@ export const CLASS_API = new Map<IntrinsicName, ClassSignature>([
 	 * declare class open Object {}
 	 * ```
 	 */
-	[IntrinsicName.OBJECT, {
+	[CoreLibName.OBJECT, {
 		returnType: () => TYPE.OBJ,
 		supertype:  TYPE.OBJ,
 	}],
@@ -193,7 +193,7 @@ export const CLASS_API = new Map<IntrinsicName, ClassSignature>([
 	 * }
 	 * ```
 	 */
-	[IntrinsicName.LIST, {
+	[CoreLibName.LIST, {
 		genericParams: {positional: [VARIANCE['out(in)']]},
 		overloads:     ({positional: [t]}) => [
 			{},
@@ -222,7 +222,7 @@ export const CLASS_API = new Map<IntrinsicName, ClassSignature>([
 	 * }
 	 * ```
 	 */
-	[IntrinsicName.DICT, {
+	[CoreLibName.DICT, {
 		genericParams: {positional: [VARIANCE['out(in)']]},
 		overloads:     ({positional: [t]}) => [
 			{},
@@ -248,7 +248,7 @@ export const CLASS_API = new Map<IntrinsicName, ClassSignature>([
 	 * }
 	 * ```
 	 */
-	[IntrinsicName.SET, {
+	[CoreLibName.SET, {
 		genericParams: {positional: [VARIANCE['out(in)']]},
 		overloads:     ({positional: [t]}) => [
 			{},
@@ -273,7 +273,7 @@ export const CLASS_API = new Map<IntrinsicName, ClassSignature>([
 	 * }
 	 * ```
 	 */
-	[IntrinsicName.MAP, {
+	[CoreLibName.MAP, {
 		genericParams: {
 			positional: [
 				VARIANCE['out(in)'],
@@ -297,7 +297,7 @@ export const CLASS_API = new Map<IntrinsicName, ClassSignature>([
 	 * }
 	 * ```
 	 */
-	[IntrinsicName.EXCEPTION, {
+	[CoreLibName.EXCEPTION, {
 		overloads:  () => [{positional: new TYPE.Tuple([{type: TYPE.STR, optional: false}, {type: TYPE.EXCP, optional: true}])}],
 		returnType: () => TYPE.EXCP,
 		supertype:  TYPE.EXCP,
@@ -314,18 +314,18 @@ export const CLASS_API = new Map<IntrinsicName, ClassSignature>([
 	 * }
 	 * ```
 	 */
-	[IntrinsicName.MAYBE, {
+	[CoreLibName.MAYBE, {
 		genericParams: {positional: [VARIANCE.out]},
 		returnType:    ({positional: [t]}) => new TYPE.Maybe(t),
 		supertype:     new TYPE.Maybe(TYPE.ANYTHING),
 	}],
-	[IntrinsicName.NONE, {
+	[CoreLibName.NONE, {
 		genericParams: {positional: [VARIANCE.out]},
 		overloads:     () => [{}],
 		returnType:    ({positional: [t]}) => new TYPE.None(t),
 		supertype:     new TYPE.None(TYPE.ANYTHING),
 	}],
-	[IntrinsicName.SOME, {
+	[CoreLibName.SOME, {
 		genericParams: {positional: [VARIANCE.out]},
 		overloads:     ({positional: [t]}) => [{positional: TYPE.Tuple.fromTypes([t])}],
 		returnType:    ({positional: [t]}) => new TYPE.Some(t),
@@ -343,18 +343,18 @@ export const CLASS_API = new Map<IntrinsicName, ClassSignature>([
 	 * }
 	 * ```
 	 */
-	[IntrinsicName.RESULT, {
+	[CoreLibName.RESULT, {
 		genericParams: {positional: [VARIANCE.out, {...VARIANCE.out, constraint: ['narrows', TYPE.EXCP], default: TYPE.EXCP}]},
 		returnType:    ({positional: [t, e]}) => new TYPE.Result(t, e),
 		supertype:     new TYPE.Result(TYPE.ANYTHING),
 	}],
-	[IntrinsicName.FAIL, {
+	[CoreLibName.FAIL, {
 		genericParams: {positional: [VARIANCE.out, {...VARIANCE.out, constraint: ['narrows', TYPE.EXCP], default: TYPE.EXCP}]},
 		overloads:     ({positional: [_, e]}) => [{positional: TYPE.Tuple.fromTypes([e])}],
 		returnType:    ({positional: [t, e]}) => new TYPE.Fail(t, e),
 		supertype:     new TYPE.Fail(TYPE.ANYTHING),
 	}],
-	[IntrinsicName.OK, {
+	[CoreLibName.OK, {
 		genericParams: {positional: [VARIANCE.out, {...VARIANCE.out, constraint: ['narrows', TYPE.EXCP], default: TYPE.EXCP}]},
 		overloads:     ({positional: [t]})    => [{positional: TYPE.Tuple.fromTypes([t])}],
 		returnType:    ({positional: [t, e]}) => new TYPE.Ok(t, e),
@@ -366,7 +366,7 @@ export const CLASS_API = new Map<IntrinsicName, ClassSignature>([
 	 * declare class abstract Function extends Object {}
 	 * ```
 	 */
-	[IntrinsicName.FUNCTION, {
+	[CoreLibName.FUNCTION, {
 		returnType: () => TYPE.FUNCTION,
 		supertype:  TYPE.FUNCTION,
 	}],
@@ -376,7 +376,7 @@ export const CLASS_API = new Map<IntrinsicName, ClassSignature>([
 	 * declare class open Class {}
 	 * ```
 	 */
-	[IntrinsicName.CLASS, {
+	[CoreLibName.CLASS, {
 		returnType: () => TYPE.CLASS,
 		supertype:  TYPE.CLASS,
 	}],

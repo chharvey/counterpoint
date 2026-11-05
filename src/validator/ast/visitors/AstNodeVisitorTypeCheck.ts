@@ -129,7 +129,7 @@ export class AstNodeVisitorTypeCheck extends AstNodeVisitor<void> {
 
 	public override visitOperationExprBinaryCast(expr: EXPR.OperationBinaryCast): void {
 		// NOTE: ignore type-checking `this.operand1` for now, as semantics is determined by syntax.
-		// (`this.operand1.source` must be an `IntrinsicName`)
+		// (`this.operand1.source` must be an `CoreLibName`)
 		this.visit(expr.operand0);
 		this.#exprVisitorType.visit(expr);
 	}

@@ -8,7 +8,7 @@ import {
 	VALUE,
 	TYPE,
 } from '../../typer/index.ts';
-import {IntrinsicName} from '../../parser/index.ts';
+import {CoreLibName} from '../../parser/index.ts';
 import type {Builder} from '../Builder.ts';
 import type {Interpreter} from '../Interpreter.ts';
 import {OpCode} from './Opcode.ts';
@@ -27,25 +27,25 @@ export type OpCodeInstance = (
 
 /** An enum of allowed class names. */
 type InstanceOfName = (
-	| IntrinsicName.SYMBOL
-	| IntrinsicName.INTEGER
-	| IntrinsicName.NATURAL
-	| IntrinsicName.FLOAT
-	| IntrinsicName.STRING
-	| IntrinsicName.OBJECT
-	| IntrinsicName.LIST
-	| IntrinsicName.DICT
-	| IntrinsicName.SET
-	| IntrinsicName.MAP
-	| IntrinsicName.EXCEPTION
-	| IntrinsicName.MAYBE
-	| IntrinsicName.NONE
-	| IntrinsicName.SOME
-	| IntrinsicName.RESULT
-	| IntrinsicName.FAIL
-	| IntrinsicName.OK
-	| IntrinsicName.FUNCTION
-	| IntrinsicName.CLASS
+	| CoreLibName.SYMBOL
+	| CoreLibName.INTEGER
+	| CoreLibName.NATURAL
+	| CoreLibName.FLOAT
+	| CoreLibName.STRING
+	| CoreLibName.OBJECT
+	| CoreLibName.LIST
+	| CoreLibName.DICT
+	| CoreLibName.SET
+	| CoreLibName.MAP
+	| CoreLibName.EXCEPTION
+	| CoreLibName.MAYBE
+	| CoreLibName.NONE
+	| CoreLibName.SOME
+	| CoreLibName.RESULT
+	| CoreLibName.FAIL
+	| CoreLibName.OK
+	| CoreLibName.FUNCTION
+	| CoreLibName.CLASS
 );
 
 
@@ -53,10 +53,10 @@ type InstanceOfName = (
 /** Tests whether an operand is an instance of a class. */
 export class Instance extends Value {
 	public constructor(operator: OpCode.INSTANCEOF, name: InstanceOfName, operand: ValueTac);
-	public constructor(operator: OpCode.CAST, name: IntrinsicName, operand: ValueTac);
+	public constructor(operator: OpCode.CAST, name: CoreLibName, operand: ValueTac);
 	public constructor(
 		private readonly operator: OpCodeInstance,
-		private readonly name:     InstanceOfName | IntrinsicName,
+		private readonly name:     InstanceOfName | CoreLibName,
 		private readonly operand:  ValueTac,
 	) {
 		super(operator, TYPE.BOOL);
@@ -75,27 +75,27 @@ export class Instance extends Value {
 		const operand: VALUE.Value = this.operand.interpret(interp);
 		let is_instance: boolean;
 		switch (this.name) {
-			case IntrinsicName.NULL:      { is_instance = operand instanceof VALUE.Null;                     break; }
-			case IntrinsicName.BOOLEAN:   { is_instance = operand instanceof VALUE.Boolean;                  break; }
-			case IntrinsicName.SYMBOL:    { is_instance = operand instanceof VALUE.Symbol;                   break; }
-			case IntrinsicName.INTEGER:   { is_instance = operand instanceof VALUE.Integer;                  break; }
-			case IntrinsicName.NATURAL:   { is_instance = operand instanceof VALUE.Natural;                  break; }
-			case IntrinsicName.FLOAT:     { is_instance = operand instanceof VALUE.Float;                    break; }
-			case IntrinsicName.STRING:    { is_instance = operand instanceof VALUE.String;                   break; }
-			case IntrinsicName.OBJECT:    { is_instance = operand.isReference;                               break; }
-			case IntrinsicName.LIST:      { is_instance = operand instanceof VALUE.List;                     break; }
-			case IntrinsicName.DICT:      { is_instance = operand instanceof VALUE.Dict;                     break; }
-			case IntrinsicName.SET:       { is_instance = operand instanceof VALUE.Set;                      break; }
-			case IntrinsicName.MAP:       { is_instance = operand instanceof VALUE.Map;                      break; }
-			case IntrinsicName.EXCEPTION: { is_instance = operand instanceof VALUE.Exception;                break; }
-			case IntrinsicName.MAYBE:     { is_instance = operand instanceof VALUE.Maybe;                    break; }
-			case IntrinsicName.NONE:      { is_instance = operand instanceof VALUE.Maybe && operand.isNone;  break; }
-			case IntrinsicName.SOME:      { is_instance = operand instanceof VALUE.Maybe && !operand.isNone; break; }
-			case IntrinsicName.RESULT:    { is_instance = operand instanceof VALUE.Result;                   break; }
-			case IntrinsicName.FAIL:      { is_instance = operand instanceof VALUE.Result && !operand.isOk;  break; }
-			case IntrinsicName.OK:        { is_instance = operand instanceof VALUE.Result && operand.isOk;   break; }
-			case IntrinsicName.FUNCTION:  { is_instance = operand instanceof VALUE.Function;                 break; }
-			case IntrinsicName.CLASS:     { is_instance = operand instanceof VALUE.Class;                    break; }
+			case CoreLibName.NULL:      { is_instance = operand instanceof VALUE.Null;                     break; }
+			case CoreLibName.BOOLEAN:   { is_instance = operand instanceof VALUE.Boolean;                  break; }
+			case CoreLibName.SYMBOL:    { is_instance = operand instanceof VALUE.Symbol;                   break; }
+			case CoreLibName.INTEGER:   { is_instance = operand instanceof VALUE.Integer;                  break; }
+			case CoreLibName.NATURAL:   { is_instance = operand instanceof VALUE.Natural;                  break; }
+			case CoreLibName.FLOAT:     { is_instance = operand instanceof VALUE.Float;                    break; }
+			case CoreLibName.STRING:    { is_instance = operand instanceof VALUE.String;                   break; }
+			case CoreLibName.OBJECT:    { is_instance = operand.isReference;                               break; }
+			case CoreLibName.LIST:      { is_instance = operand instanceof VALUE.List;                     break; }
+			case CoreLibName.DICT:      { is_instance = operand instanceof VALUE.Dict;                     break; }
+			case CoreLibName.SET:       { is_instance = operand instanceof VALUE.Set;                      break; }
+			case CoreLibName.MAP:       { is_instance = operand instanceof VALUE.Map;                      break; }
+			case CoreLibName.EXCEPTION: { is_instance = operand instanceof VALUE.Exception;                break; }
+			case CoreLibName.MAYBE:     { is_instance = operand instanceof VALUE.Maybe;                    break; }
+			case CoreLibName.NONE:      { is_instance = operand instanceof VALUE.Maybe && operand.isNone;  break; }
+			case CoreLibName.SOME:      { is_instance = operand instanceof VALUE.Maybe && !operand.isNone; break; }
+			case CoreLibName.RESULT:    { is_instance = operand instanceof VALUE.Result;                   break; }
+			case CoreLibName.FAIL:      { is_instance = operand instanceof VALUE.Result && !operand.isOk;  break; }
+			case CoreLibName.OK:        { is_instance = operand instanceof VALUE.Result && operand.isOk;   break; }
+			case CoreLibName.FUNCTION:  { is_instance = operand instanceof VALUE.Function;                 break; }
+			case CoreLibName.CLASS:     { is_instance = operand instanceof VALUE.Class;                    break; }
 		}
 		switch (this.operator) {
 			case OpCode.INSTANCEOF: {
@@ -117,51 +117,51 @@ export class Instance extends Value {
 		switch (this.operator) {
 			case OpCode.INSTANCEOF: {
 				switch (this.name as InstanceOfName) {
-					case IntrinsicName.SYMBOL:    { return cg.vm.op.isInt(code); }
-					case IntrinsicName.INTEGER:   { return cg.vm.op.isInt(code); }
-					case IntrinsicName.NATURAL:   { return cg.vm.op.isNat(code); }
-					case IntrinsicName.FLOAT:     { return cg.vm.op.isFloat(code); }
-					case IntrinsicName.STRING:    { return cg.vm.op.isString(code); }
-					case IntrinsicName.OBJECT:    { return cg.vm.op.isObject(code); }
-					case IntrinsicName.LIST:      { return cg.vm.op.isCplList(code); }
-					case IntrinsicName.DICT:      { return cg.vm.op.isCplDict(code); }
-					case IntrinsicName.SET:       { return cg.vm.op.isCplMap(code); }
-					case IntrinsicName.MAP:       { return cg.vm.op.isCplMap(code); }
-					case IntrinsicName.EXCEPTION: { return cg.vm.op.isException(code); }
-					case IntrinsicName.MAYBE:     { return cg.vm.op.isMaybe(code); }
-					case IntrinsicName.NONE:      { return cg.vm.op.isNone(code); }
-					case IntrinsicName.SOME:      { return cg.vm.op.isSome(code); }
-					case IntrinsicName.RESULT:    { return cg.vm.op.isResult(code); }
-					case IntrinsicName.FAIL:      { return cg.vm.op.isFail(code); }
-					case IntrinsicName.OK:        { return cg.vm.op.isOk(code); }
-					case IntrinsicName.FUNCTION:  { return cg.vm.op.isFunction(code); }
-					case IntrinsicName.CLASS:     { throw new Error('not yet supported.'); }
+					case CoreLibName.SYMBOL:    { return cg.vm.op.isInt(code); }
+					case CoreLibName.INTEGER:   { return cg.vm.op.isInt(code); }
+					case CoreLibName.NATURAL:   { return cg.vm.op.isNat(code); }
+					case CoreLibName.FLOAT:     { return cg.vm.op.isFloat(code); }
+					case CoreLibName.STRING:    { return cg.vm.op.isString(code); }
+					case CoreLibName.OBJECT:    { return cg.vm.op.isObject(code); }
+					case CoreLibName.LIST:      { return cg.vm.op.isCplList(code); }
+					case CoreLibName.DICT:      { return cg.vm.op.isCplDict(code); }
+					case CoreLibName.SET:       { return cg.vm.op.isCplMap(code); }
+					case CoreLibName.MAP:       { return cg.vm.op.isCplMap(code); }
+					case CoreLibName.EXCEPTION: { return cg.vm.op.isException(code); }
+					case CoreLibName.MAYBE:     { return cg.vm.op.isMaybe(code); }
+					case CoreLibName.NONE:      { return cg.vm.op.isNone(code); }
+					case CoreLibName.SOME:      { return cg.vm.op.isSome(code); }
+					case CoreLibName.RESULT:    { return cg.vm.op.isResult(code); }
+					case CoreLibName.FAIL:      { return cg.vm.op.isFail(code); }
+					case CoreLibName.OK:        { return cg.vm.op.isOk(code); }
+					case CoreLibName.FUNCTION:  { return cg.vm.op.isFunction(code); }
+					case CoreLibName.CLASS:     { throw new Error('not yet supported.'); }
 				}
 				break;
 			}
 			case OpCode.CAST: {
 				switch (this.name) {
-					case IntrinsicName.NULL:      { return cg.vm.op.asNull(code); }
-					case IntrinsicName.BOOLEAN:   { return cg.vm.op.asBool(code); }
-					case IntrinsicName.SYMBOL:    { return cg.vm.op.asInt(code); }
-					case IntrinsicName.INTEGER:   { return cg.vm.op.asInt(code); }
-					case IntrinsicName.NATURAL:   { return cg.vm.op.asNat(code); }
-					case IntrinsicName.FLOAT:     { return cg.vm.op.asFloat(code); }
-					case IntrinsicName.STRING:    { return cg.vm.op.asString(code); }
-					case IntrinsicName.OBJECT:    { return cg.vm.op.asObject(code); }
-					case IntrinsicName.LIST:      { return cg.vm.op.asCplList(code); }
-					case IntrinsicName.DICT:      { return cg.vm.op.asCplDict(code); }
-					case IntrinsicName.SET:       { return cg.vm.op.asCplMap(code); }
-					case IntrinsicName.MAP:       { return cg.vm.op.asCplMap(code); }
-					case IntrinsicName.EXCEPTION: { return cg.vm.op.asException(code); }
-					case IntrinsicName.MAYBE:     { return cg.vm.op.asMaybe(code); }
-					case IntrinsicName.NONE:      { return cg.vm.op.asNone(code); }
-					case IntrinsicName.SOME:      { return cg.vm.op.asSome(code); }
-					case IntrinsicName.RESULT:    { return cg.vm.op.asResult(code); }
-					case IntrinsicName.FAIL:      { return cg.vm.op.asFail(code); }
-					case IntrinsicName.OK:        { return cg.vm.op.asOk(code); }
-					case IntrinsicName.FUNCTION:  { return cg.vm.op.asFunction(code); }
-					case IntrinsicName.CLASS:     { throw new Error('not yet supported.'); }
+					case CoreLibName.NULL:      { return cg.vm.op.asNull(code); }
+					case CoreLibName.BOOLEAN:   { return cg.vm.op.asBool(code); }
+					case CoreLibName.SYMBOL:    { return cg.vm.op.asInt(code); }
+					case CoreLibName.INTEGER:   { return cg.vm.op.asInt(code); }
+					case CoreLibName.NATURAL:   { return cg.vm.op.asNat(code); }
+					case CoreLibName.FLOAT:     { return cg.vm.op.asFloat(code); }
+					case CoreLibName.STRING:    { return cg.vm.op.asString(code); }
+					case CoreLibName.OBJECT:    { return cg.vm.op.asObject(code); }
+					case CoreLibName.LIST:      { return cg.vm.op.asCplList(code); }
+					case CoreLibName.DICT:      { return cg.vm.op.asCplDict(code); }
+					case CoreLibName.SET:       { return cg.vm.op.asCplMap(code); }
+					case CoreLibName.MAP:       { return cg.vm.op.asCplMap(code); }
+					case CoreLibName.EXCEPTION: { return cg.vm.op.asException(code); }
+					case CoreLibName.MAYBE:     { return cg.vm.op.asMaybe(code); }
+					case CoreLibName.NONE:      { return cg.vm.op.asNone(code); }
+					case CoreLibName.SOME:      { return cg.vm.op.asSome(code); }
+					case CoreLibName.RESULT:    { return cg.vm.op.asResult(code); }
+					case CoreLibName.FAIL:      { return cg.vm.op.asFail(code); }
+					case CoreLibName.OK:        { return cg.vm.op.asOk(code); }
+					case CoreLibName.FUNCTION:  { return cg.vm.op.asFunction(code); }
+					case CoreLibName.CLASS:     { throw new Error('not yet supported.'); }
 				}
 				break;
 			}

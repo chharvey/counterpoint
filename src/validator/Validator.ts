@@ -9,7 +9,7 @@ import {
 	Punctuator,
 	type Keyword,
 	KEYWORDS,
-	INTRINSICS,
+	CORE_LIB_NAMES,
 } from '../parser/index.ts';
 import {
 	type SymbolSchema,
@@ -210,8 +210,8 @@ export class Validator {
 	/** The minimum allowed cooked value of a reserved keyword token. */
 	private static readonly MIN_VALUE_KEYWORD = 0x40n;
 
-	/** The minimum allowed cooked value of an intrinsic identifier token. */
-	private static readonly MIN_VALUE_INTRINSIC = 0x80n;
+	/** The minimum allowed cooked value of a built-in identifier token. */
+	private static readonly MIN_VALUE_CORE_LIB = 0x80n;
 
 	/** The minimum allowed cooked value of a user-defined identifier token. */
 	private static readonly MIN_VALUE_IDENTIFIER = 0x100n;
@@ -250,8 +250,8 @@ export class Validator {
 	 * @return       the unique id identifying the token
 	 */
 	public static cookTokenIdentifier(source: string): bigint {
-		if ((INTRINSICS as readonly string[]).includes(source)) {
-			return Validator.MIN_VALUE_INTRINSIC + BigInt((INTRINSICS as readonly string[]).indexOf(source));
+		if ((CORE_LIB_NAMES as readonly string[]).includes(source)) {
+			return Validator.MIN_VALUE_CORE_LIB + BigInt((CORE_LIB_NAMES as readonly string[]).indexOf(source));
 		}
 		return Validator.MIN_VALUE_IDENTIFIER + Validator.#hashString(source);
 	}
@@ -344,7 +344,7 @@ export class Validator {
 		private readonly parent?: Validator,
 	) {
 		if (!this.parent) {
-			xjs.Array.forEachAggregated(INTRINSICS, (name) => {
+			xjs.Array.forEachAggregated(CORE_LIB_NAMES, (name) => {
 				if (!CLASS_API.has(name)) {
 					throw new ReferenceError(`Class API is missing a definition for ${name}.`);
 				}

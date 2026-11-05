@@ -8,8 +8,8 @@ import {
 	AST,
 	VALUE,
 	TYPE,
-	IntrinsicName,
-	INTRINSICS,
+	CoreLibName,
+	CORE_LIB_NAMES,
 	Builder,
 	Interpreter,
 	OP,
@@ -527,17 +527,17 @@ test.suite('Opcode', () => {
 				test.suite('INSTANCEOF', () => {
 					test.suite('non-Maybes/Results.', () => {
 						([
-							IntrinsicName.SYMBOL,
-							IntrinsicName.INTEGER,
-							IntrinsicName.NATURAL,
-							IntrinsicName.FLOAT,
-							IntrinsicName.STRING,
-							IntrinsicName.LIST,
-							IntrinsicName.DICT,
-							IntrinsicName.SET,
-							IntrinsicName.MAP,
-							IntrinsicName.EXCEPTION,
-							IntrinsicName.FUNCTION,
+							CoreLibName.SYMBOL,
+							CoreLibName.INTEGER,
+							CoreLibName.NATURAL,
+							CoreLibName.FLOAT,
+							CoreLibName.STRING,
+							CoreLibName.LIST,
+							CoreLibName.DICT,
+							CoreLibName.SET,
+							CoreLibName.MAP,
+							CoreLibName.EXCEPTION,
+							CoreLibName.FUNCTION,
 						] as const).forEach((name, i) => {
 							test.test(name, () => {
 								const builder      = new Builder();
@@ -570,7 +570,7 @@ test.suite('Opcode', () => {
 							const expr_visitor = new AST.ExprVisitorBuild(builder);
 							srcs.forEach((src) => builder.pushInstruction(new OP.Drop(new OP.Instance(
 								OP.OpCode.INSTANCEOF,
-								IntrinsicName.OBJECT,
+								CoreLibName.OBJECT,
 								expr_visitor.visit(AST.EXPR.Expression.fromSource(src)).asTac(builder),
 							))));
 							builder.instructions.forEach((instr) => instr.interpret(interp));
@@ -579,9 +579,9 @@ test.suite('Opcode', () => {
 					});
 					test.suite('Maybes.', () => {
 						([
-							IntrinsicName.MAYBE,
-							IntrinsicName.NONE,
-							IntrinsicName.SOME,
+							CoreLibName.MAYBE,
+							CoreLibName.NONE,
+							CoreLibName.SOME,
 						] as const).forEach((name, i) => {
 							test.test(name, () => {
 								const builder = new Builder();
@@ -606,9 +606,9 @@ test.suite('Opcode', () => {
 					});
 					test.suite('Results.', () => {
 						([
-							IntrinsicName.RESULT,
-							IntrinsicName.FAIL,
-							IntrinsicName.OK,
+							CoreLibName.RESULT,
+							CoreLibName.FAIL,
+							CoreLibName.OK,
 						] as const).forEach((name, i) => {
 							test.test(name, () => {
 								const builder = new Builder();
@@ -633,22 +633,22 @@ test.suite('Opcode', () => {
 				});
 				test.suite('CAST', () => {
 					([
-						IntrinsicName.NULL,
-						IntrinsicName.BOOLEAN,
-						IntrinsicName.SYMBOL,
-						IntrinsicName.INTEGER,
-						IntrinsicName.NATURAL,
-						IntrinsicName.FLOAT,
-						IntrinsicName.STRING,
-						IntrinsicName.OBJECT,
-						IntrinsicName.LIST,
-						IntrinsicName.DICT,
-						IntrinsicName.SET,
-						IntrinsicName.MAP,
-						IntrinsicName.EXCEPTION,
-						IntrinsicName.MAYBE,
-						IntrinsicName.NONE,
-						IntrinsicName.SOME,
+						CoreLibName.NULL,
+						CoreLibName.BOOLEAN,
+						CoreLibName.SYMBOL,
+						CoreLibName.INTEGER,
+						CoreLibName.NATURAL,
+						CoreLibName.FLOAT,
+						CoreLibName.STRING,
+						CoreLibName.OBJECT,
+						CoreLibName.LIST,
+						CoreLibName.DICT,
+						CoreLibName.SET,
+						CoreLibName.MAP,
+						CoreLibName.EXCEPTION,
+						CoreLibName.MAYBE,
+						CoreLibName.NONE,
+						CoreLibName.SOME,
 					] as const).forEach((name) => {
 						test.test(name, () => {
 							const builder      = new Builder();
@@ -1909,7 +1909,7 @@ test.suite('Opcode', () => {
 			test.suite('Instance', () => {
 				test.test('INSTANCEOF', () => {
 					const {builder, cg, wasm} = setupScript(`{
-						${INTRINSICS.slice(2, -1).map((classname) => `null is ${classname};`).join('\n')};
+						${CORE_LIB_NAMES.slice(2, -1).map((classname) => `null is ${classname};`).join('\n')};
 					}`);
 					const operand: binaryen.ExpressionRef = genConst(cg);
 					return assertEqualBins(builder.instructions.map((instr) => instr.codegen(cg)), [
@@ -1936,7 +1936,7 @@ test.suite('Opcode', () => {
 				});
 				test.test('CAST', () => {
 					const {builder, cg, wasm} = setupScript(`{
-						${INTRINSICS.slice(0, -1).map((classname) => `null as <anything> as ${classname};`).join('\n')};
+						${CORE_LIB_NAMES.slice(0, -1).map((classname) => `null as <anything> as ${classname};`).join('\n')};
 					}`);
 					const operand: binaryen.ExpressionRef = genConst(cg);
 					return assertEqualBins(builder.instructions.filter((instr) => instr instanceof OP.Drop).map((instr) => instr.codegen(cg)), [

@@ -3,7 +3,7 @@ import * as test from 'node:test';
 import * as xjs from 'extrajs';
 import {
 	assert_instanceof,
-	INTRINSICS,
+	CORE_LIB_NAMES,
 	AST,
 	type SymbolSchema,
 	SymbolSchemaVar,
@@ -1506,11 +1506,11 @@ test.suite('ExprVisitorBuild#visit', () => {
 			test.test('if not "Null" nor "Boolean", returns INSTANCEOF.', () => {
 				assert.strictEqual(setupScript(`{
 					val n: null = null;
-					${INTRINSICS.slice(2).map((t) => `n is ${t};`).join('\n')}
+					${CORE_LIB_NAMES.slice(2).map((t) => `n is ${t};`).join('\n')}
 				}`, {codegen: false}).builder.print(), xjs.String.dedent`
 					"block-0":
 						(DECL <null> n (NULL.CONST null))
-						${INTRINSICS.slice(2).map((t) => `(DROP (INSTANCEOF ${t} (GET n)))`).join('\n\t')}
+						${CORE_LIB_NAMES.slice(2).map((t) => `(DROP (INSTANCEOF ${t} (GET n)))`).join('\n\t')}
 						(ENDPROGRAM)
 				`.trim());
 			});
@@ -1518,11 +1518,11 @@ test.suite('ExprVisitorBuild#visit', () => {
 		test.test('[operator=CAST]', () => {
 			assert.strictEqual(setupScript(`{
 				val n: anything = null;
-				${INTRINSICS.map((t) => `n as ${t};`).join('\n')}
+				${CORE_LIB_NAMES.map((t) => `n as ${t};`).join('\n')}
 			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
 					(DECL <null> n (NULL.CONST null))
-					${INTRINSICS.map((t) => `(DROP (CAST ${t} (GET n)))`).join('\n\t')}
+					${CORE_LIB_NAMES.map((t) => `(DROP (CAST ${t} (GET n)))`).join('\n\t')}
 					(ENDPROGRAM)
 			`.trim());
 		});
@@ -1616,11 +1616,11 @@ test.suite('ExprVisitorBuild#visit', () => {
 			test.test('not "Null" nor "Boolean".', () => {
 				assert.strictEqual(setupScript(`{
 					val n: anything = null;
-					${INTRINSICS.slice(2).map((t) => `n as? ${t};`).join('\n')}
+					${CORE_LIB_NAMES.slice(2).map((t) => `n as? ${t};`).join('\n')}
 				}`, {codegen: false}).builder.print(), xjs.String.dedent`
 					"block-0":
 						(DECL <null> n (NULL.CONST null))
-						${INTRINSICS.slice(2).map((t, i) => {
+						${CORE_LIB_NAMES.slice(2).map((t, i) => {
 							const block_then:  string = `block-${3 * i + 1}`;
 							const block_else:  string = `block-${3 * i + 2}`;
 							const block_endif: string = `block-${3 * i + 3}`;

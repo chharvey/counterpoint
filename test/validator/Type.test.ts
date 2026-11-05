@@ -172,7 +172,7 @@ test.suite('Type', () => {
 
 	test.suite('TypeAlias', () => {
 		test.suite('#varCheck', () => {
-			test.test('does not throw when referencing intrinsic identifiers.', () => {
+			test.test('does not throw when referencing built-in identifiers.', () => {
 				setupScript(`{
 					type T = Object;
 					type E = Exception;
