@@ -240,15 +240,15 @@ const TYPES: {
 	const i_data: number = tb.getSize();
 	tb.grow(1);
 	tb.setStructType(i_data, [
-		/* $class */  make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_class), true), true),
-		/* $fields */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_dict), false)),
+		/* $class */  make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_class), false)),
+		/* $fields */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_dict),  false)),
 	]);
 	tb.setSubType(i_data, tb.getTempHeapType(i_composite));
 
 	const fields_object = [
 		/* $id */     make_struct_field(binaryen.Type.i64),
-		/* $class */  make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_class), true), true),
-		/* $fields */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_dict), false)),
+		/* $class */  make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_class), true)),
+		/* $fields */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_dict),  false)),
 	];
 
 	/* (type $Object ...) */
