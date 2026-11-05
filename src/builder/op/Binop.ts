@@ -238,8 +238,8 @@ export class Binop extends Value {
 			return wasm.block(null, [
 				wasm.drop(arg0),
 				wasm.drop(arg1),
-				cg.vm.Vect.FALSE,
-			], binaryen.Type.v128);
+				cg.vm.Value.FALSE,
+			], cg.vm.reftype.Value);
 		}
 
 		// Operator Logical

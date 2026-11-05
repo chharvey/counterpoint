@@ -38,11 +38,6 @@ class VmObject implements HasFuncData {
 		]);
 	}
 
-	/** Global counter for `$Object` structs. Used for values of field `$Object.$id`. */
-	public get ctr(): binaryen.ExpressionRef /* i64 */ {
-		return this.vm.mod.wasm.global.get('Object.ctr', binaryen.Type.i64);
-	}
-
 
 	/**
 	 * Increments the value of `$Object.ctr`, but then returns its pre-incremented value.

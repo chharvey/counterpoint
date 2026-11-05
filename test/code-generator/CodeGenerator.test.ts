@@ -33,13 +33,11 @@ test.suite('CodeGenerator', () => {
 				cg.newVect(wasm.i64.const(42n)),
 				cg.newVect(wasm.i64.const(42n), {unsigned: true}),
 				cg.newVect(wasm.f64.const(4.2)),
-				cg.newVect(Vect.TRUE),
 				cg.newVect(Vect.newInt(wasm.i64.const(42n))),
 			], ([
 				Vect.newInt(wasm.i64.const(42n)),
 				Vect.newNat(wasm.i64.const(42n)),
 				Vect.newFloat(wasm.f64.const(4.2)),
-				Vect.TRUE,
 				Vect.newInt(wasm.i64.const(42n)),
 			]));
 		});
@@ -54,16 +52,13 @@ test.suite('CodeGenerator', () => {
 			);
 		});
 		test.test('returns `(struct.new $Property)`.', () => {
-			const {Vect, Value} = cg.vm;
 			assertEqualBins([
 				cg.newProperty(0x102n, genConst(cg)),
 				cg.newProperty(0x103n, genConst(cg, 42n)),
-				cg.newProperty(0x104n, Value.newPrimitive(Vect.FALSE)),
 				cg.newProperty(0x105n, genConst(cg, 4.2)),
 			], ([
 				[0x102n, genConst(cg)],
 				[0x103n, genConst(cg, 42n)],
-				[0x104n, Value.newPrimitive(Vect.FALSE)],
 				[0x105n, genConst(cg, 4.2)],
 			] as const).map(([id, code]) => wasm.struct.new([
 				wasm.i64.const(id),

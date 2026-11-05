@@ -120,11 +120,6 @@ export class Vect implements HasFuncData {
 		]);
 	}
 
-	public get VOID():  binaryen.ExpressionRef /* v128 */ { return this.vm.mod.wasm.global.get('Vect.VOID',  binaryen.Type.v128); }
-	public get NULL():  binaryen.ExpressionRef /* v128 */ { return this.vm.mod.wasm.global.get('Vect.NULL',  binaryen.Type.v128); }
-	public get FALSE(): binaryen.ExpressionRef /* v128 */ { return this.vm.mod.wasm.global.get('Vect.FALSE', binaryen.Type.v128); }
-	public get TRUE():  binaryen.ExpressionRef /* v128 */ { return this.vm.mod.wasm.global.get('Vect.TRUE',  binaryen.Type.v128); }
-
 
 	/** Returns a v128 encoding the given i64 as signed. */
 	public newInt(int: binaryen.ExpressionRef /* i64 */): binaryen.ExpressionRef /* v128 */ {

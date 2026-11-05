@@ -446,9 +446,6 @@ export class VirtualMachine {
 		} = TYPES);
 
 		this.globalImportDataMap = new Map([
-			['Vect#NULL',   {name: 'Vect.NULL',   type: binaryen.Type.v128}],
-			['Vect#FALSE',  {name: 'Vect.FALSE',  type: binaryen.Type.v128}],
-			['Vect#TRUE',   {name: 'Vect.TRUE',   type: binaryen.Type.v128}],
 			['Value#NULL',  {name: 'Value.NULL',  type: this.reftype.Value}],
 			['Value#FALSE', {name: 'Value.FALSE', type: this.reftype.Value}],
 			['Value#TRUE',  {name: 'Value.TRUE',  type: this.reftype.Value}],
