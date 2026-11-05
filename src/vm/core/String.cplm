@@ -3,6 +3,7 @@ from "core/vm" import (
 	'op::isRecord',
 );
 from "./Object" import type (Object);
+from "./Exception" import (Exception);
 
 
 
@@ -21,10 +22,10 @@ public class String {
 	public new (arg: anything) {
 		if 'op::isTuple'(arg) as :bool: then {
 			% loop through tuple internal array and stringify each value
-			panic "TODO: not yet supported";
+			panic Exception("TODO: not yet supported");
 		} else if 'op::isRecord'(arg) as :bool: then {
 			% loop through record internal array and stringify each property
-			panic "TODO: not yet supported";
+			panic Exception("TODO: not yet supported");
 		};
 	}
 }
