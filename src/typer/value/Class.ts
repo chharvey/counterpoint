@@ -1,5 +1,5 @@
 import {TYPE} from '../index.ts';
-import {Value} from './Value.ts';
+import {Object as ValueObject} from './Object.ts';
 
 
 
@@ -8,17 +8,18 @@ import {Value} from './Value.ts';
  * A class is an object that constructs object instances.
  * @final
  */
-class ValueClass extends Value {
+class ValueClass extends ValueObject {
 	public constructor(
 		public  readonly instanceType: TYPE.Type,
-		private readonly source:       string,
+		class_?:                       ValueClass,
+		private readonly source?:      string,
 	) {
-		super();
+		super(0n, class_);
 	}
 
 
 	public override toString(): string {
-		return this.source;
+		return this.source ?? '';
 	}
 
 	public override toType(): TYPE.Class {
