@@ -118,6 +118,31 @@ Codegen((MAP.NEW `pairs`)) := (call $Value.from-map
 	)
 );
 
+Codegen((OBJECT.NEW `false` `class`)) := (call $Value.new-composite (struct.new $Object
+	(call $Object.ctr-plus-plus)
+	(ref.cast (ref $Class) (struct.get $Value $composite `Codegen(class)`))
+	(struct.new $Dict
+		(i32.const 0)
+		(array.new_default $DictInternal (i32.const 8))
+	)
+));
+Codegen((OBJECT.NEW `true` `class`)) := (call $Value.new-composite (struct.new $Class
+	(call $Object.ctr-plus-plus)
+	(ref.cast (ref $Class) (struct.get $Value $composite `Codegen(class)`))
+	(struct.new $Dict
+		(i32.const 0)
+		(array.new_default $DictInternal (i32.const 8))
+	)
+));
+Codegen((OBJECT.NEW `true`)) := (call $Value.new-composite (struct.new $Class
+	(call $Object.ctr-plus-plus)
+	(ref.null $Class)
+	(struct.new $Dict
+		(i32.const 0)
+		(array.new_default $DictInternal (i32.const 8))
+	)
+));
+
 Codegen((EXCP.NEW `message`)) := (call $Value.new-newComposite
 	(struct.new $Exception
 		(call $Object.ctr-plus-plus)

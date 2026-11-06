@@ -134,6 +134,31 @@ test.suite('Opcode', () => {
 				]);
 			});
 
+			test.test('ObjectNew', {expectFailure: true}, () => { // FIXME: new object constructors are created but expected to be strict-equal
+				const builder = new Builder();
+				const interp  = new Interpreter();
+
+				/** The class named `Class` — it has a null `class_` field. */
+				const the_class_class = new OP.ObjectNew(true);
+				/** The class named `Object` — its `class_` field points to the class named `Class`. */
+				const the_object_class = new OP.ObjectNew(true, the_class_class);
+				/** A new Object instance — its `class_` field points to the class named `Object`. */
+				const new_object = new OP.ObjectNew(false, the_object_class);
+
+				builder.pushInstruction(new OP.Drop(the_class_class));
+				builder.pushInstruction(new OP.Drop(the_object_class));
+				builder.pushInstruction(new OP.Drop(new_object));
+
+				builder.instructions.forEach((instr) => instr.interpret(interp));
+				assert_instanceof(interp.drops[0], VALUE.Class);
+				assert_instanceof(interp.drops[1], VALUE.Class);
+				return assert_equal_values(interp.drops, [
+					new VALUE.Class(TYPE.CLASS),
+					new VALUE.Class(TYPE.OBJ, interp.drops[0]),
+					new VALUE.Object(0n, interp.drops[1]),
+				]);
+			});
+
 			test.test('ExcpNew', () => {
 				assert_equal_values(interpret_extracted_drops(`{
 					Exception.("message");
@@ -1453,6 +1478,31 @@ test.suite('Opcode', () => {
 						])))).replaceAll('$4', '$3'),
 					);
 				});
+			});
+
+			test.test('ObjectNew', () => {
+				const cg = new CodeGenerator();
+				const {Value} = cg.vm;
+
+				/** The class named `Class` — it has a null `class_` field. */
+				const the_class_class = new OP.ObjectNew(true);
+				/** The class named `Object` — its `class_` field points to the class named `Class`. */
+				const the_object_class = new OP.ObjectNew(true, the_class_class);
+				/** A new Object instance — its `class_` field points to the class named `Object`. */
+				const new_object = new OP.ObjectNew(false, the_object_class);
+
+				const expected0: binaryen.ExpressionRef /* (ref $Value) */ = Value.newComposite(cg.codegenClass());
+				const expected1: binaryen.ExpressionRef /* (ref $Value) */ = Value.newComposite(cg.codegenClass(Value.asClass(expected0)));
+
+				return assertEqualBins([
+					the_class_class,
+					the_object_class,
+					new_object,
+				].map((opcode) => opcode.codegen(cg)), [
+					expected0,
+					expected1,
+					Value.newComposite(cg.codegenObject(Value.asClass(expected1))),
+				]);
 			});
 
 			test.test('ExcpNew', () => {

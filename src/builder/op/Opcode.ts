@@ -9,6 +9,7 @@ import {
 	RecordNew,
 	DictNew,
 	MapNew,
+	ObjectNew,
 	MaybeNew,
 	TupleHas,
 	RecordHas,
@@ -60,6 +61,7 @@ export enum OpCode {
 	DICT_NEW,
 	SET_NEW,
 	MAP_NEW,
+	OBJECT_NEW,
 	EXCP_NEW,
 	MAYBE_NEW,
 	RESULT_NEW,
@@ -160,6 +162,7 @@ export abstract class OpcodeVisitor<T> {
 	public visitRecordNew            (val: RecordNew):            T { return this.defaultVisit(val); }
 	public visitDictNew              (val: DictNew):              T { return this.defaultVisit(val); }
 	public visitMapNew               (val: MapNew):               T { return this.defaultVisit(val); }
+	public visitObjectNew            (val: ObjectNew):            T { return this.defaultVisit(val); }
 	public visitMaybeNew             (val: MaybeNew):             T { return this.defaultVisit(val); }
 	public visitTupleHas             (val: TupleHas):             T { return this.defaultVisit(val); }
 	public visitRecordHas            (val: RecordHas):            T { return this.defaultVisit(val); }
@@ -200,6 +203,7 @@ export abstract class OpcodeVisitor<T> {
 			case RecordNew:             { return this.visitRecordNew            (op as RecordNew); }
 			case DictNew:               { return this.visitDictNew              (op as DictNew); }
 			case MapNew:                { return this.visitMapNew               (op as MapNew); }
+			case ObjectNew:             { return this.visitObjectNew            (op as ObjectNew); }
 			case MaybeNew:              { return this.visitMaybeNew             (op as MaybeNew); }
 			case TupleHas:              { return this.visitTupleHas             (op as TupleHas); }
 			case RecordHas:             { return this.visitRecordHas            (op as RecordHas); }

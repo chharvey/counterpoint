@@ -256,6 +256,7 @@ test.suite('CodeGenerator', () => {
 			const the_object_class: binaryen.ExpressionRef /* (ref $Class) */ = cg.codegenClass(the_class_class);
 			/** A new Object instance — its `$class` field points to the class named `Object`. */
 			const new_object: binaryen.ExpressionRef /* (ref $Object) */ = cg.codegenObject(the_object_class);
+
 			return assertEqualBins(
 				new_object,
 				wasm.struct.new([
@@ -271,11 +272,13 @@ test.suite('CodeGenerator', () => {
 			const the_class_class: binaryen.ExpressionRef /* (ref $Class) */ = cg.codegenClass();
 			/** The class named `Object` — its `$class` field points to the class named `Class`. */
 			const the_object_class: binaryen.ExpressionRef /* (ref $Class) */ = cg.codegenClass(the_class_class);
+
 			const expected0: binaryen.ExpressionRef /* (ref $Class) */ = wasm.struct.new([
 				cg.vm.Object.ctrPlusPlus(),
 				cg.mod.wasm.ref.null(cg.vm.heaptype.Class),
 				cg.codegenDict(),
 			], cg.vm.heaptype.Class);
+
 			assertEqualBins(
 				the_class_class,
 				expected0,

@@ -19,6 +19,7 @@ import {
 	RecordNew,
 	DictNew,
 	MapNew,
+	ObjectNew,
 	MaybeNew,
 	TupleHas,
 	RecordHas,
@@ -49,6 +50,7 @@ export abstract class ValueVisitor<T> {
 	public visitRecordNew            (val: RecordNew):            T { return this.defaultVisit(val); }
 	public visitDictNew              (val: DictNew):              T { return this.defaultVisit(val); }
 	public visitMapNew               (val: MapNew):               T { return this.defaultVisit(val); }
+	public visitObjectNew            (val: ObjectNew):            T { return this.defaultVisit(val); }
 	public visitMaybeNew             (val: MaybeNew):             T { return this.defaultVisit(val); }
 	public visitTupleHas             (val: TupleHas):             T { return this.defaultVisit(val); }
 	public visitRecordHas            (val: RecordHas):            T { return this.defaultVisit(val); }
@@ -75,6 +77,7 @@ export abstract class ValueVisitor<T> {
 			case RecordNew:            { return this.visitRecordNew            (val as RecordNew); }
 			case DictNew:              { return this.visitDictNew              (val as DictNew); }
 			case MapNew:               { return this.visitMapNew               (val as MapNew); }
+			case ObjectNew:            { return this.visitObjectNew            (val as ObjectNew); }
 			case MaybeNew:             { return this.visitMaybeNew             (val as MaybeNew); }
 			case TupleHas:             { return this.visitTupleHas             (val as TupleHas); }
 			case RecordHas:            { return this.visitRecordHas            (val as RecordHas); }
@@ -102,6 +105,7 @@ export abstract class ValueVisitor<T> {
  * - RecordNew
  * - DictNew
  * - MapNew
+ * - ObjectNew
  * - ExcpNew
  * - MaybeNew
  * - ResultNew

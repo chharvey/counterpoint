@@ -39,6 +39,7 @@ LIST.NEW([Value*])                        -> List;
 DICT.NEW(Vector<VALUE.Symbol, Value>*)    -> Dict;
 SET.NEW([Value*])                         -> Set;
 MAP.NEW(Vector<Value, Value>*)            -> Map;
+OBJECT.NEW(boolean [Class?])              -> Object;
 EXCP.NEW([Value Value?])                  -> Exception;
 MAYBE.NEW([Value?])                       -> Maybe;
 RESULT.NEW([Value Nil])                   -> Result;
