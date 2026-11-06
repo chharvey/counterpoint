@@ -123,20 +123,6 @@ export const CLASS_API = new Map<CoreLibName, ClassSignature>([
 		returnType: () => TYPE.OBJ,
 		supertype:  TYPE.OBJ,
 	}],
-
-	/*
-	 * ```cpl
-	 * declare class List[out(in) T] extends Object {
-	 * 	new ();
-	 * 	new (());
-	 * 	new ((T,));
-	 * 	new ((T, T));
-	 * 	new (anything); % any tuple type with items of type `T`
-	 * 	new (List[T]);
-	 * 	new (Set[T]);
-	 * }
-	 * ```
-	 */
 	[CoreLibName.LIST, {
 		genericParams: {positional: [VARIANCE['out(in)']]},
 		overloads:     ({positional: [t]}) => [
@@ -147,25 +133,6 @@ export const CLASS_API = new Map<CoreLibName, ClassSignature>([
 		returnType: ({positional: [t]}) => new TYPE.List(t, true),
 		supertype:  new TYPE.List(TYPE.ANYTHING),
 	}],
-
-	/*
-	 * ```cpl
-	 * declare class Dict[out(in) T] extends Object {
-	 * 	new ();
-	 * 	new (());
-	 * 	new (((sym, T),));
-	 * 	new (((sym, T), (sym, T)));
-	 * 	new (anything); % any tuple type with items of type `(sym, T)`
-	 * 	new ((a: T));
-	 * 	new ((a: T, b: T));
-	 * 	new (anything); % any record type with values of type `T`
-	 * 	new (List[(sym, T)]);
-	 * 	new (Dict[T]);
-	 * 	new (Set[(sym, T)]);
-	 * 	new (Map[sym, T]);
-	 * }
-	 * ```
-	 */
 	[CoreLibName.DICT, {
 		genericParams: {positional: [VARIANCE['out(in)']]},
 		overloads:     ({positional: [t]}) => [
@@ -178,20 +145,6 @@ export const CLASS_API = new Map<CoreLibName, ClassSignature>([
 		returnType: ({positional: [t]}) => new TYPE.Dict(t, true),
 		supertype:  new TYPE.Dict(TYPE.ANYTHING),
 	}],
-
-	/*
-	 * ```cpl
-	 * declare class Set[out(in) T] extends Object {
-	 * 	new ();
-	 * 	new (());
-	 * 	new ((T,));
-	 * 	new ((T, T));
-	 * 	new (anything); % any tuple type with items of type `T`
-	 * 	new (List[T]);
-	 * 	new (Set[T]);
-	 * }
-	 * ```
-	 */
 	[CoreLibName.SET, {
 		genericParams: {positional: [VARIANCE['out(in)']]},
 		overloads:     ({positional: [t]}) => [
@@ -202,21 +155,6 @@ export const CLASS_API = new Map<CoreLibName, ClassSignature>([
 		returnType: ({positional: [t]}) => new TYPE.Set(t, true),
 		supertype:  new TYPE.Set(TYPE.ANYTHING),
 	}],
-
-	/*
-	 * ```cpl
-	 * declare class Map[out(in) K, out(in) V] extends Object {
-	 * 	new ();
-	 * 	new (());
-	 * 	new (((K, V),));
-	 * 	new (((K, V), (K, V)));
-	 * 	new (anything); % any tuple type with items of type `(K, V)`
-	 * 	new (List[(K, V)]);
-	 * 	new (Set[(K, V)]);
-	 * 	new (Map[K, V]);
-	 * }
-	 * ```
-	 */
 	[CoreLibName.MAP, {
 		genericParams: {
 			positional: [
@@ -233,31 +171,11 @@ export const CLASS_API = new Map<CoreLibName, ClassSignature>([
 		returnType: ({positional: [k, v]}) => new TYPE.Map(k, v, true),
 		supertype:  new TYPE.Map(TYPE.ANYTHING, TYPE.ANYTHING),
 	}],
-
-	/*
-	 * ```cpl
-	 * declare class open Exception extends Object {
-	 * 	new (str, ?: Exception);
-	 * }
-	 * ```
-	 */
 	[CoreLibName.EXCEPTION, {
 		overloads:  () => [{positional: new TYPE.Tuple([{type: TYPE.STR, optional: false}, {type: TYPE.EXCP, optional: true}])}],
 		returnType: () => TYPE.EXCP,
 		supertype:  TYPE.EXCP,
 	}],
-
-	/*
-	 * ```cpl
-	 * declare class abstract Maybe[out T] extends Object {}
-	 * declare class None[out T] extends Maybe[T] {
-	 * 	new ();
-	 * }
-	 * declare class Some[out T] extends Maybe[T] {
-	 * 	new (T);
-	 * }
-	 * ```
-	 */
 	[CoreLibName.MAYBE, {
 		genericParams: {positional: [VARIANCE.out]},
 		returnType:    ({positional: [t]}) => new TYPE.Maybe(t),
@@ -275,18 +193,6 @@ export const CLASS_API = new Map<CoreLibName, ClassSignature>([
 		returnType:    ({positional: [t]}) => new TYPE.Some(t),
 		supertype:     new TYPE.Some(TYPE.ANYTHING),
 	}],
-
-	/*
-	 * ```cpl
-	 * declare class abstract Result[out T, out E? narrows Exception = Exception] extends Object {}
-	 * declare class Fail[out T, out E? narrows Exception = Exception] extends Result[T, E] {
-	 * 	new (E);
-	 * }
-	 * declare class Ok[out T, out E? narrows Exception = Exception] extends Result[T, E] {
-	 * 	new (T);
-	 * }
-	 * ```
-	 */
 	[CoreLibName.RESULT, {
 		genericParams: {positional: [VARIANCE.out, {...VARIANCE.out, constraint: ['narrows', TYPE.EXCP], default: TYPE.EXCP}]},
 		returnType:    ({positional: [t, e]}) => new TYPE.Result(t, e),
@@ -304,22 +210,10 @@ export const CLASS_API = new Map<CoreLibName, ClassSignature>([
 		returnType:    ({positional: [t, e]}) => new TYPE.Ok(t, e),
 		supertype:     new TYPE.Ok(TYPE.ANYTHING),
 	}],
-
-	/*
-	 * ```cpl
-	 * declare class abstract Function extends Object {}
-	 * ```
-	 */
 	[CoreLibName.FUNCTION, {
 		returnType: () => TYPE.FUNCTION,
 		supertype:  TYPE.FUNCTION,
 	}],
-
-	/*
-	 * ```cpl
-	 * declare class open Class {}
-	 * ```
-	 */
 	[CoreLibName.CLASS, {
 		returnType: () => TYPE.CLASS,
 		supertype:  TYPE.CLASS,
