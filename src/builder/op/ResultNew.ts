@@ -31,7 +31,7 @@ export class ResultNew extends Value {
 
 
 	public override toString(): string {
-		return super.toString(...(this.isOk ? [this.argument.toString(), 'nil'] : ['nil', this.argument.toString()]));
+		return super.toString(...(this.isOk ? [this.argument, 'nil'] : ['nil', this.argument]));
 	}
 
 	@runOnceMethod

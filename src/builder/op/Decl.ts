@@ -47,7 +47,7 @@ export class Decl extends Instruction {
 		return super.toString(
 			`<${stringify_type_name(ast_type_name(this.targetType))}>`,
 			this.target instanceof SymbolSchemaVar ? this.target.source : this.target.name,
-			...(this.value ? [this.value] : []),
+			this.value ?? '',
 		);
 	}
 
