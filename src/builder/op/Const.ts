@@ -23,14 +23,14 @@ export class Const extends ValueTac {
 	public constructor(private readonly interpreterValue: VALUE.Primitive) {
 		const typ: TYPE.Unit = interpreterValue.toType();
 		super(new Map<TypeName, OpCode>([
-			[TypeName.TRAP,  OpCode.TRAP],
-			[TypeName.NULL,  OpCode.NULL_CONST],
-			[TypeName.BOOL,  OpCode.BOOL_CONST],
-			[TypeName.SYM,   OpCode.SYM_CONST],
-			[TypeName.INT,   OpCode.INT_CONST],
-			[TypeName.NAT,   OpCode.NAT_CONST],
-			[TypeName.FLOAT, OpCode.FLOAT_CONST],
-			[TypeName.STR,   OpCode.STR_CONST],
+			[TypeName.NOTHING, OpCode.TRAP],
+			[TypeName.NULL,    OpCode.NULL_CONST],
+			[TypeName.BOOL,    OpCode.BOOL_CONST],
+			[TypeName.SYM,     OpCode.SYM_CONST],
+			[TypeName.INT,     OpCode.INT_CONST],
+			[TypeName.NAT,     OpCode.NAT_CONST],
+			[TypeName.FLOAT,   OpCode.FLOAT_CONST],
+			[TypeName.STR,     OpCode.STR_CONST],
 		]).get(ast_type_name(typ))!, typ);
 	}
 
