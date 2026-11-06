@@ -215,6 +215,7 @@ Simple types do not comprise other types.
 - [Float](#float)
 - [String](#string)
 - [Object](#object)
+- [Class](#class)
 
 #### Nothing
 The **Nothing** type is the Botton Type and it represents the set of no values.
@@ -350,6 +351,22 @@ All reference types are subtypes of **Object**,
 and all reference objects are instances of [`Object`](./core-library.md#object).
 Some specific built-in subtypes of **Object** are described in the [Core Library](./core-library.md) chapter.
 
+#### Class
+The **Class** type contains objects that construct Counterpoint Language Values.
+All classes are [reference objects](./core-library.md#reference-objects), though the values they construct need not be reference objects.
+The values constructed by a class are said to be **instances** of that class.
+Classes are instances of [`Class`](./core-library.md#class);
+`Class` *itself* is a class, which makes it its own constructor.
+
+Classes may have **instance fields** that describe the state of their instances,
+and **instance methods** which determine their behavior.
+
+Classes may also be **extended** and form a tree hierarchy wherein they inherit methods.
+Counterpoint is “single-inheritance”, meaning a class can only extend one other class.
+
+Because `Class` is a class whose instances are classes, it is said to be a **metaclass**.
+In general a metaclass is defined as either the `Class` class, or any other class that extends `Class`.
+
 
 ### Compound Types
 Compound types are derived from other types.
@@ -451,6 +468,8 @@ The objects that any given Function type describes are `Function` objects whose
 parameters and return type are respectively assignable to the types parameterizing the Function Type.
 
 #### Class Types
+Besides being [simple types](#class), classes can be callable objects.
+
 A **Class** type describes callable classes — instances of [`Class`](./core-library.md#class)
 that can be called like a function to construct new objects. The Class type is parameterized
 by the signatures of the corresponding `Class` object’s constructors, if any.
