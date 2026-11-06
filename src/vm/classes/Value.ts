@@ -43,6 +43,9 @@ export class Value implements HasFuncData {
 			['Value#asString',     {name: 'Value.as-string',     param: reftype.Value,       result: reftype.String}],
 			['Value#asTuple',      {name: 'Value.as-tuple',      param: reftype.Value,       result: reftype.Tuple}],
 			['Value#asRecord',     {name: 'Value.as-record',     param: reftype.Value,       result: reftype.Record}],
+			['Value#asData',       {name: 'Value.as-data',       param: reftype.Value,       result: reftype.Data}],
+			['Value#asObject',     {name: 'Value.as-object',     param: reftype.Value,       result: reftype.Object}],
+			['Value#asClass',      {name: 'Value.as-class',      param: reftype.Value,       result: reftype.Class}],
 		]);
 	}
 
@@ -154,5 +157,17 @@ export class Value implements HasFuncData {
 	/** Returns the value as a Record. */
 	public asRecord(value: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Record) */ {
 		return this.vm.mod.wasm.call('Value.as-record', [value], this.vm.reftype.Record);
+	}
+
+	public asData(value: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Data) */ {
+		return this.vm.mod.wasm.call('Value.as-data', [value], this.vm.reftype.Data);
+	}
+
+	public asObject(value: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Object) */ {
+		return this.vm.mod.wasm.call('Value.as-object', [value], this.vm.reftype.Object);
+	}
+
+	public asClass(value: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Class) */ {
+		return this.vm.mod.wasm.call('Value.as-class', [value], this.vm.reftype.Class);
 	}
 }

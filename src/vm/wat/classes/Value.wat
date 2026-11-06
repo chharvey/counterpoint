@@ -127,3 +127,15 @@
 (func $Value.as-record (export "Value#asRecord") (param (ref $Value)) (result (ref $Record))
 	(ref.cast (ref $Record) (struct.get $Value $composite (local.get 0)))
 )
+
+
+
+(func $Value.as-data (export "Value#asData") (param (ref $Value)) (result (ref $Data))
+	(ref.cast (ref $Data) (struct.get $Value $composite (local.get 0)))
+)
+(func $Value.as-object (export "Value#asObject") (param (ref $Value)) (result (ref $Object))
+	(ref.cast (ref $Object) (struct.get $Value $composite (local.get 0)))
+)
+(func $Value.as-class (export "Value#asClass") (param (ref $Value)) (result (ref $Class))
+	(ref.cast (ref $Class) (struct.get $Value $composite (local.get 0)))
+)
