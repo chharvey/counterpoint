@@ -1,7 +1,6 @@
 import * as binaryen from 'binaryen.ts';
 import {VirtualMachine} from '../vm/index.ts';
-import type {SymbolSchemaVar} from '../validator/index.ts';
-import type {Temp} from '../builder/index.ts';
+import type {BuilderLocalSymbol} from '../builder/index.ts';
 import {Local} from './Local.ts';
 
 
@@ -85,7 +84,7 @@ export class CodeGenerator {
 	 * @param type   the type of the value; if not supplied, the Local will compute its type using `binaryen.getExpressionType`
 	 * @return       Was the operation performed?
 	 */
-	public setLocal(schema: SymbolSchemaVar | Temp, value: binaryen.ExpressionRef, typ?: binaryen.Type): boolean {
+	public setLocal(schema: BuilderLocalSymbol, value: binaryen.ExpressionRef, typ?: binaryen.Type): boolean {
 		let did: boolean = false;
 		if (!this.getLocal(schema)) {
 			this.#locals.add(new Local(this.mod.wasm, this.#locals.size, value, typ, schema));
@@ -99,7 +98,7 @@ export class CodeGenerator {
 	 * @param  schema the compiler’s internal data for a declared variable or a Builder temporary
 	 * @return        the local or `undefined`
 	 */
-	public getLocal(schema: SymbolSchemaVar | Temp): Local | undefined {
+	public getLocal(schema: BuilderLocalSymbol): Local | undefined {
 		return [...this.#locals].find((local) => local.schema === schema);
 	}
 
@@ -111,7 +110,7 @@ export class CodeGenerator {
 	 * @param type   the type of the value; if not supplied, the Local will compute its type using `binaryen.getExpressionType`
 	 * @return       the local variable set (or retrieved)
 	 */
-	public teeLocal(schema: SymbolSchemaVar | Temp, value: binaryen.ExpressionRef, type?: binaryen.Type): Local {
+	public teeLocal(schema: BuilderLocalSymbol, value: binaryen.ExpressionRef, type?: binaryen.Type): Local {
 		this.setLocal(schema, value, type);
 		return this.getLocal(schema)!;
 	}

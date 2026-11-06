@@ -9,9 +9,13 @@ import type {
 	VALUE,
 	TYPE,
 } from '../../typer/index.ts';
-import {SymbolSchemaVar} from '../../validator/index.ts';
+import {
+	SymbolSchemaVar,
+	SymbolSchemaClass,
+} from '../../validator/index.ts';
 import type {
 	Temp,
+	BuilderLocalSymbol,
 	Builder,
 } from '../Builder.ts';
 import type {Interpreter} from '../Interpreter.ts';
@@ -22,14 +26,15 @@ import {ValueTac} from './ValueTac.ts';
 
 /** Read the value of a variable/local. */
 export class Get extends ValueTac {
-	public constructor(target: SymbolSchemaVar, typ: TYPE.Type);
+	public constructor(target: SymbolSchemaVar | SymbolSchemaClass, typ: TYPE.Type);
 	public constructor(target: Temp);
-	public constructor(private readonly target: SymbolSchemaVar | Temp, typ?: TYPE.Type) {
-		super(OpCode.GET, target instanceof SymbolSchemaVar ? typ! : target.type);
+	public constructor(private readonly target: BuilderLocalSymbol, typ?: TYPE.Type) {
+		super(OpCode.GET, target instanceof SymbolSchemaVar || target instanceof SymbolSchemaClass ? typ! : target.type);
 	}
 
+
 	public override toString(): string {
-		return super.toString(this.target instanceof SymbolSchemaVar ? this.target.source : this.target.name);
+		return super.toString(this.target instanceof SymbolSchemaVar || this.target instanceof SymbolSchemaClass ? this.target.source : this.target.name);
 	}
 
 	@runOnceMethod
