@@ -12,7 +12,7 @@ import {
 	type EntryType,
 	TYPE,
 } from '../../../typer/index.ts';
-import {IntrinsicName} from '../../../parser/index.ts';
+import {CoreLibName} from '../../../parser/index.ts';
 import {
 	type SymbolSchema,
 	SymbolSchemaVar,
@@ -216,7 +216,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 				throw err.errors[0];
 			}
 			switch (expr.base.source as CallableClassName) {
-				case IntrinsicName.LIST: {
+				case CoreLibName.LIST: {
 					// If function overload checking failed, `arg` is either a tuple literal or an expression with a tuple type.
 					const itemtype: TYPE.Type  = expr.typeargs[0].eval();
 					const arg:      EXPR.Expression = expr.exprargs[0];
@@ -235,7 +235,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 					}
 					break;
 				}
-				case IntrinsicName.DICT: {
+				case CoreLibName.DICT: {
 					// If function overload checking failed, `arg` is either a tuple/record literal or an expression with a tuple/record type.
 					const valuetype: TYPE.Type  = expr.typeargs[0].eval();
 					const entrytype: TYPE.Tuple = TYPE.Tuple.fromTypes([TYPE.SYM, valuetype]);
@@ -262,7 +262,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 					}
 					break;
 				}
-				case IntrinsicName.SET: {
+				case CoreLibName.SET: {
 					// If function overload checking failed, `arg` is either a tuple literal or an expression with a tuple type.
 					const eltype: TYPE.Type  = expr.typeargs[0].eval();
 					const arg:    EXPR.Expression = expr.exprargs[0];
@@ -281,7 +281,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 					}
 					break;
 				}
-				case IntrinsicName.MAP: {
+				case CoreLibName.MAP: {
 					// If function overload checking failed, `arg` is either a tuple literal or an expression with a tuple type.
 					const anttype:   TYPE.Type  = expr.typeargs[0].eval();
 					const contype:   TYPE.Type  = expr.typeargs[1]?.eval() ?? anttype;
@@ -529,8 +529,8 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 	#checkFunctionArgs(call: EXPR.Call, constructor_schema: ConstructorSchema, resolved_generic_args: readonly TYPE.Type[]): void {
 		if (!constructor_schema.overloads.length) {
 			throw new TypeErrorNotCallable(
-				call.base.source === IntrinsicName.MAYBE ? new TYPE.Maybe(resolved_generic_args[0]) :
-				call.base.source === IntrinsicName.RESULT ? new TYPE.Result(resolved_generic_args[0], resolved_generic_args[1]) :
+				call.base.source === CoreLibName.MAYBE  ? new TYPE.Maybe  (resolved_generic_args[0]) :
+				call.base.source === CoreLibName.RESULT ? new TYPE.Result (resolved_generic_args[0], resolved_generic_args[1]) :
 				this.visit(call.base),
 				call.base,
 			);

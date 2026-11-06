@@ -4,7 +4,7 @@ import * as xjs from 'extrajs';
 import {
 	VALUE,
 	TYPE,
-	INTRINSICS,
+	CORE_LIB_NAMES,
 	Validator,
 	AST,
 	SymbolSchemaType,
@@ -285,9 +285,9 @@ test.suite('Expression', () => {
 
 	test.suite('Variable', () => {
 		test.suite('#varCheck', () => {
-			test.test('allows intrinsic class references.', () => {
+			test.test('allows core lib class references.', () => {
 				setupScript(`{
-					${INTRINSICS.join(';')};
+					${CORE_LIB_NAMES.join(';')};
 				}`, {typeCheck: false}); // assert does not throw
 			});
 			test.test('throws if the validator does not contain a record for the identifier.', () => {

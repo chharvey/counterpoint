@@ -1,18 +1,20 @@
-from "cplvm" import ('::op::toFloat');
+from "core/vm" import ('op::toFloat');
+from "./Exception" import (Exception);
 
 
 
 %%% Wrapper class for type `float` values. %%%
 public class Float {
-	public new (private readonly data: float) {;}
+	public new (private readonly data: float = 0.0) {;}
 	public new (arg: int | nat) {
-		this('::op::toFloat'(arg) as :float:);
+		this('op::toFloat'(arg) as :float:);
 	}
+
 
 	internal toString(radix?: nat = +10): Result[str, RangeException] {
 		if radix < +2 || +36 < radix then {
 			return Fail[str, RangeException](RangeException("""Invalid radix: {{radix}}. Must be between 2 and 36 (inclusive)."""));
 		};
-		panic "TODO: not yet supported";
+		panic Exception("TODO: not yet supported");
 	}
 }

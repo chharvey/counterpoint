@@ -1,5 +1,5 @@
 import * as TYPE from './type/index.ts';
-import {IntrinsicName} from '../parser/index.ts';
+import {CoreLibName} from '../parser/index.ts';
 
 
 
@@ -82,118 +82,48 @@ const VARIANCE = {
 
 
 /**
- * API for all intrinsic classes.
+ * API for all core lib classes.
  */
-export const CLASS_API = new Map<IntrinsicName, ClassSignature>([
-	/*
-	 * ```cpl
-	 * declare class Null {}
-	 * ```
-	 */
-	[IntrinsicName.NULL, {
+export const CLASS_API = new Map<CoreLibName, ClassSignature>([
+	[CoreLibName.NULL, {
 		returnType: () => TYPE.NULL,
 		supertype:  TYPE.NULL,
 	}],
-
-	/*
-	 * ```cpl
-	 * declare class Boolean {
-	 * 	new (?: anything);
-	 * }
-	 * ```
-	 */
-	[IntrinsicName.BOOLEAN, {
+	[CoreLibName.BOOLEAN, {
 		overloads:  () => [{positional: new TYPE.Tuple([{type: TYPE.ANYTHING, optional: true}])}],
 		returnType: () => TYPE.BOOL,
 		supertype:  TYPE.BOOL,
 	}],
-
-	/*
-	 * ```cpl
-	 * declare class Symbol {}
-	 * ```
-	 */
-	[IntrinsicName.SYMBOL, {
+	[CoreLibName.SYMBOL, {
+		overloads:  () => [{positional: new TYPE.Tuple([{type: TYPE.SYM, optional: false}])}],
 		returnType: () => TYPE.SYM,
 		supertype:  TYPE.SYM,
 	}],
-
-	/*
-	 * ```cpl
-	 * declare class Integer {
-	 * 	new (?: int | nat | float);
-	 * }
-	 * ```
-	 */
-	[IntrinsicName.INTEGER, {
+	[CoreLibName.INTEGER, {
 		overloads:  () => [{positional: new TYPE.Tuple([{type: TYPE.NUMBER, optional: true}])}],
 		returnType: () => TYPE.INT,
 		supertype:  TYPE.INT,
 	}],
-
-	/*
-	 * ```cpl
-	 * declare class Natural {
-	 * 	new (?: int | nat | float);
-	 * }
-	 * ```
-	 */
-	[IntrinsicName.NATURAL, {
+	[CoreLibName.NATURAL, {
 		overloads:  () => [{positional: new TYPE.Tuple([{type: TYPE.NUMBER, optional: true}])}],
 		returnType: () => TYPE.NAT,
 		supertype:  TYPE.NAT,
 	}],
-
-	/*
-	 * ```cpl
-	 * declare class Float {
-	 * 	new (?: int | nat | float);
-	 * }
-	 * ```
-	 */
-	[IntrinsicName.FLOAT, {
+	[CoreLibName.FLOAT, {
 		overloads:  () => [{positional: new TYPE.Tuple([{type: TYPE.NUMBER, optional: true}])}],
 		returnType: () => TYPE.FLOAT,
 		supertype:  TYPE.FLOAT,
 	}],
-
-	/*
-	 * ```cpl
-	 * declare class String {
-	 * 	new (?: anything);
-	 * }
-	 * ```
-	 */
-	[IntrinsicName.STRING, {
+	[CoreLibName.STRING, {
 		overloads:  () => [{positional: new TYPE.Tuple([{type: TYPE.ANYTHING, optional: true}])}],
 		returnType: () => TYPE.STR,
 		supertype:  TYPE.STR,
 	}],
-
-	/*
-	 * ```cpl
-	 * declare class open Object {}
-	 * ```
-	 */
-	[IntrinsicName.OBJECT, {
+	[CoreLibName.OBJECT, {
 		returnType: () => TYPE.OBJ,
 		supertype:  TYPE.OBJ,
 	}],
-
-	/*
-	 * ```cpl
-	 * declare class List[out(in) T] extends Object {
-	 * 	new ();
-	 * 	new (());
-	 * 	new ((T,));
-	 * 	new ((T, T));
-	 * 	new (anything); % any tuple type with items of type `T`
-	 * 	new (List[T]);
-	 * 	new (Set[T]);
-	 * }
-	 * ```
-	 */
-	[IntrinsicName.LIST, {
+	[CoreLibName.LIST, {
 		genericParams: {positional: [VARIANCE['out(in)']]},
 		overloads:     ({positional: [t]}) => [
 			{},
@@ -203,26 +133,7 @@ export const CLASS_API = new Map<IntrinsicName, ClassSignature>([
 		returnType: ({positional: [t]}) => new TYPE.List(t, true),
 		supertype:  new TYPE.List(TYPE.ANYTHING),
 	}],
-
-	/*
-	 * ```cpl
-	 * declare class Dict[out(in) T] extends Object {
-	 * 	new ();
-	 * 	new (());
-	 * 	new (((sym, T),));
-	 * 	new (((sym, T), (sym, T)));
-	 * 	new (anything); % any tuple type with items of type `(sym, T)`
-	 * 	new ((a: T));
-	 * 	new ((a: T, b: T));
-	 * 	new (anything); % any record type with values of type `T`
-	 * 	new (List[(sym, T)]);
-	 * 	new (Dict[T]);
-	 * 	new (Set[(sym, T)]);
-	 * 	new (Map[sym, T]);
-	 * }
-	 * ```
-	 */
-	[IntrinsicName.DICT, {
+	[CoreLibName.DICT, {
 		genericParams: {positional: [VARIANCE['out(in)']]},
 		overloads:     ({positional: [t]}) => [
 			{},
@@ -234,21 +145,7 @@ export const CLASS_API = new Map<IntrinsicName, ClassSignature>([
 		returnType: ({positional: [t]}) => new TYPE.Dict(t, true),
 		supertype:  new TYPE.Dict(TYPE.ANYTHING),
 	}],
-
-	/*
-	 * ```cpl
-	 * declare class Set[out(in) T] extends Object {
-	 * 	new ();
-	 * 	new (());
-	 * 	new ((T,));
-	 * 	new ((T, T));
-	 * 	new (anything); % any tuple type with items of type `T`
-	 * 	new (List[T]);
-	 * 	new (Set[T]);
-	 * }
-	 * ```
-	 */
-	[IntrinsicName.SET, {
+	[CoreLibName.SET, {
 		genericParams: {positional: [VARIANCE['out(in)']]},
 		overloads:     ({positional: [t]}) => [
 			{},
@@ -258,22 +155,7 @@ export const CLASS_API = new Map<IntrinsicName, ClassSignature>([
 		returnType: ({positional: [t]}) => new TYPE.Set(t, true),
 		supertype:  new TYPE.Set(TYPE.ANYTHING),
 	}],
-
-	/*
-	 * ```cpl
-	 * declare class Map[out(in) K, out(in) V] extends Object {
-	 * 	new ();
-	 * 	new (());
-	 * 	new (((K, V),));
-	 * 	new (((K, V), (K, V)));
-	 * 	new (anything); % any tuple type with items of type `(K, V)`
-	 * 	new (List[(K, V)]);
-	 * 	new (Set[(K, V)]);
-	 * 	new (Map[K, V]);
-	 * }
-	 * ```
-	 */
-	[IntrinsicName.MAP, {
+	[CoreLibName.MAP, {
 		genericParams: {
 			positional: [
 				VARIANCE['out(in)'],
@@ -289,94 +171,50 @@ export const CLASS_API = new Map<IntrinsicName, ClassSignature>([
 		returnType: ({positional: [k, v]}) => new TYPE.Map(k, v, true),
 		supertype:  new TYPE.Map(TYPE.ANYTHING, TYPE.ANYTHING),
 	}],
-
-	/*
-	 * ```cpl
-	 * declare class open Exception extends Object {
-	 * 	new (str, ?: Exception);
-	 * }
-	 * ```
-	 */
-	[IntrinsicName.EXCEPTION, {
+	[CoreLibName.EXCEPTION, {
 		overloads:  () => [{positional: new TYPE.Tuple([{type: TYPE.STR, optional: false}, {type: TYPE.EXCP, optional: true}])}],
 		returnType: () => TYPE.EXCP,
 		supertype:  TYPE.EXCP,
 	}],
-
-	/*
-	 * ```cpl
-	 * declare class abstract Maybe[out T] extends Object {}
-	 * declare class None[out T] extends Maybe[T] {
-	 * 	new ();
-	 * }
-	 * declare class Some[out T] extends Maybe[T] {
-	 * 	new (T);
-	 * }
-	 * ```
-	 */
-	[IntrinsicName.MAYBE, {
+	[CoreLibName.MAYBE, {
 		genericParams: {positional: [VARIANCE.out]},
 		returnType:    ({positional: [t]}) => new TYPE.Maybe(t),
 		supertype:     new TYPE.Maybe(TYPE.ANYTHING),
 	}],
-	[IntrinsicName.NONE, {
+	[CoreLibName.NONE, {
 		genericParams: {positional: [VARIANCE.out]},
 		overloads:     () => [{}],
 		returnType:    ({positional: [t]}) => new TYPE.None(t),
 		supertype:     new TYPE.None(TYPE.ANYTHING),
 	}],
-	[IntrinsicName.SOME, {
+	[CoreLibName.SOME, {
 		genericParams: {positional: [VARIANCE.out]},
 		overloads:     ({positional: [t]}) => [{positional: TYPE.Tuple.fromTypes([t])}],
 		returnType:    ({positional: [t]}) => new TYPE.Some(t),
 		supertype:     new TYPE.Some(TYPE.ANYTHING),
 	}],
-
-	/*
-	 * ```cpl
-	 * declare class abstract Result[out T, out E? narrows Exception = Exception] extends Object {}
-	 * declare class Fail[out T, out E? narrows Exception = Exception] extends Result[T, E] {
-	 * 	new (E);
-	 * }
-	 * declare class Ok[out T, out E? narrows Exception = Exception] extends Result[T, E] {
-	 * 	new (T);
-	 * }
-	 * ```
-	 */
-	[IntrinsicName.RESULT, {
+	[CoreLibName.RESULT, {
 		genericParams: {positional: [VARIANCE.out, {...VARIANCE.out, constraint: ['narrows', TYPE.EXCP], default: TYPE.EXCP}]},
 		returnType:    ({positional: [t, e]}) => new TYPE.Result(t, e),
 		supertype:     new TYPE.Result(TYPE.ANYTHING),
 	}],
-	[IntrinsicName.FAIL, {
+	[CoreLibName.FAIL, {
 		genericParams: {positional: [VARIANCE.out, {...VARIANCE.out, constraint: ['narrows', TYPE.EXCP], default: TYPE.EXCP}]},
 		overloads:     ({positional: [_, e]}) => [{positional: TYPE.Tuple.fromTypes([e])}],
 		returnType:    ({positional: [t, e]}) => new TYPE.Fail(t, e),
 		supertype:     new TYPE.Fail(TYPE.ANYTHING),
 	}],
-	[IntrinsicName.OK, {
+	[CoreLibName.OK, {
 		genericParams: {positional: [VARIANCE.out, {...VARIANCE.out, constraint: ['narrows', TYPE.EXCP], default: TYPE.EXCP}]},
 		overloads:     ({positional: [t]})    => [{positional: TYPE.Tuple.fromTypes([t])}],
 		returnType:    ({positional: [t, e]}) => new TYPE.Ok(t, e),
 		supertype:     new TYPE.Ok(TYPE.ANYTHING),
 	}],
-
-	/*
-	 * ```cpl
-	 * declare class abstract Function extends Object {}
-	 * ```
-	 */
-	[IntrinsicName.FUNCTION, {
+	[CoreLibName.FUNCTION, {
 		returnType: () => TYPE.FUNCTION,
 		supertype:  TYPE.FUNCTION,
 	}],
-
-	/*
-	 * ```cpl
-	 * declare class open Class {}
-	 * ```
-	 */
-	[IntrinsicName.CLASS, {
+	[CoreLibName.CLASS, {
 		returnType: () => TYPE.CLASS,
 		supertype:  TYPE.CLASS,
 	}],

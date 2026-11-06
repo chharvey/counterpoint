@@ -198,8 +198,8 @@ This list is not exhaustive, as Counterpoint Types may be created in any Counter
 
 
 ### Value Types and Reference Types
-Value types and reference types correspond to [data values](./intrinsics.md#data-values)
-and [reference objects](./intrinsics.md#reference-objects) respectively.
+Value types and reference types correspond to [data values](./core-library.md#data-values)
+and [reference objects](./core-library.md#reference-objects) respectively.
 
 
 ### Simple Types
@@ -238,15 +238,15 @@ and the “absorption element” of the [union](#union) operation.
 
 #### Null
 The **Null** type has exactly one value, called `null`,
-the only instance of [`Null`](./intrinsics.md#null).
+the only instance of [`Null`](./core-library.md#null).
 It represents an object without any semantics.
 
 #### Boolean
 The **Boolean** type has two logical values, called `true` and `false`,
-the only instances of [`Boolean`](./intrinsics.md#boolean).
+the only instances of [`Boolean`](./core-library.md#boolean).
 
 #### Symbol
-The **Symbol** type contains instances of [`Symbol`](./intrinsics.md#symbol).
+The **Symbol** type contains instances of [`Symbol`](./core-library.md#symbol).
 The meaning of each Symbol value may be specified by the programmer.
 
 #### Number
@@ -256,7 +256,7 @@ The Number type is partitioned into disjoint subtypes, described in the subsecti
 ##### Integer
 The **Integer** type represents [mathematical integers](#real-integer-numbers).
 The Counterpoint compiler represents Integers as 64-bit signed two’s complement values.
-They are instances of [`Integer`](./intrinsics.md#integer).
+They are instances of [`Integer`](./core-library.md#integer).
 
 The Integers `0` and `-0` represent the same mathematical value, *0*.
 The maximum possible value of an Integer is *9,223,372,036,854,775,807* and the minimum value is *&minus;9,223,372,036,854,775,808*.
@@ -300,7 +300,7 @@ The result of division is rounded towards zero. Dividing by zero results in an e
 ##### Natural
 The **Natural** type represents [non-negative mathematical integers](#real-integer-numbers), also known as “natural numbers”.
 The Counterpoint compiler represents Naturals as 64-bit unsigned binary values.
-They are instances of [`Natural`](./intrinsics.md#integer).
+They are instances of [`Natural`](./core-library.md#integer).
 
 The maximum possible value of a Natural is *18,446,744,073,709,551,615* (*FFFF,FFFF,FFFF,FFFF<sub>16</sub>* = *2<sup>64</sup> &minus; 1*)
 and the minimum value is *0*.
@@ -319,12 +319,12 @@ whose decimals terminate in base 10.
 (That is, numbers that can be expressed as a finite sum of multiples of powers of 10.)
 The Float type contains “floating-point numbers”, which are 64-bit format values as specified in the
 *IEEE Standard for Binary Floating-Point Arithmetic ([IEEE 754-2019](https://standards.ieee.org/standard/754-2019.html))*.
-They are instances of [`Float`](./intrinsics.md#float).
+They are instances of [`Float`](./core-library.md#float).
 
 #### String
 The **String** type represents textual data and is stored as an immutable sequence of bytes.
 Strings are encoded by the [UTF-8 encoding](./algorithms.md#utf8encoding) algorithm.
-They are instances of [`String`](./intrinsics.md#string).
+They are instances of [`String`](./core-library.md#string).
 
 Conceptually, strings are thought of immutable lists of [mathematical integers](#real-integer-numbers),
 where each integer represents a Unicode code point.
@@ -335,10 +335,10 @@ encoded in memory (see UTF-8 for details).
 String length is limited to a maximum of *65,535* bytes,
 but it is not directly observable within any Counterpoint program.
 
-Semantically, the String type is considered to be a [primitive type](./intrinsics.md#primitive-and-composite-values)
+Semantically, the String type is considered to be a [primitive type](./core-library.md#primitive-and-composite-values)
 because it cannot be decomposed into other types —
 the characters of a string value are themselves string values.
-As primitive values, strings are also [data values](./intrinsics.md#data-values),
+As primitive values, strings are also [data values](./core-library.md#data-values),
 abiding by value-identity and pass-by-value semantics.
 
 That said, strings are implemented as arrays of bytes in the virtual machine,
@@ -347,8 +347,8 @@ which makes them composite values under the hood.
 #### Object
 The **Object** type contains all references to Counterpoint Language Values.
 All reference types are subtypes of **Object**,
-and all reference objects are instances of [`Object`](./intrinsics.md#object).
-Some specific built-in subtypes of **Object** are described in the [Intrinsics](./intrinsics.md) chapter.
+and all reference objects are instances of [`Object`](./core-library.md#object).
+Some specific built-in subtypes of **Object** are described in the [Core Library](./core-library.md) chapter.
 
 
 ### Compound Types
@@ -362,35 +362,35 @@ Compound types are derived from other types.
 - [Map Types](#map-types)
 
 #### Tuple Types
-A **Tuple** type describes instances of [`Tuple`](./intrinsics.md#tuple) and is parameterized by
+A **Tuple** type describes instances of [`Tuple`](./core-library.md#tuple) and is parameterized by
 a [Sequence](#sequence) of [EntryTypeSchema](#entrytypeschema) items, called *type arguments*.
 The objects that any given Tuple type describes are `Tuple` objects whose
 items’ types match up with the type arguments in the Sequence in order.
 Tuples have a static size, are ordered, and are 0-origin indexable by real integer numbers.
 
 #### Record Types
-A **Record** type describes instances of [`Record`](./intrinsics.md#record) and is parameterized by
+A **Record** type describes instances of [`Record`](./core-library.md#record) and is parameterized by
 a [Schema](#schema) with [EntryTypeSchema](#entrytypeschema) values, called *type arguments*.
 The objects that any given Record type describes are `Record` objects whose
 properties’ types match up with the type arguments in the Schema by name.
 Records have a static size, are unordered<sup>&lowast;</sup>, and are indexable by keys.
 
 #### List Types
-A **List** type describes instances of [`List`](./intrinsics.md#list) and is parameterized by a single type,
+A **List** type describes instances of [`List`](./core-library.md#list) and is parameterized by a single type,
 called a *type argument*, representing items.
 The objects that any given List type describes are `List` objects whose
 items are assignable to the type argument of the List type.
 Lists have a dynamic size, are ordered, and are 0-origin indexable by real integer numbers.
 
 #### Dict Types
-A **Dict** type describes instances of [`Dict`](./intrinsics.md#dict) and is parameterized by a single type,
+A **Dict** type describes instances of [`Dict`](./core-library.md#dict) and is parameterized by a single type,
 called a *type argument*, representing values.
 The objects that any given Dict type describes are `Dict` objects whose
 values are assignable to the type argument of the Dict type.
 Dicts have a dynamic size, are unordered<sup>&lowast;</sup>, and are indexable by keys.
 
 #### Set Types
-A **Set** type describes instances of [`Set`](./intrinsics.md#set) and is parameterized by a single type,
+A **Set** type describes instances of [`Set`](./core-library.md#set) and is parameterized by a single type,
 called a *type argument*, representing elements.
 The objects that any given Set type describes are `Set` objects whose
 elements are assignable to the type argument of the Set type.
@@ -398,7 +398,7 @@ Sets have a dynamic size, are unordered<sup>&lowast;</sup>, and are indexable by
 The value corresponding to a set index is a [Boolean](#boolean) value indicating whether the set contains that element.
 
 #### Map Types
-A **Map** type describes instances of [`Map`](./intrinsics.md#map) and is parameterized by a pair of two types,
+A **Map** type describes instances of [`Map`](./core-library.md#map) and is parameterized by a pair of two types,
 called *type arguments*, the first of which represents antecedents and the second of which represents consequents.
 The objects that any given Map type describes are `Map` objects whose
 antcedents and consequents are respectively assignable to the type arguments of the Map type.
@@ -421,7 +421,7 @@ Exceptions serve as “reasons” in the [Fail] (link pending) type.
 Functions may **panic**, causing an Exception object to propegate up the call stack.
 
 #### Maybe Types
-A **Maybe** type describes instances of [`Maybe`](./intrinsics.md#maybe) and is parameterized by a single type,
+A **Maybe** type describes instances of [`Maybe`](./core-library.md#maybe) and is parameterized by a single type,
 called a *type argument*, representing its possibly held value.
 The objects that any given Maybe type describes are `Maybe` objects whose
 value, if it exists, is assignable to the type argument of the Maybe type.
@@ -429,7 +429,7 @@ The **Maybe** class is abstract and enumerated by two concrete subclasses:
 **Some**, which holds a value, and **None**, which does not.
 
 #### Result Types
-A **Result** type describes instances of [`Result`](./intrinsics.md#result) and is parameterized by two types,
+A **Result** type describes instances of [`Result`](./core-library.md#result) and is parameterized by two types,
 called *type arguments*, representing its success value or failure reason, respectively.
 The objects that any given Result type describes are `Result` objects whose
 success value and failure reason are respectively assignable to the type argument of the Result type.
@@ -443,7 +443,7 @@ The **Result** class is abstract and enumerated by two concrete subclasses:
 - [Class Types](#class-types)
 
 #### Function Types
-A **Function** type describes instances of [`Function`](./intrinsics.md#function) and is parameterized by a triple containing
+A **Function** type describes instances of [`Function`](./core-library.md#function) and is parameterized by a triple containing
 a [Sequence](#sequence) of [EntryTypeSchema](#entrytypeschema) items representing positional function parameters, followed by
 a [Schema](#schema) with [EntryTypeSchema](#entrytypeschema) values representing named function parameters, followed optionally by
 a type representing a return type.
@@ -451,7 +451,7 @@ The objects that any given Function type describes are `Function` objects whose
 parameters and return type are respectively assignable to the types parameterizing the Function Type.
 
 #### Class Types
-A **Class** type describes callable classes — instances of [`Class`](./intrinsics.md#class)
+A **Class** type describes callable classes — instances of [`Class`](./core-library.md#class)
 that can be called like a function to construct new objects. The Class type is parameterized
 by the signatures of the corresponding `Class` object’s constructors, if any.
 Any given Class type only describes one `Class` object, but it may have several signatures.

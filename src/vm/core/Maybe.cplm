@@ -1,0 +1,21 @@
+from "./Object" import await (Object);
+
+
+
+public class abstract enum Maybe[out T] extends Object {}
+
+
+
+public class None[out T] extends Maybe[T] {
+	public new () {
+		super();
+	}
+}
+
+
+
+public class Some[out T] extends Maybe[T] {
+	public new (public readonly value: T) {
+		super();
+	}
+}

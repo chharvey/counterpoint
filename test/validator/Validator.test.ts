@@ -3,6 +3,7 @@ import * as test from 'node:test';
 import * as xjs from 'extrajs';
 import {
 	KEYWORDS,
+	CORE_LIB_NAMES,
 	Validator,
 } from '../../src/index.ts';
 
@@ -27,33 +28,10 @@ test.suite('Validator', () => {
 			readonly src: string,
 			readonly raw: string[],
 		};
-		test.test('assigns intrinsic ids an index.', () => {
-			const intrinsics = [
-				'Null',
-				'Boolean',
-				'Symbol',
-				'Integer',
-				'Natural',
-				'Float',
-				'String',
-				'Object',
-				'List',
-				'Dict',
-				'Set',
-				'Map',
-				'Exception',
-				'Maybe',
-				'None',
-				'Some',
-				'Result',
-				'Fail',
-				'Ok',
-				'Function',
-				'Class',
-			];
-			return assert.deepStrictEqual(
-				intrinsics.map((s) => Validator.cookTokenIdentifier(s)),
-				Array.from(Array(intrinsics.length), (_, i) => 0x80n + BigInt(i)),
+		test.test('assigns built-in ids an index.', () => {
+			assert.deepStrictEqual(
+				CORE_LIB_NAMES.map((s) => Validator.cookTokenIdentifier(s)),
+				Array.from(Array(CORE_LIB_NAMES.length), (_, i) => 0x80n + BigInt(i)),
 			);
 		});
 		new Map<string, [Data, Data]>([
