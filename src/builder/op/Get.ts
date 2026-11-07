@@ -71,15 +71,14 @@ export class Get extends ValueTac {
 			this.target instanceof SymbolSchemaClass &&
 			CORE_LIB_NAMES.includes(this.target.source as CoreLibName)
 		) {
-			const {vm: {mod: {wasm}, reftype, Value: VmValue}} = cg;
-			const class_class: binaryen.ExpressionRef /* (ref $Class) */ = wasm.global.get('Class.CLASS', reftype.Class);
+			const {vm: {Value: VmValue, Class: VmClass}} = cg;
 			switch (this.target.source) {
-				case CoreLibName.CLASS:  { return VmValue.newComposite(class_class); }
-				case CoreLibName.OBJECT: { return VmValue.newComposite(wasm.global.get('Class.OBJECT', reftype.Class)); }
-				case CoreLibName.LIST:   { return VmValue.newComposite(wasm.global.get('Class.LIST',   reftype.Class)); }
-				case CoreLibName.DICT:   { return VmValue.newComposite(wasm.global.get('Class.DICT',   reftype.Class)); }
-				case CoreLibName.MAP:    { return VmValue.newComposite(wasm.global.get('Class.MAP',    reftype.Class)); }
-				default:                 { return VmValue.newComposite(cg.codegenClass(class_class)); }
+				case CoreLibName.CLASS:  { return VmValue.newComposite(VmClass.CLASS); }
+				case CoreLibName.OBJECT: { return VmValue.newComposite(VmClass.OBJECT); }
+				case CoreLibName.LIST:   { return VmValue.newComposite(VmClass.LIST); }
+				case CoreLibName.DICT:   { return VmValue.newComposite(VmClass.DICT); }
+				case CoreLibName.MAP:    { return VmValue.newComposite(VmClass.MAP); }
+				default:                 { return VmValue.newComposite(cg.codegenClass(VmClass.CLASS)); }
 			}
 		}
 		return cg.getLocal(this.target)?.get() ?? assert.fail(new ReferenceError(`Local variable \`${this.#targetName}\` must be set first!`));

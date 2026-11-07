@@ -12,6 +12,7 @@ import {String as VmString} from './classes/String.ts';
 import {Tuple as VmTuple} from './classes/Tuple.ts';
 import {Record as VmRecord} from './classes/Record.ts';
 import {Object as VmObject} from './classes/Object.ts';
+import {Class as VmClass} from './classes/Class.ts';
 import {utils} from './ad-hoc/utils.ts';
 import {ops} from './ad-hoc/ops.ts';
 
@@ -432,6 +433,7 @@ export class VirtualMachine {
 	public readonly Tuple     = new VmTuple(this);
 	public readonly Record    = new VmRecord(this);
 	public readonly Object    = new VmObject(this);
+	public readonly Class     = new VmClass(this);
 
 
 	public constructor() {
@@ -449,6 +451,12 @@ export class VirtualMachine {
 			['Value#NULL',  {name: 'Value.NULL',  type: this.reftype.Value}],
 			['Value#FALSE', {name: 'Value.FALSE', type: this.reftype.Value}],
 			['Value#TRUE',  {name: 'Value.TRUE',  type: this.reftype.Value}],
+
+			['Class#CLASS',  {name: 'Class.CLASS',  type: this.reftype.Class}],
+			['Class#OBJECT', {name: 'Class.OBJECT', type: this.reftype.Class}],
+			['Class#LIST',   {name: 'Class.LIST',   type: this.reftype.Class}],
+			['Class#DICT',   {name: 'Class.DICT',   type: this.reftype.Class}],
+			['Class#MAP',    {name: 'Class.MAP',    type: this.reftype.Class}],
 		]);
 	}
 }

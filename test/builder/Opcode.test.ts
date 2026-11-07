@@ -1206,22 +1206,21 @@ test.suite('Opcode', () => {
 					);
 				});
 				test.test('core lib classes return (call $Value.new-composite) with (global.get).', () => {
-					const {stmts, builder, cg, wasm} = setupScript(`{
+					const {stmts, builder, cg} = setupScript(`{
 						${CORE_LIB_NAMES.join(';')};
 					}`);
-					const {vm: {reftype, Value}} = cg;
+					const {vm: {Value, Class: VmClass}} = cg;
 					const expr_visitor = new AST.ExprVisitorBuild(builder);
-					const class_class: binaryen.ExpressionRef /* (ref $Class) */ = wasm.global.get('Class.CLASS', reftype.Class);
-					const unspecd:     binaryen.ExpressionRef /* (ref $Value) */ = Value.newComposite(cg.codegenClass(class_class));
+					const unspecd:     binaryen.ExpressionRef /* (ref $Value) */ = Value.newComposite(cg.codegenClass(VmClass.CLASS));
 					return assertEqualBins(stmts.map((stmt) => expr_visitor.visit((stmt as AST.STMT.StatementExpression).expr!).codegen(cg)), [
 						...repeat(unspecd, 7),
-						Value.newComposite(wasm.global.get('Class.OBJECT', reftype.Class)),
-						Value.newComposite(wasm.global.get('Class.LIST',   reftype.Class)),
-						Value.newComposite(wasm.global.get('Class.DICT',   reftype.Class)),
+						Value.newComposite(VmClass.OBJECT),
+						Value.newComposite(VmClass.LIST),
+						Value.newComposite(VmClass.DICT),
 						unspecd,
-						Value.newComposite(wasm.global.get('Class.MAP', reftype.Class)),
+						Value.newComposite(VmClass.MAP),
 						...repeat(unspecd, 8),
-						Value.newComposite(class_class),
+						Value.newComposite(VmClass.CLASS),
 					]);
 				});
 			});

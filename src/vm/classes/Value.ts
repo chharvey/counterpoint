@@ -49,9 +49,9 @@ export class Value implements HasFuncData {
 		]);
 	}
 
-	public get NULL():  binaryen.ExpressionRef /* (ref $Value) */ { return this.vm.mod.wasm.global.get('Value.NULL',  this.vm.reftype.Value); }
-	public get FALSE(): binaryen.ExpressionRef /* (ref $Value) */ { return this.vm.mod.wasm.global.get('Value.FALSE', this.vm.reftype.Value); }
-	public get TRUE():  binaryen.ExpressionRef /* (ref $Value) */ { return this.vm.mod.wasm.global.get('Value.TRUE',  this.vm.reftype.Value); }
+	/** The Counterpoint `null`  value. */ public get NULL():  binaryen.ExpressionRef /* (ref $Value) */ { return this.vm.mod.wasm.global.get('Value.NULL',  this.vm.reftype.Value); }
+	/** The Counterpoint `false` value. */ public get FALSE(): binaryen.ExpressionRef /* (ref $Value) */ { return this.vm.mod.wasm.global.get('Value.FALSE', this.vm.reftype.Value); }
+	/** The Counterpoint `true`  value. */ public get TRUE():  binaryen.ExpressionRef /* (ref $Value) */ { return this.vm.mod.wasm.global.get('Value.TRUE',  this.vm.reftype.Value); }
 
 
 	public field(ref: binaryen.ExpressionRef /* (ref null $Value) */): {
@@ -159,14 +159,17 @@ export class Value implements HasFuncData {
 		return this.vm.mod.wasm.call('Value.as-record', [value], this.vm.reftype.Record);
 	}
 
+	/** Returns the value as a Data. */
 	public asData(value: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Data) */ {
 		return this.vm.mod.wasm.call('Value.as-data', [value], this.vm.reftype.Data);
 	}
 
+	/** Returns the value as an Object. */
 	public asObject(value: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Object) */ {
 		return this.vm.mod.wasm.call('Value.as-object', [value], this.vm.reftype.Object);
 	}
 
+	/** Returns the value as a Class. */
 	public asClass(value: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Class) */ {
 		return this.vm.mod.wasm.call('Value.as-class', [value], this.vm.reftype.Class);
 	}
