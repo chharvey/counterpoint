@@ -21,6 +21,7 @@ import type {ValueTac} from './ValueTac.ts';
 
 /**
  * Create a new reference Object.
+ * @deprecated
  */
 export class ObjectNew extends Value {
 	/**
