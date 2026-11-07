@@ -135,7 +135,7 @@ export class Binop extends Value {
 			case OpCode.EQ: { return VALUE.Boolean.fromBoolean(operand0.equal(operand1)); }
 			case OpCode.IS: {
 				assert_instanceof(operand1, VALUE.Class);
-				throw new Error('`is` operator interpret not yet supported.');
+				return VALUE.Boolean.fromBoolean(operand0 instanceof operand1.nativeClass);
 			}
 		}
 	}

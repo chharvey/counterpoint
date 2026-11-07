@@ -1163,6 +1163,87 @@ test.suite('Opcode', () => {
 						]);
 					});
 				});
+				test.suite('IS', () => {
+					const srcs: readonly string[] = extract_lines`
+						null
+						false
+						true
+						0
+						42
+						0.0
+						-0.0
+						4.2e+1
+						+0
+						+42
+						""
+						"hello"
+						()
+						(42,)
+						(a= 42)
+						[]
+						[42]
+						[a= 42]
+						{}
+						{42}
+						{41 -> 42}
+						None.<int>()
+						Some.<int>(42)
+						Fail.<int>(Exception.("err"))
+						Ok.<int>(42)
+					`;
+					let expecteds: readonly VALUE.Value[];
+					test.before(() => {
+						const builder      = new Builder();
+						const interp       = new Interpreter();
+						const expr_visitor = new AST.ExprVisitorBuild(builder);
+						srcs.forEach((src) => builder.pushInstruction(new OP.Drop(expr_visitor.visit(AST.EXPR.Expression.fromSource(src)).asTac(builder))));
+						builder.instructions.forEach((instr) => instr.interpret(interp));
+						expecteds = interp.drops;
+					});
+					test.suite('returns native `instanceof`.', () => {
+						([
+							CoreLibName.NULL,
+							CoreLibName.BOOLEAN,
+							CoreLibName.SYMBOL,
+							CoreLibName.INTEGER,
+							CoreLibName.NATURAL,
+							CoreLibName.FLOAT,
+							CoreLibName.STRING,
+							CoreLibName.OBJECT,
+							CoreLibName.LIST,
+							CoreLibName.DICT,
+							CoreLibName.SET,
+							CoreLibName.MAP,
+							CoreLibName.EXCEPTION,
+							CoreLibName.FUNCTION,
+							CoreLibName.CLASS,
+						] as const).forEach((name, i) => {
+							test.test(name, () => {
+								assert_equal_values(interpret_extracted_drops(`{
+									${srcs.map((expr) => `${expr} is ${name};`).join('\n')}
+								}`), expecteds.map((operand) => VALUE.Boolean.fromBoolean(operand instanceof [
+									VALUE.Null,
+									VALUE.Boolean,
+									VALUE.Symbol,
+									VALUE.Integer,
+									VALUE.Natural,
+									VALUE.Float,
+									VALUE.String,
+									VALUE.Object,
+									VALUE.List,
+									VALUE.Dict,
+									VALUE.Set,
+									VALUE.Map,
+									VALUE.Exception,
+									VALUE.Function,
+									VALUE.Class,
+								][i])));
+							});
+						});
+						test.test.todo('None,Some', () => undefined);
+						test.test.todo('Fail,OK', () => undefined);
+					});
+				});
 			});
 
 			test.test('OpFunction', () => {

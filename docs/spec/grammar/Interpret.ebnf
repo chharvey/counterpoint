@@ -518,6 +518,16 @@ Boolean! Interpret((EQ `v0` `v1`)) :=
 	3. *Return:* `Equal(v0, v1)`.
 ;
 
+Boolean! Interpret((IS `v0` `v1`)) :=
+	1. *Set* `v0` to *Unwrap:* `Interpret(v0)`;
+	2. *Set* `v1` to *Unwrap:* `Interpret(v1)`;
+	3. *Assert:* `v1` is a class.
+	4. *If* `v0` is an instance of `v1`:
+		1. *Return:* `true`.
+	5. *Else:*
+		1. *Return:* `false`.
+;
+
 Function! Interpret((LAMBDA `name` `arity` `source`)) :=
 	1. *Return:* a new `Function`.
 ;

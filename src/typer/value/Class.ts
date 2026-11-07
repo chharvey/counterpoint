@@ -22,7 +22,7 @@ import {
 class ValueClass extends Value {
 	public constructor(
 		public  readonly instanceType: TYPE.Type,
-		private readonly nativeClass:  abstract new (...args: never[]) => Value = ValueClass,
+		public  readonly nativeClass:  abstract new (...args: never[]) => Value = ValueClass,
 		private readonly source:       string = '',
 	) {
 		super();
