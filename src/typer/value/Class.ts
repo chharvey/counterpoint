@@ -12,14 +12,14 @@ class ValueClass extends ValueObject {
 	public constructor(
 		public  readonly instanceType: TYPE.Type,
 		class_?:                       ValueClass,
-		private readonly source?:      string,
+		private readonly source: string = '',
 	) {
 		super(0n, class_);
 	}
 
 
 	public override toString(): string {
-		return this.source ?? '';
+		return this.source;
 	}
 
 	public override toType(): TYPE.Class {

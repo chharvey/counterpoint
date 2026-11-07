@@ -35,8 +35,8 @@ class TypeClass extends ReferenceType {
 	}
 
 	@instanceOf(() => VALUE.Class)
-	public override includes(v: VALUE.Value): boolean {
-		return v.toType().isSubtypeOf(this);
+	public override includes(_v: VALUE.Value): boolean {
+		return true; // every instance of VALUE.Class will have a type of TYPE.Class
 	}
 
 	@strictEqual
