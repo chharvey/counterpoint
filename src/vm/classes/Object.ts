@@ -8,7 +8,7 @@ import type {
 
 
 
-/** Precursor to the Counterpoint `Object` class. */
+/** WASM representation of a Counterpoint object. */
 class VmObject implements HasFuncData {
 	public constructor(private readonly vm: VirtualMachine) {}
 

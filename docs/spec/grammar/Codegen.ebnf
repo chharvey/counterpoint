@@ -13,6 +13,15 @@ Codegen((STR.CONST `v`)) := (call $Value.new-composite
 	(struct.new $String (array.new_fixed $StringInternal `v.data.map("(i32.const `v.data[i]`)")`))
 );
 
+Codegen((GET `id ::= ("Class" | "Object" | "List" | "Dict" | "Map")`)) := (call $Value.new-composite (global.get ‹index›));
+Codegen((GET `id ::= CoreLibName)) := (call $Value.new-composite (struct.new $Class
+	(call $Object.ctr-plus-plus)
+	(global.get ‹index›)
+	(struct.new $Dict
+		(i32.const 0)
+		(array.new_default $DictInternal (i32.const 8))
+	)
+)));
 Codegen((GET `id`)) := (local.get ‹index›);
 
 Codegen((STR.TEMPLATE `strings`)) := (call $Value.new-composite

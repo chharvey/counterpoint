@@ -25,6 +25,7 @@ const inputs = Promise.all([
 	'classes/Map.wat',
 	'classes/Record.wat',
 	'classes/Object.wat',
+	'classes/Class.wat',
 ].map((filename) => fs.promises.readFile(rel_path(`../src/vm/wat/${filename}`), 'utf8')));
 
 const concatpath = rel_path('../dist/vm/module.wat');

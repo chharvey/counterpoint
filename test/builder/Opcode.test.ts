@@ -1182,34 +1182,47 @@ test.suite('Opcode', () => {
 				);
 			});
 
-			test.test('Get returns (local.get).', () => {
-				const {stmts, builder, cg, wasm} = setupScript(`{
-					val mut a: null  = null;
-					val mut b: bool  = false;
-					val mut c: sym   = @hello;
-					val mut d: int   = 42;
-					val mut e: float = 4.2;
-					val mut f?: str;
+			test.suite('Get', () => {
+				test.test('variables return (local.get).', () => {
+					const {stmts, builder, cg, wasm} = setupScript(`{
+						val mut a: null  = null;
+						val mut b: bool  = false;
+						val mut c: sym   = @hello;
+						val mut d: int   = 42;
+						val mut e: float = 4.2;
+						val mut f?: str;
 
-					a;
-					b;
-					c;
-					d;
-					e;
-					f;
-				}`);
-				const expr_visitor = new AST.ExprVisitorBuild(builder);
-				return assertEqualBins(
-					stmts.slice(6).map((stmt) => expr_visitor.visit((stmt as AST.STMT.StatementExpression).expr!).codegen(cg)),
-					[
-						wasm.local.get(0, cg.vm.reftype.Value),
-						wasm.local.get(1, cg.vm.reftype.Value),
-						wasm.local.get(2, cg.vm.reftype.Value),
-						wasm.local.get(3, cg.vm.reftype.Value),
-						wasm.local.get(4, cg.vm.reftype.Value),
-						wasm.local.get(5, cg.vm.reftype.Value),
-					],
-				);
+						a;
+						b;
+						c;
+						d;
+						e;
+						f;
+					}`);
+					const expr_visitor = new AST.ExprVisitorBuild(builder);
+					return assertEqualBins(
+						stmts.slice(6).map((stmt) => expr_visitor.visit((stmt as AST.STMT.StatementExpression).expr!).codegen(cg)),
+						Array.from(new Array(6), (_, i) => wasm.local.get(i, cg.vm.reftype.Value)),
+					);
+				});
+				test.test('core lib classes return (call $Value.new-composite) with (global.get).', () => {
+					const {stmts, builder, cg} = setupScript(`{
+						${CORE_LIB_NAMES.join(';')};
+					}`);
+					const {vm: {Value, Class: VmClass}} = cg;
+					const expr_visitor = new AST.ExprVisitorBuild(builder);
+					const unspecd:     binaryen.ExpressionRef /* (ref $Value) */ = Value.newComposite(cg.codegenClass(VmClass.CLASS));
+					return assertEqualBins(stmts.map((stmt) => expr_visitor.visit((stmt as AST.STMT.StatementExpression).expr!).codegen(cg)), [
+						...repeat(unspecd, 7),
+						Value.newComposite(VmClass.OBJECT),
+						Value.newComposite(VmClass.LIST),
+						Value.newComposite(VmClass.DICT),
+						unspecd,
+						Value.newComposite(VmClass.MAP),
+						...repeat(unspecd, 8),
+						Value.newComposite(VmClass.CLASS),
+					]);
+				});
 			});
 
 			test.test('Template returns (block) containing static repetition of (array.copy).', () => {

@@ -1,12 +1,4 @@
-import {
-	VALUE,
-	CLASS_CLASS,
-} from '../typer/index.ts';
-import {
-	CoreLibName,
-	CORE_LIB_NAMES,
-} from '../parser/index.ts';
-import {SymbolSchemaClass} from '../validator/index.ts';
+import type {VALUE} from '../typer/index.ts';
 import type {BuilderLocalSymbol} from './Builder.ts';
 import type {CfgNode} from './CfgNode.ts';
 
@@ -35,15 +27,6 @@ export class Interpreter {
 	}
 
 	public getLocalValue(local: BuilderLocalSymbol): VALUE.Value | undefined {
-		if (
-			local instanceof SymbolSchemaClass &&
-			CORE_LIB_NAMES.includes(local.source as CoreLibName)
-		) {
-			// TODO: Map#getOrInsertComputed
-			this.#symbolTable.has(local) || this.#symbolTable.set(local, local.source === CoreLibName.CLASS
-				? CLASS_CLASS
-				: new VALUE.Class(local.classSignature.supertype, CLASS_CLASS));
-		}
 		return this.#symbolTable.get(local);
 	}
 
