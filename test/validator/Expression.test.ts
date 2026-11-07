@@ -68,6 +68,15 @@ test.suite('Expression', () => {
 
 	test.suite('#type', () => {
 		test.suite('Variable', () => {
+			test.test('all core lib class references are of type `Class`.', () => {
+				const {stmts} = setupScript(`{
+					${CORE_LIB_NAMES.join(';')};
+				}`, {build: false}); // assert does not throw
+				assertEqualTypes(
+					stmts.map((stmt) => VISITOR.visit((stmt as AST.STMT.StatementExpression).expr!)),
+					repeat(TYPE.CLASS, CORE_LIB_NAMES.length),
+				);
+			});
 			test.test('wraps in `Maybe` when accessed variable is uninitialized.', () => {
 				const {stmts} = setupScript(`{
 					val mut w:  int = 42;

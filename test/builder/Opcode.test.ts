@@ -8,6 +8,7 @@ import {
 	AST,
 	VALUE,
 	TYPE,
+	CLASS_CLASS,
 	CoreLibName,
 	CORE_LIB_NAMES,
 	Builder,
@@ -57,29 +58,57 @@ test.suite('Opcode', () => {
 				], (val) => assert.ok(new OP.Const(val).interpret().identical(val)));
 			});
 
-			test.test('Get returns interpreter’s symbol table value.', () => {
-				assert_equal_values(interpret_extracted_drops(`{
-					val mut a: null  = null;
-					val mut b: bool  = false;
-					val mut c: sym   = @hello;
-					val mut d: int   = 42;
-					val mut e: float = 4.2;
-					val mut f?: str;
+			test.suite('Get', () => {
+				test.test('variables return interpreter’s symbol table value.', () => {
+					assert_equal_values(interpret_extracted_drops(`{
+						val mut a: null  = null;
+						val mut b: bool  = false;
+						val mut c: sym   = @hello;
+						val mut d: int   = 42;
+						val mut e: float = 4.2;
+						val mut f?: str;
 
-					a;
-					b;
-					c;
-					d;
-					e;
-					f;
-				}`), [
-					VALUE.NULL,
-					VALUE.FALSE,
-					new VALUE.Symbol(Validator.keyId('hello'), 'hello'),
-					new VALUE.Integer(42n),
-					new VALUE.Float(4.2),
-					new VALUE.Maybe(TYPE.STR),
-				]);
+						a;
+						b;
+						c;
+						d;
+						e;
+						f;
+					}`), [
+						VALUE.NULL,
+						VALUE.FALSE,
+						new VALUE.Symbol(Validator.keyId('hello'), 'hello'),
+						new VALUE.Integer(42n),
+						new VALUE.Float(4.2),
+						new VALUE.Maybe(TYPE.STR),
+					]);
+				});
+				test.test('core lib classes populate the symbol table.', () => {
+					assert_equal_values(interpret_extracted_drops(`{
+						${CORE_LIB_NAMES.join(';')};
+					}`), [
+						TYPE.NULL,
+						TYPE.BOOL,
+						TYPE.SYM,
+						TYPE.INT,
+						TYPE.NAT,
+						TYPE.FLOAT,
+						TYPE.STR,
+						TYPE.OBJ,
+						new TYPE.List(TYPE.ANYTHING),
+						new TYPE.Dict(TYPE.ANYTHING),
+						new TYPE.Set(TYPE.ANYTHING),
+						new TYPE.Map(TYPE.ANYTHING, TYPE.ANYTHING),
+						TYPE.EXCP,
+						new TYPE.Maybe(TYPE.ANYTHING),
+						new TYPE.None(TYPE.ANYTHING),
+						new TYPE.Some(TYPE.ANYTHING),
+						new TYPE.Result(TYPE.ANYTHING),
+						new TYPE.Fail(TYPE.ANYTHING),
+						new TYPE.Ok(TYPE.ANYTHING),
+						TYPE.FUNCTION,
+					].map((t) => new VALUE.Class(t, CLASS_CLASS)).concat(CLASS_CLASS));
+				});
 			});
 
 			test.test('Template interprets each child, stringifies, and concatenates.', () => {
@@ -131,6 +160,32 @@ test.suite('Opcode', () => {
 						[new VALUE.Integer(42n), expected_items[1]],
 						[new VALUE.Float(3.0),   expected_items[2]],
 					])),
+				]);
+			});
+
+			test.test('ObjectNew', () => {
+				const builder = new Builder();
+				const interp  = new Interpreter();
+
+				/** The class named `Class` — it has a null `class_` field. */
+				const the_class_class = new OP.ObjectNew(true);
+				/** The class named `Object` — its `class_` field points to the class named `Class`. */
+				const the_object_class = new OP.ObjectNew(true, the_class_class);
+				/** A new Object instance — its `class_` field points to the class named `Object`. */
+				const new_object = new OP.ObjectNew(false, the_object_class);
+
+				builder.pushInstruction(new OP.Drop(the_class_class));
+				builder.pushInstruction(new OP.Drop(the_object_class));
+				builder.pushInstruction(new OP.Drop(new_object));
+
+				builder.instructions.forEach((instr) => instr.interpret(interp));
+				assert_instanceof(interp.drops[0], VALUE.Class);
+				assert_instanceof(interp.drops[1], VALUE.Class);
+				assert_instanceof(interp.drops[1], VALUE.Object);
+				return assert.deepStrictEqual(interp.drops, [
+					CLASS_CLASS,
+					new VALUE.Class(TYPE.OBJ, interp.drops[0]),
+					new VALUE.Object(0n, interp.drops[1]),
 				]);
 			});
 
@@ -1453,6 +1508,31 @@ test.suite('Opcode', () => {
 						])))).replaceAll('$4', '$3'),
 					);
 				});
+			});
+
+			test.test('ObjectNew', () => {
+				const cg = new CodeGenerator();
+				const {Value} = cg.vm;
+
+				/** The class named `Class` — it has a null `class_` field. */
+				const the_class_class = new OP.ObjectNew(true);
+				/** The class named `Object` — its `class_` field points to the class named `Class`. */
+				const the_object_class = new OP.ObjectNew(true, the_class_class);
+				/** A new Object instance — its `class_` field points to the class named `Object`. */
+				const new_object = new OP.ObjectNew(false, the_object_class);
+
+				const expected0: binaryen.ExpressionRef /* (ref $Value) */ = Value.newComposite(cg.codegenClass());
+				const expected1: binaryen.ExpressionRef /* (ref $Value) */ = Value.newComposite(cg.codegenClass(Value.asClass(expected0)));
+
+				return assertEqualBins([
+					the_class_class,
+					the_object_class,
+					new_object,
+				].map((opcode) => opcode.codegen(cg)), [
+					expected0,
+					expected1,
+					Value.newComposite(cg.codegenObject(Value.asClass(expected1))),
+				]);
 			});
 
 			test.test('ExcpNew', () => {

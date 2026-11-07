@@ -1,7 +1,6 @@
 import * as assert from 'node:assert';
 import * as binaryen from 'binaryen.ts';
-import type {SymbolSchemaVar} from '../validator/index.ts';
-import type {Temp} from '../builder/index.ts';
+import type {BuilderLocalSymbol} from '../builder/index.ts';
 
 
 
@@ -25,7 +24,7 @@ export class Local {
 		private readonly index:  number,
 		value: binaryen.ExpressionRef,
 		public readonly type:    binaryen.Type = binaryen.getExpressionType(value),
-		public readonly schema?: SymbolSchemaVar | Temp,
+		public readonly schema?: BuilderLocalSymbol,
 	) {
 		this.#value = value;
 	}

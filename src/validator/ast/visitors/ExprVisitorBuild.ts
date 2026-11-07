@@ -10,7 +10,10 @@ import {
 	TYPE,
 } from '../../../typer/index.ts';
 import {CoreLibName} from '../../../parser/index.ts';
-import type {SymbolSchemaVar} from '../../index.ts';
+import {
+	SymbolSchemaVar,
+	type SymbolSchemaClass,
+} from '../../index.ts';
 import {Operator} from '../../Operator.ts';
 import type {CallableClassName} from '../utils-private.ts';
 import {Index} from '../Index-.ts';
@@ -53,8 +56,8 @@ export class ExprVisitorBuild extends EXPR.ExprVisitor<OP.Value> {
 
 	@memoizePerNode
 	public override visitVariable(expr: EXPR.Variable): OP.Value {
-		const symbol = expr.validator.getSymbol(expr.id) as SymbolSchemaVar;
-		return new OP.Get(symbol, symbol.irType);
+		const symbol = expr.validator.getSymbol(expr.id) as SymbolSchemaVar | SymbolSchemaClass;
+		return new OP.Get(symbol, symbol instanceof SymbolSchemaVar ? symbol.irType : TYPE.CLASS);
 	}
 
 	@memoizePerNode

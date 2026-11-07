@@ -1,4 +1,5 @@
-import type {TYPE} from '../index.ts';
+import {equal_nullish_values} from '../../lib/index.ts';
+import {TYPE} from '../index.ts';
 import {
 	strictEqual,
 	instanceOf,
@@ -20,10 +21,12 @@ import type {Class as ValueClass} from './Class.ts';
  * i.e. not instances of the built-in `List`, `Dict`, etc.
  */
 class ValueObject extends Value {
+	private readonly fields = new Dict<Value>();
+
+
 	public constructor(
-		private readonly id:     bigint,
-		private readonly class_: ValueClass,
-		private readonly fields = new Dict<Value>(),
+		private readonly id:      bigint,
+		private readonly class_?: ValueClass,
 	) {
 		super();
 	}
@@ -40,13 +43,13 @@ class ValueObject extends Value {
 	public override equal(value: Value): boolean {
 		const obj = value as ValueObject;
 		return (
-			this.class_.identical(obj.class_) &&
+			equal_nullish_values(this.class_, obj.class_, (a, b) => a.identical(b)) &&
 			this.fields.equal(obj.fields)
 		);
 	}
 
 	public override toType(): TYPE.Type {
-		return this.class_.instanceType;
+		return this.class_?.instanceType ?? TYPE.CLASS;
 	}
 }
 export {ValueObject as Object};

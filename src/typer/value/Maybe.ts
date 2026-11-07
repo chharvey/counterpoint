@@ -1,3 +1,4 @@
+import {equal_nullish_values} from '../../lib/index.ts';
 import {TYPE} from '../index.ts';
 import {
 	strictEqual,
@@ -43,10 +44,7 @@ export class Maybe<T extends Value = Value> extends Value {
 	@instanceOf(() => Maybe)
 	public override equal(value: Value): boolean {
 		const maybe = value as Maybe;
-		return (
-			this.isNone && maybe.isNone ||
-			!!this.value && !!maybe.value && this.value.equal(maybe.value)
-		);
+		return equal_nullish_values(this.value, maybe.value, (a, b) => a.equal(b));
 	}
 
 	/**

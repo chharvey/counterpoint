@@ -24,15 +24,47 @@ test.suite('ExprVisitorBuild#visit', () => {
 	});
 
 
-	test.test('Variable returns an OP.Get.', () => {
-		const {stmts} = setupScript(`{
-			val mut x: int = 42;
-			x;
-		}`, {codegen: false});
-		const expr = (stmts[1] as AST.STMT.StatementExpression).expr as AST.EXPR.Variable;
-		const symbol: SymbolSchema | undefined = expr.validator.getSymbol(expr.id);
-		assert_instanceof(symbol, SymbolSchemaVar);
-		return assert.deepStrictEqual(new AST.ExprVisitorBuild(new Builder()).visit(expr), new OP.Get(symbol, typeUnit(42n)));
+	test.suite('Variable', () => {
+		test.test('returns an OP.Get.', () => {
+			const {stmts} = setupScript(`{
+				val mut x: int = 42;
+				x;
+			}`, {codegen: false});
+			const expr = (stmts[1] as AST.STMT.StatementExpression).expr as AST.EXPR.Variable;
+			const symbol: SymbolSchema | undefined = expr.validator.getSymbol(expr.id);
+			assert_instanceof(symbol, SymbolSchemaVar);
+			return assert.deepStrictEqual(new AST.ExprVisitorBuild(new Builder()).visit(expr), new OP.Get(symbol, typeUnit(42n)));
+		});
+
+		test.test('gets core lib class references.', () => {
+			assert.strictEqual(setupScript(`{
+				${CORE_LIB_NAMES.join(';')};
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
+				"block-0":
+					(DROP (GET Null))
+					(DROP (GET Boolean))
+					(DROP (GET Symbol))
+					(DROP (GET Integer))
+					(DROP (GET Natural))
+					(DROP (GET Float))
+					(DROP (GET String))
+					(DROP (GET Object))
+					(DROP (GET List))
+					(DROP (GET Dict))
+					(DROP (GET Set))
+					(DROP (GET Map))
+					(DROP (GET Exception))
+					(DROP (GET Maybe))
+					(DROP (GET None))
+					(DROP (GET Some))
+					(DROP (GET Result))
+					(DROP (GET Fail))
+					(DROP (GET Ok))
+					(DROP (GET Function))
+					(DROP (GET Class))
+					(ENDPROGRAM)
+			`.trim());
+		});
 	});
 
 

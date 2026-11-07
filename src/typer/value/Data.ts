@@ -17,10 +17,10 @@ import type {Class as ValueClass} from './Class.ts';
  * (which are pass-by-value and have no identity).
  */
 export class Data extends Value {
-	public constructor(
-		private readonly class_: ValueClass,
-		private readonly fields = new Dict<Value>(),
-	) {
+	private readonly fields = new Dict<Value>();
+
+
+	public constructor(private readonly class_: ValueClass) {
 		super();
 	}
 
