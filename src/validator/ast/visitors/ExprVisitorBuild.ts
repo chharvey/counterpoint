@@ -229,32 +229,15 @@ export class ExprVisitorBuild extends EXPR.ExprVisitor<OP.Value> {
 
 	@memoizePerNode
 	public override visitOperationBinaryCast(expr: EXPR.OperationBinaryCast): OP.Value {
-		const op0: OP.ValueTac = this.visit(expr.operand0).asTac(this.builder);
+		const [v0, v1] = [this.visit(expr.operand0).asTac(this.builder), this.visit(expr.operand1).asTac(this.builder)];
 		const op1_source = expr.operand1.source as CoreLibName;
-		const is_instance = (): OP.Value => {
-			switch (op1_source) {
-				case CoreLibName.NULL: {
-					return new OP.Binop(OP.OpCode.ID, op0, new OP.Const(VALUE.NULL), TYPE.BOOL);
-				}
-				case CoreLibName.BOOLEAN: {
-					const left: OP.ValueTac = new OP.Binop(OP.OpCode.ID, op0, new OP.Const(VALUE.FALSE), TYPE.BOOL).asTac(this.builder);
-					return OP.conditional_expression(
-						this.builder,
-						TYPE.BOOL,
-						() => left,
-						() => left,
-						() => new OP.Binop(OP.OpCode.ID, op0, new OP.Const(VALUE.TRUE), TYPE.BOOL),
-					);
-				}
-			}
-			return new OP.Instance(OP.OpCode.INSTANCEOF, op1_source, op0);
-		};
+		const is_instance = (): OP.Value => new OP.Binop(OP.OpCode.IS, v0, v1, TYPE.BOOL);
 		switch (expr.operator) {
 			case Operator.IS: {
 				return is_instance();
 			}
 			case Operator.CAST: {
-				return new OP.Instance(OP.OpCode.CAST, op1_source, op0);
+				return new OP.Instance(OP.OpCode.CAST, op1_source, v0);
 			}
 			case Operator.CAST_MAYBE: {
 				const expr_type = expr.type as TYPE.Maybe;
@@ -262,7 +245,7 @@ export class ExprVisitorBuild extends EXPR.ExprVisitor<OP.Value> {
 					this.builder,
 					expr_type,
 					is_instance,
-					() => new OP.MaybeNew(expr_type.typearg, new OP.Instance(OP.OpCode.CAST, op1_source, op0)),
+					() => new OP.MaybeNew(expr_type.typearg, new OP.Instance(OP.OpCode.CAST, op1_source, v0)),
 					() => new OP.MaybeNew(expr_type.typearg),
 				);
 			}

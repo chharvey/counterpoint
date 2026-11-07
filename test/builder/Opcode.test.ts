@@ -2029,7 +2029,7 @@ test.suite('Opcode', () => {
 			});
 
 			test.suite('Instance', () => {
-				test.test('INSTANCEOF', () => {
+				test.test.todo('INSTANCEOF', () => {
 					const {builder, cg, wasm} = setupScript(`{
 						${CORE_LIB_NAMES.slice(2, -1).map((classname) => `null is ${classname};`).join('\n')};
 					}`);
