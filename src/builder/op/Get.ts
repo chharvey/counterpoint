@@ -5,9 +5,14 @@ import {
 	memoizeMethod,
 	runOnceMethod,
 } from '../../lib/index.ts';
-import type {
+import {
+	CoreLibName,
+	CORE_LIB_NAMES,
+} from '../../parser/index.ts';
+import {
 	VALUE,
-	TYPE,
+	type TYPE,
+	CLASS_CLASS,
 } from '../../typer/index.ts';
 import {
 	SymbolSchemaVar,
@@ -26,6 +31,9 @@ import {ValueTac} from './ValueTac.ts';
 
 /** Read the value of a variable/local. */
 export class Get extends ValueTac {
+	#interpretedValue?: VALUE.Value;
+
+
 	public constructor(target: SymbolSchemaVar | SymbolSchemaClass, typ: TYPE.Type);
 	public constructor(target: Temp);
 	public constructor(private readonly target: BuilderLocalSymbol, typ?: TYPE.Type) {
@@ -45,6 +53,15 @@ export class Get extends ValueTac {
 	}
 
 	public override interpret(interp: Interpreter): VALUE.Value {
+		if (
+			this.target instanceof SymbolSchemaClass &&
+			CORE_LIB_NAMES.includes(this.target.source as CoreLibName)
+		) {
+			this.#interpretedValue ??= this.target.source === CoreLibName.CLASS
+				? CLASS_CLASS
+				: new VALUE.Class(this.target.classSignature.supertype, CLASS_CLASS);
+			return this.#interpretedValue;
+		}
 		return interp.getLocalValue(this.target) ?? assert.fail(new ReferenceError(`Local variable \`${this.#targetName}\` must be set first!`));
 	}
 
