@@ -223,5 +223,5 @@ export const CLASS_API = new Map<CoreLibName, ClassSignature>([
 
 
 
-/** The class named `Class` — its instances are classes, and it is an instance of itself (argument omitted). */
+/** The class named `Class` — its instances are classes, and it is an instance of itself (argument omitted). @deprecated */
 export const CLASS_CLASS = new VALUE.Class(TYPE.CLASS);

@@ -83,32 +83,59 @@ test.suite('Opcode', () => {
 						new VALUE.Maybe(TYPE.STR),
 					]);
 				});
-				test.test('core lib classes populate the symbol table.', () => {
+				test.test('core lib classes return native class wrappers.', () => {
 					assert_equal_values(interpret_extracted_drops(`{
-						${CORE_LIB_NAMES.join(';')};
-					}`), [
-						TYPE.NULL,
-						TYPE.BOOL,
-						TYPE.SYM,
-						TYPE.INT,
-						TYPE.NAT,
-						TYPE.FLOAT,
-						TYPE.STR,
-						TYPE.OBJ,
-						new TYPE.List(TYPE.ANYTHING),
-						new TYPE.Dict(TYPE.ANYTHING),
-						new TYPE.Set(TYPE.ANYTHING),
-						new TYPE.Map(TYPE.ANYTHING, TYPE.ANYTHING),
-						TYPE.EXCP,
-						new TYPE.Maybe(TYPE.ANYTHING),
-						new TYPE.None(TYPE.ANYTHING),
-						new TYPE.Some(TYPE.ANYTHING),
-						new TYPE.Result(TYPE.ANYTHING),
-						new TYPE.Fail(TYPE.ANYTHING),
-						new TYPE.Ok(TYPE.ANYTHING),
-						TYPE.FUNCTION,
-					// @ts-expect-error --- deprecated usage
-					].map((t) => new VALUE.Class(t, CLASS_CLASS)).concat(CLASS_CLASS));
+						${[
+							CoreLibName.NULL,
+							CoreLibName.BOOLEAN,
+							CoreLibName.SYMBOL,
+							CoreLibName.INTEGER,
+							CoreLibName.NATURAL,
+							CoreLibName.FLOAT,
+							CoreLibName.STRING,
+							CoreLibName.OBJECT,
+							CoreLibName.LIST,
+							CoreLibName.DICT,
+							CoreLibName.SET,
+							CoreLibName.MAP,
+							CoreLibName.EXCEPTION,
+							CoreLibName.MAYBE,
+							CoreLibName.RESULT,
+							CoreLibName.FUNCTION,
+							CoreLibName.CLASS,
+						].join(';')};
+					}`), [...new Map<TYPE.Type, VALUE.Class['nativeClass']>([
+						[TYPE.NULL,                                  VALUE.Null],
+						[TYPE.BOOL,                                  VALUE.Boolean],
+						[TYPE.SYM,                                   VALUE.Symbol],
+						[TYPE.INT,                                   VALUE.Integer],
+						[TYPE.NAT,                                   VALUE.Natural],
+						[TYPE.FLOAT,                                 VALUE.Float],
+						[TYPE.STR,                                   VALUE.String],
+						[TYPE.OBJ,                                   VALUE.Object],
+						[new TYPE.List(TYPE.ANYTHING),               VALUE.List],
+						[new TYPE.Dict(TYPE.ANYTHING),               VALUE.Dict],
+						[new TYPE.Set(TYPE.ANYTHING),                VALUE.Set],
+						[new TYPE.Map(TYPE.ANYTHING, TYPE.ANYTHING), VALUE.Map],
+						[TYPE.EXCP,                                  VALUE.Exception],
+						[new TYPE.Maybe(TYPE.ANYTHING),              VALUE.Maybe],
+						[new TYPE.Result(TYPE.ANYTHING),             VALUE.Result],
+						[TYPE.FUNCTION,                              VALUE.Function],
+						[TYPE.CLASS,                                 VALUE.Class],
+					])].map(([t, c]) => new VALUE.Class(t, c)));
+					const {builder} = setupScript(`{
+						${[
+							CoreLibName.NONE,
+							CoreLibName.SOME,
+							CoreLibName.FAIL,
+							CoreLibName.OK,
+						].join(';')};
+					}`, {codegen: false});
+					const interp = new Interpreter();
+					xjs.Array.forEachAggregated(
+						builder.instructions,
+						(instr) => assert.throws(() => (instr as OP.Drop).value.interpret(interp), /not yet supported/),
+					);
 				});
 			});
 
