@@ -59,6 +59,7 @@ export class Get extends ValueTac {
 		) {
 			this.#interpretedValue ??= this.target.source === CoreLibName.CLASS
 				? CLASS_CLASS
+				// @ts-expect-error --- deprecated usage
 				: new VALUE.Class(this.target.classSignature.supertype, CLASS_CLASS);
 			return this.#interpretedValue;
 		}

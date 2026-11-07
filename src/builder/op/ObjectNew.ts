@@ -58,10 +58,11 @@ export class ObjectNew extends Value {
 		return this.class_?.validate(builder);
 	}
 
-	public override interpret(interp: Interpreter): VALUE.Object {
+	public override interpret(interp: Interpreter): VALUE.Value {
 		const class_: VALUE.Value | undefined = this.class_?.interpret(interp);
 		if (class_) {
 			assert_instanceof(class_, VALUE.Class);
+			// @ts-expect-error --- deprecated usage
 			return this.isClass ? new VALUE.Class(TYPE.OBJ, class_) : new VALUE.Object(0n, class_);
 		} else {
 			return CLASS_CLASS;

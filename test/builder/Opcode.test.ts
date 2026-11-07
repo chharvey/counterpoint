@@ -107,6 +107,7 @@ test.suite('Opcode', () => {
 						new TYPE.Fail(TYPE.ANYTHING),
 						new TYPE.Ok(TYPE.ANYTHING),
 						TYPE.FUNCTION,
+					// @ts-expect-error --- deprecated usage
 					].map((t) => new VALUE.Class(t, CLASS_CLASS)).concat(CLASS_CLASS));
 				});
 			});
@@ -181,9 +182,10 @@ test.suite('Opcode', () => {
 				builder.instructions.forEach((instr) => instr.interpret(interp));
 				assert_instanceof(interp.drops[0], VALUE.Class);
 				assert_instanceof(interp.drops[1], VALUE.Class);
-				assert_instanceof(interp.drops[1], VALUE.Object);
+				assert_instanceof(interp.drops[2], VALUE.Object);
 				return assert.deepStrictEqual(interp.drops, [
 					CLASS_CLASS,
+					// @ts-expect-error --- deprecated usage
 					new VALUE.Class(TYPE.OBJ, interp.drops[0]),
 					new VALUE.Object(0n, interp.drops[1]),
 				]);
