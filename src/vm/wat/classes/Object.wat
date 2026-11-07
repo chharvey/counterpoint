@@ -1,4 +1,4 @@
-(global $Object.ctr (mut i64) (i64.const 0))
+(global $Object.ctr (mut i64) (i64.const 5)) ;; 0–4 are used in Class.wat
 
 
 
