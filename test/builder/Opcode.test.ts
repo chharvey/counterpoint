@@ -163,7 +163,7 @@ test.suite('Opcode', () => {
 				]);
 			});
 
-			test.test('ObjectNew', {expectFailure: true}, () => { // FIXME: new object constructors are created but expected to be strict-equal
+			test.test('ObjectNew', () => {
 				const builder = new Builder();
 				const interp  = new Interpreter();
 
@@ -181,8 +181,9 @@ test.suite('Opcode', () => {
 				builder.instructions.forEach((instr) => instr.interpret(interp));
 				assert_instanceof(interp.drops[0], VALUE.Class);
 				assert_instanceof(interp.drops[1], VALUE.Class);
-				return assert_equal_values(interp.drops, [
-					new VALUE.Class(TYPE.CLASS),
+				assert_instanceof(interp.drops[1], VALUE.Object);
+				return assert.deepStrictEqual(interp.drops, [
+					CLASS_CLASS,
 					new VALUE.Class(TYPE.OBJ, interp.drops[0]),
 					new VALUE.Object(0n, interp.drops[1]),
 				]);

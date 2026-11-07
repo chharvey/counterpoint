@@ -9,6 +9,7 @@ import {
 import {
 	VALUE,
 	TYPE,
+	CLASS_CLASS,
 } from '../../typer/index.ts';
 import type {Builder} from '../Builder.ts';
 import type {Interpreter} from '../Interpreter.ts';
@@ -58,10 +59,12 @@ export class ObjectNew extends Value {
 
 	public override interpret(interp: Interpreter): VALUE.Object {
 		const class_: VALUE.Value | undefined = this.class_?.interpret(interp);
-		class_ && assert_instanceof(class_, VALUE.Class);
-		return this.isClass
-			? new VALUE.Class(class_ ? TYPE.OBJ : TYPE.CLASS, class_ as VALUE.Class | undefined)
-			: new VALUE.Object(0n, class_ as VALUE.Class);
+		if (class_) {
+			assert_instanceof(class_, VALUE.Class);
+			return this.isClass ? new VALUE.Class(TYPE.OBJ, class_) : new VALUE.Object(0n, class_);
+		} else {
+			return CLASS_CLASS;
+		}
 	}
 
 	@memoizeMethod
