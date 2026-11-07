@@ -28,7 +28,7 @@ export class MaybeNew extends Value {
 
 
 	public override toString(): string {
-		return super.toString(...(this.value ? [this.value.toString()] : []));
+		return super.toString(this.value ?? '');
 	}
 
 	@runOnceMethod

@@ -244,7 +244,10 @@ export abstract class Opcode {
 
 	/** Represent this Opcode as a string for inspection. */
 	public toString(...args: readonly {toString(): string}[]): string {
-		return `(${[OpCode[this.opCode].replace(/_/, '.'), ...args].join(' ')})`;
+		return `(${[
+			OpCode[this.opCode].replace(/_/, '.'),
+			...args.filter((s) => s === 0 || s === 0n || !!s),
+		].join(' ')})`;
 	}
 
 	/** Type-validate this Opcode. Throws if invalid. */

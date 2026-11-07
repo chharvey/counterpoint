@@ -29,7 +29,7 @@ export class ExcpNew extends Value {
 
 
 	public override toString(): string {
-		return super.toString(this.message.toString(), ...(this.cause ? [this.cause.toString()] : []));
+		return super.toString(this.message, this.cause ?? '');
 	}
 
 	@runOnceMethod
