@@ -8,14 +8,6 @@ import type {
 
 
 
-/** Struct field constant indices. */
-const FIELD = {
-	/** `$Property.$key` */ KEY: 0,
-	/** `$Property.$val` */ VAL: 1,
-} as const;
-
-
-
 /** An entry in a record/Dict. */
 export class Property implements HasFuncData {
 	public constructor(private readonly vm: VirtualMachine) {}
@@ -29,18 +21,6 @@ export class Property implements HasFuncData {
 		]);
 	}
 
-
-	/** @deprecated TODO: This is dead code. Remove when removing Case class. */
-	public field(ref: binaryen.ExpressionRef /* (ref null $Property) */): {
-		/** @return `(struct.get $Property $key <ref>)` */ readonly key: binaryen.ExpressionRef /* i64 */,
-		/** @return `(struct.get $Property $val <ref>)` */ readonly val: binaryen.ExpressionRef /* (ref $Value) */,
-	} {
-		const {mod: {wasm}, reftype} = this.vm;
-		return {
-			get key() { return wasm.struct.get(FIELD.KEY, ref, binaryen.Type.i64); },
-			get val() { return wasm.struct.get(FIELD.VAL, ref, reftype.Value); },
-		};
-	}
 
 	/**
 	 * Returns whether a Property is a “tombstone”, that is, whether it represents a deletion in a Dict.

@@ -100,7 +100,7 @@ test.suite('Statement', () => {
 					};
 				}`);
 				const validator: Validator = (goal.block!.children[0] as AST.STMT.StatementIteration).block.validator;
-				const id: bigint = Validator.cookTokenIdentifier('it');
+				const id: bigint = Validator.keyId('it');
 				assert.ok(!validator.hasSymbol(id));
 				goal.varCheck();
 				assert.ok(validator.hasSymbol(id));
@@ -119,7 +119,7 @@ test.suite('Statement', () => {
 					};
 				}`);
 				const validator: Validator = (goal.block!.children[0] as AST.STMT.StatementIteration).block.validator;
-				const id: bigint = Validator.cookTokenIdentifier('_');
+				const id: bigint = Validator.keyId('_');
 				assert.ok(!validator.hasSymbol(id));
 				goal.varCheck();
 				return assert.ok(!validator.hasSymbol(id));

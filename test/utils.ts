@@ -192,7 +192,7 @@ export function typeUnit(value: string, tag?: 'sym'): TYPE.Unit<VALUE.String>;
 export function typeUnit(value: symbol | bigint | number | string, tag?: string): TYPE.Unit<VALUE.Symbol | VALUE.Integer | VALUE.Natural | VALUE.Float | VALUE.String> {
 	if (typeof value === 'string' && tag === 'sym') {
 		// TODO: Map#getOrInsertComputed
-		TYPE_UNIT_MEMO_SYM.has(value) || TYPE_UNIT_MEMO_SYM.set(value, new VALUE.Symbol(Validator.cookTokenIdentifier(value), value).toType());
+		TYPE_UNIT_MEMO_SYM.has(value) || TYPE_UNIT_MEMO_SYM.set(value, new VALUE.Symbol(Validator.keyId(value), value).toType());
 		return TYPE_UNIT_MEMO_SYM.get(value)!;
 	}
 	if (typeof value === 'bigint' && tag === 'nat') {
@@ -228,7 +228,7 @@ export function genConst(cg: CodeGenerator, value: null | boolean | symbol | big
 		case true:  { return cg.getConst(value); }
 	}
 	if (typeof value === 'string' && tag === 'sym') {
-		return new VALUE.Symbol(Validator.cookTokenIdentifier(value), value).codegen(cg);
+		return new VALUE.Symbol(Validator.keyId(value), value).codegen(cg);
 	}
 	if (typeof value === 'bigint' && tag === 'nat') {
 		return (

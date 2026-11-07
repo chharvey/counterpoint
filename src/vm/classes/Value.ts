@@ -34,6 +34,15 @@ export class Value implements HasFuncData {
 			['Value#boolToI32',    {name: 'Value.bool-to-i32',   param: reftype.Value,       result: binaryen.Type.i32}],
 			['Value#boolFromI32',  {name: 'Value.bool-from-i32', param: binaryen.Type.i32,   result: reftype.Value}],
 			['Value#stringify',    {name: 'Value.stringify',     param: reftype.Value,       result: reftype.String}],
+			['Value#fromList',     {name: 'Value.from-list',     param: reftype.List,        result: reftype.Value}],
+			['Value#fromDict',     {name: 'Value.from-dict',     param: reftype.Dict,        result: reftype.Value}],
+			['Value#fromMap',      {name: 'Value.from-map',      param: reftype.Map,         result: reftype.Value}],
+			['Value#asList',       {name: 'Value.as-list',       param: reftype.Value,       result: reftype.List}],
+			['Value#asDict',       {name: 'Value.as-dict',       param: reftype.Value,       result: reftype.Dict}],
+			['Value#asMap',        {name: 'Value.as-map',        param: reftype.Value,       result: reftype.Map}],
+			['Value#asString',     {name: 'Value.as-string',     param: reftype.Value,       result: reftype.String}],
+			['Value#asTuple',      {name: 'Value.as-tuple',      param: reftype.Value,       result: reftype.Tuple}],
+			['Value#asRecord',     {name: 'Value.as-record',     param: reftype.Value,       result: reftype.Record}],
 		]);
 	}
 
@@ -45,9 +54,9 @@ export class Value implements HasFuncData {
 	} {
 		const {mod: {wasm}, reftypeNull} = this.vm;
 		return {
-			get tag()       { return wasm.struct.get(FIELD.TAG,       ref, binaryen.Type.i32, false); },
-			get primitive() { return wasm.struct.get(FIELD.PRIMITIVE, ref, binaryen.Type.v128); },
-			get composite() { return wasm.struct.get(FIELD.COMPOSITE, ref, reftypeNull.Composite); },
+			get tag()       { return wasm.struct.get_u (FIELD.TAG,       ref, binaryen.Type.i32); },
+			get primitive() { return wasm.struct.get   (FIELD.PRIMITIVE, ref, binaryen.Type.v128); },
+			get composite() { return wasm.struct.get   (FIELD.COMPOSITE, ref, reftypeNull.Composite); },
 		};
 	}
 
@@ -57,14 +66,10 @@ export class Value implements HasFuncData {
 	 * @param value   the expression to cast
 	 * @param reftype the type to cast to
 	 * @return        `(ref.cast (struct.get $Value $composite <value>) <reftype>)`
+	 * @deprecated    use `Value#as*` or `wasm.ref.cast()`
 	 */
 	public cast(value: binaryen.ExpressionRef /* (ref $Value) */, reftype: binaryen.Type): binaryen.ExpressionRef /* <reftype> */ {
 		return this.vm.mod.wasm.ref.cast(this.field(value).composite, reftype);
-	}
-
-	/** Returns `(struct.new_default $Value)`, for deleting variables/parameters/fields. */
-	public newDefault(): binaryen.ExpressionRef /* (ref $Value) */ {
-		return this.vm.mod.wasm.struct.new_default(this.vm.heaptype.Value);
 	}
 
 	/** Creates a new Value struct storing the given v128 in its primitive slot. */
@@ -100,5 +105,50 @@ export class Value implements HasFuncData {
 	/** Return a string representation of the value. */
 	public stringify(value: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $String) */ {
 		return this.vm.mod.wasm.call('Value.stringify', [value], this.vm.reftype.String);
+	}
+
+	/** Creates a new value holding the given List. */
+	public fromList(list: binaryen.ExpressionRef /* (ref $List) */): binaryen.ExpressionRef /* (ref $Value) */ {
+		return this.vm.mod.wasm.call('Value.from-list', [list], this.vm.reftype.Value);
+	}
+
+	/** Creates a new value holding the given Dict. */
+	public fromDict(list: binaryen.ExpressionRef /* (ref $Dict) */): binaryen.ExpressionRef /* (ref $Value) */ {
+		return this.vm.mod.wasm.call('Value.from-dict', [list], this.vm.reftype.Value);
+	}
+
+	/** Creates a new value holding the given Map. */
+	public fromMap(list: binaryen.ExpressionRef /* (ref $Map) */): binaryen.ExpressionRef /* (ref $Value) */ {
+		return this.vm.mod.wasm.call('Value.from-map', [list], this.vm.reftype.Value);
+	}
+
+	/** Returns the value as a List. */
+	public asList(value: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $List) */ {
+		return this.vm.mod.wasm.call('Value.as-list', [value], this.vm.reftype.List);
+	}
+
+	/** Returns the value as a Dict. */
+	public asDict(value: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Dict) */ {
+		return this.vm.mod.wasm.call('Value.as-dict', [value], this.vm.reftype.Dict);
+	}
+
+	/** Returns the value as a Map. */
+	public asMap(value: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Map) */ {
+		return this.vm.mod.wasm.call('Value.as-map', [value], this.vm.reftype.Map);
+	}
+
+	/** Returns the value as a String. */
+	public asString(value: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $String) */ {
+		return this.vm.mod.wasm.call('Value.as-string', [value], this.vm.reftype.String);
+	}
+
+	/** Returns the value as a Tuple. */
+	public asTuple(value: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Tuple) */ {
+		return this.vm.mod.wasm.call('Value.as-tuple', [value], this.vm.reftype.Tuple);
+	}
+
+	/** Returns the value as a Record. */
+	public asRecord(value: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Record) */ {
+		return this.vm.mod.wasm.call('Value.as-record', [value], this.vm.reftype.Record);
 	}
 }
