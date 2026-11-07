@@ -67,6 +67,21 @@ export class Get extends ValueTac {
 
 	@memoizeMethod
 	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
+		if (
+			this.target instanceof SymbolSchemaClass &&
+			CORE_LIB_NAMES.includes(this.target.source as CoreLibName)
+		) {
+			const {vm: {mod: {wasm}, reftype, Value: VmValue}} = cg;
+			const class_class: binaryen.ExpressionRef /* (ref $Class) */ = wasm.global.get('Class.CLASS', reftype.Class);
+			switch (this.target.source) {
+				case CoreLibName.CLASS:  { return VmValue.newComposite(class_class); }
+				case CoreLibName.OBJECT: { return VmValue.newComposite(wasm.global.get('Class.OBJECT', reftype.Class)); }
+				case CoreLibName.LIST:   { return VmValue.newComposite(wasm.global.get('Class.LIST',   reftype.Class)); }
+				case CoreLibName.DICT:   { return VmValue.newComposite(wasm.global.get('Class.DICT',   reftype.Class)); }
+				case CoreLibName.MAP:    { return VmValue.newComposite(wasm.global.get('Class.MAP',    reftype.Class)); }
+				default:                 { return VmValue.newComposite(cg.codegenClass(class_class)); }
+			}
+		}
 		return cg.getLocal(this.target)?.get() ?? assert.fail(new ReferenceError(`Local variable \`${this.#targetName}\` must be set first!`));
 	}
 
