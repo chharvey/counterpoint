@@ -1,3 +1,4 @@
+import * as VALUE from './value/index.ts';
 import * as TYPE from './type/index.ts';
 import {CoreLibName} from '../parser/index.ts';
 
@@ -219,3 +220,8 @@ export const CLASS_API = new Map<CoreLibName, ClassSignature>([
 		supertype:  TYPE.CLASS,
 	}],
 ]);
+
+
+
+/** The class named `Class` — its instances are classes, and it is an instance of itself (argument omitted). */
+export const CLASS_CLASS = new VALUE.Class(TYPE.CLASS);

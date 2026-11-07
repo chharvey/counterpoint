@@ -8,6 +8,7 @@ import {
 	AST,
 	VALUE,
 	TYPE,
+	CLASS_CLASS,
 	CoreLibName,
 	CORE_LIB_NAMES,
 	Builder,
@@ -57,29 +58,57 @@ test.suite('Opcode', () => {
 				], (val) => assert.ok(new OP.Const(val).interpret().identical(val)));
 			});
 
-			test.test('Get returns interpreter’s symbol table value.', () => {
-				assert_equal_values(interpret_extracted_drops(`{
-					val mut a: null  = null;
-					val mut b: bool  = false;
-					val mut c: sym   = @hello;
-					val mut d: int   = 42;
-					val mut e: float = 4.2;
-					val mut f?: str;
+			test.suite('Get', () => {
+				test.test('variables return interpreter’s symbol table value.', () => {
+					assert_equal_values(interpret_extracted_drops(`{
+						val mut a: null  = null;
+						val mut b: bool  = false;
+						val mut c: sym   = @hello;
+						val mut d: int   = 42;
+						val mut e: float = 4.2;
+						val mut f?: str;
 
-					a;
-					b;
-					c;
-					d;
-					e;
-					f;
-				}`), [
-					VALUE.NULL,
-					VALUE.FALSE,
-					new VALUE.Symbol(Validator.cookTokenIdentifier('hello'), 'hello'),
-					new VALUE.Integer(42n),
-					new VALUE.Float(4.2),
-					new VALUE.Maybe(TYPE.STR),
-				]);
+						a;
+						b;
+						c;
+						d;
+						e;
+						f;
+					}`), [
+						VALUE.NULL,
+						VALUE.FALSE,
+						new VALUE.Symbol(Validator.cookTokenIdentifier('hello'), 'hello'),
+						new VALUE.Integer(42n),
+						new VALUE.Float(4.2),
+						new VALUE.Maybe(TYPE.STR),
+					]);
+				});
+				test.test('core lib classes populate the symbol table.', () => {
+					assert_equal_values(interpret_extracted_drops(`{
+						${CORE_LIB_NAMES.join(';')};
+					}`), [
+						TYPE.NULL,
+						TYPE.BOOL,
+						TYPE.SYM,
+						TYPE.INT,
+						TYPE.NAT,
+						TYPE.FLOAT,
+						TYPE.STR,
+						TYPE.OBJ,
+						new TYPE.List(TYPE.ANYTHING),
+						new TYPE.Dict(TYPE.ANYTHING),
+						new TYPE.Set(TYPE.ANYTHING),
+						new TYPE.Map(TYPE.ANYTHING, TYPE.ANYTHING),
+						TYPE.EXCP,
+						new TYPE.Maybe(TYPE.ANYTHING),
+						new TYPE.None(TYPE.ANYTHING),
+						new TYPE.Some(TYPE.ANYTHING),
+						new TYPE.Result(TYPE.ANYTHING),
+						new TYPE.Fail(TYPE.ANYTHING),
+						new TYPE.Ok(TYPE.ANYTHING),
+						TYPE.FUNCTION,
+					].map((t) => new VALUE.Class(t, CLASS_CLASS)).concat(CLASS_CLASS));
+				});
 			});
 
 			test.test('Template interprets each child, stringifies, and concatenates.', () => {

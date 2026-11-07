@@ -28,7 +28,10 @@ Value! Interpret((GET `id`)) :=
 	1. *If* the interpreter’s symbol table contains `id`:
 		1. *Let* `value` be the value stored at `id`.
 		2. *Return:* `value`.
-	2. *Else:*
+	2. *Else If* `id` refers to a built-in symbol:
+		1. Populate the interpreter’s symbol table with a predetermined value.
+		2. *Return:* the new value.
+	3. *Else:*
 		1. *Throw:* a new ReferenceError.
 ;
 
