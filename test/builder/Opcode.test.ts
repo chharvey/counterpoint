@@ -75,7 +75,7 @@ test.suite('Opcode', () => {
 				}`), [
 					VALUE.NULL,
 					VALUE.FALSE,
-					new VALUE.Symbol(Validator.cookTokenIdentifier('hello'), 'hello'),
+					new VALUE.Symbol(Validator.keyId('hello'), 'hello'),
 					new VALUE.Integer(42n),
 					new VALUE.Float(4.2),
 					new VALUE.Maybe(TYPE.STR),
@@ -103,9 +103,9 @@ test.suite('Opcode', () => {
 					new VALUE.String('three'),
 				];
 				const expected_pairs = [
-					[Validator.cookTokenIdentifier('a'), expected_items[0]],
-					[Validator.cookTokenIdentifier('b'), expected_items[1]],
-					[Validator.cookTokenIdentifier('c'), expected_items[2]],
+					[Validator.keyId('a'), expected_items[0]],
+					[Validator.keyId('b'), expected_items[1]],
+					[Validator.keyId('c'), expected_items[2]],
 				] as const;
 				return assert_equal_values(interpret_extracted_drops(`{
 					(1, 2.0, "three");
@@ -181,8 +181,8 @@ test.suite('Opcode', () => {
 				const record = new AST.ExprVisitorBuild(new Builder()).visit(AST.EXPR.Record.fromSource('(a= 10, c= 20)'));
 				const interp = new Interpreter();
 				return assert_equal_values(new Map<VALUE.Boolean, VALUE.Boolean>([
-					[new OP.RecordHas(record, {keyid: Validator.cookTokenIdentifier('a'), keysrc: 'a'}).interpret(interp), VALUE.TRUE],
-					[new OP.RecordHas(record, {keyid: Validator.cookTokenIdentifier('b'), keysrc: 'b'}).interpret(interp), VALUE.FALSE],
+					[new OP.RecordHas(record, {keyid: Validator.keyId('a'), keysrc: 'a'}).interpret(interp), VALUE.TRUE],
+					[new OP.RecordHas(record, {keyid: Validator.keyId('b'), keysrc: 'b'}).interpret(interp), VALUE.FALSE],
 				]));
 			});
 
@@ -1319,11 +1319,11 @@ test.suite('Opcode', () => {
 						val mut x: int = 42;
 						(a= x, b= 4.2, c= (null,), d= x/2, e= @e);
 					}`);
-					const id_a: bigint = Validator.cookTokenIdentifier('a');
-					const id_b: bigint = Validator.cookTokenIdentifier('b');
-					const id_c: bigint = Validator.cookTokenIdentifier('c');
-					const id_d: bigint = Validator.cookTokenIdentifier('d');
-					const id_e: bigint = Validator.cookTokenIdentifier('e');
+					const id_a: bigint = Validator.keyId('a');
+					const id_b: bigint = Validator.keyId('b');
+					const id_c: bigint = Validator.keyId('c');
+					const id_d: bigint = Validator.keyId('d');
+					const id_e: bigint = Validator.keyId('e');
 					return assertEqualBins(
 						new AST.ExprVisitorBuild(builder).visit((stmts[1] as AST.STMT.StatementExpression).expr!).codegen(cg),
 						cg.vm.Value.newComposite(cg.codegenRecord(new Map([
@@ -1342,12 +1342,12 @@ test.suite('Opcode', () => {
 						(b= 42, bb= 4.2, bbb= null);
 					}`);
 					const expr_visitor = new AST.ExprVisitorBuild(builder);
-					const id_b:   bigint = Validator.cookTokenIdentifier('b');
-					const id_c:   bigint = Validator.cookTokenIdentifier('c');
-					const id_a:   bigint = Validator.cookTokenIdentifier('a');
-					const id_bb:  bigint = Validator.cookTokenIdentifier('bb');
-					const id_aa:  bigint = Validator.cookTokenIdentifier('aa');
-					const id_bbb: bigint = Validator.cookTokenIdentifier('bbb');
+					const id_b:   bigint = Validator.keyId('b');
+					const id_c:   bigint = Validator.keyId('c');
+					const id_a:   bigint = Validator.keyId('a');
+					const id_bb:  bigint = Validator.keyId('bb');
+					const id_aa:  bigint = Validator.keyId('aa');
+					const id_bbb: bigint = Validator.keyId('bbb');
 					return assertEqualBins(
 						stmts.map((stmt) => expr_visitor.visit((stmt as AST.STMT.StatementExpression).expr!).codegen(cg)),
 						[new Map([
@@ -1381,11 +1381,11 @@ test.suite('Opcode', () => {
 						val mut x: int = 42;
 						[a= x, b= 4.2, c= (null,), d= x/2, e= @e];
 					}`);
-					const id_a: bigint = Validator.cookTokenIdentifier('a');
-					const id_b: bigint = Validator.cookTokenIdentifier('b');
-					const id_c: bigint = Validator.cookTokenIdentifier('c');
-					const id_d: bigint = Validator.cookTokenIdentifier('d');
-					const id_e: bigint = Validator.cookTokenIdentifier('e');
+					const id_a: bigint = Validator.keyId('a');
+					const id_b: bigint = Validator.keyId('b');
+					const id_c: bigint = Validator.keyId('c');
+					const id_d: bigint = Validator.keyId('d');
+					const id_e: bigint = Validator.keyId('e');
 					return assertEqualBins(
 						new AST.ExprVisitorBuild(builder).visit((stmts[1] as AST.STMT.StatementExpression).expr!).codegen(cg),
 						cg.vm.Value.fromDict(cg.codegenDict(new Map([
@@ -1404,11 +1404,11 @@ test.suite('Opcode', () => {
 						[b= 42, c= 4.2, aaa= null];
 					}`);
 					const expr_visitor = new AST.ExprVisitorBuild(builder);
-					const id_b:   bigint = Validator.cookTokenIdentifier('b');
-					const id_c:   bigint = Validator.cookTokenIdentifier('c');
-					const id_a:   bigint = Validator.cookTokenIdentifier('a');
-					const id_aa:  bigint = Validator.cookTokenIdentifier('aa');
-					const id_aaa: bigint = Validator.cookTokenIdentifier('aaa');
+					const id_b:   bigint = Validator.keyId('b');
+					const id_c:   bigint = Validator.keyId('c');
+					const id_a:   bigint = Validator.keyId('a');
+					const id_aa:  bigint = Validator.keyId('aa');
+					const id_aaa: bigint = Validator.keyId('aaa');
 					return assertEqualBins(
 						stmts.map((stmt) => expr_visitor.visit((stmt as AST.STMT.StatementExpression).expr!).codegen(cg)),
 						[new Map([
@@ -1517,7 +1517,7 @@ test.suite('Opcode', () => {
 				const cg     = new CodeGenerator();
 				const {vm: {Value, Record}, mod: {wasm}} = cg;
 				return xjs.Array.forEachAggregated(['a', 'b'], (keysrc) => {
-					const keyid: bigint = Validator.cookTokenIdentifier(keysrc);
+					const keyid: bigint = Validator.keyId(keysrc);
 					return assertEqualBins(
 						new OP.RecordHas(record, {keyid, keysrc}).codegen(cg),
 						Value.boolFromI32(Record.hasKey(
@@ -1570,15 +1570,15 @@ test.suite('Opcode', () => {
 				return assertEqualBins(builder.instructions.slice(3).map((instr) => instr.codegen(cg)), [
 					wasm.drop(VmRecord.get(
 						Value.asRecord(wasm.local.get(2, reftype.Value)),
-						wasm.i64.const(Validator.cookTokenIdentifier('c')),
+						wasm.i64.const(Validator.keyId('c')),
 					)),
 					wasm.drop(VmRecord.get(
 						Value.asRecord(wasm.local.get(1, reftype.Value)),
-						wasm.i64.const(Validator.cookTokenIdentifier('a')),
+						wasm.i64.const(Validator.keyId('a')),
 					)),
 					wasm.drop(VmRecord.get(
 						Value.asRecord(wasm.local.get(1, reftype.Value)),
-						wasm.i64.const(Validator.cookTokenIdentifier('b')),
+						wasm.i64.const(Validator.keyId('b')),
 					)),
 				]);
 			});
@@ -1746,7 +1746,7 @@ test.suite('Opcode', () => {
 					}`, {codegen: false});
 					const {Value} = cg.vm;
 					const expr_visitor = new AST.ExprVisitorBuild(builder);
-					const id_hello = Validator.cookTokenIdentifier('hello');
+					const id_hello = Validator.keyId('hello');
 					return assertEqualBins(
 						stmts.map((stmt) => expr_visitor.visit((stmt as AST.STMT.StatementExpression).expr!).codegen(cg)),
 						[

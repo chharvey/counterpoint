@@ -35,20 +35,24 @@ export class Get extends ValueTac {
 	@runOnceMethod
 	public override validate(builder: Builder): void {
 		if (builder.getLocalStatus(this.target) !== 'set') {
-			throw new ReferenceError(`Local with id \`${this.target.id}\` must be set before getting!`);
+			throw new ReferenceError(`Local variable \`${this.#targetName}\` must be set before getting!`);
 		}
 	}
 
 	public override interpret(interp: Interpreter): VALUE.Value {
-		return interp.getLocalValue(this.target) ?? assert.fail(new ReferenceError(`Local with id \`${this.target.id}\` must be set first!`));
+		return interp.getLocalValue(this.target) ?? assert.fail(new ReferenceError(`Local variable \`${this.#targetName}\` must be set first!`));
 	}
 
 	@memoizeMethod
 	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
-		return cg.getLocal(this.target)?.get() ?? assert.fail(new ReferenceError(`Local with id \`${this.target.id}\` must be set first!`));
+		return cg.getLocal(this.target)?.get() ?? assert.fail(new ReferenceError(`Local variable \`${this.#targetName}\` must be set first!`));
 	}
 
 	public override asTac(): this {
 		return this;
+	}
+
+	get #targetName(): string {
+		return this.target instanceof SymbolSchemaVar ? this.target.source : this.target.name;
 	}
 }

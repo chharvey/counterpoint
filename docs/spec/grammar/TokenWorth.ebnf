@@ -90,21 +90,27 @@ TokenWorth(KeywordOther :::= "panic")    -> RealNumber := \x6c;
 
 
 
-TokenWorth(Identifier :::= "Boolean")  -> RealNumber := \x80;
-TokenWorth(Identifier :::= "Symbol")   -> RealNumber := \x81;
-TokenWorth(Identifier :::= "Integer")  -> RealNumber := \x82;
-TokenWorth(Identifier :::= "Natural")  -> RealNumber := \x83;
-TokenWorth(Identifier :::= "Float")    -> RealNumber := \x84;
-TokenWorth(Identifier :::= "String")   -> RealNumber := \x85;
-TokenWorth(Identifier :::= "Object")   -> RealNumber := \x86;
-TokenWorth(Identifier :::= "List")     -> RealNumber := \x87;
-TokenWorth(Identifier :::= "Dict")     -> RealNumber := \x88;
-TokenWorth(Identifier :::= "Set")      -> RealNumber := \x89;
-TokenWorth(Identifier :::= "Map")      -> RealNumber := \x8a;
-TokenWorth(Identifier :::= "Maybe")    -> RealNumber := \x8b;
-TokenWorth(Identifier :::= "None")     -> RealNumber := \x8c;
-TokenWorth(Identifier :::= "Some")     -> RealNumber := \x8d;
-TokenWorth(Identifier :::= "Function") -> RealNumber := \x8e;
+TokenWorth(Identifier :::= "Null")      -> RealNumber := \x80;
+TokenWorth(Identifier :::= "Boolean")   -> RealNumber := \x81;
+TokenWorth(Identifier :::= "Symbol")    -> RealNumber := \x82;
+TokenWorth(Identifier :::= "Integer")   -> RealNumber := \x83;
+TokenWorth(Identifier :::= "Natural")   -> RealNumber := \x84;
+TokenWorth(Identifier :::= "Float")     -> RealNumber := \x85;
+TokenWorth(Identifier :::= "String")    -> RealNumber := \x86;
+TokenWorth(Identifier :::= "Object")    -> RealNumber := \x87;
+TokenWorth(Identifier :::= "List")      -> RealNumber := \x88;
+TokenWorth(Identifier :::= "Dict")      -> RealNumber := \x89;
+TokenWorth(Identifier :::= "Set")       -> RealNumber := \x8a;
+TokenWorth(Identifier :::= "Map")       -> RealNumber := \x8b;
+TokenWorth(Identifier :::= "Exception") -> RealNumber := \x8c;
+TokenWorth(Identifier :::= "Maybe")     -> RealNumber := \x8d;
+TokenWorth(Identifier :::= "None")      -> RealNumber := \x8e;
+TokenWorth(Identifier :::= "Some")      -> RealNumber := \x8f;
+TokenWorth(Identifier :::= "Result")    -> RealNumber := \x90;
+TokenWorth(Identifier :::= "Fail")      -> RealNumber := \x91;
+TokenWorth(Identifier :::= "Ok")        -> RealNumber := \x92;
+TokenWorth(Identifier :::= "Function")  -> RealNumber := \x93;
+TokenWorth(Identifier :::= "Class")     -> RealNumber := \x94;
 
 TokenWorth(Identifier) -> RealNumber :=
 	1. Convert the source text of `Identifier` to a string of bytes in the UTF-8 encoding.

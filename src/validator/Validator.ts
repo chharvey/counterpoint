@@ -228,7 +228,23 @@ export class Validator {
 
 	/** Try to find the identifier name(s) of the given hash value. */
 	public static unhashIdentifierId(i: bigint): string {
-		return [...this.#hashStringMemo].filter(([_, value]) => value === i - Validator.MIN_VALUE_IDENTIFIER).map(([key]) => key).join();
+		return (
+			i >= Validator.MIN_VALUE_IDENTIFIER ? [...this.#hashStringMemo].filter(([_, value]) => value === i - Validator.MIN_VALUE_IDENTIFIER).map(([key]) => key).join() :
+			i >= Validator.MIN_VALUE_CORE_LIB   ? CORE_LIB_NAMES[Number(i - Validator.MIN_VALUE_CORE_LIB)] :
+			i >= Validator.MIN_VALUE_KEYWORD    ? KEYWORDS[Number(i - Validator.MIN_VALUE_KEYWORD)] :
+			''
+		) || '';
+	}
+
+	/** Compute the ID of the name of a key. */
+	public static keyId(name: string): bigint {
+		const keywords       = KEYWORDS       as readonly string[];
+		const core_lib_names = CORE_LIB_NAMES as readonly string[];
+		return (
+			keywords       .includes(name) ? Validator.MIN_VALUE_KEYWORD  + BigInt(keywords   .indexOf(name)) :
+			core_lib_names .includes(name) ? Validator.MIN_VALUE_CORE_LIB + BigInt(core_lib_names .indexOf(name)) :
+			Validator.MIN_VALUE_IDENTIFIER + Validator.#hashString(name)
+		);
 	}
 
 	/**
@@ -250,6 +266,9 @@ export class Validator {
 	 * @return       the unique id identifying the token
 	 */
 	public static cookTokenIdentifier(source: string): bigint {
+		if ((KEYWORDS as readonly string[]).includes(source)) {
+			throw new RangeError(`Keyword ${source} is not a valid identifier.`);
+		}
 		if ((CORE_LIB_NAMES as readonly string[]).includes(source)) {
 			return Validator.MIN_VALUE_CORE_LIB + BigInt((CORE_LIB_NAMES as readonly string[]).indexOf(source));
 		}
@@ -399,7 +418,7 @@ export class Validator {
 	 * @returns the symbol information, or `undefined` if there is no corresponding entry
 	 */
 	public getSymbolBySource(source: string): SymbolSchema | undefined {
-		return this.getSymbol(Validator.cookTokenIdentifier(source));
+		return this.getSymbol(Validator.keyId(source));
 	}
 
 	/**
