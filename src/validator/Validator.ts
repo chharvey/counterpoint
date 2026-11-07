@@ -224,7 +224,23 @@ export class Validator {
 
 	/** Try to find the identifier name(s) of the given hash value. */
 	public static unhashIdentifierId(i: bigint): string {
-		return [...this.#hashStringMemo].filter(([_, value]) => value === i - Validator.MIN_VALUE_IDENTIFIER).map(([key]) => key).join();
+		return (
+			i >= Validator.MIN_VALUE_IDENTIFIER ? [...this.#hashStringMemo].filter(([_, value]) => value === i - Validator.MIN_VALUE_IDENTIFIER).map(([key]) => key).join() :
+			i >= Validator.MIN_VALUE_INTRINSIC  ? INTRINSICS[Number(i - Validator.MIN_VALUE_INTRINSIC)] :
+			i >= Validator.MIN_VALUE_KEYWORD    ? KEYWORDS[Number(i - Validator.MIN_VALUE_KEYWORD)] :
+			''
+		) || '';
+	}
+
+	/** Compute the ID of the name of a key. */
+	public static keyId(name: string): bigint {
+		const keywords   = KEYWORDS   as readonly string[];
+		const intrinsics = INTRINSICS as readonly string[];
+		return (
+			keywords   .includes(name) ? Validator.MIN_VALUE_KEYWORD   + BigInt(keywords   .indexOf(name)) :
+			intrinsics .includes(name) ? Validator.MIN_VALUE_INTRINSIC + BigInt(intrinsics .indexOf(name)) :
+			Validator.MIN_VALUE_IDENTIFIER + Validator.#hashString(name)
+		);
 	}
 
 	/**
@@ -246,6 +262,9 @@ export class Validator {
 	 * @return       the unique id identifying the token
 	 */
 	public static cookTokenIdentifier(source: string): bigint {
+		if ((KEYWORDS as readonly string[]).includes(source)) {
+			throw new RangeError(`Keyword ${source} is not a valid identifier.`);
+		}
 		if ((INTRINSICS as readonly string[]).includes(source)) {
 			return Validator.MIN_VALUE_INTRINSIC + BigInt((INTRINSICS as readonly string[]).indexOf(source));
 		}
@@ -385,7 +404,7 @@ export class Validator {
 	 * @returns the symbol information, or `undefined` if there is no corresponding entry
 	 */
 	public getSymbolBySource(source: string): SymbolSchema | undefined {
-		return this.getSymbol(Validator.cookTokenIdentifier(source));
+		return this.getSymbol(Validator.keyId(source));
 	}
 
 	/**

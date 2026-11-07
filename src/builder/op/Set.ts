@@ -51,7 +51,7 @@ class OpSet extends Instruction {
 	@runOnceMethod
 	public override validate(builder: Builder): void {
 		if (builder.getLocalStatus(this.target) === undefined) {
-			throw new ReferenceError(`Local with id \`${this.target.id}\` must be declared before setting!`);
+			throw new ReferenceError(`Local variable \`${this.#targetName}\` must be declared before setting!`);
 		}
 		builder.setLocalStatus(this.target, 'set');
 		this.value.validate(builder);
@@ -64,7 +64,11 @@ class OpSet extends Instruction {
 
 	@memoizeMethod
 	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
-		return cg.getLocal(this.target)?.set(this.value.codegen(cg)) ?? assert.fail(new ReferenceError(`Local with id \`${this.target.id}\` must be set first!`));
+		return cg.getLocal(this.target)?.set(this.value.codegen(cg)) ?? assert.fail(new ReferenceError(`Local variable \`${this.#targetName}\` must be set first!`));
+	}
+
+	get #targetName(): string {
+		return this.target instanceof SymbolSchemaVar ? this.target.source : this.target.name;
 	}
 }
 export {OpSet as Set};
