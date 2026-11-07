@@ -1,7 +1,10 @@
 import * as binaryen from 'binaryen.ts';
 import {VirtualMachine} from '../vm/index.ts';
 import type {BuilderLocalSymbol} from '../builder/index.ts';
-import {Local} from './Local.ts';
+import {
+	Local,
+	Global,
+} from './index.ts';
 
 
 
@@ -52,6 +55,9 @@ export class CodeGenerator {
 	/** A set containing data of WASM local variables. */
 	readonly #locals = new Set<Local>();
 
+	/** A set containing data of WASM global variables. */
+	readonly #globals = new Set<Global>();
+
 	/** A map containing code-generated `CfgNode`s. */
 	readonly #blockRefs = new Map<string, binaryen.RelooperBlockRef>();
 
@@ -67,7 +73,7 @@ export class CodeGenerator {
 	/**
 	 * Create and add a new temporary local variable, for use in short-circuiting operations and placeholder values.
 	 * @param value the binaryen value of the variable to add
-	 * @param type  the type of the value; if not supplied, the Local will compute its type using `binaryen.getExpressionType`
+	 * @param typ   the type of the value; if not supplied, the Local will compute its type using `binaryen.getExpressionType`
 	 * @return      the new local variable
 	 */
 	public newLocal(value: binaryen.ExpressionRef, typ?: binaryen.Type): Local {
@@ -121,6 +127,53 @@ export class CodeGenerator {
 	 */
 	public getAllLocals(): Local[] {
 		return [...this.#locals];
+	}
+
+	/**
+	 * Set a global variable, given a name.
+	 * If a variable with that name has already been added, do nothing.
+	 * @param name  the declared name of the global
+	 * @param value the binaryen value of the variable to set
+	 * @param type  the type of the value; if not supplied, the Global will compute its type using `binaryen.getExpressionType`
+	 * @return      Was the operation performed?
+	 */
+	private setGlobal(name: string, value: binaryen.ExpressionRef, typ?: binaryen.Type): boolean {
+		let did: boolean = false;
+		if (!this.getGlobal(name)) {
+			this.#globals.add(new Global(this.mod.wasm, name, value, typ));
+			did = true;
+		}
+		return did;
+	}
+
+	/**
+	 * Get the global with the given name in this CodeGenerator’s list, if it’s been added; else, return `undefined`.
+	 * @param  name the name of the global to get
+	 * @return      the global or `undefined`
+	 */
+	private getGlobal(name: string): Global | undefined {
+		return [...this.#globals].find((global) => global.name === name);
+	}
+
+	/**
+	 * Set and then return a global variable.
+	 * If a variable with that name has already been added, this CodeGenerator’s state is not changed.
+	 * @param name  the declared name of the global
+	 * @param value the binaryen value of the variable to set
+	 * @param type  the type of the value; if not supplied, the Global will compute its type using `binaryen.getExpressionType`
+	 * @return      the global variable set (or retrieved)
+	 */
+	private teeGlobal(name: string, value: binaryen.ExpressionRef, type?: binaryen.Type): Global {
+		this.setGlobal(name, value, type);
+		return this.getGlobal(name)!;
+	}
+
+	/**
+	 * Return a copy of a list of this CodeGenerator’s global variables.
+	 * @return the global variables in an array
+	 */
+	private getAllGlobals(): Global[] {
+		return [...this.#globals];
 	}
 
 	/**
