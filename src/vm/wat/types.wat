@@ -6,13 +6,11 @@
 
 
 
-	;; WASM representation of a Counterpoint value
-	(type $Value (struct
-		(field $tag       i8) ;; 1 = primitive, 2 = composite
-		(field $primitive v128)
-		(field $composite (ref null $Composite))
-	))
+
+	;; # Implementations
+	;; these implementations are used to build up Counterpoint objects.
 	;; type of entry in records/Dicts
+
 	(type $Property (struct
 		(field $key i64)
 		(field $val (ref $Value))
@@ -23,10 +21,9 @@
 		(field $con (ref $Value))
 	))
 
-
-
-	;; # Implementations
-	;; these implementations are used to build up Counterpoint objects.
+	(type $StringInternal (array (mut i32))) ;; mutable to allow construction of templates
+	(type $TupleInternal  (array (ref $Value)))
+	(type $RecordInternal (array (ref $Property)))
 
 	;; mutable to allow reassigning array entries, nullable because array can be sparse
 	(type $ListInternal (array (mut (ref null $Value))))
@@ -52,19 +49,20 @@
 		(field $internal (mut (ref $MapInternal)))
 	))
 
-
-
-	;; # Composite Types
 	;; abstract root of all non-primitives. the type of `$Value.$composite`
 	(type $Composite (sub (struct)))
 
-	(type $StringInternal (array (mut i32))) ;; mutable to allow construction of templates
-	(type $TupleInternal  (array (ref $Value)))
-	(type $RecordInternal (array (ref $Property)))
 
-	(type $String (sub final $Composite (struct (field $internal (ref $StringInternal)))))
-	(type $Tuple  (sub final $Composite (struct (field $internal (ref $TupleInternal)))))
-	(type $Record (sub final $Composite (struct (field $internal (ref $RecordInternal)))))
+
+
+	;; # All Values
+
+	;; WASM representation of a Counterpoint value
+	(type $Value (struct
+		(field $tag       i8) ;; 1 = primitive, 2 = composite
+		(field $primitive v128)
+		(field $composite (ref null $Composite))
+	))
 
 	(type $Data (sub final $Composite (struct
 		;; pointer to the constructor class
@@ -89,10 +87,20 @@
 
 
 
-	;; # Reference Types
+	;; ## Counterpoint Precursor Classes
 	;; These are written here until we can build a core library in Counterpoint.
 	;; They are only temporary, and resemble what the actual Counterpoint source code will look like.
+	;; The fields listed here are hard-coded, but will eventually be moved to the `$fields` field,
+	;; once these classes are dynamically code-generated.
 
+
+	;; ### “Value” Types (id-by-value)
+	(type $String (sub final $Composite (struct (field $internal (ref $StringInternal)))))
+	(type $Tuple  (sub final $Composite (struct (field $internal (ref $TupleInternal)))))
+	(type $Record (sub final $Composite (struct (field $internal (ref $RecordInternal)))))
+
+
+	;; ### Reference Types (id-by-reference)
 	;; precursor to the Counterpoint `List` class
 	(type $CplList (sub final $Object (struct
 		;; --- inherited ---
@@ -104,7 +112,6 @@
 		;; the underlying implementation
 		(field $list (ref $List))
 	)))
-
 	;; precursor to the Counterpoint `Dict` class
 	(type $CplDict (sub final $Object (struct
 		;; --- inherited ---
@@ -116,7 +123,6 @@
 		;; the underlying implementation
 		(field $dict (ref $Dict))
 	)))
-
 	;; precursor to the Counterpoint `Map` class
 	(type $CplMap (sub final $Object (struct
 		;; --- inherited ---
@@ -128,7 +134,6 @@
 		;; the underlying implementation
 		(field $map (ref $Map))
 	)))
-
 	;; precursor to the Counterpoint `Exception` class
 	(type $Exception (sub final $Object (struct
 		;; --- inherited ---
@@ -142,7 +147,6 @@
 		;; a cause of this Exception
 		(field $cause (ref null $Exception))
 	)))
-
 	;; precursor to the Counterpoint `Maybe` class
 	(type $Maybe (sub final $Object (struct
 		;; --- inherited ---
@@ -154,7 +158,6 @@
 		;; the potentially held value
 		(field $value (ref null $Value))
 	)))
-
 	;; precursor to the Counterpoint `Result` class
 	(type $Result (sub final $Object (struct
 		;; --- inherited ---
@@ -168,7 +171,6 @@
 		;; the failure reason
 		(field $reason (ref null $Exception))
 	)))
-
 	;; precursor to the Counterpoint `Function` class
 	(type $Function (sub final $Object (struct
 		;; --- inherited ---
