@@ -109,14 +109,14 @@
 
 
 
-(func $Value.as-string (export "Value#asString") (param (ref $Value)) (result (ref $String))
-	(ref.cast (ref $String) (struct.get $Value $composite (local.get 0)))
+(func $Value.as-string (export "Value#asString") (param (ref $Value)) (result (ref $Cpl-String))
+	(ref.cast (ref $Cpl-String) (struct.get $Value $composite (local.get 0)))
 )
-(func $Value.as-tuple (export "Value#asTuple") (param (ref $Value)) (result (ref $Tuple))
-	(ref.cast (ref $Tuple) (struct.get $Value $composite (local.get 0)))
+(func $Value.as-tuple (export "Value#asTuple") (param (ref $Value)) (result (ref $Cpl-Tuple))
+	(ref.cast (ref $Cpl-Tuple) (struct.get $Value $composite (local.get 0)))
 )
-(func $Value.as-record (export "Value#asRecord") (param (ref $Value)) (result (ref $Record))
-	(ref.cast (ref $Record) (struct.get $Value $composite (local.get 0)))
+(func $Value.as-record (export "Value#asRecord") (param (ref $Value)) (result (ref $Cpl-Record))
+	(ref.cast (ref $Cpl-Record) (struct.get $Value $composite (local.get 0)))
 )
 
 

@@ -41,7 +41,7 @@ export class List implements HasFuncData {
 			}],
 			['List#copyFromTuple', {
 				name:   'List.copy-from-tuple',
-				param:  binaryen.createType([reftype.List, reftype.Tuple]),
+				param:  binaryen.createType([reftype.List, reftype.CplTuple]),
 				result: binaryen.Type.none,
 			}],
 			['List#copyFromList', {
@@ -106,9 +106,9 @@ export class List implements HasFuncData {
 	}
 
 	/**
-	 * Copy the items from a given source Tuple into the destination List.
+	 * Copy the items from a given source Cpl-Tuple into the destination List.
 	 */
-	public copyFromTuple(dest: binaryen.ExpressionRef /* (ref $List) */, src: binaryen.ExpressionRef /* (ref $Tuple) */): binaryen.ExpressionRef /* void */ {
+	public copyFromTuple(dest: binaryen.ExpressionRef /* (ref $List) */, src: binaryen.ExpressionRef /* (ref $Cpl-Tuple) */): binaryen.ExpressionRef /* void */ {
 		return this.vm.mod.wasm.call('List.copy-from-tuple', [dest, src], binaryen.Type.none);
 	}
 

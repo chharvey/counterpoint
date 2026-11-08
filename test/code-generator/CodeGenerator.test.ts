@@ -72,20 +72,20 @@ test.suite('CodeGenerator', () => {
 		test.test('empty `#codegenString`.', () => {
 			assertEqualBins(
 				cg.codegenString(),
-				wasm.struct.new([wasm.array.new_fixed(cg.vm.heaptype.StringInternal, [])], cg.vm.heaptype.String),
+				wasm.struct.new([wasm.array.new_fixed(cg.vm.heaptype.StringInternal, [])], cg.vm.heaptype.CplString),
 			);
 		});
 		test.test('`#codegenTuple` returns (array.new_fixed).', () => {
 			const codeunits = [0x68, 0x65, 0x6c, 0x6c, 0x6f] as const; // 'hello' in UTF-8
 			return assertEqualBins(
 				cg.codegenString(codeunits.map((c) => wasm.i32.const(c))),
-				wasm.struct.new([wasm.array.new_fixed(cg.vm.heaptype.StringInternal, codeunits.map((c) => wasm.i32.const(c)))], cg.vm.heaptype.String),
+				wasm.struct.new([wasm.array.new_fixed(cg.vm.heaptype.StringInternal, codeunits.map((c) => wasm.i32.const(c)))], cg.vm.heaptype.CplString),
 			);
 		});
 		test.test('empty `#codegenTuple`.', () => {
 			assertEqualBins(
 				cg.codegenTuple(),
-				wasm.struct.new([wasm.array.new_fixed(cg.vm.heaptype.TupleInternal, [])], cg.vm.heaptype.Tuple),
+				wasm.struct.new([wasm.array.new_fixed(cg.vm.heaptype.TupleInternal, [])], cg.vm.heaptype.CplTuple),
 			);
 		});
 		test.test('`#codegenTuple` returns (array.new_fixed).', () => {
@@ -97,13 +97,13 @@ test.suite('CodeGenerator', () => {
 				wasm.struct.new([wasm.array.new_fixed(cg.vm.heaptype.TupleInternal, [
 					genConst(cg, true),
 					genConst(cg, 42n),
-				])], cg.vm.heaptype.Tuple),
+				])], cg.vm.heaptype.CplTuple),
 			);
 		});
 		test.test('empty `#codegenRecord`.', () => {
 			assertEqualBins(
 				cg.codegenRecord(),
-				wasm.struct.new([wasm.array.new_fixed(cg.vm.heaptype.RecordInternal, [])], cg.vm.heaptype.Record),
+				wasm.struct.new([wasm.array.new_fixed(cg.vm.heaptype.RecordInternal, [])], cg.vm.heaptype.CplRecord),
 			);
 		});
 		test.test('`#codegenRecord` returns (array.new_fixed).', () => {
@@ -117,7 +117,7 @@ test.suite('CodeGenerator', () => {
 					cg.newProperty(0x102n, genConst(cg, 4.2)),
 					cg.newProperty(0x100n, genConst(cg, true)),
 					cg.newProperty(0x101n, genConst(cg, 42n)),
-				])], cg.vm.heaptype.Record),
+				])], cg.vm.heaptype.CplRecord),
 			);
 		});
 		test.test('empty `#codegenList`.', () => {
@@ -294,8 +294,8 @@ test.suite('CodeGenerator', () => {
 		});
 
 		test.test('#codegenException', () => {
-			const message:   binaryen.ExpressionRef /* (ref $String) */    = cg.vm.Value.asString(genConst(cg, 'message'));
-			const expected1: binaryen.ExpressionRef /* (ref $Exception) */ = wasm.struct.new([
+			const message:   binaryen.ExpressionRef /* (ref $Cpl-String) */ = cg.vm.Value.asString(genConst(cg, 'message'));
+			const expected1: binaryen.ExpressionRef /* (ref $Exception) */  = wasm.struct.new([
 				cg.vm.Object.ctrPlusPlus(),
 				cg.mod.wasm.ref.null(cg.vm.heaptype.Class),
 				wasm.ref.null(cg.vm.heaptype.Dict),
@@ -448,7 +448,7 @@ test.suite('CodeGenerator', () => {
 					cg.newProperty(262n, genConst(cg)),
 					cg.newProperty(256n, genConst(cg, 42n)),
 					cg.newProperty(259n, genConst(cg, 4.2)),
-				]].map((entries) => wasm.struct.new([wasm.array.new_fixed(cg.vm.heaptype.RecordInternal, entries)], cg.vm.heaptype.Record)),
+				]].map((entries) => wasm.struct.new([wasm.array.new_fixed(cg.vm.heaptype.RecordInternal, entries)], cg.vm.heaptype.CplRecord)),
 			);
 		});
 

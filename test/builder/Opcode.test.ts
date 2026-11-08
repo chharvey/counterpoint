@@ -1352,7 +1352,7 @@ test.suite('Opcode', () => {
 					val user: (name: str) = (name= "Alan");
 					"""Hello, {{user.name}}, you have {{2 * 3}} new messages.""";
 				}`);
-				const {heaptype, reftype, Value, String: VmString} = cg.vm;
+				const {heaptype, reftype, Value, CplString} = cg.vm;
 
 				const strings = [
 					genConst(cg, 'Hello, '),
@@ -1360,7 +1360,7 @@ test.suite('Opcode', () => {
 					genConst(cg, ', you have '),
 					wasm.local.get(3, reftype.Value),
 					genConst(cg, ' new messages.'),
-				].map((code) => VmString.field(Value.asString(code)).internal);
+				].map((code) => CplString.field(Value.asString(code)).internal);
 
 				const RESULT_IDX =  9;
 				const OFFSET_IDX = 10;
@@ -1414,8 +1414,8 @@ test.suite('Opcode', () => {
 							wasm.local.set(OFFSET_IDX, wasm.i32.add(offset_get, str_len)),
 						]),
 						wasm.array.copy(result_get, offset_get, string_4_get, wasm.i32.const(0), string_4_len),
-						wasm.struct.new([result_get], heaptype.String),
-					], reftype.String))),
+						wasm.struct.new([result_get], heaptype.CplString),
+					], reftype.CplString))),
 				);
 			});
 
@@ -1716,12 +1716,12 @@ test.suite('Opcode', () => {
 				// there exists no syntax for Tuple has, so constructing it manually
 				const tuple = new AST.ExprVisitorBuild(new Builder()).visit(AST.EXPR.Tuple.fromSource('(10, 20)'));
 				const cg    = new CodeGenerator();
-				const {vm: {Value, Tuple}, mod: {wasm}} = cg;
+				const {vm: {Value, CplTuple}, mod: {wasm}} = cg;
 				xjs.Array.forEachAggregated([1n, 2n], (idx) => assertEqualBins(
 					new OP.TupleHas(tuple, idx).codegen(cg),
 					Value.boolFromI32(wasm.i32.lt_u(
 						wasm.i32.const(Number(idx)),
-						wasm.array.len(Tuple.field(Value.asTuple(tuple.codegen(cg))).internal),
+						wasm.array.len(CplTuple.field(Value.asTuple(tuple.codegen(cg))).internal),
 					)),
 				));
 			});
@@ -1730,12 +1730,12 @@ test.suite('Opcode', () => {
 				// there exists no syntax for Record has, so constructing it manually
 				const record = new AST.ExprVisitorBuild(new Builder()).visit(AST.EXPR.Record.fromSource('(a= 10, c= 20)'));
 				const cg     = new CodeGenerator();
-				const {vm: {Value, Record}, mod: {wasm}} = cg;
+				const {vm: {Value, CplRecord}, mod: {wasm}} = cg;
 				return xjs.Array.forEachAggregated(['a', 'b'], (keysrc) => {
 					const keyid: bigint = Validator.keyId(keysrc);
 					return assertEqualBins(
 						new OP.RecordHas(record, {keyid, keysrc}).codegen(cg),
-						Value.boolFromI32(Record.hasKey(
+						Value.boolFromI32(CplRecord.hasKey(
 							Value.asRecord(record.codegen(cg)),
 							wasm.i64.const(keyid),
 						)),
@@ -1752,27 +1752,27 @@ test.suite('Opcode', () => {
 					tup.0;
 					tup.1;
 				}`);
-				const {reftype, Value, Tuple: VmTuple} = cg.vm;
+				const {reftype, Value, CplTuple} = cg.vm;
 				return assertEqualBins(builder.instructions.slice(3).map((instr) => instr.codegen(cg)), [
 					wasm.drop(wasm.array.get(
-						VmTuple.field(Value.asTuple(wasm.local.get(2, reftype.Value))).internal,
+						CplTuple.field(Value.asTuple(wasm.local.get(2, reftype.Value))).internal,
 						wasm.i32.const(2),
 						reftype.Value,
 					)),
 					wasm.drop(wasm.array.get(
-						VmTuple.field(Value.asTuple(wasm.local.get(1, reftype.Value))).internal,
+						CplTuple.field(Value.asTuple(wasm.local.get(1, reftype.Value))).internal,
 						wasm.i32.const(0),
 						reftype.Value,
 					)),
 					wasm.drop(wasm.array.get(
-						VmTuple.field(Value.asTuple(wasm.local.get(1, reftype.Value))).internal,
+						CplTuple.field(Value.asTuple(wasm.local.get(1, reftype.Value))).internal,
 						wasm.i32.const(1),
 						reftype.Value,
 					)),
 				]);
 			});
 
-			test.test('RecordGet returns (call $Record.get).', () => {
+			test.test('RecordGet returns (call $Cpl-Record.get).', () => {
 				const {builder, cg, wasm} = setupScript(`{
 					val mut x:   int                       = 42;
 					val mut rec: (a: int, b: int, c?: int) = (a= 42, b= 43);
@@ -1781,17 +1781,17 @@ test.suite('Opcode', () => {
 					rec.a;
 					rec.b;
 				}`);
-				const {reftype, Value, Record: VmRecord} = cg.vm;
+				const {reftype, Value, CplRecord} = cg.vm;
 				return assertEqualBins(builder.instructions.slice(3).map((instr) => instr.codegen(cg)), [
-					wasm.drop(VmRecord.get(
+					wasm.drop(CplRecord.get(
 						Value.asRecord(wasm.local.get(2, reftype.Value)),
 						wasm.i64.const(Validator.keyId('c')),
 					)),
-					wasm.drop(VmRecord.get(
+					wasm.drop(CplRecord.get(
 						Value.asRecord(wasm.local.get(1, reftype.Value)),
 						wasm.i64.const(Validator.keyId('a')),
 					)),
-					wasm.drop(VmRecord.get(
+					wasm.drop(CplRecord.get(
 						Value.asRecord(wasm.local.get(1, reftype.Value)),
 						wasm.i64.const(Validator.keyId('b')),
 					)),

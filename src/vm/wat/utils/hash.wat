@@ -17,10 +17,10 @@
 	(if
 		(call $Value.is-composite (local.get $value))
 		(then
-			(if (ref.test (ref $String) (local.get $composite)) (then (return_call $!String.hash (ref.cast (ref $String) (local.get $composite)))))
-			(if (ref.test (ref $Tuple)  (local.get $composite)) (then (return_call $!Tuple.hash  (ref.cast (ref $Tuple)  (local.get $composite)))))
-			(if (ref.test (ref $Record) (local.get $composite)) (then (return_call $!Record.hash (ref.cast (ref $Record) (local.get $composite)))))
-			(if (ref.test (ref $Object) (local.get $composite)) (then (return_call $!Object.hash (ref.cast (ref $Object) (local.get $composite)))))
+			(if (ref.test (ref $Cpl-String) (local.get $composite)) (then (return_call $!Cpl-String.hash (ref.cast (ref $Cpl-String) (local.get $composite)))))
+			(if (ref.test (ref $Cpl-Tuple)  (local.get $composite)) (then (return_call $!Cpl-Tuple.hash  (ref.cast (ref $Cpl-Tuple)  (local.get $composite)))))
+			(if (ref.test (ref $Cpl-Record) (local.get $composite)) (then (return_call $!Cpl-Record.hash (ref.cast (ref $Cpl-Record) (local.get $composite)))))
+			(if (ref.test (ref $Object)     (local.get $composite)) (then (return_call $!Object.hash     (ref.cast (ref $Object)     (local.get $composite)))))
 		)
 	)
 	(unreachable)
@@ -72,16 +72,16 @@
 
 
 
-;; hash a $String.
+;; hash a $Cpl-String.
 ;; ```
 ;; [SEED, ...$string.codeunits].reduce((a, b) => (a xor i64.extend_i32_u(b)) * PRIME);
 ;; ```
-(func $!String.hash (param $string (ref $String)) (result i64)
+(func $!Cpl-String.hash (param $string (ref $Cpl-String)) (result i64)
 	(local $internal (ref $StringInternal))
 	(local $result   i64)
 	(local $i        i32)
 
-	(local.set $internal (struct.get $String $internal (local.get $string)))
+	(local.set $internal (struct.get $Cpl-String $internal (local.get $string)))
 	(local.set $result   (global.get $SEED))
 
 	(block $exit
@@ -104,16 +104,16 @@
 
 
 
-;; hash a $Tuple.
+;; hash a $Cpl-Tuple.
 ;; ```
 ;; [SEED, ...$tuple.values()].reduce((a, b) => (a xor hash(b)) * PRIME);
 ;; ```
-(func $!Tuple.hash (param $tuple (ref $Tuple)) (result i64)
+(func $!Cpl-Tuple.hash (param $tuple (ref $Cpl-Tuple)) (result i64)
 	(local $internal (ref $TupleInternal))
 	(local $result   i64)
 	(local $i        i32)
 
-	(local.set $internal (struct.get $Tuple $internal (local.get $tuple)))
+	(local.set $internal (struct.get $Cpl-Tuple $internal (local.get $tuple)))
 	(local.set $result   (global.get $SEED))
 
 	(block $exit
@@ -136,19 +136,19 @@
 
 
 
-;; hash a $Record.
+;; hash a $Cpl-Record.
 ;; Similar to `$!Tuple.hash` except that we don’t multiply by PRIME until the very end.
 ;; Doing so preserves commutativity, which is necessary for Records,
 ;; because keys may be inserted in any order.
 ;; ```
 ;; [SEED, ...$record.entries()].reduce((a, b) => a xor hash(b)) * PRIME;
 ;; ```
-(func $!Record.hash (param $record (ref $Record)) (result i64)
+(func $!Cpl-Record.hash (param $record (ref $Cpl-Record)) (result i64)
 	(local $internal (ref $RecordInternal))
 	(local $result   i64)
 	(local $i        i32)
 
-	(local.set $internal (struct.get $Record $internal (local.get $record)))
+	(local.set $internal (struct.get $Cpl-Record $internal (local.get $record)))
 	(local.set $result   (global.get $SEED))
 
 	(block $exit

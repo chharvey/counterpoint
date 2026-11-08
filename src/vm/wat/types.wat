@@ -95,9 +95,9 @@
 
 
 	;; ### “Value” Types (id-by-value)
-	(type $String (sub final $Composite (struct (field $internal (ref $StringInternal)))))
-	(type $Tuple  (sub final $Composite (struct (field $internal (ref $TupleInternal)))))
-	(type $Record (sub final $Composite (struct (field $internal (ref $RecordInternal)))))
+	(type $Cpl-String (sub final $Composite (struct (field $internal (ref $StringInternal)))))
+	(type $Cpl-Tuple  (sub final $Composite (struct (field $internal (ref $TupleInternal)))))
+	(type $Cpl-Record (sub final $Composite (struct (field $internal (ref $RecordInternal)))))
 
 
 	;; ### Reference Types (id-by-reference)
@@ -143,7 +143,7 @@
 
 		;; --- own ---
 		;; the error message
-		(field $message (ref $String))
+		(field $message (ref $Cpl-String))
 		;; a cause of this Exception
 		(field $cause (ref null $Exception))
 	)))

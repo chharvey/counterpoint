@@ -241,12 +241,12 @@
 
 
 
-(func $Map.fill-set-from-tuple (export "Map#fillSetFromTuple") (param $dest (ref $Map)) (param $src (ref $Tuple))
+(func $Map.fill-set-from-tuple (export "Map#fillSetFromTuple") (param $dest (ref $Map)) (param $src (ref $Cpl-Tuple))
 	(local $src-internal (ref $TupleInternal))
 	(local $i            i32)
 	(local $item         (ref $Value))
 
-	(local.set $src-internal (struct.get $Tuple $internal (local.get $src)))
+	(local.set $src-internal (struct.get $Cpl-Tuple $internal (local.get $src)))
 
 	(block $exit
 		(local.set $i (i32.const 0))
@@ -283,12 +283,12 @@
 
 
 
-(func $Map.fill-from-tuple (export "Map#fillFromTuple") (param $dest (ref $Map)) (param $src (ref $Tuple))
+(func $Map.fill-from-tuple (export "Map#fillFromTuple") (param $dest (ref $Map)) (param $src (ref $Cpl-Tuple))
 	(local $src-internal (ref $TupleInternal))
 	(local $i            i32)
 	(local $item         (ref $Value))
 
-	(local.set $src-internal (struct.get $Tuple $internal (local.get $src)))
+	(local.set $src-internal (struct.get $Cpl-Tuple $internal (local.get $src)))
 
 	(block $exit
 		(local.set $i (i32.const 0))
@@ -296,7 +296,7 @@
 			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $src-internal))))
 			(local.set $item (array.get $TupleInternal (local.get $src-internal) (local.get $i)))
 			(call $Map.set (local.get $dest) (call $Case.from-tuple
-				(struct.get $Tuple $internal (ref.cast (ref $Tuple) (struct.get $Value $composite (local.get $item))))
+				(struct.get $Cpl-Tuple $internal (ref.cast (ref $Cpl-Tuple) (struct.get $Value $composite (local.get $item))))
 			))
 			(local.set $i (i32.add (local.get $i) (i32.const 1)))
 			(br $repeat)
@@ -318,7 +318,7 @@
 			(if
 				(i32.eqz (ref.is_null (local.get $item)))
 				(then (call $Map.set (local.get $dest) (call $Case.from-tuple
-					(struct.get $Tuple $internal (ref.cast (ref $Tuple) (struct.get $Value $composite (local.get $item))))
+					(struct.get $Cpl-Tuple $internal (ref.cast (ref $Cpl-Tuple) (struct.get $Value $composite (local.get $item))))
 				)))
 			)
 			(local.set $i (i32.add (local.get $i) (i32.const 1)))
@@ -341,7 +341,7 @@
 			(if
 				(i32.eqz (ref.is_null (local.get $item)))
 				(then (call $Map.set (local.get $dest) (call $Case.from-tuple
-					(struct.get $Tuple $internal (ref.cast (ref $Tuple) (struct.get $Value $composite (struct.get $Case $ant (local.get $item)))))
+					(struct.get $Cpl-Tuple $internal (ref.cast (ref $Cpl-Tuple) (struct.get $Value $composite (struct.get $Case $ant (local.get $item)))))
 				)))
 			)
 			(local.set $i (i32.add (local.get $i) (i32.const 1)))

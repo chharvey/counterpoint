@@ -12,9 +12,9 @@ import {Map as VmMap} from './classes/Map.ts';
 import {Value} from './classes/Value.ts';
 import {Object as VmObject} from './classes/Object.ts';
 import {Class as VmClass} from './classes/Class.ts';
-import {String as VmString} from './classes/String.ts';
-import {Tuple as VmTuple} from './classes/Tuple.ts';
-import {Record as VmRecord} from './classes/Record.ts';
+import {CplString} from './classes/String.ts';
+import {CplTuple} from './classes/Tuple.ts';
+import {CplRecord} from './classes/Record.ts';
 
 
 
@@ -35,9 +35,9 @@ type TypeKey = (
 	| 'Data'
 	| 'Object'
 	| 'Class'
-	| 'String'
-	| 'Tuple'
-	| 'Record'
+	| 'CplString'
+	| 'CplTuple'
+	| 'CplRecord'
 	| 'Exception'
 	| 'Maybe'
 	| 'Result'
@@ -108,9 +108,9 @@ const TYPES: {
 	const i_data:            number = tb.getSize(); tb.grow(1);
 	const i_object:          number = tb.getSize(); tb.grow(1);
 	const i_class:           number = tb.getSize(); tb.grow(1);
-	const i_string:          number = tb.getSize(); tb.grow(1);
-	const i_tuple:           number = tb.getSize(); tb.grow(1);
-	const i_record:          number = tb.getSize(); tb.grow(1);
+	const i_cpl_string:      number = tb.getSize(); tb.grow(1);
+	const i_cpl_tuple:       number = tb.getSize(); tb.grow(1);
+	const i_cpl_record:      number = tb.getSize(); tb.grow(1);
 	const i_cpl_list:        number = tb.getSize(); tb.grow(1);
 	const i_cpl_dict:        number = tb.getSize(); tb.grow(1);
 	const i_cpl_map:         number = tb.getSize(); tb.grow(1);
@@ -232,23 +232,23 @@ const TYPES: {
 	]);
 	tb.setSubType(i_class, tb.getTempHeapType(i_object));
 
-	/* (type $String ...) */
-	tb.setStructType(i_string, [
+	/* (type $Cpl-String ...) */
+	tb.setStructType(i_cpl_string, [
 		/* $internal */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_string_internal), false)),
 	]);
-	tb.setSubType(i_string, tb.getTempHeapType(i_composite));
+	tb.setSubType(i_cpl_string, tb.getTempHeapType(i_composite));
 
-	/* (type $Tuple ...) */
-	tb.setStructType(i_tuple, [
+	/* (type $Cpl-Tuple ...) */
+	tb.setStructType(i_cpl_tuple, [
 		/* $internal */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_tuple_internal), false)),
 	]);
-	tb.setSubType(i_tuple, tb.getTempHeapType(i_composite));
+	tb.setSubType(i_cpl_tuple, tb.getTempHeapType(i_composite));
 
-	/* (type $Record ...) */
-	tb.setStructType(i_record, [
+	/* (type $Cpl-Record ...) */
+	tb.setStructType(i_cpl_record, [
 		/* $internal */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_record_internal), false)),
 	]);
-	tb.setSubType(i_record, tb.getTempHeapType(i_composite));
+	tb.setSubType(i_cpl_record, tb.getTempHeapType(i_composite));
 
 	/* (type $CplList ...) */
 	tb.setStructType(i_cpl_list, [
@@ -274,8 +274,8 @@ const TYPES: {
 	/* (type $Exception ...) */
 	tb.setStructType(i_exception, [
 		...fields_object,
-		/* $message */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_string),    false)),
-		/* $cause */   make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_exception), true)),
+		/* $message */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_cpl_string), false)),
+		/* $cause */   make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_exception),  true)),
 	]);
 	tb.setSubType(i_exception, tb.getTempHeapType(i_object));
 
@@ -322,9 +322,9 @@ const TYPES: {
 			Data:           heaptypes[i_data],
 			Object:         heaptypes[i_object],
 			Class:          heaptypes[i_class],
-			String:         heaptypes[i_string],
-			Tuple:          heaptypes[i_tuple],
-			Record:         heaptypes[i_record],
+			CplString:      heaptypes[i_cpl_string],
+			CplTuple:       heaptypes[i_cpl_tuple],
+			CplRecord:      heaptypes[i_cpl_record],
 			Exception:      heaptypes[i_exception],
 			Maybe:          heaptypes[i_maybe],
 			Result:         heaptypes[i_result],
@@ -348,9 +348,9 @@ const TYPES: {
 			Data:           binaryen.getTypeFromHeapType(heaptypes[i_data],            false),
 			Object:         binaryen.getTypeFromHeapType(heaptypes[i_object],          false),
 			Class:          binaryen.getTypeFromHeapType(heaptypes[i_class],           false),
-			String:         binaryen.getTypeFromHeapType(heaptypes[i_string],          false),
-			Tuple:          binaryen.getTypeFromHeapType(heaptypes[i_tuple],           false),
-			Record:         binaryen.getTypeFromHeapType(heaptypes[i_record],          false),
+			CplString:      binaryen.getTypeFromHeapType(heaptypes[i_cpl_string],      false),
+			CplTuple:       binaryen.getTypeFromHeapType(heaptypes[i_cpl_tuple],       false),
+			CplRecord:      binaryen.getTypeFromHeapType(heaptypes[i_cpl_record],      false),
 			Exception:      binaryen.getTypeFromHeapType(heaptypes[i_exception],       false),
 			Maybe:          binaryen.getTypeFromHeapType(heaptypes[i_maybe],           false),
 			Result:         binaryen.getTypeFromHeapType(heaptypes[i_result],          false),
@@ -404,9 +404,9 @@ export class VirtualMachine {
 	public readonly Value     = new Value(this);
 	public readonly Object    = new VmObject(this);
 	public readonly Class     = new VmClass(this);
-	public readonly String    = new VmString(this);
-	public readonly Tuple     = new VmTuple(this);
-	public readonly Record    = new VmRecord(this);
+	public readonly CplString = new CplString(this);
+	public readonly CplTuple  = new CplTuple(this);
+	public readonly CplRecord = new CplRecord(this);
 
 
 	public constructor() {

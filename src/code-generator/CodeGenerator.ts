@@ -271,33 +271,33 @@ export class CodeGenerator {
 	}
 
 	/**
-	 * Return a new `$String` from UTF-8-encoded code units.
+	 * Return a new `$Cpl-String` from UTF-8-encoded code units.
 	 * @param units items in the array; must be of type `i32`
-	 * @return      `(array.new_fixed $String <...items>)`
+	 * @return      `(array.new_fixed $Cpl-String <...items>)`
 	 */
-	public codegenString(units: readonly (binaryen.ExpressionRef /* i32 */)[] = []): binaryen.ExpressionRef /* (ref $String) */ {
-		return this.mod.wasm.struct.new([this.mod.wasm.array.new_fixed(this.vm.heaptype.StringInternal, units)], this.vm.heaptype.String);
+	public codegenString(units: readonly (binaryen.ExpressionRef /* i32 */)[] = []): binaryen.ExpressionRef /* (ref $Cpl-String) */ {
+		return this.mod.wasm.struct.new([this.mod.wasm.array.new_fixed(this.vm.heaptype.StringInternal, units)], this.vm.heaptype.CplString);
 	}
 
 	/**
-	 * Return a new `$Tuple` from items.
+	 * Return a new `$Cpl-Tuple` from items.
 	 * @param items items in the array; must be of type `(ref $Value)`
-	 * @return      `(array.new_fixed $Tuple <...items>)`
+	 * @return      `(array.new_fixed $Cpl-Tuple <...items>)`
 	 */
-	public codegenTuple(items: readonly (binaryen.ExpressionRef /* (ref $Value) */)[] = []): binaryen.ExpressionRef /* (ref $Tuple) */ {
-		return this.mod.wasm.struct.new([this.mod.wasm.array.new_fixed(this.vm.heaptype.TupleInternal, items)], this.vm.heaptype.Tuple);
+	public codegenTuple(items: readonly (binaryen.ExpressionRef /* (ref $Value) */)[] = []): binaryen.ExpressionRef /* (ref $Cpl-Tuple) */ {
+		return this.mod.wasm.struct.new([this.mod.wasm.array.new_fixed(this.vm.heaptype.TupleInternal, items)], this.vm.heaptype.CplTuple);
 	}
 
 	/**
-	 * Return a new `$Record` from properties.
+	 * Return a new `$Cpl-Record` from properties.
 	 * This method automatically hashes the property keys and inserts them at the correct indices.
 	 * @param props key–value pairs whose keys are key ids (`bigint`s) and whose values (of type `(ref $Property)`) are items in the array
-	 * @return      `(array.new_fixed $Record <...props>)`
+	 * @return      `(array.new_fixed $Cpl-Record <...props>)`
 	 */
-	public codegenRecord(props: ReadonlyMap<bigint, binaryen.ExpressionRef /* (ref $Property) */> = new Map()): binaryen.ExpressionRef /* (ref $Record) */ {
+	public codegenRecord(props: ReadonlyMap<bigint, binaryen.ExpressionRef /* (ref $Property) */> = new Map()): binaryen.ExpressionRef /* (ref $Cpl-Record) */ {
 		const entries = new Array<binaryen.ExpressionRef | undefined>(props.size);
 		props.forEach((code, id) => insert_entry(entries, Number(id) % entries.length, code));
-		return this.mod.wasm.struct.new([this.mod.wasm.array.new_fixed(this.vm.heaptype.RecordInternal, entries as binaryen.ExpressionRef[])], this.vm.heaptype.Record);
+		return this.mod.wasm.struct.new([this.mod.wasm.array.new_fixed(this.vm.heaptype.RecordInternal, entries as binaryen.ExpressionRef[])], this.vm.heaptype.CplRecord);
 	}
 
 	/**
@@ -419,7 +419,7 @@ export class CodeGenerator {
 	 * @param value   the optional cause; if not given, `(ref.null $Exception)` is used
 	 * @return        `(struct.new $Exception <message> <cause?>)`
 	 */
-	public codegenException(message: binaryen.ExpressionRef /* (ref $String) */, cause?: binaryen.ExpressionRef /* (ref $Exception) */): binaryen.ExpressionRef /* (ref $Exception) */ {
+	public codegenException(message: binaryen.ExpressionRef /* (ref $Cpl-String) */, cause?: binaryen.ExpressionRef /* (ref $Exception) */): binaryen.ExpressionRef /* (ref $Exception) */ {
 		const {vm: {heaptype, Object: VmObject}, mod: {wasm}} = this;
 		return wasm.struct.new([
 			VmObject.ctrPlusPlus(),
@@ -496,19 +496,19 @@ export class CodeGenerator {
 			this.mod.imports.addGlobal(data.name, extern_mod_name, export_name, data.type, false)
 		));
 		[
-			this.vm.util     .funcImportDataMap,
-			this.vm.op       .funcImportDataMap,
-			this.vm.Vect     .funcImportDataMap,
-			this.vm.Value    .funcImportDataMap,
-			this.vm.Property .funcImportDataMap,
-			this.vm.Case     .funcImportDataMap,
-			this.vm.List     .funcImportDataMap,
-			this.vm.Dict     .funcImportDataMap,
-			this.vm.Map      .funcImportDataMap,
-			this.vm.String   .funcImportDataMap,
-			this.vm.Tuple    .funcImportDataMap,
-			this.vm.Record   .funcImportDataMap,
-			this.vm.Object   .funcImportDataMap,
+			this.vm.util      .funcImportDataMap,
+			this.vm.op        .funcImportDataMap,
+			this.vm.Vect      .funcImportDataMap,
+			this.vm.Value     .funcImportDataMap,
+			this.vm.Property  .funcImportDataMap,
+			this.vm.Case      .funcImportDataMap,
+			this.vm.List      .funcImportDataMap,
+			this.vm.Dict      .funcImportDataMap,
+			this.vm.Map       .funcImportDataMap,
+			this.vm.CplString .funcImportDataMap,
+			this.vm.CplTuple  .funcImportDataMap,
+			this.vm.CplRecord .funcImportDataMap,
+			this.vm.Object    .funcImportDataMap,
 		].forEach((datamap) => datamap.forEach((data, export_name) => (
 			this.mod.imports.addFunction(data.name, extern_mod_name, export_name, data.param, data.result)
 		)));

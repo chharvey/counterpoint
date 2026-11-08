@@ -41,8 +41,8 @@ export class Template extends Value {
 
 	@memoizeMethod
 	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
-		const {vm: {heaptype, reftype, Value: VmValue, String: VmString}, mod: {wasm}} = cg;
-		const strings: readonly Local[]                  = this.items.map((item) => cg.newLocal(VmString.field(VmValue.asString(item.codegen(cg))).internal));
+		const {vm: {heaptype, reftype, Value: VmValue, CplString}, mod: {wasm}} = cg;
+		const strings: readonly Local[]                  = this.items.map((item) => cg.newLocal(CplString.field(VmValue.asString(item.codegen(cg))).internal));
 		const lengths: readonly binaryen.ExpressionRef[] = strings.map((strarr) => wasm.array.len(strarr.get()));
 
 		const result: Local = cg.newLocal(wasm.array.new_default(heaptype.StringInternal, lengths.reduce((a, b) => wasm.i32.add(a, b))));
@@ -62,7 +62,7 @@ export class Template extends Value {
 				),
 				offset.set(wasm.i32.add(offset.get(), lengths[i])),
 			]).slice(0, -1), // slice off the last `offset.set`
-			wasm.struct.new([result.get()], heaptype.String),
-		], reftype.String));
+			wasm.struct.new([result.get()], heaptype.CplString),
+		], reftype.CplString));
 	}
 }

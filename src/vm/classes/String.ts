@@ -9,11 +9,11 @@ import type {
 
 
 /** Struct field constant indices. */
-const FIELD = {/** `$String.$internal` */ INTERNAL: 0} as const;
+const FIELD = {/** `$Cpl-String.$internal` */ INTERNAL: 0} as const;
 
 
 
-class VmString implements HasFuncData {
+export class CplString implements HasFuncData {
 	public constructor(private readonly vm: VirtualMachine) {}
 
 
@@ -25,9 +25,8 @@ class VmString implements HasFuncData {
 	}
 
 
-	public field(ref: binaryen.ExpressionRef /* (ref null $String) */): {/** @return `(struct.get $String $internal <ref>)` */ readonly internal: binaryen.ExpressionRef /* (ref $StringInternal) */} {
+	public field(ref: binaryen.ExpressionRef /* (ref null $Cpl-String) */): {/** @return `(struct.get $Cpl-String $internal <ref>)` */ readonly internal: binaryen.ExpressionRef /* (ref $StringInternal) */} {
 		const {mod: {wasm}, reftype} = this.vm;
 		return {get internal() { return wasm.struct.get(FIELD.INTERNAL, ref, reftype.StringInternal); }};
 	}
 }
-export {VmString as String};

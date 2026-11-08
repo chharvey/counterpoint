@@ -9,11 +9,11 @@ import type {
 
 
 /** Struct field constant indices. */
-const FIELD = {/** `$Tuple.$internal` */ INTERNAL: 0} as const;
+const FIELD = {/** `$Cpl-Tuple.$internal` */ INTERNAL: 0} as const;
 
 
 
-class VmTuple implements HasFuncData {
+export class CplTuple implements HasFuncData {
 	public constructor(private readonly vm: VirtualMachine) {}
 
 
@@ -25,9 +25,8 @@ class VmTuple implements HasFuncData {
 	}
 
 
-	public field(ref: binaryen.ExpressionRef /* (ref null $Tuple) */): {/** @return `(struct.get $Tuple $internal <ref>)` */ readonly internal: binaryen.ExpressionRef /* (ref $TupleInternal) */} {
+	public field(ref: binaryen.ExpressionRef /* (ref null $Cpl-Tuple) */): {/** @return `(struct.get $Cpl-Tuple $internal <ref>)` */ readonly internal: binaryen.ExpressionRef /* (ref $TupleInternal) */} {
 		const {mod: {wasm}, reftype} = this.vm;
 		return {get internal() { return wasm.struct.get(FIELD.INTERNAL, ref, reftype.TupleInternal); }};
 	}
 }
-export {VmTuple as Tuple};
