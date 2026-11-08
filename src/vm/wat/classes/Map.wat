@@ -138,9 +138,7 @@
 (func $Map.get (export "Map#get") (param $map (ref $Map)) (param $ant (ref $Value)) (result (ref $Value))
 	;; case at the specified antecedent.
 	(local $case (ref null $Case))
-	(call $Map.find (local.get $map) (local.get $ant))
-	(local.set $case)
-	(drop)
+	(drop (local.set $case (call $Map.find (local.get $map) (local.get $ant))))
 	(if
 		(i32.eqz (i32.or
 			(ref.is_null (local.get $case))
@@ -161,9 +159,7 @@
 	;; capacity needed for adjustment.
 	(local $new-capacity i32)
 
-	(call $Map.find (local.get $map) (local.get $ant))
-	(local.set $case)
-	(local.set $index)
+	(local.set $index (local.set $case (call $Map.find (local.get $map) (local.get $ant))))
 
 	;; if prop is null, we’re adding a new entry. update the capacity, reallocate if necessary, then increment the size.
 	;; else if prop is a tombstone or alive, just replace it without incrementing the size.
@@ -203,9 +199,7 @@
 	;; capacity needed for adjustment.
 	(local $new-capacity i32)
 
-	(call $Map.find (local.get $map) (local.get $ant))
-	(local.set $case)
-	(local.set $index)
+	(local.set $index (local.set $case (call $Map.find (local.get $map) (local.get $ant))))
 
 	(if
 		(i32.or

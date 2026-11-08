@@ -138,9 +138,7 @@
 (func $Dict.get (export "Dict#get") (param $dict (ref $Dict)) (param $key i64) (result (ref $Value))
 	;; property at the specified key.
 	(local $prop (ref null $Property))
-	(call $Dict.find (local.get $dict) (local.get $key))
-	(local.set $prop)
-	(drop)
+	(drop (local.set $prop (call $Dict.find (local.get $dict) (local.get $key))))
 	(if
 		(i32.eqz (i32.or
 			(ref.is_null (local.get $prop))
@@ -161,9 +159,7 @@
 	;; capacity needed for adjustment.
 	(local $new-capacity i32)
 
-	(call $Dict.find (local.get $dict) (local.get $key))
-	(local.set $prop)
-	(local.set $index)
+	(local.set $index (local.set $prop (call $Dict.find (local.get $dict) (local.get $key))))
 
 	;; if prop is null, we’re adding a new entry. update the capacity, reallocate if necessary, then increment the size.
 	;; else if prop is a tombstone or alive, just replace it without incrementing the size.
@@ -203,9 +199,7 @@
 	;; capacity needed for adjustment.
 	(local $new-capacity i32)
 
-	(call $Dict.find (local.get $dict) (local.get $key))
-	(local.set $prop)
-	(local.set $index)
+	(local.set $index (local.set $prop (call $Dict.find (local.get $dict) (local.get $key))))
 
 	(if
 		(i32.or
