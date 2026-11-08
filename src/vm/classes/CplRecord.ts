@@ -35,9 +35,9 @@ export class CplRecord implements HasFuncData {
 	}
 
 
-	public field(ref: binaryen.ExpressionRef /* (ref null $Cpl-Record) */): {/** @return `(struct.get $Cpl-Record $internal <ref>)` */ readonly internal: binaryen.ExpressionRef /* (ref $RecordInternal) */} {
+	public field(ref: binaryen.ExpressionRef /* (ref null $Cpl-Record) */): {/** @return `(struct.get $Cpl-Record $internal <ref>)` */ readonly internal: binaryen.ExpressionRef /* (ref $Record) */} {
 		const {mod: {wasm}, reftype} = this.vm;
-		return {get internal() { return wasm.struct.get(FIELD.INTERNAL, ref, reftype.RecordInternal); }};
+		return {get internal() { return wasm.struct.get(FIELD.INTERNAL, ref, reftype.Record); }};
 	}
 
 	/** Return whether the given record has a property amongst its entries with the given key. */

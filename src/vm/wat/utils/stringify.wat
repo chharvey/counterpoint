@@ -9,20 +9,20 @@
 	(if
 		(call $Value.is-primitive (local.get $value))
 		(then
-			(if (call $Vect.is-null (local.get $primitive)) (then (return (struct.new $Cpl-String (array.new_fixed $StringInternal 4
+			(if (call $Vect.is-null (local.get $primitive)) (then (return (struct.new $Cpl-String (array.new_fixed $String 4
 				(i32.const 0x6e) ;; 'n'
 				(i32.const 0x75) ;; 'u'
 				(i32.const 0x6c) ;; 'l'
 				(i32.const 0x6c) ;; 'l'
 			)))))
-			(if (call $Vect.is-false (local.get $primitive)) (then (return (struct.new $Cpl-String (array.new_fixed $StringInternal 5
+			(if (call $Vect.is-false (local.get $primitive)) (then (return (struct.new $Cpl-String (array.new_fixed $String 5
 				(i32.const 0x66) ;; 'f'
 				(i32.const 0x61) ;; 'a'
 				(i32.const 0x6c) ;; 'l'
 				(i32.const 0x73) ;; 's'
 				(i32.const 0x65) ;; 'e'
 			)))))
-			(if (call $Vect.is-true (local.get $primitive)) (then (return (struct.new $Cpl-String (array.new_fixed $StringInternal 4
+			(if (call $Vect.is-true (local.get $primitive)) (then (return (struct.new $Cpl-String (array.new_fixed $String 4
 				(i32.const 0x74) ;; 't'
 				(i32.const 0x72) ;; 'r'
 				(i32.const 0x75) ;; 'u'
@@ -53,13 +53,13 @@
 	(local $is-negative i32)
 	(local $copy        i64)
 	(local $rem         i64)
-	(local $internal    (ref $StringInternal))
+	(local $internal    (ref $String))
 	(local $length      i32)
 	(local $index       i32)
 
 	(if
 		(i64.eqz (local.get $int))
-		(then (return (struct.new $Cpl-String (array.new_fixed $StringInternal 1 (i32.const 0x30))))) ;; UTF8_codeunit('0')
+		(then (return (struct.new $Cpl-String (array.new_fixed $String 1 (i32.const 0x30))))) ;; UTF8_codeunit('0')
 	)
 
 	;; force the copy to be negative to handle the `i64::min_s` overflow case (`-(2 ^ 63)`)
@@ -87,7 +87,7 @@
 			(br $repeat)
 		)
 	)
-	(local.set $internal (array.new_default $StringInternal (local.get $length)))
+	(local.set $internal (array.new_default $String (local.get $length)))
 
 	;; re-initialize `$copy` for string population
 	(local.set $copy (if (result i64)
@@ -101,7 +101,7 @@
 	(block $exit
 		(loop $repeat
 			(local.set $rem (i64.rem_s (local.get $copy) (i64.const 10)))
-			(array.set $StringInternal
+			(array.set $String
 				(local.get $internal)
 				(local.get $index)
 				(i32.sub (i32.const 0x30) (i32.wrap_i64 (local.get $rem))) ;; with rem <= 0, UTF8_codeunit(abs(rem)) == UTF8_codeunit('0') - rem
@@ -115,7 +115,7 @@
 	;; prepend negative sign if necessary
 	(if
 		(local.get $is-negative)
-		(then (array.set $StringInternal
+		(then (array.set $String
 			(local.get $internal)
 			(i32.const 0)
 			(i32.const 0x2d) ;; UTF8_codeunit('-')
@@ -128,13 +128,13 @@
 (func $!i64.stringify_u (param $nat i64) (result (ref $Cpl-String))
 	(local $copy     i64)
 	(local $rem      i64)
-	(local $internal (ref $StringInternal))
+	(local $internal (ref $String))
 	(local $length   i32)
 	(local $index    i32)
 
 	(if
 		(i64.eqz (local.get $nat))
-		(then (return (struct.new $Cpl-String (array.new_fixed $StringInternal 1 (i32.const 0x30))))) ;; UTF8_codeunit('0')
+		(then (return (struct.new $Cpl-String (array.new_fixed $String 1 (i32.const 0x30))))) ;; UTF8_codeunit('0')
 	)
 
 	(local.set $copy   (local.get $nat))
@@ -149,7 +149,7 @@
 			(br $repeat)
 		)
 	)
-	(local.set $internal (array.new_default $StringInternal (local.get $length)))
+	(local.set $internal (array.new_default $String (local.get $length)))
 
 	;; re-initialize `$copy` for string population
 	(local.set $copy (local.get $nat))
@@ -159,7 +159,7 @@
 	(block $exit
 		(loop $repeat
 			(local.set $rem (i64.rem_u (local.get $copy) (i64.const 10)))
-			(array.set $StringInternal
+			(array.set $String
 				(local.get $internal)
 				(local.get $index)
 				(i32.add (i32.const 0x30) (i32.wrap_i64 (local.get $rem))) ;; with digit >= 0, UTF8_codeunit(digit) == UTF8_codeunit('0') + digit

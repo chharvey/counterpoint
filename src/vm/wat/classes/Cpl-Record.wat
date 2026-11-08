@@ -1,5 +1,5 @@
 (func $Cpl-Record.has-key (export "CplRecord#hasKey") (param $record (ref $Cpl-Record)) (param $key i64) (result i32)
-	(local $internal (ref $RecordInternal))
+	(local $internal (ref $Record))
 	(local $i        i32)
 
 	(local.set $internal (struct.get $Cpl-Record $internal (local.get $record)))
@@ -10,7 +10,7 @@
 			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $internal))))
 			(if
 				(i64.eq
-					(struct.get $Property $key (array.get $RecordInternal (local.get $internal) (local.get $i)))
+					(struct.get $Property $key (array.get $Record (local.get $internal) (local.get $i)))
 					(local.get $key)
 				)
 				(then (return (i32.const 1)))
@@ -25,7 +25,7 @@
 
 
 (func $Cpl-Record.get (export "CplRecord#get") (param $record (ref $Cpl-Record)) (param $key i64) (result (ref $Value))
-	(local $internal (ref $RecordInternal))
+	(local $internal (ref $Record))
 	;; the length of the given record. constant.
 	(local $ARRLEN i32)
 	;; tracks the number of loops. if it exceeds the array length, trap.
@@ -41,7 +41,7 @@
 	(local.set $index      (call $util:mod (i32.wrap_i64 (local.get $key)) (local.get $ARRLEN))) ;; will trap if ARRLEN == 0
 
 	(loop $repeat
-		(local.set $prop (array.get $RecordInternal (local.get $internal) (local.get $index)))
+		(local.set $prop (array.get $Record (local.get $internal) (local.get $index)))
 		(if
 			(i64.eq (struct.get $Property $key (local.get $prop)) (local.get $key))
 			(then (return (struct.get $Property $val (local.get $prop))))

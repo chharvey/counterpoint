@@ -276,7 +276,7 @@ export class CodeGenerator {
 	 * @return      `(array.new_fixed $Cpl-String <...items>)`
 	 */
 	public codegenString(units: readonly (binaryen.ExpressionRef /* i32 */)[] = []): binaryen.ExpressionRef /* (ref $Cpl-String) */ {
-		return this.mod.wasm.struct.new([this.mod.wasm.array.new_fixed(this.vm.heaptype.StringInternal, units)], this.vm.heaptype.CplString);
+		return this.mod.wasm.struct.new([this.mod.wasm.array.new_fixed(this.vm.heaptype.String, units)], this.vm.heaptype.CplString);
 	}
 
 	/**
@@ -285,7 +285,7 @@ export class CodeGenerator {
 	 * @return      `(array.new_fixed $Cpl-Tuple <...items>)`
 	 */
 	public codegenTuple(items: readonly (binaryen.ExpressionRef /* (ref $Value) */)[] = []): binaryen.ExpressionRef /* (ref $Cpl-Tuple) */ {
-		return this.mod.wasm.struct.new([this.mod.wasm.array.new_fixed(this.vm.heaptype.TupleInternal, items)], this.vm.heaptype.CplTuple);
+		return this.mod.wasm.struct.new([this.mod.wasm.array.new_fixed(this.vm.heaptype.Tuple, items)], this.vm.heaptype.CplTuple);
 	}
 
 	/**
@@ -297,7 +297,7 @@ export class CodeGenerator {
 	public codegenRecord(props: ReadonlyMap<bigint, binaryen.ExpressionRef /* (ref $Property) */> = new Map()): binaryen.ExpressionRef /* (ref $Cpl-Record) */ {
 		const entries = new Array<binaryen.ExpressionRef | undefined>(props.size);
 		props.forEach((code, id) => insert_entry(entries, Number(id) % entries.length, code));
-		return this.mod.wasm.struct.new([this.mod.wasm.array.new_fixed(this.vm.heaptype.RecordInternal, entries as binaryen.ExpressionRef[])], this.vm.heaptype.CplRecord);
+		return this.mod.wasm.struct.new([this.mod.wasm.array.new_fixed(this.vm.heaptype.Record, entries as binaryen.ExpressionRef[])], this.vm.heaptype.CplRecord);
 	}
 
 	/**

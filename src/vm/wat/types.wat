@@ -21,9 +21,9 @@
 		(field $con (ref $Value))
 	))
 
-	(type $StringInternal (array (mut i32))) ;; mutable to allow construction of templates
-	(type $TupleInternal  (array (ref $Value)))
-	(type $RecordInternal (array (ref $Property)))
+	(type $String (array (mut i32))) ;; mutable to allow construction of templates
+	(type $Tuple  (array (ref $Value)))
+	(type $Record (array (ref $Property)))
 
 	;; mutable to allow reassigning array entries, nullable because array can be sparse
 	(type $ListInternal (array (mut (ref null $Value))))
@@ -95,9 +95,9 @@
 
 
 	;; ### “Value” Types (id-by-value)
-	(type $Cpl-String (sub final $Composite (struct (field $internal (ref $StringInternal)))))
-	(type $Cpl-Tuple  (sub final $Composite (struct (field $internal (ref $TupleInternal)))))
-	(type $Cpl-Record (sub final $Composite (struct (field $internal (ref $RecordInternal)))))
+	(type $Cpl-String (sub final $Composite (struct (field $internal (ref $String)))))
+	(type $Cpl-Tuple  (sub final $Composite (struct (field $internal (ref $Tuple)))))
+	(type $Cpl-Record (sub final $Composite (struct (field $internal (ref $Record)))))
 
 
 	;; ### Reference Types (id-by-reference)

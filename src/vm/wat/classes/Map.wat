@@ -242,7 +242,7 @@
 
 
 (func $Map.fill-set-from-tuple (export "Map#fillSetFromTuple") (param $dest (ref $Map)) (param $src (ref $Cpl-Tuple))
-	(local $src-internal (ref $TupleInternal))
+	(local $src-internal (ref $Tuple))
 	(local $i            i32)
 	(local $item         (ref $Value))
 
@@ -252,7 +252,7 @@
 		(local.set $i (i32.const 0))
 		(loop $repeat
 			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $src-internal))))
-			(local.set $item (array.get $TupleInternal (local.get $src-internal) (local.get $i)))
+			(local.set $item (array.get $Tuple (local.get $src-internal) (local.get $i)))
 			(call $Map.set (local.get $dest) (local.get $item) (global.get $Value.NULL))
 			(local.set $i (i32.add (local.get $i) (i32.const 1)))
 			(br $repeat)
@@ -284,7 +284,7 @@
 
 
 (func $Map.fill-from-tuple (export "Map#fillFromTuple") (param $dest (ref $Map)) (param $src (ref $Cpl-Tuple))
-	(local $src-internal (ref $TupleInternal))
+	(local $src-internal (ref $Tuple))
 	(local $i            i32)
 	(local $item         (ref $Value))
 
@@ -294,7 +294,7 @@
 		(local.set $i (i32.const 0))
 		(loop $repeat
 			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $src-internal))))
-			(local.set $item (array.get $TupleInternal (local.get $src-internal) (local.get $i)))
+			(local.set $item (array.get $Tuple (local.get $src-internal) (local.get $i)))
 			(call $Map.set (local.get $dest) (call $Case.from-tuple
 				(struct.get $Cpl-Tuple $internal (ref.cast (ref $Cpl-Tuple) (struct.get $Value $composite (local.get $item))))
 			))

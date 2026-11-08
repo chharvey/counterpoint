@@ -77,7 +77,7 @@
 ;; [SEED, ...$string.codeunits].reduce((a, b) => (a xor i64.extend_i32_u(b)) * PRIME);
 ;; ```
 (func $!Cpl-String.hash (param $string (ref $Cpl-String)) (result i64)
-	(local $internal (ref $StringInternal))
+	(local $internal (ref $String))
 	(local $result   i64)
 	(local $i        i32)
 
@@ -91,7 +91,7 @@
 			(local.set $result (i64.mul
 				(i64.xor
 					(local.get $result)
-					(i64.extend_i32_u (array.get_u $StringInternal (local.get $internal) (local.get $i)))
+					(i64.extend_i32_u (array.get_u $String (local.get $internal) (local.get $i)))
 				)
 				(global.get $PRIME)
 			))
@@ -109,7 +109,7 @@
 ;; [SEED, ...$tuple.values()].reduce((a, b) => (a xor hash(b)) * PRIME);
 ;; ```
 (func $!Cpl-Tuple.hash (param $tuple (ref $Cpl-Tuple)) (result i64)
-	(local $internal (ref $TupleInternal))
+	(local $internal (ref $Tuple))
 	(local $result   i64)
 	(local $i        i32)
 
@@ -123,7 +123,7 @@
 			(local.set $result (i64.mul
 				(i64.xor
 					(local.get $result)
-					(call $Value.hash (array.get $TupleInternal (local.get $internal) (local.get $i)))
+					(call $Value.hash (array.get $Tuple (local.get $internal) (local.get $i)))
 				)
 				(global.get $PRIME)
 			))
@@ -144,7 +144,7 @@
 ;; [SEED, ...$record.entries()].reduce((a, b) => a xor hash(b)) * PRIME;
 ;; ```
 (func $!Cpl-Record.hash (param $record (ref $Cpl-Record)) (result i64)
-	(local $internal (ref $RecordInternal))
+	(local $internal (ref $Record))
 	(local $result   i64)
 	(local $i        i32)
 
@@ -157,7 +157,7 @@
 			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $internal))))
 			(local.set $result (i64.xor
 				(local.get $result)
-				(call $!Property.hash (array.get $RecordInternal (local.get $internal) (local.get $i)))
+				(call $!Property.hash (array.get $Record (local.get $internal) (local.get $i)))
 			))
 			(local.set $i (i32.add (local.get $i) (i32.const 1)))
 			(br $repeat)

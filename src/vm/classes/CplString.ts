@@ -25,8 +25,8 @@ export class CplString implements HasFuncData {
 	}
 
 
-	public field(ref: binaryen.ExpressionRef /* (ref null $Cpl-String) */): {/** @return `(struct.get $Cpl-String $internal <ref>)` */ readonly internal: binaryen.ExpressionRef /* (ref $StringInternal) */} {
+	public field(ref: binaryen.ExpressionRef /* (ref null $Cpl-String) */): {/** @return `(struct.get $Cpl-String $internal <ref>)` */ readonly internal: binaryen.ExpressionRef /* (ref $String) */} {
 		const {mod: {wasm}, reftype} = this.vm;
-		return {get internal() { return wasm.struct.get(FIELD.INTERNAL, ref, reftype.StringInternal); }};
+		return {get internal() { return wasm.struct.get(FIELD.INTERNAL, ref, reftype.String); }};
 	}
 }

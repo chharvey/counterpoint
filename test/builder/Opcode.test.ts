@@ -1365,11 +1365,11 @@ test.suite('Opcode', () => {
 				const RESULT_IDX =  9;
 				const OFFSET_IDX = 10;
 
-				const string_0_get: binaryen.ExpressionRef = wasm.local.get(4, reftype.StringInternal);
-				const string_1_get: binaryen.ExpressionRef = wasm.local.get(5, reftype.StringInternal);
-				const string_2_get: binaryen.ExpressionRef = wasm.local.get(6, reftype.StringInternal);
-				const string_3_get: binaryen.ExpressionRef = wasm.local.get(7, reftype.StringInternal);
-				const string_4_get: binaryen.ExpressionRef = wasm.local.get(8, reftype.StringInternal);
+				const string_0_get: binaryen.ExpressionRef = wasm.local.get(4, reftype.String);
+				const string_1_get: binaryen.ExpressionRef = wasm.local.get(5, reftype.String);
+				const string_2_get: binaryen.ExpressionRef = wasm.local.get(6, reftype.String);
+				const string_3_get: binaryen.ExpressionRef = wasm.local.get(7, reftype.String);
+				const string_4_get: binaryen.ExpressionRef = wasm.local.get(8, reftype.String);
 
 				const string_0_len: binaryen.ExpressionRef = wasm.array.len(string_0_get);
 				const string_1_len: binaryen.ExpressionRef = wasm.array.len(string_1_get);
@@ -1377,7 +1377,7 @@ test.suite('Opcode', () => {
 				const string_3_len: binaryen.ExpressionRef = wasm.array.len(string_3_get);
 				const string_4_len: binaryen.ExpressionRef = wasm.array.len(string_4_get);
 
-				const result_get: binaryen.ExpressionRef = wasm.local.get(RESULT_IDX, reftype.StringInternal);
+				const result_get: binaryen.ExpressionRef = wasm.local.get(RESULT_IDX, reftype.String);
 				const offset_get: binaryen.ExpressionRef = wasm.local.get(OFFSET_IDX, binaryen.Type.i32);
 				return assertEqualBins(
 					builder.instructions.at(-1)!.codegen(cg),
@@ -1388,7 +1388,7 @@ test.suite('Opcode', () => {
 						wasm.local.set(7, strings[3]),
 						wasm.local.set(8, strings[4]),
 						wasm.local.set(RESULT_IDX, wasm.array.new_default(
-							heaptype.StringInternal,
+							heaptype.String,
 							wasm.i32.add(
 								wasm.i32.add(
 									wasm.i32.add(

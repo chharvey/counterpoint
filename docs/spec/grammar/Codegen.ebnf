@@ -10,7 +10,7 @@ Codegen((NAT.CONST   `v`)) := (call $Value.new-primitive (call $Vect.new-nat   (
 Codegen((FLOAT.CONST `v`)) := (call $Value.new-primitive (call $Vect.new-float (i64.const `v.data`)));
 
 Codegen((STR.CONST `v`)) := (call $Value.new-composite
-	(struct.new $Cpl-String (array.new_fixed $StringInternal `v.data.map("(i32.const `v.data[i]`)")`))
+	(struct.new $Cpl-String (array.new_fixed $String `v.data.map("(i32.const `v.data[i]`)")`))
 );
 
 Codegen((GET `id ::= CoreLibName`)) := (call $Value.new-composite (global.get ‹index›));
@@ -20,7 +20,7 @@ Codegen((STR.TEMPLATE `strings`)) := (call $Value.new-composite
 	(block (result (ref $Cpl-String))
 		`strings.map("(local.set $str_`i` (struct.get $Cpl-String $internal (ref.cast (ref $Cpl-String) (struct.get $Value $composite `Codegen(strings[i])`))))")`
 		(local.set $internal
-			(array.new_default $StringInternal `strings.map("(array.len (local.get $str_`i`))").reduce("(i32.add `a` `b`)")`)
+			(array.new_default $String `strings.map("(array.len (local.get $str_`i`))").reduce("(i32.add `a` `b`)")`)
 		)
 		(local.set $offset (i32.const 0))
 		`strings.flatMap([
@@ -38,17 +38,17 @@ Codegen((STR.TEMPLATE `strings`)) := (call $Value.new-composite
 );
 
 Codegen((TUPLE.NEW)) := (call $Value.new-composite
-	(struct.new $Cpl-Tuple (array.new_fixed $TupleInternal 0))
+	(struct.new $Cpl-Tuple (array.new_fixed $Tuple 0))
 );
 Codegen((TUPLE.NEW `values`)) := (call $Value.new-composite
-	(struct.new $Cpl-Tuple (array.new_fixed $TupleInternal `values.count` `values.map(Codegen)`))
+	(struct.new $Cpl-Tuple (array.new_fixed $Tuple `values.count` `values.map(Codegen)`))
 );
 
 Codegen((RECORD.NEW)) := (call $Value.new-composite
-	(struct.new $Cpl-Record (array.new_fixed $RecordInternal 0))
+	(struct.new $Cpl-Record (array.new_fixed $Record 0))
 );
 Codegen((RECORD.NEW `pairs`)) := (call $Value.new-composite
-	(struct.new $Cpl-Record (array.new_fixed $RecordInternal `pairs.count` `pairs.hashMap("(struct.new $Property (i64.const `pairs[i].0`) `Codegen(pairs[i].1)`)")`))
+	(struct.new $Cpl-Record (array.new_fixed $Record `pairs.count` `pairs.hashMap("(struct.new $Property (i64.const `pairs[i].0`) `Codegen(pairs[i].1)`)")`))
 );
 
 Codegen((LIST.NEW)) := (call $Value.from-list

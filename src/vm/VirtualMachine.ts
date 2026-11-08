@@ -21,9 +21,9 @@ import {CplRecord} from './classes/CplRecord.ts';
 type TypeKey = (
 	| 'Property'
 	| 'Case'
-	| 'StringInternal'
-	| 'TupleInternal'
-	| 'RecordInternal'
+	| 'String'
+	| 'Tuple'
+	| 'Record'
 	| 'ListInternal'
 	| 'DictInternal'
 	| 'MapInternal'
@@ -92,32 +92,32 @@ const TYPES: {
 } = (() => {
 	const tb = new binaryen.TypeBuilder();
 
-	const i_property:        number = tb.getSize(); tb.grow(1);
-	const i_case:            number = tb.getSize(); tb.grow(1);
-	const i_string_internal: number = tb.getSize(); tb.grow(1);
-	const i_tuple_internal:  number = tb.getSize(); tb.grow(1);
-	const i_record_internal: number = tb.getSize(); tb.grow(1);
-	const i_list_internal:   number = tb.getSize(); tb.grow(1);
-	const i_dict_internal:   number = tb.getSize(); tb.grow(1);
-	const i_map_internal:    number = tb.getSize(); tb.grow(1);
-	const i_list:            number = tb.getSize(); tb.grow(1);
-	const i_dict:            number = tb.getSize(); tb.grow(1);
-	const i_map:             number = tb.getSize(); tb.grow(1);
-	const i_composite:       number = tb.getSize(); tb.grow(1);
-	const i_value:           number = tb.getSize(); tb.grow(1);
-	const i_data:            number = tb.getSize(); tb.grow(1);
-	const i_object:          number = tb.getSize(); tb.grow(1);
-	const i_class:           number = tb.getSize(); tb.grow(1);
-	const i_cpl_string:      number = tb.getSize(); tb.grow(1);
-	const i_cpl_tuple:       number = tb.getSize(); tb.grow(1);
-	const i_cpl_record:      number = tb.getSize(); tb.grow(1);
-	const i_cpl_list:        number = tb.getSize(); tb.grow(1);
-	const i_cpl_dict:        number = tb.getSize(); tb.grow(1);
-	const i_cpl_map:         number = tb.getSize(); tb.grow(1);
-	const i_exception:       number = tb.getSize(); tb.grow(1);
-	const i_maybe:           number = tb.getSize(); tb.grow(1);
-	const i_result:          number = tb.getSize(); tb.grow(1);
-	const i_function:        number = tb.getSize(); tb.grow(1);
+	const i_property:      number = tb.getSize(); tb.grow(1);
+	const i_case:          number = tb.getSize(); tb.grow(1);
+	const i_string:        number = tb.getSize(); tb.grow(1);
+	const i_tuple:         number = tb.getSize(); tb.grow(1);
+	const i_record:        number = tb.getSize(); tb.grow(1);
+	const i_list_internal: number = tb.getSize(); tb.grow(1);
+	const i_dict_internal: number = tb.getSize(); tb.grow(1);
+	const i_map_internal:  number = tb.getSize(); tb.grow(1);
+	const i_list:          number = tb.getSize(); tb.grow(1);
+	const i_dict:          number = tb.getSize(); tb.grow(1);
+	const i_map:           number = tb.getSize(); tb.grow(1);
+	const i_composite:     number = tb.getSize(); tb.grow(1);
+	const i_value:         number = tb.getSize(); tb.grow(1);
+	const i_data:          number = tb.getSize(); tb.grow(1);
+	const i_object:        number = tb.getSize(); tb.grow(1);
+	const i_class:         number = tb.getSize(); tb.grow(1);
+	const i_cpl_string:    number = tb.getSize(); tb.grow(1);
+	const i_cpl_tuple:     number = tb.getSize(); tb.grow(1);
+	const i_cpl_record:    number = tb.getSize(); tb.grow(1);
+	const i_cpl_list:      number = tb.getSize(); tb.grow(1);
+	const i_cpl_dict:      number = tb.getSize(); tb.grow(1);
+	const i_cpl_map:       number = tb.getSize(); tb.grow(1);
+	const i_exception:     number = tb.getSize(); tb.grow(1);
+	const i_maybe:         number = tb.getSize(); tb.grow(1);
+	const i_result:        number = tb.getSize(); tb.grow(1);
+	const i_function:      number = tb.getSize(); tb.grow(1);
 
 	/* (type $Property ...) */
 	tb.setStructType(i_property, [
@@ -131,25 +131,25 @@ const TYPES: {
 		/* $con */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_value), false)),
 	]);
 
-	/* (type $StringInternal ...) */
+	/* (type $String ...) */
 	tb.setArrayType(
-		i_string_internal,
+		i_string,
 		binaryen.Type.i32,
 		binaryen.PackedType.i8,
 		true,
 	);
 
-	/* (type $TupleInternal ...) */
+	/* (type $Tuple ...) */
 	tb.setArrayType(
-		i_tuple_internal,
+		i_tuple,
 		tb.getTempRefType(tb.getTempHeapType(i_value), false),
 		binaryen.PackedType.notPacked,
 		false,
 	);
 
-	/* (type $RecordInternal ...) */
+	/* (type $Record ...) */
 	tb.setArrayType(
-		i_record_internal,
+		i_record,
 		tb.getTempRefType(tb.getTempHeapType(i_property), false),
 		binaryen.PackedType.notPacked,
 		false,
@@ -234,19 +234,19 @@ const TYPES: {
 
 	/* (type $Cpl-String ...) */
 	tb.setStructType(i_cpl_string, [
-		/* $internal */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_string_internal), false)),
+		/* $internal */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_string), false)),
 	]);
 	tb.setSubType(i_cpl_string, tb.getTempHeapType(i_composite));
 
 	/* (type $Cpl-Tuple ...) */
 	tb.setStructType(i_cpl_tuple, [
-		/* $internal */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_tuple_internal), false)),
+		/* $internal */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_tuple), false)),
 	]);
 	tb.setSubType(i_cpl_tuple, tb.getTempHeapType(i_composite));
 
 	/* (type $Cpl-Record ...) */
 	tb.setStructType(i_cpl_record, [
-		/* $internal */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_record_internal), false)),
+		/* $internal */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_record), false)),
 	]);
 	tb.setSubType(i_cpl_record, tb.getTempHeapType(i_composite));
 
@@ -306,55 +306,55 @@ const TYPES: {
 
 	return {
 		heaptypeRegistry: {
-			Property:       heaptypes[i_property],
-			Case:           heaptypes[i_case],
-			StringInternal: heaptypes[i_string_internal],
-			TupleInternal:  heaptypes[i_tuple_internal],
-			RecordInternal: heaptypes[i_record_internal],
-			ListInternal:   heaptypes[i_list_internal],
-			DictInternal:   heaptypes[i_dict_internal],
-			MapInternal:    heaptypes[i_map_internal],
-			List:           heaptypes[i_list],
-			Dict:           heaptypes[i_dict],
-			Map:            heaptypes[i_map],
-			Composite:      heaptypes[i_composite],
-			Value:          heaptypes[i_value],
-			Data:           heaptypes[i_data],
-			Object:         heaptypes[i_object],
-			Class:          heaptypes[i_class],
-			CplString:      heaptypes[i_cpl_string],
-			CplTuple:       heaptypes[i_cpl_tuple],
-			CplRecord:      heaptypes[i_cpl_record],
-			Exception:      heaptypes[i_exception],
-			Maybe:          heaptypes[i_maybe],
-			Result:         heaptypes[i_result],
-			Function:       heaptypes[i_function],
+			Property:     heaptypes[i_property],
+			Case:         heaptypes[i_case],
+			String:       heaptypes[i_string],
+			Tuple:        heaptypes[i_tuple],
+			Record:       heaptypes[i_record],
+			ListInternal: heaptypes[i_list_internal],
+			DictInternal: heaptypes[i_dict_internal],
+			MapInternal:  heaptypes[i_map_internal],
+			List:         heaptypes[i_list],
+			Dict:         heaptypes[i_dict],
+			Map:          heaptypes[i_map],
+			Composite:    heaptypes[i_composite],
+			Value:        heaptypes[i_value],
+			Data:         heaptypes[i_data],
+			Object:       heaptypes[i_object],
+			Class:        heaptypes[i_class],
+			CplString:    heaptypes[i_cpl_string],
+			CplTuple:     heaptypes[i_cpl_tuple],
+			CplRecord:    heaptypes[i_cpl_record],
+			Exception:    heaptypes[i_exception],
+			Maybe:        heaptypes[i_maybe],
+			Result:       heaptypes[i_result],
+			Function:     heaptypes[i_function],
 		},
 
 		reftypeRegistry: {
-			Property:       binaryen.getTypeFromHeapType(heaptypes[i_property],        false),
-			Case:           binaryen.getTypeFromHeapType(heaptypes[i_case],            false),
-			StringInternal: binaryen.getTypeFromHeapType(heaptypes[i_string_internal], false),
-			TupleInternal:  binaryen.getTypeFromHeapType(heaptypes[i_tuple_internal],  false),
-			RecordInternal: binaryen.getTypeFromHeapType(heaptypes[i_record_internal], false),
-			ListInternal:   binaryen.getTypeFromHeapType(heaptypes[i_list_internal],   false),
-			DictInternal:   binaryen.getTypeFromHeapType(heaptypes[i_dict_internal],   false),
-			MapInternal:    binaryen.getTypeFromHeapType(heaptypes[i_map_internal],    false),
-			List:           binaryen.getTypeFromHeapType(heaptypes[i_list],            false),
-			Dict:           binaryen.getTypeFromHeapType(heaptypes[i_dict],            false),
-			Map:            binaryen.getTypeFromHeapType(heaptypes[i_map],             false),
-			Composite:      binaryen.getTypeFromHeapType(heaptypes[i_composite],       false),
-			Value:          binaryen.getTypeFromHeapType(heaptypes[i_value],           false),
-			Data:           binaryen.getTypeFromHeapType(heaptypes[i_data],            false),
-			Object:         binaryen.getTypeFromHeapType(heaptypes[i_object],          false),
-			Class:          binaryen.getTypeFromHeapType(heaptypes[i_class],           false),
-			CplString:      binaryen.getTypeFromHeapType(heaptypes[i_cpl_string],      false),
-			CplTuple:       binaryen.getTypeFromHeapType(heaptypes[i_cpl_tuple],       false),
-			CplRecord:      binaryen.getTypeFromHeapType(heaptypes[i_cpl_record],      false),
-			Exception:      binaryen.getTypeFromHeapType(heaptypes[i_exception],       false),
-			Maybe:          binaryen.getTypeFromHeapType(heaptypes[i_maybe],           false),
-			Result:         binaryen.getTypeFromHeapType(heaptypes[i_result],          false),
-			Function:       binaryen.getTypeFromHeapType(heaptypes[i_function],        false),
+			Property:     binaryen.getTypeFromHeapType(heaptypes[i_property],      false),
+			Case:         binaryen.getTypeFromHeapType(heaptypes[i_case],          false),
+			String:       binaryen.getTypeFromHeapType(heaptypes[i_string],        false),
+			Tuple:        binaryen.getTypeFromHeapType(heaptypes[i_tuple],         false),
+			Record:       binaryen.getTypeFromHeapType(heaptypes[i_record],        false),
+			ListInternal: binaryen.getTypeFromHeapType(heaptypes[i_list_internal], false),
+			DictInternal: binaryen.getTypeFromHeapType(heaptypes[i_dict_internal], false),
+			MapInternal:  binaryen.getTypeFromHeapType(heaptypes[i_map_internal],  false),
+			List:         binaryen.getTypeFromHeapType(heaptypes[i_list],          false),
+			Dict:         binaryen.getTypeFromHeapType(heaptypes[i_dict],          false),
+			Map:          binaryen.getTypeFromHeapType(heaptypes[i_map],           false),
+			Composite:    binaryen.getTypeFromHeapType(heaptypes[i_composite],     false),
+			Value:        binaryen.getTypeFromHeapType(heaptypes[i_value],         false),
+			Data:         binaryen.getTypeFromHeapType(heaptypes[i_data],          false),
+			Object:       binaryen.getTypeFromHeapType(heaptypes[i_object],        false),
+			Class:        binaryen.getTypeFromHeapType(heaptypes[i_class],         false),
+			CplString:    binaryen.getTypeFromHeapType(heaptypes[i_cpl_string],    false),
+			CplTuple:     binaryen.getTypeFromHeapType(heaptypes[i_cpl_tuple],     false),
+			CplRecord:    binaryen.getTypeFromHeapType(heaptypes[i_cpl_record],    false),
+			Exception:    binaryen.getTypeFromHeapType(heaptypes[i_exception],     false),
+			Maybe:        binaryen.getTypeFromHeapType(heaptypes[i_maybe],         false),
+			Result:       binaryen.getTypeFromHeapType(heaptypes[i_result],        false),
+			Function:     binaryen.getTypeFromHeapType(heaptypes[i_function],      false),
 		},
 
 		reftypeNullRegistry: {

@@ -224,13 +224,13 @@
 
 (func $Dict.copy-from-record (export "Dict#copyFromRecord") (param $dest (ref $Dict)) (param $src (ref $Cpl-Record))
 	(local $dest-internal (ref $DictInternal))
-	(local $src-internal  (ref $RecordInternal))
+	(local $src-internal  (ref $Record))
 
 	(local.set $dest-internal (struct.get $Dict       $internal (local.get $dest)))
 	(local.set $src-internal  (struct.get $Cpl-Record $internal (local.get $src)))
 
 	(call $Dict.adjust-capacity (local.get $dest) (call $util:capacity-needed (array.len (local.get $src-internal))))
-	(array.copy $DictInternal $RecordInternal
+	(array.copy $DictInternal $Record
 		(local.get $dest-internal)
 		(i32.const 0)
 		(local.get $src-internal)
@@ -258,7 +258,7 @@
 
 
 (func $Dict.fill-from-tuple (export "Dict#fillFromTuple") (param $dest (ref $Dict)) (param $src (ref $Cpl-Tuple))
-	(local $src-internal (ref $TupleInternal))
+	(local $src-internal (ref $Tuple))
 	(local $i            i32)
 	(local $item         (ref $Value))
 
@@ -268,7 +268,7 @@
 		(local.set $i (i32.const 0))
 		(loop $repeat
 			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $src-internal))))
-			(local.set $item (array.get $TupleInternal (local.get $src-internal) (local.get $i)))
+			(local.set $item (array.get $Tuple (local.get $src-internal) (local.get $i)))
 			(call $Dict.set (local.get $dest) (call $Property.from-tuple
 				(struct.get $Cpl-Tuple $internal (ref.cast (ref $Cpl-Tuple) (struct.get $Value $composite (local.get $item))))
 			))
