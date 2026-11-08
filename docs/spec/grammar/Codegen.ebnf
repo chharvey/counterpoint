@@ -217,16 +217,16 @@ Codegen((DICT.GET `obj` `accessor`)) := (call $Dict.get
 );
 
 Codegen((SET.GET `obj` `accessor`)) := (block (result (ref $Value))
-	(local.set $maybe-case
+	(drop (local.set $nullish-case
 		(call $Map.find
 			(call $Value.as-map `Codegen(obj)`)
 			`Codegen(accessor)`
 		)
-	)
+	))
 	(if (result (ref $Value))
 		(i32.or
-			(ref.is_null (local.get $maybe-case))
-			(ref.eq (local.get $maybe-case) (global.get $Case.TOMBSTONE))
+			(ref.is_null (local.get $nullish-case))
+			(ref.eq (local.get $nullish-case) (global.get $Case.TOMBSTONE))
 		)
 		(then `Codegen((BOOL.CONST false))`)
 		(else `Codegen((BOOL.CONST true))`)

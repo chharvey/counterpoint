@@ -1864,8 +1864,8 @@ test.suite('Opcode', () => {
 					}`);
 					const {reftype, reftypeNull, Value, Case, Map: VmMap} = cg.vm;
 					const base:         binaryen.ExpressionRef = wasm.local.get(1, reftype.Value); // index 0 = nonempty map setup (implementation of Set)
-					const maybe_case_0: binaryen.ExpressionRef = wasm.local.get(2, reftypeNull.Case);
-					const maybe_case_1: binaryen.ExpressionRef = wasm.local.get(3, reftypeNull.Case);
+					const nullish_case_0: binaryen.ExpressionRef = wasm.local.get(2, reftypeNull.Case);
+					const nullish_case_1: binaryen.ExpressionRef = wasm.local.get(3, reftypeNull.Case);
 					return assertEqualBins(builder.instructions.slice(1).map((instr) => instr.codegen(cg)), [
 						wasm.drop(wasm.block(null, [
 							wasm.local.set(2, wasm.tuple.extract(VmMap.find(
@@ -1874,8 +1874,8 @@ test.suite('Opcode', () => {
 							), 1)),
 							wasm.if(
 								wasm.i32.or(
-									wasm.ref.is_null(maybe_case_0),
-									wasm.ref.eq(maybe_case_0, Case.TOMBSTONE),
+									wasm.ref.is_null(nullish_case_0),
+									wasm.ref.eq(nullish_case_0, Case.TOMBSTONE),
 								),
 								genConst(cg, false),
 								genConst(cg, true),
@@ -1888,8 +1888,8 @@ test.suite('Opcode', () => {
 							), 1)),
 							wasm.if(
 								wasm.i32.or(
-									wasm.ref.is_null(maybe_case_1),
-									wasm.ref.eq(maybe_case_1, Case.TOMBSTONE),
+									wasm.ref.is_null(nullish_case_1),
+									wasm.ref.eq(nullish_case_1, Case.TOMBSTONE),
 								),
 								genConst(cg, false),
 								genConst(cg, true),
