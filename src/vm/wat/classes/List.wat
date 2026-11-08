@@ -116,7 +116,7 @@
 	(local $src-internal  (ref $Tuple))
 
 	(local.set $dest-internal (struct.get $List      $internal (local.get $dest)))
-	(local.set $src-internal  (struct.get $Cpl-Tuple $internal (local.get $src)))
+	(local.set $src-internal  (struct.get $Cpl-Tuple $tuple    (local.get $src)))
 
 	(call $List.adjust-capacity (local.get $dest) (call $util:capacity-needed (array.len (local.get $src-internal))))
 	(array.copy $ListInternal $Tuple

@@ -95,9 +95,9 @@
 
 
 	;; ### “Value” Types (id-by-value)
-	(type $Cpl-String (sub final $Composite (struct (field $internal (ref $String)))))
-	(type $Cpl-Tuple  (sub final $Composite (struct (field $internal (ref $Tuple)))))
-	(type $Cpl-Record (sub final $Composite (struct (field $internal (ref $Record)))))
+	(type $Cpl-String (sub final $Composite (struct (field $string (ref $String)))))
+	(type $Cpl-Tuple  (sub final $Composite (struct (field $tuple  (ref $Tuple)))))
+	(type $Cpl-Record (sub final $Composite (struct (field $record (ref $Record)))))
 
 
 	;; ### Reference Types (id-by-reference)

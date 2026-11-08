@@ -81,7 +81,7 @@
 	(local $result   i64)
 	(local $i        i32)
 
-	(local.set $internal (struct.get $Cpl-String $internal (local.get $string)))
+	(local.set $internal (struct.get $Cpl-String $string (local.get $string)))
 	(local.set $result   (global.get $SEED))
 
 	(block $exit
@@ -113,7 +113,7 @@
 	(local $result   i64)
 	(local $i        i32)
 
-	(local.set $internal (struct.get $Cpl-Tuple $internal (local.get $tuple)))
+	(local.set $internal (struct.get $Cpl-Tuple $tuple (local.get $tuple)))
 	(local.set $result   (global.get $SEED))
 
 	(block $exit
@@ -148,7 +148,7 @@
 	(local $result   i64)
 	(local $i        i32)
 
-	(local.set $internal (struct.get $Cpl-Record $internal (local.get $record)))
+	(local.set $internal (struct.get $Cpl-Record $record (local.get $record)))
 	(local.set $result   (global.get $SEED))
 
 	(block $exit

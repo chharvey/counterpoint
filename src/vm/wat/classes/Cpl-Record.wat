@@ -2,7 +2,7 @@
 	(local $internal (ref $Record))
 	(local $i        i32)
 
-	(local.set $internal (struct.get $Cpl-Record $internal (local.get $record)))
+	(local.set $internal (struct.get $Cpl-Record $record (local.get $record)))
 
 	(block $exit
 		(local.set $i (i32.const 0))
@@ -35,7 +35,7 @@
 	;; property at the specified index.
 	(local $prop (ref $Property))
 
-	(local.set $internal   (struct.get $Cpl-Record $internal (local.get $record)))
+	(local.set $internal   (struct.get $Cpl-Record $record (local.get $record)))
 	(local.set $ARRLEN     (array.len (local.get $internal)))
 	(local.set $loop-count (i32.const 0))
 	(local.set $index      (call $util:mod (i32.wrap_i64 (local.get $key)) (local.get $ARRLEN))) ;; will trap if ARRLEN == 0

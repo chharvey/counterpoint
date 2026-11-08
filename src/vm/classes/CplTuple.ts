@@ -9,7 +9,7 @@ import type {
 
 
 /** Struct field constant indices. */
-const FIELD = {/** `$Cpl-Tuple.$internal` */ INTERNAL: 0} as const;
+const FIELD = {/** `$Cpl-Tuple.$tuple` */ TUPLE: 0} as const;
 
 
 
@@ -25,8 +25,8 @@ export class CplTuple implements HasFuncData {
 	}
 
 
-	public field(ref: binaryen.ExpressionRef /* (ref null $Cpl-Tuple) */): {/** @return `(struct.get $Cpl-Tuple $internal <ref>)` */ readonly internal: binaryen.ExpressionRef /* (ref $Tuple) */} {
+	public field(ref: binaryen.ExpressionRef /* (ref null $Cpl-Tuple) */): {/** @return `(struct.get $Cpl-Tuple $tuple <ref>)` */ readonly tuple: binaryen.ExpressionRef /* (ref $Tuple) */} {
 		const {mod: {wasm}, reftype} = this.vm;
-		return {get internal() { return wasm.struct.get(FIELD.INTERNAL, ref, reftype.Tuple); }};
+		return {get tuple() { return wasm.struct.get(FIELD.TUPLE, ref, reftype.Tuple); }};
 	}
 }

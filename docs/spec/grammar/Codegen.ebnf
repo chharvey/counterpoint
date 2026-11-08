@@ -18,7 +18,7 @@ Codegen((GET `id`)) := (local.get ‹index›);
 
 Codegen((STR.TEMPLATE `strings`)) := (call $Value.new-composite
 	(block (result (ref $Cpl-String))
-		`strings.map("(local.set $str_`i` (struct.get $Cpl-String $internal (ref.cast (ref $Cpl-String) (struct.get $Value $composite `Codegen(strings[i])`))))")`
+		`strings.map("(local.set $str_`i` (struct.get $Cpl-String $string (ref.cast (ref $Cpl-String) (struct.get $Value $composite `Codegen(strings[i])`))))")`
 		(local.set $internal
 			(array.new_default $String `strings.map("(array.len (local.get $str_`i`))").reduce("(i32.add `a` `b`)")`)
 		)
@@ -188,7 +188,7 @@ Codegen((RESULT.NEW `value` nil)) := (call $Value.new-composite
 
 Codegen((TUPLE.HAS `index` `obj`)) := (call $Value.bool-from-i32 (i32.lt_u
 	(i32.const `index`)
-	(array.len (struct.get $Cpl-Tuple $internal (ref.cast (ref $Cpl-Tuple) (struct.get $Value $composite `Codegen(obj)`))))
+	(array.len (struct.get $Cpl-Tuple $tuple (ref.cast (ref $Cpl-Tuple) (struct.get $Value $composite `Codegen(obj)`))))
 ));
 
 Codegen((RECORD.HAS `key` `obj`)) := (call cg.vm.Value.boolFromI32 (call $Cpl-Record.has-key
@@ -197,7 +197,7 @@ Codegen((RECORD.HAS `key` `obj`)) := (call cg.vm.Value.boolFromI32 (call $Cpl-Re
 ));
 
 Codegen((TUPLE.GET `index` `obj`)) := (array.get
-	(struct.get $Cpl-Tuple $internal (ref.cast (ref $Cpl-Tuple) (struct.get $Value $composite `Codegen(obj)`)))
+	(struct.get $Cpl-Tuple $tuple (ref.cast (ref $Cpl-Tuple) (struct.get $Value $composite `Codegen(obj)`)))
 	(i32.const `index`)
 );
 

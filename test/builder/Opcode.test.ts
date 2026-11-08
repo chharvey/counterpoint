@@ -1360,7 +1360,7 @@ test.suite('Opcode', () => {
 					genConst(cg, ', you have '),
 					wasm.local.get(3, reftype.Value),
 					genConst(cg, ' new messages.'),
-				].map((code) => CplString.field(Value.asString(code)).internal);
+				].map((code) => CplString.field(Value.asString(code)).string);
 
 				const RESULT_IDX =  9;
 				const OFFSET_IDX = 10;
@@ -1721,7 +1721,7 @@ test.suite('Opcode', () => {
 					new OP.TupleHas(tuple, idx).codegen(cg),
 					Value.boolFromI32(wasm.i32.lt_u(
 						wasm.i32.const(Number(idx)),
-						wasm.array.len(CplTuple.field(Value.asTuple(tuple.codegen(cg))).internal),
+						wasm.array.len(CplTuple.field(Value.asTuple(tuple.codegen(cg))).tuple),
 					)),
 				));
 			});
@@ -1755,17 +1755,17 @@ test.suite('Opcode', () => {
 				const {reftype, Value, CplTuple} = cg.vm;
 				return assertEqualBins(builder.instructions.slice(3).map((instr) => instr.codegen(cg)), [
 					wasm.drop(wasm.array.get(
-						CplTuple.field(Value.asTuple(wasm.local.get(2, reftype.Value))).internal,
+						CplTuple.field(Value.asTuple(wasm.local.get(2, reftype.Value))).tuple,
 						wasm.i32.const(2),
 						reftype.Value,
 					)),
 					wasm.drop(wasm.array.get(
-						CplTuple.field(Value.asTuple(wasm.local.get(1, reftype.Value))).internal,
+						CplTuple.field(Value.asTuple(wasm.local.get(1, reftype.Value))).tuple,
 						wasm.i32.const(0),
 						reftype.Value,
 					)),
 					wasm.drop(wasm.array.get(
-						CplTuple.field(Value.asTuple(wasm.local.get(1, reftype.Value))).internal,
+						CplTuple.field(Value.asTuple(wasm.local.get(1, reftype.Value))).tuple,
 						wasm.i32.const(1),
 						reftype.Value,
 					)),

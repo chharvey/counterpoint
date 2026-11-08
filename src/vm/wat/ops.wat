@@ -88,12 +88,12 @@
 	(unreachable)
 )
 (func $!op:is-empty/composite (param (ref $Composite)) (result i32)
-	(if (ref.test (ref $Cpl-String) (local.get 0)) (then (return (i32.eqz (array.len              (struct.get $Cpl-String  $internal (ref.cast (ref $Cpl-String) (local.get 0))))))))
-	(if (ref.test (ref $Cpl-Tuple)  (local.get 0)) (then (return (i32.eqz (array.len              (struct.get $Cpl-Tuple   $internal (ref.cast (ref $Cpl-Tuple)  (local.get 0))))))))
-	(if (ref.test (ref $Cpl-Record) (local.get 0)) (then (return (i32.eqz (array.len              (struct.get $Cpl-Record  $internal (ref.cast (ref $Cpl-Record) (local.get 0))))))))
-	(if (ref.test (ref $CplList)    (local.get 0)) (then (return (i32.eqz (struct.get $List $size (struct.get $CplList     $list     (ref.cast (ref $CplList)    (local.get 0))))))))
-	(if (ref.test (ref $CplDict)    (local.get 0)) (then (return (i32.eqz (struct.get $Dict $size (struct.get $CplDict     $dict     (ref.cast (ref $CplDict)    (local.get 0))))))))
-	(if (ref.test (ref $CplMap)     (local.get 0)) (then (return (i32.eqz (struct.get $Map  $size (struct.get $CplMap      $map      (ref.cast (ref $CplMap)     (local.get 0))))))))
+	(if (ref.test (ref $Cpl-String) (local.get 0)) (then (return (i32.eqz (array.len              (struct.get $Cpl-String  $string (ref.cast (ref $Cpl-String) (local.get 0))))))))
+	(if (ref.test (ref $Cpl-Tuple)  (local.get 0)) (then (return (i32.eqz (array.len              (struct.get $Cpl-Tuple   $tuple  (ref.cast (ref $Cpl-Tuple)  (local.get 0))))))))
+	(if (ref.test (ref $Cpl-Record) (local.get 0)) (then (return (i32.eqz (array.len              (struct.get $Cpl-Record  $record (ref.cast (ref $Cpl-Record) (local.get 0))))))))
+	(if (ref.test (ref $CplList)    (local.get 0)) (then (return (i32.eqz (struct.get $List $size (struct.get $CplList     $list   (ref.cast (ref $CplList)    (local.get 0))))))))
+	(if (ref.test (ref $CplDict)    (local.get 0)) (then (return (i32.eqz (struct.get $Dict $size (struct.get $CplDict     $dict   (ref.cast (ref $CplDict)    (local.get 0))))))))
+	(if (ref.test (ref $CplMap)     (local.get 0)) (then (return (i32.eqz (struct.get $Map  $size (struct.get $CplMap      $map    (ref.cast (ref $CplMap)     (local.get 0))))))))
 	(i32.const 0)
 )
 
@@ -729,8 +729,8 @@
 	(local $internal1 (ref $String))
 	(local $i         i32)
 
-	(local.set $internal0 (struct.get $Cpl-String $internal (local.get 0)))
-	(local.set $internal1 (struct.get $Cpl-String $internal (local.get 1)))
+	(local.set $internal0 (struct.get $Cpl-String $string (local.get 0)))
+	(local.set $internal1 (struct.get $Cpl-String $string (local.get 1)))
 
 	(if
 		(i32.ne (array.len (local.get $internal0)) (array.len (local.get $internal1)))
@@ -761,8 +761,8 @@
 	(local $internal1 (ref $Tuple))
 	(local $i         i32)
 
-	(local.set $internal0 (struct.get $Cpl-Tuple $internal (local.get 0)))
-	(local.set $internal1 (struct.get $Cpl-Tuple $internal (local.get 1)))
+	(local.set $internal0 (struct.get $Cpl-Tuple $tuple (local.get 0)))
+	(local.set $internal1 (struct.get $Cpl-Tuple $tuple (local.get 1)))
 
 	(if
 		(i32.ne (array.len (local.get $internal0)) (array.len (local.get $internal1)))
@@ -795,8 +795,8 @@
 	(local $prop      (ref $Property))
 	(local $key       i64)
 
-	(local.set $internal0 (struct.get $Cpl-Record $internal (local.get 0)))
-	(local.set $internal1 (struct.get $Cpl-Record $internal (local.get 1)))
+	(local.set $internal0 (struct.get $Cpl-Record $record (local.get 0)))
+	(local.set $internal1 (struct.get $Cpl-Record $record (local.get 1)))
 
 	(if
 		(i32.ne (array.len (local.get $internal0)) (array.len (local.get $internal1)))
@@ -1027,8 +1027,8 @@
 	(local $internal1 (ref $Tuple))
 	(local $i         i32)
 
-	(local.set $internal0 (struct.get $Cpl-Tuple $internal (local.get 0)))
-	(local.set $internal1 (struct.get $Cpl-Tuple $internal (local.get 1)))
+	(local.set $internal0 (struct.get $Cpl-Tuple $tuple (local.get 0)))
+	(local.set $internal1 (struct.get $Cpl-Tuple $tuple (local.get 1)))
 
 	(if
 		(i32.ne (array.len (local.get $internal0)) (array.len (local.get $internal1)))
@@ -1061,8 +1061,8 @@
 	(local $prop      (ref $Property))
 	(local $key       i64)
 
-	(local.set $internal0 (struct.get $Cpl-Record $internal (local.get 0)))
-	(local.set $internal1 (struct.get $Cpl-Record $internal (local.get 1)))
+	(local.set $internal0 (struct.get $Cpl-Record $record (local.get 0)))
+	(local.set $internal1 (struct.get $Cpl-Record $record (local.get 1)))
 
 	(if
 		(i32.ne (array.len (local.get $internal0)) (array.len (local.get $internal1)))

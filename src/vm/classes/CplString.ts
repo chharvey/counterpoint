@@ -9,7 +9,7 @@ import type {
 
 
 /** Struct field constant indices. */
-const FIELD = {/** `$Cpl-String.$internal` */ INTERNAL: 0} as const;
+const FIELD = {/** `$Cpl-String.$string` */ STRING: 0} as const;
 
 
 
@@ -25,8 +25,8 @@ export class CplString implements HasFuncData {
 	}
 
 
-	public field(ref: binaryen.ExpressionRef /* (ref null $Cpl-String) */): {/** @return `(struct.get $Cpl-String $internal <ref>)` */ readonly internal: binaryen.ExpressionRef /* (ref $String) */} {
+	public field(ref: binaryen.ExpressionRef /* (ref null $Cpl-String) */): {/** @return `(struct.get $Cpl-String $string <ref>)` */ readonly string: binaryen.ExpressionRef /* (ref $String) */} {
 		const {mod: {wasm}, reftype} = this.vm;
-		return {get internal() { return wasm.struct.get(FIELD.INTERNAL, ref, reftype.String); }};
+		return {get string() { return wasm.struct.get(FIELD.STRING, ref, reftype.String); }};
 	}
 }

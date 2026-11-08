@@ -227,7 +227,7 @@
 	(local $src-internal  (ref $Record))
 
 	(local.set $dest-internal (struct.get $Dict       $internal (local.get $dest)))
-	(local.set $src-internal  (struct.get $Cpl-Record $internal (local.get $src)))
+	(local.set $src-internal  (struct.get $Cpl-Record $record   (local.get $src)))
 
 	(call $Dict.adjust-capacity (local.get $dest) (call $util:capacity-needed (array.len (local.get $src-internal))))
 	(array.copy $DictInternal $Record
@@ -262,7 +262,7 @@
 	(local $i            i32)
 	(local $item         (ref $Value))
 
-	(local.set $src-internal (struct.get $Cpl-Tuple $internal (local.get $src)))
+	(local.set $src-internal (struct.get $Cpl-Tuple $tuple (local.get $src)))
 
 	(block $exit
 		(local.set $i (i32.const 0))
@@ -270,7 +270,7 @@
 			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $src-internal))))
 			(local.set $item (array.get $Tuple (local.get $src-internal) (local.get $i)))
 			(call $Dict.set (local.get $dest) (call $Property.from-tuple
-				(struct.get $Cpl-Tuple $internal (ref.cast (ref $Cpl-Tuple) (struct.get $Value $composite (local.get $item))))
+				(struct.get $Cpl-Tuple $tuple (ref.cast (ref $Cpl-Tuple) (struct.get $Value $composite (local.get $item))))
 			))
 			(local.set $i (i32.add (local.get $i) (i32.const 1)))
 			(br $repeat)
@@ -292,7 +292,7 @@
 			(if
 				(i32.eqz (ref.is_null (local.get $item)))
 				(then (call $Dict.set (local.get $dest) (call $Property.from-tuple
-					(struct.get $Cpl-Tuple $internal (ref.cast (ref $Cpl-Tuple) (struct.get $Value $composite (local.get $item))))
+					(struct.get $Cpl-Tuple $tuple (ref.cast (ref $Cpl-Tuple) (struct.get $Value $composite (local.get $item))))
 				)))
 			)
 			(local.set $i (i32.add (local.get $i) (i32.const 1)))
@@ -315,7 +315,7 @@
 			(if
 				(i32.eqz (ref.is_null (local.get $item)))
 				(then (call $Dict.set (local.get $dest) (call $Property.from-tuple
-					(struct.get $Cpl-Tuple $internal (ref.cast (ref $Cpl-Tuple) (struct.get $Value $composite (struct.get $Case $ant (local.get $item)))))
+					(struct.get $Cpl-Tuple $tuple (ref.cast (ref $Cpl-Tuple) (struct.get $Value $composite (struct.get $Case $ant (local.get $item)))))
 				)))
 			)
 			(local.set $i (i32.add (local.get $i) (i32.const 1)))
