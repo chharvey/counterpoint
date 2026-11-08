@@ -70,7 +70,7 @@
 		;; pointer to the constructor class
 		(field $class (ref $Class))
 		;; each instance has a set of fields
-		(field $fields (ref $Dict))
+		(field $fields (ref null $Dict))
 	)))
 	(type $Object (sub $Composite (struct
 		;; unique id for hashing
@@ -78,13 +78,13 @@
 		;; pointer to the constructor class
 		(field $class (ref null $Class))
 		;; each instance has a set of fields
-		(field $fields (ref $Dict))
+		(field $fields (ref null $Dict))
 	)))
 	(type $Class (sub final $Object (struct
 		;; --- inherited ---
 		(field $id i64)
 		(field $class (ref null $Class)) ;; (if null, it means this field should refer to its containing struct)
-		(field $fields (ref $Dict))
+		(field $fields (ref null $Dict))
 	)))
 
 
@@ -98,7 +98,7 @@
 		;; --- inherited ---
 		(field $id i64)
 		(field $class (ref null $Class))
-		(field $fields (ref $Dict))
+		(field $fields (ref null $Dict))
 
 		;; --- own ---
 		;; the underlying implementation
@@ -110,7 +110,7 @@
 		;; --- inherited ---
 		(field $id i64)
 		(field $class (ref null $Class))
-		(field $fields (ref $Dict))
+		(field $fields (ref null $Dict))
 
 		;; --- own ---
 		;; the underlying implementation
@@ -122,7 +122,7 @@
 		;; --- inherited ---
 		(field $id i64)
 		(field $class (ref null $Class))
-		(field $fields (ref $Dict))
+		(field $fields (ref null $Dict))
 
 		;; --- own ---
 		;; the underlying implementation
@@ -134,7 +134,7 @@
 		;; --- inherited ---
 		(field $id i64)
 		(field $class (ref null $Class))
-		(field $fields (ref $Dict))
+		(field $fields (ref null $Dict))
 
 		;; --- own ---
 		;; the error message
@@ -148,7 +148,7 @@
 		;; --- inherited ---
 		(field $id i64)
 		(field $class (ref null $Class))
-		(field $fields (ref $Dict))
+		(field $fields (ref null $Dict))
 
 		;; --- own ---
 		;; the potentially held value
@@ -160,7 +160,7 @@
 		;; --- inherited ---
 		(field $id i64)
 		(field $class (ref null $Class))
-		(field $fields (ref $Dict))
+		(field $fields (ref null $Dict))
 
 		;; --- own ---
 		;; the success value
@@ -174,7 +174,7 @@
 		;; --- inherited ---
 		(field $id i64)
 		(field $class (ref null $Class))
-		(field $fields (ref $Dict))
+		(field $fields (ref null $Dict))
 
 		;; --- own ---
 		;; number of functional parameters

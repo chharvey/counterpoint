@@ -829,15 +829,32 @@
 ;; Returns whether two data values are identical by value —
 ;; whether they have identical constructors and field dicts that have identical properties.
 (func $!Data.identical (param (ref $Data) (ref $Data)) (result i32)
+	(local $fields0 (ref null $Dict))
+	(local $fields1 (ref null $Dict))
+	(local.set $fields0 (struct.get $Data $fields (local.get 0)))
+	(local.set $fields1 (struct.get $Data $fields (local.get 1)))
 	(i32.and
 		(ref.eq
 			(struct.get $Data $class (local.get 0))
 			(struct.get $Data $class (local.get 1))
 		)
-		(call $!Dict.equal
-			(struct.get $Data $fields (local.get 0))
-			(struct.get $Data $fields (local.get 1))
-			(i32.const 1) ;; shallow-identical dicts
+		(i32.or
+			(i32.and
+				(ref.is_null (local.get $fields0))
+				(ref.is_null (local.get $fields1))
+			)
+			(if (result i32) ;; `(i32.and)` doesn’t short-circuit, so using conditional
+				(i32.and
+					(i32.eqz (ref.is_null (local.get $fields0)))
+					(i32.eqz (ref.is_null (local.get $fields1)))
+				)
+				(then (call $!Dict.equal
+					(ref.as_non_null (local.get $fields0))
+					(ref.as_non_null (local.get $fields1))
+					(i32.const 1) ;; shallow-identical dicts
+				))
+				(else (i32.const 0))
+			)
 		)
 	)
 )
@@ -1417,33 +1434,67 @@
 		(ref.as_non_null (local.get $value1))
 	))
 )
-;; Returns whether two data values are identical by value —
+;; Returns whether two data values are equal —
 ;; whether they have identical constructors and equal field dicts.
 (func $!Data.equal (param (ref $Data) (ref $Data)) (result i32)
+	(local $fields0 (ref null $Dict))
+	(local $fields1 (ref null $Dict))
+	(local.set $fields0 (struct.get $Data $fields (local.get 0)))
+	(local.set $fields1 (struct.get $Data $fields (local.get 1)))
 	(i32.and
 		(ref.eq
 			(struct.get $Data $class (local.get 0))
 			(struct.get $Data $class (local.get 1))
 		)
-		(call $!Dict.equal
-			(struct.get $Data $fields (local.get 0))
-			(struct.get $Data $fields (local.get 1))
-			(i32.const 0)
+		(i32.or
+			(i32.and
+				(ref.is_null (local.get $fields0))
+				(ref.is_null (local.get $fields1))
+			)
+			(if (result i32) ;; `(i32.and)` doesn’t short-circuit, so using conditional
+				(i32.and
+					(i32.eqz (ref.is_null (local.get $fields0)))
+					(i32.eqz (ref.is_null (local.get $fields1)))
+				)
+				(then (call $!Dict.equal
+					(ref.as_non_null (local.get $fields0))
+					(ref.as_non_null (local.get $fields1))
+					(i32.const 0)
+				))
+				(else (i32.const 0))
+			)
 		)
 	)
 )
 ;; Returns whether two Objects are equal —
 ;; whether they have identical constructors and equal field dicts.
 (func $!Object.equal (param (ref $Object) (ref $Object)) (result i32)
+	(local $fields0 (ref null $Dict))
+	(local $fields1 (ref null $Dict))
+	(local.set $fields0 (struct.get $Object $fields (local.get 0)))
+	(local.set $fields1 (struct.get $Object $fields (local.get 1)))
 	(i32.and
 		(ref.eq
 			(struct.get $Object $class (local.get 0))
 			(struct.get $Object $class (local.get 1))
 		)
-		(call $!Dict.equal
-			(struct.get $Object $fields (local.get 0))
-			(struct.get $Object $fields (local.get 1))
-			(i32.const 0)
+		(i32.or
+			(i32.and
+				(ref.is_null (local.get $fields0))
+				(ref.is_null (local.get $fields1))
+			)
+			(if (result i32) ;; `(i32.and)` doesn’t short-circuit, so using conditional
+				(i32.and
+					(i32.eqz (ref.is_null (local.get $fields0)))
+					(i32.eqz (ref.is_null (local.get $fields1)))
+				)
+				(then (call $!Dict.equal
+					(ref.as_non_null (local.get $fields0))
+					(ref.as_non_null (local.get $fields1))
+					(i32.const 0)
+				))
+				(else (i32.const 0))
+			)
 		)
 	)
 )

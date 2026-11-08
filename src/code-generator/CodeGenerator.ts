@@ -342,7 +342,7 @@ export class CodeGenerator {
 		return wasm.struct.new([
 			VmObject.ctrPlusPlus(),
 			class_,
-			this.codegenDict(),
+			wasm.ref.null(heaptype.Dict),
 		], heaptype.Object);
 	}
 
@@ -356,7 +356,7 @@ export class CodeGenerator {
 		return wasm.struct.new([
 			VmObject.ctrPlusPlus(),
 			class_ ?? wasm.ref.null(heaptype.Class),
-			this.codegenDict(),
+			wasm.ref.null(heaptype.Dict),
 		], heaptype.Class);
 	}
 
@@ -371,7 +371,7 @@ export class CodeGenerator {
 		return wasm.struct.new([
 			VmObject.ctrPlusPlus(),
 			wasm.ref.null(heaptype.Class),
-			this.codegenDict(),
+			wasm.ref.null(heaptype.Dict),
 			message,
 			cause ?? wasm.ref.null(heaptype.Exception),
 		], heaptype.Exception);
@@ -387,7 +387,7 @@ export class CodeGenerator {
 		return wasm.struct.new([
 			VmObject.ctrPlusPlus(),
 			wasm.ref.null(heaptype.Class),
-			this.codegenDict(),
+			wasm.ref.null(heaptype.Dict),
 			value ?? wasm.ref.null(heaptype.Value),
 		], heaptype.Maybe);
 	}
@@ -405,13 +405,13 @@ export class CodeGenerator {
 		return wasm.struct.new(is_ok ? [
 			VmObject.ctrPlusPlus(),
 			wasm.ref.null(heaptype.Class),
-			this.codegenDict(),
+			wasm.ref.null(heaptype.Dict),
 			argument,
 			wasm.ref.null(heaptype.Exception),
 		] : [
 			VmObject.ctrPlusPlus(),
 			wasm.ref.null(heaptype.Class),
-			this.codegenDict(),
+			wasm.ref.null(heaptype.Dict),
 			wasm.ref.null(heaptype.Value),
 			argument,
 		], heaptype.Result);
@@ -427,7 +427,7 @@ export class CodeGenerator {
 		return wasm.struct.new([
 			VmObject.ctrPlusPlus(),
 			wasm.ref.null(heaptype.Class),
-			this.codegenDict(),
+			wasm.ref.null(heaptype.Dict),
 			wasm.i32.const(Number(arity)),
 		], heaptype.Function);
 	}
