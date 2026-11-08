@@ -1321,15 +1321,27 @@ test.suite('Opcode', () => {
 					}`);
 					const {vm: {Value, Class: VmClass}} = cg;
 					const expr_visitor = new AST.ExprVisitorBuild(builder);
-					const unspecd:     binaryen.ExpressionRef /* (ref $Value) */ = Value.newComposite(cg.codegenClass(VmClass.CLASS));
 					return assertEqualBins(stmts.map((stmt) => expr_visitor.visit((stmt as AST.STMT.StatementExpression).expr!).codegen(cg)), [
-						...repeat(unspecd, 7),
+						Value.newComposite(VmClass.NULL),
+						Value.newComposite(VmClass.BOOLEAN),
+						Value.newComposite(VmClass.SYMBOL),
+						Value.newComposite(VmClass.INTEGER),
+						Value.newComposite(VmClass.NATURAL),
+						Value.newComposite(VmClass.FLOAT),
+						Value.newComposite(VmClass.STRING),
 						Value.newComposite(VmClass.OBJECT),
 						Value.newComposite(VmClass.LIST),
 						Value.newComposite(VmClass.DICT),
-						unspecd,
+						Value.newComposite(VmClass.SET),
 						Value.newComposite(VmClass.MAP),
-						...repeat(unspecd, 8),
+						Value.newComposite(VmClass.EXCEPTION),
+						Value.newComposite(VmClass.MAYBE),
+						Value.newComposite(VmClass.NONE),
+						Value.newComposite(VmClass.SOME),
+						Value.newComposite(VmClass.RESULT),
+						Value.newComposite(VmClass.FAIL),
+						Value.newComposite(VmClass.OK),
+						Value.newComposite(VmClass.FUNCTION),
 						Value.newComposite(VmClass.CLASS),
 					]);
 				});
