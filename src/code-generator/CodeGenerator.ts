@@ -401,7 +401,7 @@ export class CodeGenerator {
 
 	/**
 	 * Return a new `$Class`.
-	 * @param class_ optional constructor of the `$Class` object (default `(ref.null $Class)`)
+	 * @param class_ optional constructor of the `$Class` object (default `(ref.null $Class)`); should always be an extension of the `Class` class
 	 * @return       `(struct.new $Class <class_?> <empty-dict>)`
 	 */
 	public codegenClass(class_?: binaryen.ExpressionRef /* (ref $Class) */): binaryen.ExpressionRef /* (ref $Class) */ {

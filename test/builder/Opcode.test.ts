@@ -1704,12 +1704,12 @@ test.suite('Opcode', () => {
 				// there exists no syntax for Tuple has, so constructing it manually
 				const tuple = new AST.ExprVisitorBuild(new Builder()).visit(AST.EXPR.Tuple.fromSource('(10, 20)'));
 				const cg    = new CodeGenerator();
-				const {vm: {Value}, mod: {wasm}} = cg;
+				const {vm: {Value, Tuple}, mod: {wasm}} = cg;
 				xjs.Array.forEachAggregated([1n, 2n], (idx) => assertEqualBins(
 					new OP.TupleHas(tuple, idx).codegen(cg),
 					Value.boolFromI32(wasm.i32.lt_u(
 						wasm.i32.const(Number(idx)),
-						wasm.array.len(Value.asTuple(tuple.codegen(cg))),
+						wasm.array.len(Tuple.field(Value.asTuple(tuple.codegen(cg))).internal),
 					)),
 				));
 			});
