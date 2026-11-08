@@ -69,10 +69,7 @@
 		(struct.new $CplList
 			(call $Object.ctr-plus-plus)
 			(global.get $Class.LIST)
-			(struct.new $Dict
-				(i32.const 0)
-				(array.new_default $DictInternal (i32.const 8))
-			)
+			(ref.null $Dict)
 			(local.get 0)
 		)
 	)
@@ -82,10 +79,7 @@
 		(struct.new $CplDict
 			(call $Object.ctr-plus-plus)
 			(global.get $Class.DICT)
-			(struct.new $Dict
-				(i32.const 0)
-				(array.new_default $DictInternal (i32.const 8))
-			)
+			(ref.null $Dict)
 			(local.get 0)
 		)
 	)
@@ -95,10 +89,7 @@
 		(struct.new $CplMap
 			(call $Object.ctr-plus-plus)
 			(global.get $Class.MAP)
-			(struct.new $Dict
-				(i32.const 0)
-				(array.new_default $DictInternal (i32.const 8))
-			)
+			(ref.null $Dict)
 			(local.get 0)
 		)
 	)

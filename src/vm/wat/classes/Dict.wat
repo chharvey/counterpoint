@@ -20,7 +20,7 @@
 			(if
 				(i32.and
 					(i32.eqz (ref.is_null (local.get $prop)))
-					(i32.eqz (call $Property.is-tombstone (local.get $prop)))
+					(i32.eqz (ref.eq (local.get $prop) (global.get $Property.TOMBSTONE)))
 				)
 				(then (local.set $count (i32.add (local.get $count) (i32.const 1))))
 			)
@@ -75,7 +75,7 @@
 		)
 		;; if the current property is a tombstone, store it, then continue the search.
 		(if
-			(call $Property.is-tombstone (local.get $prop))
+			(ref.eq (local.get $prop) (global.get $Property.TOMBSTONE))
 			(then
 				(local.set $tombidx  (local.get $index))
 				(local.set $tombprop (local.get $prop))
@@ -116,7 +116,7 @@
 			(if
 				(i32.and
 					(i32.eqz (ref.is_null (local.get $prop)))
-					(i32.eqz (call $Property.is-tombstone (local.get $prop)))
+					(i32.eqz (ref.eq (local.get $prop) (global.get $Property.TOMBSTONE)))
 				)
 				(then
 					(array.set $DictInternal
@@ -138,13 +138,11 @@
 (func $Dict.get (export "Dict#get") (param $dict (ref $Dict)) (param $key i64) (result (ref $Value))
 	;; property at the specified key.
 	(local $prop (ref null $Property))
-	(call $Dict.find (local.get $dict) (local.get $key))
-	(local.set $prop)
-	(drop)
+	(drop (local.set $prop (call $Dict.find (local.get $dict) (local.get $key))))
 	(if
 		(i32.eqz (i32.or
 			(ref.is_null (local.get $prop))
-			(call $Property.is-tombstone (local.get $prop))
+			(ref.eq (local.get $prop) (global.get $Property.TOMBSTONE))
 		))
 		(then (return (struct.get $Property $val (local.get $prop))))
 	)
@@ -161,9 +159,7 @@
 	;; capacity needed for adjustment.
 	(local $new-capacity i32)
 
-	(call $Dict.find (local.get $dict) (local.get $key))
-	(local.set $prop)
-	(local.set $index)
+	(local.set $index (local.set $prop (call $Dict.find (local.get $dict) (local.get $key))))
 
 	;; if prop is null, we’re adding a new entry. update the capacity, reallocate if necessary, then increment the size.
 	;; else if prop is a tombstone or alive, just replace it without incrementing the size.
@@ -203,14 +199,12 @@
 	;; capacity needed for adjustment.
 	(local $new-capacity i32)
 
-	(call $Dict.find (local.get $dict) (local.get $key))
-	(local.set $prop)
-	(local.set $index)
+	(local.set $index (local.set $prop (call $Dict.find (local.get $dict) (local.get $key))))
 
 	(if
 		(i32.or
 			(ref.is_null (local.get $prop))
-			(call $Property.is-tombstone (local.get $prop))
+			(ref.eq (local.get $prop) (global.get $Property.TOMBSTONE))
 		)
 		(then (return (ref.null $Value)))
 	)
@@ -219,7 +213,7 @@
 	(array.set $DictInternal
 		(struct.get $Dict $internal (local.get $dict))
 		(local.get $index)
-		(call $Property.new-tombstone)
+		(global.get $Property.TOMBSTONE)
 	)
 	;; capacity adjustment does not occur here. only on insertion.
 
@@ -273,7 +267,7 @@
 	(block $exit
 		(local.set $i (i32.const 0))
 		(loop $repeat
-			(br_if $exit (i32.gt_u (local.get $i) (array.len (local.get $src-internal))))
+			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $src-internal))))
 			(local.set $item (array.get $TupleInternal (local.get $src-internal) (local.get $i)))
 			(call $Dict.set (local.get $dest) (call $Property.from-tuple
 				(struct.get $Tuple $internal (ref.cast (ref $Tuple) (struct.get $Value $composite (local.get $item))))
@@ -293,7 +287,7 @@
 	(block $exit
 		(local.set $i (i32.const 0))
 		(loop $repeat
-			(br_if $exit (i32.gt_u (local.get $i) (array.len (local.get $src-internal))))
+			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $src-internal))))
 			(local.set $item (array.get $ListInternal (local.get $src-internal) (local.get $i)))
 			(if
 				(i32.eqz (ref.is_null (local.get $item)))
@@ -316,7 +310,7 @@
 	(block $exit
 		(local.set $i (i32.const 0))
 		(loop $repeat
-			(br_if $exit (i32.gt_u (local.get $i) (array.len (local.get $src-internal))))
+			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $src-internal))))
 			(local.set $item (array.get $MapInternal (local.get $src-internal) (local.get $i)))
 			(if
 				(i32.eqz (ref.is_null (local.get $item)))
@@ -339,7 +333,7 @@
 	(block $exit
 		(local.set $i (i32.const 0))
 		(loop $repeat
-			(br_if $exit (i32.gt_u (local.get $i) (array.len (local.get $src-internal))))
+			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $src-internal))))
 			(local.set $item (array.get $MapInternal (local.get $src-internal) (local.get $i)))
 			(if
 				(i32.eqz (ref.is_null (local.get $item)))

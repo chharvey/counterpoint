@@ -94,12 +94,28 @@ export class Get extends ValueTac {
 		) {
 			const {vm: {Value: VmValue, Class: VmClass}} = cg;
 			switch (this.target.source) {
-				case CoreLibName.CLASS:  { return VmValue.newComposite(VmClass.CLASS); }
-				case CoreLibName.OBJECT: { return VmValue.newComposite(VmClass.OBJECT); }
-				case CoreLibName.LIST:   { return VmValue.newComposite(VmClass.LIST); }
-				case CoreLibName.DICT:   { return VmValue.newComposite(VmClass.DICT); }
-				case CoreLibName.MAP:    { return VmValue.newComposite(VmClass.MAP); }
-				default:                 { return VmValue.newComposite(cg.codegenClass(VmClass.CLASS)); }
+				case CoreLibName.CLASS:     { return VmValue.newComposite(VmClass.CLASS); }
+				case CoreLibName.NULL:      { return VmValue.newComposite(VmClass.NULL); }
+				case CoreLibName.BOOLEAN:   { return VmValue.newComposite(VmClass.BOOLEAN); }
+				case CoreLibName.SYMBOL:    { return VmValue.newComposite(VmClass.SYMBOL); }
+				case CoreLibName.INTEGER:   { return VmValue.newComposite(VmClass.INTEGER); }
+				case CoreLibName.NATURAL:   { return VmValue.newComposite(VmClass.NATURAL); }
+				case CoreLibName.FLOAT:     { return VmValue.newComposite(VmClass.FLOAT); }
+				case CoreLibName.STRING:    { return VmValue.newComposite(VmClass.STRING); }
+				case CoreLibName.OBJECT:    { return VmValue.newComposite(VmClass.OBJECT); }
+				case CoreLibName.LIST:      { return VmValue.newComposite(VmClass.LIST); }
+				case CoreLibName.DICT:      { return VmValue.newComposite(VmClass.DICT); }
+				case CoreLibName.SET:       { return VmValue.newComposite(VmClass.SET); }
+				case CoreLibName.MAP:       { return VmValue.newComposite(VmClass.MAP); }
+				case CoreLibName.EXCEPTION: { return VmValue.newComposite(VmClass.EXCEPTION); }
+				case CoreLibName.MAYBE:     { return VmValue.newComposite(VmClass.MAYBE); }
+				case CoreLibName.NONE:      { return VmValue.newComposite(VmClass.NONE); }
+				case CoreLibName.SOME:      { return VmValue.newComposite(VmClass.SOME); }
+				case CoreLibName.RESULT:    { return VmValue.newComposite(VmClass.RESULT); }
+				case CoreLibName.FAIL:      { return VmValue.newComposite(VmClass.FAIL); }
+				case CoreLibName.OK:        { return VmValue.newComposite(VmClass.OK); }
+				case CoreLibName.FUNCTION:  { return VmValue.newComposite(VmClass.FUNCTION); }
+				default:                    { return VmValue.newComposite(cg.codegenClass(VmClass.CLASS)); } // return a new class who is an instance of `Class`
 			}
 		}
 		return cg.getLocal(this.target)?.get() ?? assert.fail(new ReferenceError(`Local variable \`${this.#targetName}\` must be set first!`));

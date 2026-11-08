@@ -20,7 +20,7 @@
 			(if
 				(i32.and
 					(i32.eqz (ref.is_null (local.get $case)))
-					(i32.eqz (call $Case.is-tombstone (local.get $case)))
+					(i32.eqz (ref.eq (local.get $case) (global.get $Case.TOMBSTONE)))
 				)
 				(then (local.set $count (i32.add (local.get $count) (i32.const 1))))
 			)
@@ -75,7 +75,7 @@
 		)
 		;; if the current case is a tombstone, store it, then continue the search.
 		(if
-			(call $Case.is-tombstone (local.get $case))
+			(ref.eq (local.get $case) (global.get $Case.TOMBSTONE))
 			(then
 				(local.set $tombidx  (local.get $index))
 				(local.set $tombcase (local.get $case))
@@ -116,7 +116,7 @@
 			(if
 				(i32.and
 					(i32.eqz (ref.is_null (local.get $case)))
-					(i32.eqz (call $Case.is-tombstone (local.get $case)))
+					(i32.eqz (ref.eq (local.get $case) (global.get $Case.TOMBSTONE)))
 				)
 				(then
 					(array.set $MapInternal
@@ -138,13 +138,11 @@
 (func $Map.get (export "Map#get") (param $map (ref $Map)) (param $ant (ref $Value)) (result (ref $Value))
 	;; case at the specified antecedent.
 	(local $case (ref null $Case))
-	(call $Map.find (local.get $map) (local.get $ant))
-	(local.set $case)
-	(drop)
+	(drop (local.set $case (call $Map.find (local.get $map) (local.get $ant))))
 	(if
 		(i32.eqz (i32.or
 			(ref.is_null (local.get $case))
-			(call $Case.is-tombstone (local.get $case))
+			(ref.eq (local.get $case) (global.get $Case.TOMBSTONE))
 		))
 		(then (return (struct.get $Case $con (local.get $case))))
 	)
@@ -161,9 +159,7 @@
 	;; capacity needed for adjustment.
 	(local $new-capacity i32)
 
-	(call $Map.find (local.get $map) (local.get $ant))
-	(local.set $case)
-	(local.set $index)
+	(local.set $index (local.set $case (call $Map.find (local.get $map) (local.get $ant))))
 
 	;; if prop is null, we’re adding a new entry. update the capacity, reallocate if necessary, then increment the size.
 	;; else if prop is a tombstone or alive, just replace it without incrementing the size.
@@ -203,14 +199,12 @@
 	;; capacity needed for adjustment.
 	(local $new-capacity i32)
 
-	(call $Map.find (local.get $map) (local.get $ant))
-	(local.set $case)
-	(local.set $index)
+	(local.set $index (local.set $case (call $Map.find (local.get $map) (local.get $ant))))
 
 	(if
 		(i32.or
 			(ref.is_null (local.get $case))
-			(call $Case.is-tombstone (local.get $case))
+			(ref.eq (local.get $case) (global.get $Case.TOMBSTONE))
 		)
 		(then (return (ref.null $Case)))
 	)
@@ -219,7 +213,7 @@
 	(array.set $MapInternal
 		(struct.get $Map $internal (local.get $map))
 		(local.get $index)
-		(call $Case.new-tombstone)
+		(global.get $Case.TOMBSTONE)
 	)
 	;; capacity adjustment does not occur here. only on insertion.
 
@@ -257,7 +251,7 @@
 	(block $exit
 		(local.set $i (i32.const 0))
 		(loop $repeat
-			(br_if $exit (i32.gt_u (local.get $i) (array.len (local.get $src-internal))))
+			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $src-internal))))
 			(local.set $item (array.get $TupleInternal (local.get $src-internal) (local.get $i)))
 			(call $Map.set (local.get $dest) (local.get $item) (global.get $Value.NULL))
 			(local.set $i (i32.add (local.get $i) (i32.const 1)))
@@ -275,7 +269,7 @@
 	(block $exit
 		(local.set $i (i32.const 0))
 		(loop $repeat
-			(br_if $exit (i32.gt_u (local.get $i) (array.len (local.get $src-internal))))
+			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $src-internal))))
 			(local.set $item (array.get $ListInternal (local.get $src-internal) (local.get $i)))
 			(if
 				(i32.eqz (ref.is_null (local.get $item)))
@@ -299,7 +293,7 @@
 	(block $exit
 		(local.set $i (i32.const 0))
 		(loop $repeat
-			(br_if $exit (i32.gt_u (local.get $i) (array.len (local.get $src-internal))))
+			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $src-internal))))
 			(local.set $item (array.get $TupleInternal (local.get $src-internal) (local.get $i)))
 			(call $Map.set (local.get $dest) (call $Case.from-tuple
 				(struct.get $Tuple $internal (ref.cast (ref $Tuple) (struct.get $Value $composite (local.get $item))))
@@ -319,7 +313,7 @@
 	(block $exit
 		(local.set $i (i32.const 0))
 		(loop $repeat
-			(br_if $exit (i32.gt_u (local.get $i) (array.len (local.get $src-internal))))
+			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $src-internal))))
 			(local.set $item (array.get $ListInternal (local.get $src-internal) (local.get $i)))
 			(if
 				(i32.eqz (ref.is_null (local.get $item)))
@@ -342,7 +336,7 @@
 	(block $exit
 		(local.set $i (i32.const 0))
 		(loop $repeat
-			(br_if $exit (i32.gt_u (local.get $i) (array.len (local.get $src-internal))))
+			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $src-internal))))
 			(local.set $item (array.get $MapInternal (local.get $src-internal) (local.get $i)))
 			(if
 				(i32.eqz (ref.is_null (local.get $item)))

@@ -1321,15 +1321,27 @@ test.suite('Opcode', () => {
 					}`);
 					const {vm: {Value, Class: VmClass}} = cg;
 					const expr_visitor = new AST.ExprVisitorBuild(builder);
-					const unspecd:     binaryen.ExpressionRef /* (ref $Value) */ = Value.newComposite(cg.codegenClass(VmClass.CLASS));
 					return assertEqualBins(stmts.map((stmt) => expr_visitor.visit((stmt as AST.STMT.StatementExpression).expr!).codegen(cg)), [
-						...repeat(unspecd, 7),
+						Value.newComposite(VmClass.NULL),
+						Value.newComposite(VmClass.BOOLEAN),
+						Value.newComposite(VmClass.SYMBOL),
+						Value.newComposite(VmClass.INTEGER),
+						Value.newComposite(VmClass.NATURAL),
+						Value.newComposite(VmClass.FLOAT),
+						Value.newComposite(VmClass.STRING),
 						Value.newComposite(VmClass.OBJECT),
 						Value.newComposite(VmClass.LIST),
 						Value.newComposite(VmClass.DICT),
-						unspecd,
+						Value.newComposite(VmClass.SET),
 						Value.newComposite(VmClass.MAP),
-						...repeat(unspecd, 8),
+						Value.newComposite(VmClass.EXCEPTION),
+						Value.newComposite(VmClass.MAYBE),
+						Value.newComposite(VmClass.NONE),
+						Value.newComposite(VmClass.SOME),
+						Value.newComposite(VmClass.RESULT),
+						Value.newComposite(VmClass.FAIL),
+						Value.newComposite(VmClass.OK),
+						Value.newComposite(VmClass.FUNCTION),
 						Value.newComposite(VmClass.CLASS),
 					]);
 				});
@@ -1852,8 +1864,8 @@ test.suite('Opcode', () => {
 					}`);
 					const {reftype, reftypeNull, Value, Case, Map: VmMap} = cg.vm;
 					const base:         binaryen.ExpressionRef = wasm.local.get(1, reftype.Value); // index 0 = nonempty map setup (implementation of Set)
-					const maybe_case_0: binaryen.ExpressionRef = wasm.local.get(2, reftypeNull.Case);
-					const maybe_case_1: binaryen.ExpressionRef = wasm.local.get(3, reftypeNull.Case);
+					const nullish_case_0: binaryen.ExpressionRef = wasm.local.get(2, reftypeNull.Case);
+					const nullish_case_1: binaryen.ExpressionRef = wasm.local.get(3, reftypeNull.Case);
 					return assertEqualBins(builder.instructions.slice(1).map((instr) => instr.codegen(cg)), [
 						wasm.drop(wasm.block(null, [
 							wasm.local.set(2, wasm.tuple.extract(VmMap.find(
@@ -1862,8 +1874,8 @@ test.suite('Opcode', () => {
 							), 1)),
 							wasm.if(
 								wasm.i32.or(
-									wasm.ref.is_null(maybe_case_0),
-									Case.isTombstone(maybe_case_0),
+									wasm.ref.is_null(nullish_case_0),
+									wasm.ref.eq(nullish_case_0, Case.TOMBSTONE),
 								),
 								genConst(cg, false),
 								genConst(cg, true),
@@ -1876,8 +1888,8 @@ test.suite('Opcode', () => {
 							), 1)),
 							wasm.if(
 								wasm.i32.or(
-									wasm.ref.is_null(maybe_case_1),
-									Case.isTombstone(maybe_case_1),
+									wasm.ref.is_null(nullish_case_1),
+									wasm.ref.eq(nullish_case_1, Case.TOMBSTONE),
 								),
 								genConst(cg, false),
 								genConst(cg, true),
