@@ -41,5 +41,13 @@ class VmClass implements HasFuncData {
 	/** The Counterpoing `Fail`      class. */ public get FAIL():      binaryen.ExpressionRef /* (ref $Class) */ { return this.vm.mod.wasm.global.get('Class.FAIL',      this.vm.reftype.Class); }
 	/** The Counterpoing `Ok`        class. */ public get OK():        binaryen.ExpressionRef /* (ref $Class) */ { return this.vm.mod.wasm.global.get('Class.OK',        this.vm.reftype.Class); }
 	/** The Counterpoing `Function`  class. */ public get FUNCTION():  binaryen.ExpressionRef /* (ref $Class) */ { return this.vm.mod.wasm.global.get('Class.FUNCTION',  this.vm.reftype.Class); }
+
+	/**
+	 * The abstract superclass of all data (non-reference) classes.
+	 * There is no “`Data`” class exposed at the language level.
+	 */
+	private get DATA(): binaryen.ExpressionRef /* (ref $Class) */ {
+		return this.vm.mod.wasm.global.get('Class.DATA', this.vm.reftype.Class);
+	}
 }
 export {VmClass as Class};
