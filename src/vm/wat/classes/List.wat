@@ -158,7 +158,7 @@
 	(block $exit
 		(local.set $i (i32.const 0))
 		(loop $repeat
-			(br_if $exit (i32.gt_u (local.get $i) (array.len (local.get $src-internal))))
+			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $src-internal))))
 			(local.set $item (array.get $MapInternal (local.get $src-internal) (local.get $i)))
 			(if
 				(i32.eqz (ref.is_null (local.get $item)))
