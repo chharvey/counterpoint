@@ -20,7 +20,7 @@
 			(if
 				(i32.and
 					(i32.eqz (ref.is_null (local.get $case)))
-					(i32.eqz (call $Case.is-tombstone (local.get $case)))
+					(i32.eqz (ref.eq (local.get $case) (global.get $Case.TOMBSTONE)))
 				)
 				(then (local.set $count (i32.add (local.get $count) (i32.const 1))))
 			)
@@ -75,7 +75,7 @@
 		)
 		;; if the current case is a tombstone, store it, then continue the search.
 		(if
-			(call $Case.is-tombstone (local.get $case))
+			(ref.eq (local.get $case) (global.get $Case.TOMBSTONE))
 			(then
 				(local.set $tombidx  (local.get $index))
 				(local.set $tombcase (local.get $case))
@@ -116,7 +116,7 @@
 			(if
 				(i32.and
 					(i32.eqz (ref.is_null (local.get $case)))
-					(i32.eqz (call $Case.is-tombstone (local.get $case)))
+					(i32.eqz (ref.eq (local.get $case) (global.get $Case.TOMBSTONE)))
 				)
 				(then
 					(array.set $MapInternal
@@ -144,7 +144,7 @@
 	(if
 		(i32.eqz (i32.or
 			(ref.is_null (local.get $case))
-			(call $Case.is-tombstone (local.get $case))
+			(ref.eq (local.get $case) (global.get $Case.TOMBSTONE))
 		))
 		(then (return (struct.get $Case $con (local.get $case))))
 	)
@@ -210,7 +210,7 @@
 	(if
 		(i32.or
 			(ref.is_null (local.get $case))
-			(call $Case.is-tombstone (local.get $case))
+			(ref.eq (local.get $case) (global.get $Case.TOMBSTONE))
 		)
 		(then (return (ref.null $Case)))
 	)
@@ -219,7 +219,7 @@
 	(array.set $MapInternal
 		(struct.get $Map $internal (local.get $map))
 		(local.get $index)
-		(call $Case.new-tombstone)
+		(global.get $Case.TOMBSTONE)
 	)
 	;; capacity adjustment does not occur here. only on insertion.
 

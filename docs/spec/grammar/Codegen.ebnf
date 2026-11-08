@@ -226,7 +226,7 @@ Codegen((SET.GET `obj` `accessor`)) := (block (result (ref $Value))
 	(if (result (ref $Value))
 		(i32.or
 			(ref.is_null (local.get $maybe-case))
-			(call $Case.is-tombstone (local.get $maybe-case))
+			(ref.eq (local.get $maybe-case) (global.get $Case.TOMBSTONE))
 		)
 		(then `Codegen((BOOL.CONST false))`)
 		(else `Codegen((BOOL.CONST true))`)

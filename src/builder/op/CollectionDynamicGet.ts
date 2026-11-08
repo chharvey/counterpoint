@@ -138,7 +138,7 @@ export class CollectionDynamicGet extends Value {
 					wasm.if(
 						wasm.i32.or(
 							wasm.ref.is_null(maybe_case.get()),
-							Case.isTombstone(maybe_case.get()),
+							wasm.ref.eq(maybe_case.get(), Case.TOMBSTONE),
 						),
 						VmValue.FALSE,
 						VmValue.TRUE,

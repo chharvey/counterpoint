@@ -452,6 +452,9 @@ export class VirtualMachine {
 			['Value#FALSE', {name: 'Value.FALSE', type: this.reftype.Value}],
 			['Value#TRUE',  {name: 'Value.TRUE',  type: this.reftype.Value}],
 
+			['Property#TOMBSTONE', {name: 'Property.TOMBSTONE', type: this.reftype.Property}],
+			['Case#TOMBSTONE',     {name: 'Case.TOMBSTONE',     type: this.reftype.Case}],
+
 			['Class#CLASS',     {name: 'Class.CLASS',     type: this.reftype.Class}],
 			['Class#NULL',      {name: 'Class.NULL',      type: this.reftype.Class}],
 			['Class#BOOLEAN',   {name: 'Class.BOOLEAN',   type: this.reftype.Class}],

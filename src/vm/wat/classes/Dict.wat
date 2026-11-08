@@ -20,7 +20,7 @@
 			(if
 				(i32.and
 					(i32.eqz (ref.is_null (local.get $prop)))
-					(i32.eqz (call $Property.is-tombstone (local.get $prop)))
+					(i32.eqz (ref.eq (local.get $prop) (global.get $Property.TOMBSTONE)))
 				)
 				(then (local.set $count (i32.add (local.get $count) (i32.const 1))))
 			)
@@ -75,7 +75,7 @@
 		)
 		;; if the current property is a tombstone, store it, then continue the search.
 		(if
-			(call $Property.is-tombstone (local.get $prop))
+			(ref.eq (local.get $prop) (global.get $Property.TOMBSTONE))
 			(then
 				(local.set $tombidx  (local.get $index))
 				(local.set $tombprop (local.get $prop))
@@ -116,7 +116,7 @@
 			(if
 				(i32.and
 					(i32.eqz (ref.is_null (local.get $prop)))
-					(i32.eqz (call $Property.is-tombstone (local.get $prop)))
+					(i32.eqz (ref.eq (local.get $prop) (global.get $Property.TOMBSTONE)))
 				)
 				(then
 					(array.set $DictInternal
@@ -144,7 +144,7 @@
 	(if
 		(i32.eqz (i32.or
 			(ref.is_null (local.get $prop))
-			(call $Property.is-tombstone (local.get $prop))
+			(ref.eq (local.get $prop) (global.get $Property.TOMBSTONE))
 		))
 		(then (return (struct.get $Property $val (local.get $prop))))
 	)
@@ -210,7 +210,7 @@
 	(if
 		(i32.or
 			(ref.is_null (local.get $prop))
-			(call $Property.is-tombstone (local.get $prop))
+			(ref.eq (local.get $prop) (global.get $Property.TOMBSTONE))
 		)
 		(then (return (ref.null $Value)))
 	)
@@ -219,7 +219,7 @@
 	(array.set $DictInternal
 		(struct.get $Dict $internal (local.get $dict))
 		(local.get $index)
-		(call $Property.new-tombstone)
+		(global.get $Property.TOMBSTONE)
 	)
 	;; capacity adjustment does not occur here. only on insertion.
 

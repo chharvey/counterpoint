@@ -1875,7 +1875,7 @@ test.suite('Opcode', () => {
 							wasm.if(
 								wasm.i32.or(
 									wasm.ref.is_null(maybe_case_0),
-									Case.isTombstone(maybe_case_0),
+									wasm.ref.eq(maybe_case_0, Case.TOMBSTONE),
 								),
 								genConst(cg, false),
 								genConst(cg, true),
@@ -1889,7 +1889,7 @@ test.suite('Opcode', () => {
 							wasm.if(
 								wasm.i32.or(
 									wasm.ref.is_null(maybe_case_1),
-									Case.isTombstone(maybe_case_1),
+									wasm.ref.eq(maybe_case_1, Case.TOMBSTONE),
 								),
 								genConst(cg, false),
 								genConst(cg, true),

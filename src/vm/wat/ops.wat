@@ -1212,7 +1212,7 @@
 					(if
 						(i32.or
 							(ref.is_null (local.get $prop1))
-							(call $Property.is-tombstone (local.get $prop1))
+							(ref.eq (local.get $prop1) (global.get $Property.TOMBSTONE))
 						)
 						(then (return (i32.const 0)))
 					)
@@ -1278,7 +1278,7 @@
 					(if
 						(i32.or
 							(ref.is_null (local.get $case1))
-							(call $Case.is-tombstone (local.get $case1))
+							(ref.eq (local.get $case1) (global.get $Case.TOMBSTONE))
 						)
 						(then (return (i32.const 0)))
 					)
