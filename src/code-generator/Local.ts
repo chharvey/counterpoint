@@ -5,7 +5,7 @@ import type {BuilderLocalSymbol} from '../builder/index.ts';
 
 
 /**
- * A class modeling the Binaryen `module.local` instructions.
+ * A class modeling the Binaryen `wasm.local` instructions.
  */
 export class Local {
 	/* The Binaryen value of the variable. */
@@ -15,18 +15,18 @@ export class Local {
 	 * Construct a new Local object.
 	 * @param wasm   A Binaryen module’s expression builder to send instructions to.
 	 * @param index  The variable’s WASM index.
-	 * @param value  The Binaryen value of the variable.
-	 * @param typ    The Binaryen type of the variable.
+	 * @param init   The Binaryen initial value of the variable.
+	 * @param type   The Binaryen type of the variable.
 	 * @param schema The compiler’s internal data for a declared variable or a Builder temporary.
 	 */
 	public constructor(
-		private readonly wasm:   binaryen.ExpressionBuilder,
-		private readonly index:  number,
-		value: binaryen.ExpressionRef,
-		public readonly type:    binaryen.Type = binaryen.getExpressionType(value),
+		private readonly wasm:  binaryen.ExpressionBuilder,
+		private readonly index: number,
+		init: binaryen.ExpressionRef,
+		public readonly type:    binaryen.Type = binaryen.getExpressionType(init),
 		public readonly schema?: BuilderLocalSymbol,
 	) {
-		this.#value = value;
+		this.#value = init;
 	}
 
 	/* The Binaryen value of the variable. */
