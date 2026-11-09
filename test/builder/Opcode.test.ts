@@ -1426,7 +1426,7 @@ test.suite('Opcode', () => {
 					}`);
 					return assertEqualBins(
 						new AST.ExprVisitorBuild(builder).visit((stmts[0] as AST.STMT.StatementExpression).expr!).codegen(cg),
-						cg.vm.Value.newComposite(cg.codegenTuple()),
+						cg.vm.Value.fromTuple(cg.codegenTuple()),
 					);
 				});
 				test.test('nonempty TUPLE.NEW', () => {
@@ -1436,7 +1436,7 @@ test.suite('Opcode', () => {
 					}`);
 					return assertEqualBins(
 						new AST.ExprVisitorBuild(builder).visit((stmts[1] as AST.STMT.StatementExpression).expr!).codegen(cg),
-						cg.vm.Value.newComposite(cg.codegenTuple([
+						cg.vm.Value.fromTuple(cg.codegenTuple([
 							wasm.local.get(0, cg.vm.reftype.Value),
 							genConst(cg, 4.2),
 							wasm.local.get(1, cg.vm.reftype.Value),
@@ -1501,7 +1501,7 @@ test.suite('Opcode', () => {
 					const cg = new CodeGenerator();
 					return assertEqualBins(
 						new OP.RecordNew(new Map(), new TYPE.Record()).codegen(cg),
-						cg.vm.Value.newComposite(cg.codegenRecord()),
+						cg.vm.Value.fromRecord(cg.codegenRecord()),
 					);
 				});
 				test.test('nonempty RECORD.NEW', () => {
@@ -1516,7 +1516,7 @@ test.suite('Opcode', () => {
 					const id_e: bigint = Validator.keyId('e');
 					return assertEqualBins(
 						new AST.ExprVisitorBuild(builder).visit((stmts[1] as AST.STMT.StatementExpression).expr!).codegen(cg),
-						cg.vm.Value.newComposite(cg.codegenRecord(new Map([
+						cg.vm.Value.fromRecord(cg.codegenRecord(new Map([
 							[id_a, cg.newProperty(id_a, wasm.local.get(0, cg.vm.reftype.Value))],
 							[id_b, cg.newProperty(id_b, genConst(cg, 4.2))],
 							[id_c, cg.newProperty(id_c, wasm.local.get(1, cg.vm.reftype.Value))],
@@ -1552,7 +1552,7 @@ test.suite('Opcode', () => {
 							[id_b,   cg.newProperty(id_b,   genConst(cg, 42n))],
 							[id_bb,  cg.newProperty(id_bb,  genConst(cg, 4.2))],
 							[id_bbb, cg.newProperty(id_bbb, genConst(cg))],
-						])].map((props) => cg.vm.Value.newComposite(cg.codegenRecord(props))),
+						])].map((props) => cg.vm.Value.fromRecord(cg.codegenRecord(props))),
 					);
 				});
 			});

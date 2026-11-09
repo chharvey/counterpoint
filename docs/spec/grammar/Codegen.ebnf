@@ -9,8 +9,8 @@ Codegen((INT.CONST   `v`)) := (call $Value.new-primitive (call $Vect.new-int   (
 Codegen((NAT.CONST   `v`)) := (call $Value.new-primitive (call $Vect.new-nat   (i64.const `v.data`)));
 Codegen((FLOAT.CONST `v`)) := (call $Value.new-primitive (call $Vect.new-float (i64.const `v.data`)));
 
-Codegen((STR.CONST `v`)) := (call $Value.new-composite
-	(struct.new $Cpl-String (array.new_fixed $String `v.data.map("(i32.const `v.data[i]`)")`))
+Codegen((STR.CONST `v`)) := (call $Value.from-string
+	(array.new_fixed $String `v.data.map("(i32.const `v.data[i]`)")`)
 );
 
 Codegen((GET `id ::= CoreLibName`)) := (call $Value.new-composite (global.get ‹index›));
@@ -37,18 +37,18 @@ Codegen((STR.TEMPLATE `strings`)) := (call $Value.new-composite
 	)
 );
 
-Codegen((TUPLE.NEW)) := (call $Value.new-composite
-	(struct.new $Cpl-Tuple (array.new_fixed $Tuple 0))
+Codegen((TUPLE.NEW)) := (call $Value.from-tuple
+	(array.new_fixed $Tuple 0)
 );
-Codegen((TUPLE.NEW `values`)) := (call $Value.new-composite
-	(struct.new $Cpl-Tuple (array.new_fixed $Tuple `values.count` `values.map(Codegen)`))
+Codegen((TUPLE.NEW `values`)) := (call $Value.from-tuple
+	(array.new_fixed $Tuple `values.count` `values.map(Codegen)`)
 );
 
-Codegen((RECORD.NEW)) := (call $Value.new-composite
-	(struct.new $Cpl-Record (array.new_fixed $Record 0))
+Codegen((RECORD.NEW)) := (call $Value.from-record
+	(array.new_fixed $Record 0)
 );
-Codegen((RECORD.NEW `pairs`)) := (call $Value.new-composite
-	(struct.new $Cpl-Record (array.new_fixed $Record `pairs.count` `pairs.hashMap("(struct.new $Property (i64.const `pairs[i].0`) `Codegen(pairs[i].1)`)")`))
+Codegen((RECORD.NEW `pairs`)) := (call $Value.from-record
+	(array.new_fixed $Record `pairs.count` `pairs.hashMap("(struct.new $Property (i64.const `pairs[i].0`) `Codegen(pairs[i].1)`)")`)
 );
 
 Codegen((LIST.NEW)) := (call $Value.from-list

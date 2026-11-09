@@ -271,33 +271,33 @@ export class CodeGenerator {
 	}
 
 	/**
-	 * Return a new `$Cpl-String` from UTF-8-encoded code units.
+	 * Return a new `$String` from UTF-8-encoded code units.
 	 * @param units items in the array; must be of type `i32`
-	 * @return      `(array.new_fixed $Cpl-String <...items>)`
+	 * @return      `(array.new_fixed $String <...items>)`
 	 */
-	public codegenString(units: readonly (binaryen.ExpressionRef /* i32 */)[] = []): binaryen.ExpressionRef /* (ref $Cpl-String) */ {
-		return this.mod.wasm.struct.new([this.mod.wasm.array.new_fixed(this.vm.heaptype.String, units)], this.vm.heaptype.CplString);
+	public codegenString(units: readonly (binaryen.ExpressionRef /* i32 */)[] = []): binaryen.ExpressionRef /* (ref $String) */ {
+		return this.mod.wasm.array.new_fixed(this.vm.heaptype.String, units);
 	}
 
 	/**
-	 * Return a new `$Cpl-Tuple` from items.
+	 * Return a new `$Tuple` from items.
 	 * @param items items in the array; must be of type `(ref $Value)`
-	 * @return      `(array.new_fixed $Cpl-Tuple <...items>)`
+	 * @return      `(array.new_fixed $Tuple <...items>)`
 	 */
-	public codegenTuple(items: readonly (binaryen.ExpressionRef /* (ref $Value) */)[] = []): binaryen.ExpressionRef /* (ref $Cpl-Tuple) */ {
-		return this.mod.wasm.struct.new([this.mod.wasm.array.new_fixed(this.vm.heaptype.Tuple, items)], this.vm.heaptype.CplTuple);
+	public codegenTuple(items: readonly (binaryen.ExpressionRef /* (ref $Value) */)[] = []): binaryen.ExpressionRef /* (ref $Tuple) */ {
+		return this.mod.wasm.array.new_fixed(this.vm.heaptype.Tuple, items);
 	}
 
 	/**
-	 * Return a new `$Cpl-Record` from properties.
+	 * Return a new `$Record` from properties.
 	 * This method automatically hashes the property keys and inserts them at the correct indices.
 	 * @param props key–value pairs whose keys are key ids (`bigint`s) and whose values (of type `(ref $Property)`) are items in the array
-	 * @return      `(array.new_fixed $Cpl-Record <...props>)`
+	 * @return      `(array.new_fixed $Record <...props>)`
 	 */
-	public codegenRecord(props: ReadonlyMap<bigint, binaryen.ExpressionRef /* (ref $Property) */> = new Map()): binaryen.ExpressionRef /* (ref $Cpl-Record) */ {
+	public codegenRecord(props: ReadonlyMap<bigint, binaryen.ExpressionRef /* (ref $Property) */> = new Map()): binaryen.ExpressionRef /* (ref $Record) */ {
 		const entries = new Array<binaryen.ExpressionRef | undefined>(props.size);
 		props.forEach((code, id) => insert_entry(entries, Number(id) % entries.length, code));
-		return this.mod.wasm.struct.new([this.mod.wasm.array.new_fixed(this.vm.heaptype.Record, entries as binaryen.ExpressionRef[])], this.vm.heaptype.CplRecord);
+		return this.mod.wasm.array.new_fixed(this.vm.heaptype.Record, entries as binaryen.ExpressionRef[]);
 	}
 
 	/**

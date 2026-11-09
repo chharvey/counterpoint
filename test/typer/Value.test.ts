@@ -440,7 +440,7 @@ test.suite('Value', () => {
 			const {vm: {Value}, mod: {wasm}} = cg;
 			return assertEqualBins(
 				new VALUE.String('hello').codegen(cg),
-				Value.newComposite(cg.codegenString([0x68, 0x65, 0x6c, 0x6c, 0x6f].map((c) => wasm.i32.const(c)))),
+				Value.fromString(cg.codegenString([0x68, 0x65, 0x6c, 0x6c, 0x6f].map((c) => wasm.i32.const(c)))),
 			);
 		});
 	});
