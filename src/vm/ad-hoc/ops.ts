@@ -18,6 +18,7 @@ export function ops(vm: VirtualMachine) {
 					['op::toInt',         {name: 'op:to-int',         param: reftype.Value,  result: reftype.Value}],
 					['op::toNat',         {name: 'op:to-nat',         param: reftype.Value,  result: reftype.Value}],
 					['op::toFloat',       {name: 'op:to-float',       param: reftype.Value,  result: reftype.Value}],
+					['op::toStr',         {name: 'op:to-str',         param: reftype.Value,  result: reftype.Value}],
 					['op::not',           {name: 'op:not',            param: reftype.Value,  result: reftype.Value}],
 					['op::isEmpty',       {name: 'op:is-empty',       param: reftype.Value,  result: reftype.Value}],
 					['op::negate',        {name: 'op:negate',         param: reftype.Value,  result: reftype.Value}],
@@ -100,6 +101,11 @@ export function ops(vm: VirtualMachine) {
 		/** Cast the argument to type `float`. */
 		toFloat: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
 			vm.mod.wasm.call('op:to-float', [param0], vm.reftype.Value)
+		),
+
+		/** Cast the argument to type `str`. */
+		toStr: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
+			vm.mod.wasm.call('op:to-str', [param0], vm.reftype.Value)
 		),
 
 		/** Is the value falsy? */

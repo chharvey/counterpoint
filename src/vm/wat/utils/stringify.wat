@@ -1,5 +1,5 @@
 ;; ## Main Stringify Function ##
-(func $Value.stringify (export "Value#stringify") (param $value (ref $Value)) (result (ref $Cpl-String))
+(func $Value.stringify (param $value (ref $Value)) (result (ref $String))
 	(local $primitive v128)
 	(local $composite (ref null $Composite))
 
@@ -9,38 +9,38 @@
 	(if
 		(call $Value.is-primitive (local.get $value))
 		(then
-			(if (call $Vect.is-null (local.get $primitive)) (then (return (struct.new $Cpl-String (array.new_fixed $String 4
+			(if (call $Vect.is-null (local.get $primitive)) (then (return (array.new_fixed $String 4
 				(i32.const 0x6e) ;; 'n'
 				(i32.const 0x75) ;; 'u'
 				(i32.const 0x6c) ;; 'l'
 				(i32.const 0x6c) ;; 'l'
-			)))))
-			(if (call $Vect.is-false (local.get $primitive)) (then (return (struct.new $Cpl-String (array.new_fixed $String 5
+			))))
+			(if (call $Vect.is-false (local.get $primitive)) (then (return (array.new_fixed $String 5
 				(i32.const 0x66) ;; 'f'
 				(i32.const 0x61) ;; 'a'
 				(i32.const 0x6c) ;; 'l'
 				(i32.const 0x73) ;; 's'
 				(i32.const 0x65) ;; 'e'
-			)))))
-			(if (call $Vect.is-true (local.get $primitive)) (then (return (struct.new $Cpl-String (array.new_fixed $String 4
+			))))
+			(if (call $Vect.is-true (local.get $primitive)) (then (return (array.new_fixed $String 4
 				(i32.const 0x74) ;; 't'
 				(i32.const 0x72) ;; 'r'
 				(i32.const 0x75) ;; 'u'
 				(i32.const 0x65) ;; 'e'
-			)))))
-			(if (call $Vect.is-int   (local.get $primitive)) (then (return (struct.new $Cpl-String (call $!i64.stringify_s (call $Vect.as-int   (local.get $primitive)))))))
-			(if (call $Vect.is-nat   (local.get $primitive)) (then (return (struct.new $Cpl-String (call $!i64.stringify_u (call $Vect.as-nat   (local.get $primitive)))))))
-			(if (call $Vect.is-float (local.get $primitive)) (then (return (struct.new $Cpl-String (call $!f64.stringify   (call $Vect.as-float (local.get $primitive)))))))
+			))))
+			(if (call $Vect.is-int   (local.get $primitive)) (then (return (call $!i64.stringify_s (call $Vect.as-int   (local.get $primitive))))))
+			(if (call $Vect.is-nat   (local.get $primitive)) (then (return (call $!i64.stringify_u (call $Vect.as-nat   (local.get $primitive))))))
+			(if (call $Vect.is-float (local.get $primitive)) (then (return (call $!f64.stringify   (call $Vect.as-float (local.get $primitive))))))
 			(unreachable)
 		)
 	)
 	(if
 		(call $Value.is-composite (local.get $value))
 		(then
-			(if (ref.test (ref $Cpl-String) (local.get $composite)) (then (return                                                                                  (ref.cast (ref $Cpl-String) (local.get $composite)))))
-			(if (ref.test (ref $Cpl-Tuple)  (local.get $composite)) (then (return (struct.new $Cpl-String (call $!Tuple.stringify  (struct.get $Cpl-Tuple  $tuple  (ref.cast (ref $Cpl-Tuple)  (local.get $composite))))))))
-			(if (ref.test (ref $Cpl-Record) (local.get $composite)) (then (return (struct.new $Cpl-String (call $!Record.stringify (struct.get $Cpl-Record $record (ref.cast (ref $Cpl-Record) (local.get $composite))))))))
-			(if (ref.test (ref $Object)     (local.get $composite)) (then (return (struct.new $Cpl-String (call $!Object.stringify                                 (ref.cast (ref $Object)     (local.get $composite)))))))
+			(if (ref.test (ref $Cpl-String) (local.get $composite)) (then (return                         (struct.get $Cpl-String $string (ref.cast (ref $Cpl-String) (local.get $composite))))))
+			(if (ref.test (ref $Cpl-Tuple)  (local.get $composite)) (then (return_call $!Tuple.stringify  (struct.get $Cpl-Tuple  $tuple  (ref.cast (ref $Cpl-Tuple)  (local.get $composite))))))
+			(if (ref.test (ref $Cpl-Record) (local.get $composite)) (then (return_call $!Record.stringify (struct.get $Cpl-Record $record (ref.cast (ref $Cpl-Record) (local.get $composite))))))
+			(if (ref.test (ref $Object)     (local.get $composite)) (then (return_call $!Object.stringify                                 (ref.cast (ref $Object)     (local.get $composite)))))
 		)
 	)
 	(unreachable)

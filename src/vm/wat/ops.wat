@@ -52,6 +52,9 @@
 		))
 	))
 )
+(func $op:to-str (export "op::toStr") (param $value (ref $Value)) (result (ref $Value))
+	(call $Value.new-composite (struct.new $Cpl-String (call $Value.stringify (local.get $value))))
+)
 
 
 

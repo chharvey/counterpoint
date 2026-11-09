@@ -1959,7 +1959,6 @@ test.suite('Opcode', () => {
 						-(42);
 						-(4.2);
 					}`, {codegen: false});
-					const {Value} = cg.vm;
 					const expr_visitor = new AST.ExprVisitorBuild(builder);
 					const id_hello = Validator.keyId('hello');
 					return assertEqualBins(
@@ -1984,9 +1983,9 @@ test.suite('Opcode', () => {
 							cg.vm.op.toFloat(genConst(cg, 42n, 'nat')),
 							cg.vm.op.toFloat(genConst(cg, 42n)),
 
-							Value.newComposite(Value.stringify(genConst(cg))),
-							Value.newComposite(Value.stringify(genConst(cg, 42n))),
-							Value.newComposite(Value.stringify(genConst(cg, 'hello'))),
+							cg.vm.op.toStr(genConst(cg)),
+							cg.vm.op.toStr(genConst(cg, 42n)),
+							cg.vm.op.toStr(genConst(cg, 'hello')),
 
 							cg.vm.op.not(genConst(cg)),
 							cg.vm.op.not(genConst(cg, false)),

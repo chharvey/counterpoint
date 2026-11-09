@@ -33,7 +33,6 @@ export class Value implements HasFuncData {
 			['Value#isComposite',  {name: 'Value.is-composite',  param: reftype.Value,       result: binaryen.Type.i32}],
 			['Value#boolToI32',    {name: 'Value.bool-to-i32',   param: reftype.Value,       result: binaryen.Type.i32}],
 			['Value#boolFromI32',  {name: 'Value.bool-from-i32', param: binaryen.Type.i32,   result: reftype.Value}],
-			['Value#stringify',    {name: 'Value.stringify',     param: reftype.Value,       result: reftype.CplString}],
 			['Value#fromList',     {name: 'Value.from-list',     param: reftype.List,        result: reftype.Value}],
 			['Value#fromDict',     {name: 'Value.from-dict',     param: reftype.Dict,        result: reftype.Value}],
 			['Value#fromMap',      {name: 'Value.from-map',      param: reftype.Map,         result: reftype.Value}],
@@ -107,11 +106,6 @@ export class Value implements HasFuncData {
 	/** Converts an i32 value to a $Value with a boolean primitive. */
 	public boolFromI32(bool: binaryen.ExpressionRef /* i32 */): binaryen.ExpressionRef /* (ref $Value) */ {
 		return this.vm.mod.wasm.call('Value.bool-from-i32', [bool], this.vm.reftype.Value);
-	}
-
-	/** Return a string representation of the value. */
-	public stringify(value: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Cpl-String) */ {
-		return this.vm.mod.wasm.call('Value.stringify', [value], this.vm.reftype.CplString);
 	}
 
 	/** Creates a new value holding the given List. */

@@ -1,7 +1,4 @@
-from "core/vm" import (
-	'Value#newComposite',
-	'Value#stringify',
-);
+from "core/vm" import ('op::toStr');
 from "./Object" import type (Object);
 from "./Exception" import (Exception);
 
@@ -20,6 +17,6 @@ public class String {
 		this(refobj.'%%toString%%'());
 	}
 	public new (arg: anything) {
-		return 'Value#newComposite'('Value#stringify'(arg)) as :str:;
+		return 'op::toStr'(arg) as :str:;
 	}
 }

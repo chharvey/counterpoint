@@ -244,7 +244,7 @@ Codegen((BOOL.FROM  `v`)) := (call $op:not (call $op:not `Codegen(v)`));
 Codegen((INT.FROM   `v`)) := (call $op:to-int   `Codegen(v)`);
 Codegen((NAT.FROM   `v`)) := (call $op:to-nat   `Codegen(v)`);
 Codegen((FLOAT.FROM `v`)) := (call $op:to-float `Codegen(v)`);
-Codegen((STR.FROM   `v`)) := (call $Value.new-composite (call $Value.stringify `Codegen(v)`));
+Codegen((STR.FROM   `v`)) := (call $op:to-str   `Codegen(v)`);
 
 Codegen((NOT `v`)) := (call $op:not      `Codegen(v)`);
 Codegen((EMP `v`)) := (call $op:is-empty `Codegen(v)`);
