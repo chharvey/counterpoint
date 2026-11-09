@@ -53,7 +53,7 @@
 	))
 )
 (func $op:to-str (export "op::toStr") (param $value (ref $Value)) (result (ref $Value))
-	(call $Value.new-composite (struct.new $Cpl-String (call $Value.stringify (local.get $value))))
+	(return_call $Value.from-string (call $Value.stringify (local.get $value)))
 )
 
 
@@ -328,8 +328,8 @@
 		(else (unreachable))
 	)
 )
-(func $op:as-string (export "op::asString") (param (ref $Value)) (result (ref $Value))
-	(return_call $Value.new-composite (struct.new $Cpl-String (call $Value.as-string (local.get 0))))
+(func $op:as-string (export "op::asString") (param $value (ref $Value)) (result (ref $Value))
+	(return_call $Value.new-composite (ref.cast (ref $Cpl-String) (struct.get $Value $composite (local.get $value))))
 )
 (func $op:as-object (export "op::asObject") (param $value (ref $Value)) (result (ref $Value))
 	(return_call $Value.new-composite (ref.cast (ref $Object) (struct.get $Value $composite (local.get $value))))

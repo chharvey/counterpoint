@@ -206,12 +206,15 @@ const TYPES: {
 		/* $composite */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_composite), true)),
 	]);
 
-	/* (type $Data ...) */
-	tb.setStructType(i_data, [
+	const fields_data = [
 		/* $class */  make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_class), false)),
 		/* $fields */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_dict),  false)),
-	]);
+	];
+
+	/* (type $Data ...) */
+	tb.setStructType(i_data, fields_data);
 	tb.setSubType(i_data, tb.getTempHeapType(i_composite));
+	tb.setOpen(i_data);
 
 	const fields_object = [
 		/* $id */     make_struct_field(binaryen.Type.i64),
@@ -232,21 +235,24 @@ const TYPES: {
 
 	/* (type $Cpl-String ...) */
 	tb.setStructType(i_cpl_string, [
+		...fields_data,
 		/* $string */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_string), false)),
 	]);
-	tb.setSubType(i_cpl_string, tb.getTempHeapType(i_composite));
+	tb.setSubType(i_cpl_string, tb.getTempHeapType(i_data));
 
 	/* (type $Cpl-Tuple ...) */
 	tb.setStructType(i_cpl_tuple, [
+		...fields_data,
 		/* $tuple */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_tuple), false)),
 	]);
-	tb.setSubType(i_cpl_tuple, tb.getTempHeapType(i_composite));
+	tb.setSubType(i_cpl_tuple, tb.getTempHeapType(i_data));
 
 	/* (type $Cpl-Record ...) */
 	tb.setStructType(i_cpl_record, [
+		...fields_data,
 		/* $record */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_record), false)),
 	]);
-	tb.setSubType(i_cpl_record, tb.getTempHeapType(i_composite));
+	tb.setSubType(i_cpl_record, tb.getTempHeapType(i_data));
 
 	/* (type $Cpl-List ...) */
 	tb.setStructType(i_cpl_list, [

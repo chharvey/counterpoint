@@ -1381,7 +1381,7 @@ test.suite('Opcode', () => {
 				const offset_get: binaryen.ExpressionRef = wasm.local.get(OFFSET_IDX, binaryen.Type.i32);
 				return assertEqualBins(
 					builder.instructions.at(-1)!.codegen(cg),
-					wasm.drop(Value.newComposite(wasm.block(null, [
+					wasm.drop(wasm.block(null, [
 						wasm.local.set(4, strings[0]),
 						wasm.local.set(5, strings[1]),
 						wasm.local.set(6, strings[2]),
@@ -1414,8 +1414,8 @@ test.suite('Opcode', () => {
 							wasm.local.set(OFFSET_IDX, wasm.i32.add(offset_get, str_len)),
 						]),
 						wasm.array.copy(result_get, offset_get, string_4_get, wasm.i32.const(0), string_4_len),
-						wasm.struct.new([result_get], heaptype.CplString),
-					], reftype.CplString))),
+						Value.fromString(result_get),
+					], reftype.Value)),
 				);
 			});
 

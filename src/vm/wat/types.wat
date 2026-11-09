@@ -64,7 +64,7 @@
 		(field $composite (ref null $Composite))
 	))
 
-	(type $Data (sub final $Composite (struct
+	(type $Data (sub $Composite (struct
 		;; pointer to the constructor class
 		(field $class (ref $Class))
 		;; each instance has a set of fields
@@ -95,9 +95,34 @@
 
 
 	;; ### “Value” Types (id-by-value)
-	(type $Cpl-String (sub final $Composite (struct (field $string (ref $String)))))
-	(type $Cpl-Tuple  (sub final $Composite (struct (field $tuple  (ref $Tuple)))))
-	(type $Cpl-Record (sub final $Composite (struct (field $record (ref $Record)))))
+	;; precursor to the Counterpoint `String` class
+	(type $Cpl-String (sub final $Data (struct
+		;; --- inherited ---
+		(field $class (ref $Class))
+		(field $fields (ref null $Dict))
+
+		;; --- own ---
+		;; the stored value
+		(field $string (ref $String))
+	)))
+	(type $Cpl-Tuple (sub final $Data (struct
+		;; --- inherited ---
+		(field $class (ref $Class))
+		(field $fields (ref null $Dict))
+
+		;; --- own ---
+		;; the stored value
+		(field $tuple (ref $Tuple))
+	)))
+	(type $Cpl-Record (sub final $Data (struct
+		;; --- inherited ---
+		(field $class (ref $Class))
+		(field $fields (ref null $Dict))
+
+		;; --- own ---
+		;; the stored value
+		(field $record (ref $Record))
+	)))
 
 
 	;; ### Reference Types (id-by-reference)
@@ -109,7 +134,7 @@
 		(field $fields (ref null $Dict))
 
 		;; --- own ---
-		;; the underlying implementation
+		;; the stored value
 		(field $list (ref $List))
 	)))
 	;; precursor to the Counterpoint `Dict` class
@@ -120,7 +145,7 @@
 		(field $fields (ref null $Dict))
 
 		;; --- own ---
-		;; the underlying implementation
+		;; the stored value
 		(field $dict (ref $Dict))
 	)))
 	;; precursor to the Counterpoint `Map` class
@@ -131,7 +156,7 @@
 		(field $fields (ref null $Dict))
 
 		;; --- own ---
-		;; the underlying implementation
+		;; the stored value
 		(field $map (ref $Map))
 	)))
 	;; precursor to the Counterpoint `Exception` class

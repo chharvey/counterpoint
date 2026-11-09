@@ -48,7 +48,7 @@ export class Template extends Value {
 		const result: Local = cg.newLocal(wasm.array.new_default(heaptype.String, lengths.reduce((a, b) => wasm.i32.add(a, b))));
 		const offset: Local = cg.newLocal(wasm.i32.const(0));
 
-		return VmValue.newComposite(wasm.block(null, [
+		return wasm.block(null, [
 			...strings.map((strarr) => strarr.set()),
 			result.set(),
 			offset.set(),
@@ -62,7 +62,7 @@ export class Template extends Value {
 				),
 				offset.set(wasm.i32.add(offset.get(), lengths[i])),
 			]).slice(0, -1), // slice off the last `offset.set`
-			wasm.struct.new([result.get()], heaptype.CplString),
-		], reftype.CplString));
+			VmValue.fromString(result.get()),
+		], reftype.Value);
 	}
 }
