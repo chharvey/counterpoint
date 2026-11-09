@@ -10,6 +10,7 @@ function rel_path(arg) {
 
 const inputs = Promise.all([
 	'types.wat',
+	'globals.wat',
 	'utils/mod.wat',
 	'utils/capacity-needed.wat',
 	'utils/compare-numbers.wat',
