@@ -2442,13 +2442,13 @@ test.suite('Opcode', () => {
 						const {builder, cg, wasm} = setupScript(`{
 							List.<int>((2, 3, 5));
 						}`, {codegen: false});
-						const {heaptype, reftype, Value, List} = cg.vm;
+						const {reftype, Value, List} = cg.vm;
 						builder.instructions.slice(0, 2).forEach((instr) => instr.codegen(cg));
 						return assertEqualBins(
 							builder.instructions[2].codegen(cg),
 							List.copyFromTuple(
 								Value.asList (wasm.local.get(0, reftype.Value)),
-								wasm.struct.new([Value.asTuple(wasm.local.get(1, reftype.Value))], heaptype.CplTuple),
+								Value.asTuple(wasm.local.get(1, reftype.Value)),
 							),
 						);
 					});
@@ -2486,13 +2486,13 @@ test.suite('Opcode', () => {
 						const {builder, cg, wasm} = setupScript(`{
 							Dict.<int>(( (@a, 2), (@b, 3), (@c, 5) ));
 						}`, {codegen: false});
-						const {heaptype, reftype, Value, Dict} = cg.vm;
+						const {reftype, Value, Dict} = cg.vm;
 						builder.instructions.slice(0, 5).forEach((instr) => instr.codegen(cg));
 						return assertEqualBins(
 							builder.instructions[5].codegen(cg),
 							Dict.fillFromTuple(
-								Value.asDict(wasm.local.get(0, reftype.Value)),
-								wasm.struct.new([Value.asTuple(wasm.local.get(4, reftype.Value))], heaptype.CplTuple),
+								Value.asDict (wasm.local.get(0, reftype.Value)),
+								Value.asTuple(wasm.local.get(4, reftype.Value)),
 							),
 						);
 					});
@@ -2500,13 +2500,13 @@ test.suite('Opcode', () => {
 						const {builder, cg, wasm} = setupScript(`{
 							Dict.<int>((a= 2, b= 3, c= 5));
 						}`, {codegen: false});
-						const {heaptype, reftype, Value, Dict} = cg.vm;
+						const {reftype, Value, Dict} = cg.vm;
 						builder.instructions.slice(0, 2).forEach((instr) => instr.codegen(cg));
 						return assertEqualBins(
 							builder.instructions[2].codegen(cg),
 							Dict.copyFromRecord(
-								Value.asDict(wasm.local.get(0, reftype.Value)),
-								wasm.struct.new([Value.asRecord(wasm.local.get(1, reftype.Value))], heaptype.CplRecord),
+								Value.asDict  (wasm.local.get(0, reftype.Value)),
+								Value.asRecord(wasm.local.get(1, reftype.Value)),
 							),
 						);
 					});
@@ -2572,13 +2572,13 @@ test.suite('Opcode', () => {
 						const {builder, cg, wasm} = setupScript(`{
 							Set.<int>((2, 3, 5));
 						}`, {codegen: false});
-						const {heaptype, reftype, Value, Map: VmMap} = cg.vm;
+						const {reftype, Value, Map: VmMap} = cg.vm;
 						builder.instructions.slice(0, 2).forEach((instr) => instr.codegen(cg));
 						return assertEqualBins(
 							builder.instructions[2].codegen(cg),
 							VmMap.fillSetFromTuple(
 								Value.asMap  (wasm.local.get(0, reftype.Value)),
-								wasm.struct.new([Value.asTuple(wasm.local.get(1, reftype.Value))], heaptype.CplTuple),
+								Value.asTuple(wasm.local.get(1, reftype.Value)),
 							),
 						);
 					});
@@ -2616,13 +2616,13 @@ test.suite('Opcode', () => {
 						const {builder, cg, wasm} = setupScript(`{
 							Map.<float, int>(( (1.414, 2), (1.732, 3), (2.236, 5) ));
 						}`, {codegen: false});
-						const {heaptype, reftype, Value, Map: VmMap} = cg.vm;
+						const {reftype, Value, Map: VmMap} = cg.vm;
 						builder.instructions.slice(0, 5).forEach((instr) => instr.codegen(cg));
 						return assertEqualBins(
 							builder.instructions[5].codegen(cg),
 							VmMap.fillFromTuple(
 								Value.asMap  (wasm.local.get(0, reftype.Value)),
-								wasm.struct.new([Value.asTuple(wasm.local.get(4, reftype.Value))], heaptype.CplTuple),
+								Value.asTuple(wasm.local.get(4, reftype.Value)),
 							),
 						);
 					});

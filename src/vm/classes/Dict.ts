@@ -46,7 +46,7 @@ export class Dict implements HasFuncData {
 			}],
 			['Dict#copyFromRecord', {
 				name:   'Dict.copy-from-record',
-				param:  binaryen.createType([reftype.Dict, reftype.CplRecord]),
+				param:  binaryen.createType([reftype.Dict, reftype.Record]),
 				result: binaryen.Type.none,
 			}],
 			['Dict#copyFromDict', {
@@ -56,7 +56,7 @@ export class Dict implements HasFuncData {
 			}],
 			['Dict#fillFromTuple', {
 				name:   'Dict.fill-from-tuple',
-				param:  binaryen.createType([reftype.Dict, reftype.CplTuple]),
+				param:  binaryen.createType([reftype.Dict, reftype.Tuple]),
 				result: binaryen.Type.none,
 			}],
 			['Dict#fillFromList', {
@@ -143,9 +143,9 @@ export class Dict implements HasFuncData {
 	}
 
 	/**
-	 * Copy the properties from a given source Cpl-Record into the destination Dict.
+	 * Copy the properties from a given source Record into the destination Dict.
 	 */
-	public copyFromRecord(dest: binaryen.ExpressionRef /* (ref $Dict) */, src: binaryen.ExpressionRef /* (ref $Cpl-Record) */): binaryen.ExpressionRef /* void */ {
+	public copyFromRecord(dest: binaryen.ExpressionRef /* (ref $Dict) */, src: binaryen.ExpressionRef /* (ref $Record) */): binaryen.ExpressionRef /* void */ {
 		return this.vm.mod.wasm.call('Dict.copy-from-record', [dest, src], binaryen.Type.none);
 	}
 
@@ -157,9 +157,9 @@ export class Dict implements HasFuncData {
 	}
 
 	/**
-	 * Fill the destination Dict with properties from the source Cpl-Tuple.
+	 * Fill the destination Dict with properties from the source Tuple.
 	 */
-	public fillFromTuple(dest: binaryen.ExpressionRef /* (ref $Dict) */, src: binaryen.ExpressionRef /* (ref $Cpl-Tuple) */): binaryen.ExpressionRef /* void */ {
+	public fillFromTuple(dest: binaryen.ExpressionRef /* (ref $Dict) */, src: binaryen.ExpressionRef /* (ref $Tuple) */): binaryen.ExpressionRef /* void */ {
 		return this.vm.mod.wasm.call('Dict.fill-from-tuple', [dest, src], binaryen.Type.none);
 	}
 

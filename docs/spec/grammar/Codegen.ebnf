@@ -394,8 +394,8 @@ Codegen((MAP.SET `obj` `accessor` `v`)) := (call $Map.set
 );
 
 Codegen((LIST.COPY `dest` `src:Tuple`)) := (call $List.copy-from-tuple
-	(call $Value.as-list `Codegen(dest)`)
-	(struct.new $Cpl-Tuple (call $Value.as-tuple `Codegen(src)`))
+	(call $Value.as-list  `Codegen(dest)`)
+	(call $Value.as-tuple `Codegen(src)`)
 );
 Codegen((LIST.COPY `dest` `src:List`)) := (call $List.copy-from-list
 	(call $Value.as-list `Codegen(dest)`)
@@ -407,12 +407,12 @@ Codegen((LIST.COPY `dest` `src:Set`)) := (call $List.fill-from-set
 );
 
 Codegen((DICT.COPY `dest` `src:Tuple`)) := (call $Dict.fill-from-tuple
-	(call $Value.as-dict `Codegen(dest)`)
-	(struct.new $Cpl-Tuple (call $Value.as-tuple `Codegen(src)`))
+	(call $Value.as-dict  `Codegen(dest)`)
+	(call $Value.as-tuple `Codegen(src)`)
 );
 Codegen((DICT.COPY `dest` `src:Record`)) := (call $Dict.copy-from-record
-	(call $Value.as-dict `Codegen(dest)`)
-	(struct.new $Cpl-Record (call $Value.as-record `Codegen(src)`))
+	(call $Value.as-dict   `Codegen(dest)`)
+	(call $Value.as-record `Codegen(src)`)
 );
 Codegen((DICT.COPY `dest` `src:List`)) := (call $Dict.fill-from-list
 	(call $Value.as-dict `Codegen(dest)`)
@@ -432,8 +432,8 @@ Codegen((DICT.COPY `dest` `src:Map`)) := (call $Dict.fill-from-map
 );
 
 Codegen((SET.COPY `dest` `src:Tuple`)) := (call $Map.fill-set-from-tuple
-	(call $Value.as-map `Codegen(dest)`)
-	(struct.new $Cpl-Tuple (call $Value.as-tuple `Codegen(src)`))
+	(call $Value.as-map   `Codegen(dest)`)
+	(call $Value.as-tuple `Codegen(src)`)
 );
 Codegen((SET.COPY `dest` `src:List`)) := (call $Map.fill-set-from-list
 	(call $Value.as-map  `Codegen(dest)`)
@@ -445,8 +445,8 @@ Codegen((SET.COPY `dest` `src:Set`)) := (call $Map.copy-from-map
 );
 
 Codegen((MAP.COPY `dest` `src:Tuple`)) := (call $Map.fill-from-tuple
-	(call $value.as-map `Codegen(dest)`)
-	(struct.new $Cpl-Tuple (call $Value.as-tuple `Codegen(src)`))
+	(call $value.as-map   `Codegen(dest)`)
+	(call $Value.as-tuple `Codegen(src)`)
 );
 Codegen((MAP.COPY `dest` `src:List`)) := (call $Map.fill-from-list
 	(call $value.as-map  `Codegen(dest)`)

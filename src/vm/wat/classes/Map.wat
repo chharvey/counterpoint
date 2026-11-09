@@ -241,18 +241,15 @@
 
 
 
-(func $Map.fill-set-from-tuple (export "Map#fillSetFromTuple") (param $dest (ref $Map)) (param $src (ref $Cpl-Tuple))
-	(local $src-internal (ref $Tuple))
-	(local $i            i32)
-	(local $item         (ref $Value))
-
-	(local.set $src-internal (struct.get $Cpl-Tuple $tuple (local.get $src)))
+(func $Map.fill-set-from-tuple (export "Map#fillSetFromTuple") (param $dest (ref $Map)) (param $src (ref $Tuple))
+	(local $i    i32)
+	(local $item (ref $Value))
 
 	(block $exit
 		(local.set $i (i32.const 0))
 		(loop $repeat
-			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $src-internal))))
-			(local.set $item (array.get $Tuple (local.get $src-internal) (local.get $i)))
+			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $src))))
+			(local.set $item (array.get $Tuple (local.get $src) (local.get $i)))
 			(call $Map.set (local.get $dest) (local.get $item) (global.get $Value.NULL))
 			(local.set $i (i32.add (local.get $i) (i32.const 1)))
 			(br $repeat)
@@ -283,18 +280,15 @@
 
 
 
-(func $Map.fill-from-tuple (export "Map#fillFromTuple") (param $dest (ref $Map)) (param $src (ref $Cpl-Tuple))
-	(local $src-internal (ref $Tuple))
-	(local $i            i32)
-	(local $item         (ref $Value))
-
-	(local.set $src-internal (struct.get $Cpl-Tuple $tuple (local.get $src)))
+(func $Map.fill-from-tuple (export "Map#fillFromTuple") (param $dest (ref $Map)) (param $src (ref $Tuple))
+	(local $i    i32)
+	(local $item (ref $Value))
 
 	(block $exit
 		(local.set $i (i32.const 0))
 		(loop $repeat
-			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $src-internal))))
-			(local.set $item (array.get $Tuple (local.get $src-internal) (local.get $i)))
+			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $src))))
+			(local.set $item (array.get $Tuple (local.get $src) (local.get $i)))
 			(call $Map.set (local.get $dest) (call $Case.from-tuple
 				(struct.get $Cpl-Tuple $tuple (ref.cast (ref $Cpl-Tuple) (struct.get $Value $composite (local.get $item))))
 			))

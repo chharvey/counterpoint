@@ -222,20 +222,18 @@
 
 
 
-(func $Dict.copy-from-record (export "Dict#copyFromRecord") (param $dest (ref $Dict)) (param $src (ref $Cpl-Record))
+(func $Dict.copy-from-record (export "Dict#copyFromRecord") (param $dest (ref $Dict)) (param $src (ref $Record))
 	(local $dest-internal (ref $DictInternal))
-	(local $src-internal  (ref $Record))
 
-	(local.set $dest-internal (struct.get $Dict       $internal (local.get $dest)))
-	(local.set $src-internal  (struct.get $Cpl-Record $record   (local.get $src)))
+	(local.set $dest-internal (struct.get $Dict $internal (local.get $dest)))
 
-	(call $Dict.adjust-capacity (local.get $dest) (call $util:capacity-needed (array.len (local.get $src-internal))))
+	(call $Dict.adjust-capacity (local.get $dest) (call $util:capacity-needed (array.len (local.get $src))))
 	(array.copy $DictInternal $Record
 		(local.get $dest-internal)
 		(i32.const 0)
-		(local.get $src-internal)
+		(local.get $src)
 		(i32.const 0)
-		(array.len (local.get $src-internal))
+		(array.len (local.get $src))
 	)
 )
 (func $Dict.copy-from-dict (export "Dict#copyFromDict") (param $dest (ref $Dict)) (param $src (ref $Dict))
@@ -257,18 +255,15 @@
 
 
 
-(func $Dict.fill-from-tuple (export "Dict#fillFromTuple") (param $dest (ref $Dict)) (param $src (ref $Cpl-Tuple))
-	(local $src-internal (ref $Tuple))
-	(local $i            i32)
-	(local $item         (ref $Value))
-
-	(local.set $src-internal (struct.get $Cpl-Tuple $tuple (local.get $src)))
+(func $Dict.fill-from-tuple (export "Dict#fillFromTuple") (param $dest (ref $Dict)) (param $src (ref $Tuple))
+	(local $i    i32)
+	(local $item (ref $Value))
 
 	(block $exit
 		(local.set $i (i32.const 0))
 		(loop $repeat
-			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $src-internal))))
-			(local.set $item (array.get $Tuple (local.get $src-internal) (local.get $i)))
+			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $src))))
+			(local.set $item (array.get $Tuple (local.get $src) (local.get $i)))
 			(call $Dict.set (local.get $dest) (call $Property.from-tuple
 				(struct.get $Cpl-Tuple $tuple (ref.cast (ref $Cpl-Tuple) (struct.get $Value $composite (local.get $item))))
 			))
@@ -305,7 +300,7 @@
 	(local $i            i32)
 	(local $item         (ref null $Case))
 
-	(local.set $src-internal (struct.get $Map  $internal (local.get $src)))
+	(local.set $src-internal (struct.get $Map $internal (local.get $src)))
 
 	(block $exit
 		(local.set $i (i32.const 0))
@@ -328,7 +323,7 @@
 	(local $i            i32)
 	(local $item         (ref null $Case))
 
-	(local.set $src-internal (struct.get $Map  $internal (local.get $src)))
+	(local.set $src-internal (struct.get $Map $internal (local.get $src)))
 
 	(block $exit
 		(local.set $i (i32.const 0))

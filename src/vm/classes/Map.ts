@@ -51,7 +51,7 @@ class VmMap implements HasFuncData {
 			}],
 			['Map#fillSetFromTuple', {
 				name:   'Map.fill-set-from-tuple',
-				param:  binaryen.createType([reftype.Map, reftype.CplTuple]),
+				param:  binaryen.createType([reftype.Map, reftype.Tuple]),
 				result: binaryen.Type.none,
 			}],
 			['Map#fillSetFromList', {
@@ -61,7 +61,7 @@ class VmMap implements HasFuncData {
 			}],
 			['Map#fillFromTuple', {
 				name:   'Map.fill-from-tuple',
-				param:  binaryen.createType([reftype.Map, reftype.CplTuple]),
+				param:  binaryen.createType([reftype.Map, reftype.Tuple]),
 				result: binaryen.Type.none,
 			}],
 			['Map#fillFromList', {
@@ -150,23 +150,23 @@ class VmMap implements HasFuncData {
 	}
 
 	/**
-	 * Fill the destination Map (as a Set) with cases from the source Cpl-Tuple.
+	 * Fill the destination Map (as a Set) with items from the source Tuple.
 	 */
-	public fillSetFromTuple(dest: binaryen.ExpressionRef /* (ref $Map) */, src: binaryen.ExpressionRef /* (ref $Cpl-Tuple) */): binaryen.ExpressionRef /* void */ {
+	public fillSetFromTuple(dest: binaryen.ExpressionRef /* (ref $Map) */, src: binaryen.ExpressionRef /* (ref $Tuple) */): binaryen.ExpressionRef /* void */ {
 		return this.vm.mod.wasm.call('Map.fill-set-from-tuple', [dest, src], binaryen.Type.none);
 	}
 
 	/**
-	 * Fill the destination Map (as a Set) with cases from the source List.
+	 * Fill the destination Map (as a Set) with items from the source List.
 	 */
 	public fillSetFromList(dest: binaryen.ExpressionRef /* (ref $Map) */, src: binaryen.ExpressionRef /* (ref $List) */): binaryen.ExpressionRef /* void */ {
 		return this.vm.mod.wasm.call('Map.fill-set-from-list', [dest, src], binaryen.Type.none);
 	}
 
 	/**
-	 * Fill the destination Map with cases from the source Cpl-Tuple.
+	 * Fill the destination Map with cases from the source Tuple.
 	 */
-	public fillFromTuple(dest: binaryen.ExpressionRef /* (ref $Map) */, src: binaryen.ExpressionRef /* (ref $Cpl-Tuple) */): binaryen.ExpressionRef /* void */ {
+	public fillFromTuple(dest: binaryen.ExpressionRef /* (ref $Map) */, src: binaryen.ExpressionRef /* (ref $Tuple) */): binaryen.ExpressionRef /* void */ {
 		return this.vm.mod.wasm.call('Map.fill-from-tuple', [dest, src], binaryen.Type.none);
 	}
 
