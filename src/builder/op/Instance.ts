@@ -123,10 +123,10 @@ export class Instance extends Value {
 					case CoreLibName.FLOAT:     { return cg.vm.op.isFloat(code); }
 					case CoreLibName.STRING:    { return cg.vm.op.isString(code); }
 					case CoreLibName.OBJECT:    { return cg.vm.op.isObject(code); }
-					case CoreLibName.LIST:      { return cg.vm.op.isCplList(code); }
-					case CoreLibName.DICT:      { return cg.vm.op.isCplDict(code); }
-					case CoreLibName.SET:       { return cg.vm.op.isCplMap(code); }
-					case CoreLibName.MAP:       { return cg.vm.op.isCplMap(code); }
+					case CoreLibName.LIST:      { return cg.vm.op.isList(code); }
+					case CoreLibName.DICT:      { return cg.vm.op.isDict(code); }
+					case CoreLibName.SET:       { return cg.vm.op.isMap(code); }
+					case CoreLibName.MAP:       { return cg.vm.op.isMap(code); }
 					case CoreLibName.EXCEPTION: { return cg.vm.op.isException(code); }
 					case CoreLibName.MAYBE:     { return cg.vm.op.isMaybe(code); }
 					case CoreLibName.NONE:      { return cg.vm.op.isNone(code); }
@@ -149,10 +149,10 @@ export class Instance extends Value {
 					case CoreLibName.FLOAT:     { return cg.vm.op.asFloat(code); }
 					case CoreLibName.STRING:    { return cg.vm.op.asString(code); }
 					case CoreLibName.OBJECT:    { return cg.vm.op.asObject(code); }
-					case CoreLibName.LIST:      { return cg.vm.op.asCplList(code); }
-					case CoreLibName.DICT:      { return cg.vm.op.asCplDict(code); }
-					case CoreLibName.SET:       { return cg.vm.op.asCplMap(code); }
-					case CoreLibName.MAP:       { return cg.vm.op.asCplMap(code); }
+					case CoreLibName.LIST:      { return cg.vm.op.asList(code); }
+					case CoreLibName.DICT:      { return cg.vm.op.asDict(code); }
+					case CoreLibName.SET:       { return cg.vm.op.asMap(code); }
+					case CoreLibName.MAP:       { return cg.vm.op.asMap(code); }
 					case CoreLibName.EXCEPTION: { return cg.vm.op.asException(code); }
 					case CoreLibName.MAYBE:     { return cg.vm.op.asMaybe(code); }
 					case CoreLibName.NONE:      { return cg.vm.op.asNone(code); }
