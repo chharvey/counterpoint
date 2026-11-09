@@ -33,6 +33,9 @@ export class Value implements HasFuncData {
 			['Value#isComposite',  {name: 'Value.is-composite',  param: reftype.Value,       result: binaryen.Type.i32}],
 			['Value#boolToI32',    {name: 'Value.bool-to-i32',   param: reftype.Value,       result: binaryen.Type.i32}],
 			['Value#boolFromI32',  {name: 'Value.bool-from-i32', param: binaryen.Type.i32,   result: reftype.Value}],
+			['Value#fromString',   {name: 'Value.from-string',   param: reftype.String,      result: reftype.Value}],
+			['Value#fromTuple',    {name: 'Value.from-tuple',    param: reftype.Tuple,       result: reftype.Value}],
+			['Value#fromRecord',   {name: 'Value.from-record',   param: reftype.Record,      result: reftype.Value}],
 			['Value#fromList',     {name: 'Value.from-list',     param: reftype.List,        result: reftype.Value}],
 			['Value#fromDict',     {name: 'Value.from-dict',     param: reftype.Dict,        result: reftype.Value}],
 			['Value#fromMap',      {name: 'Value.from-map',      param: reftype.Map,         result: reftype.Value}],
@@ -106,6 +109,21 @@ export class Value implements HasFuncData {
 	/** Converts an i32 value to a $Value with a boolean primitive. */
 	public boolFromI32(bool: binaryen.ExpressionRef /* i32 */): binaryen.ExpressionRef /* (ref $Value) */ {
 		return this.vm.mod.wasm.call('Value.bool-from-i32', [bool], this.vm.reftype.Value);
+	}
+
+	/** Creates a new value holding the given String. */
+	public fromString(list: binaryen.ExpressionRef /* (ref $String) */): binaryen.ExpressionRef /* (ref $Value) */ {
+		return this.vm.mod.wasm.call('Value.from-string', [list], this.vm.reftype.Value);
+	}
+
+	/** Creates a new value holding the given Tuple. */
+	public fromTuple(list: binaryen.ExpressionRef /* (ref $Tuple) */): binaryen.ExpressionRef /* (ref $Value) */ {
+		return this.vm.mod.wasm.call('Value.from-tuple', [list], this.vm.reftype.Value);
+	}
+
+	/** Creates a new value holding the given Record. */
+	public fromRecord(list: binaryen.ExpressionRef /* (ref $Record) */): binaryen.ExpressionRef /* (ref $Value) */ {
+		return this.vm.mod.wasm.call('Value.from-record', [list], this.vm.reftype.Value);
 	}
 
 	/** Creates a new value holding the given List. */

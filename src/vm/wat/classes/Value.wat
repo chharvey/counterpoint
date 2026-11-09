@@ -64,6 +64,18 @@
 
 
 
+(func $Value.from-string (export "Value#fromString") (param (ref $String)) (result (ref $Value))
+	(return_call $Value.new-composite (struct.new $Cpl-String (local.get 0)))
+)
+(func $Value.from-tuple (export "Value#fromTuple") (param (ref $Tuple)) (result (ref $Value))
+	(return_call $Value.new-composite (struct.new $Cpl-Tuple (local.get 0)))
+)
+(func $Value.from-record (export "Value#fromRecord") (param (ref $Record)) (result (ref $Value))
+	(return_call $Value.new-composite (struct.new $Cpl-Record (local.get 0)))
+)
+
+
+
 (func $Value.from-list (export "Value#fromList") (param (ref $List)) (result (ref $Value))
 	(return_call $Value.new-composite
 		(struct.new $CplList
