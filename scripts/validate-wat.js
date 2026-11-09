@@ -19,13 +19,13 @@ const inputs = Promise.all([
 	'classes/Vect.wat',
 	'classes/Property.wat',
 	'classes/Case.wat',
-	'classes/Record.wat',
 	'classes/List.wat',
 	'classes/Dict.wat',
 	'classes/Map.wat',
 	'classes/Value.wat',
 	'classes/Object.wat',
 	'classes/Class.wat',
+	'classes/Cpl-Record.wat',
 ].map((filename) => fs.promises.readFile(rel_path(`../src/vm/wat/${filename}`), 'utf8')));
 
 const concatpath = rel_path('../dist/vm/module.wat');
