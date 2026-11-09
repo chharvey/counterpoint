@@ -248,21 +248,21 @@ const TYPES: {
 	]);
 	tb.setSubType(i_cpl_record, tb.getTempHeapType(i_composite));
 
-	/* (type $CplList ...) */
+	/* (type $Cpl-List ...) */
 	tb.setStructType(i_cpl_list, [
 		...fields_object,
 		/* $list */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_list), false)),
 	]);
 	tb.setSubType(i_cpl_list, tb.getTempHeapType(i_object));
 
-	/* (type $CplDict ...) */
+	/* (type $Cpl-Dict ...) */
 	tb.setStructType(i_cpl_dict, [
 		...fields_object,
 		/* $dict */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_dict), false)),
 	]);
 	tb.setSubType(i_cpl_dict, tb.getTempHeapType(i_object));
 
-	/* (type $CplMap ...) */
+	/* (type $Cpl-Map ...) */
 	tb.setStructType(i_cpl_map, [
 		...fields_object,
 		/* $map */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_map), false)),

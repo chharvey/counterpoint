@@ -173,17 +173,17 @@ export function ops(vm: VirtualMachine) {
 			vm.mod.wasm.call('op:is-object', [param0], vm.reftype.Value)
 		),
 
-		/** Is the value a composite `CplList` type? */
+		/** Is the value a composite `List` type? */
 		isCplList: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
 			vm.mod.wasm.call('op:is-cpl-list', [param0], vm.reftype.Value)
 		),
 
-		/** Is the value a composite `CplDict` type? */
+		/** Is the value a composite `Dict` type? */
 		isCplDict: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
 			vm.mod.wasm.call('op:is-cpl-dict', [param0], vm.reftype.Value)
 		),
 
-		/** Is the value a composite `CplMap` type? */
+		/** Is the value a composite `Map` type? */
 		isCplMap: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
 			vm.mod.wasm.call('op:is-cpl-map', [param0], vm.reftype.Value)
 		),
@@ -263,17 +263,17 @@ export function ops(vm: VirtualMachine) {
 			vm.mod.wasm.call('op:as-object', [param0], vm.reftype.Value)
 		),
 
-		/** Cast the value to type `CplList`. */
+		/** Cast the value to type `List`. */
 		asCplList: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
 			vm.mod.wasm.call('op:as-cpl-list', [param0], vm.reftype.Value)
 		),
 
-		/** Cast the value to type `CplDict`. */
+		/** Cast the value to type `Dict`. */
 		asCplDict: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
 			vm.mod.wasm.call('op:as-cpl-dict', [param0], vm.reftype.Value)
 		),
 
-		/** Cast the value to type `CplMap`. */
+		/** Cast the value to type `Map`. */
 		asCplMap: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
 			vm.mod.wasm.call('op:as-cpl-map', [param0], vm.reftype.Value)
 		),

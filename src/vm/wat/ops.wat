@@ -94,9 +94,9 @@
 	(if (ref.test (ref $Cpl-String) (local.get 0)) (then (return (i32.eqz (array.len              (struct.get $Cpl-String  $string (ref.cast (ref $Cpl-String) (local.get 0))))))))
 	(if (ref.test (ref $Cpl-Tuple)  (local.get 0)) (then (return (i32.eqz (array.len              (struct.get $Cpl-Tuple   $tuple  (ref.cast (ref $Cpl-Tuple)  (local.get 0))))))))
 	(if (ref.test (ref $Cpl-Record) (local.get 0)) (then (return (i32.eqz (array.len              (struct.get $Cpl-Record  $record (ref.cast (ref $Cpl-Record) (local.get 0))))))))
-	(if (ref.test (ref $CplList)    (local.get 0)) (then (return (i32.eqz (struct.get $List $size (struct.get $CplList     $list   (ref.cast (ref $CplList)    (local.get 0))))))))
-	(if (ref.test (ref $CplDict)    (local.get 0)) (then (return (i32.eqz (struct.get $Dict $size (struct.get $CplDict     $dict   (ref.cast (ref $CplDict)    (local.get 0))))))))
-	(if (ref.test (ref $CplMap)     (local.get 0)) (then (return (i32.eqz (struct.get $Map  $size (struct.get $CplMap      $map    (ref.cast (ref $CplMap)     (local.get 0))))))))
+	(if (ref.test (ref $Cpl-List)   (local.get 0)) (then (return (i32.eqz (struct.get $List $size (struct.get $Cpl-List    $list   (ref.cast (ref $Cpl-List)   (local.get 0))))))))
+	(if (ref.test (ref $Cpl-Dict)   (local.get 0)) (then (return (i32.eqz (struct.get $Dict $size (struct.get $Cpl-Dict    $dict   (ref.cast (ref $Cpl-Dict)   (local.get 0))))))))
+	(if (ref.test (ref $Cpl-Map)    (local.get 0)) (then (return (i32.eqz (struct.get $Map  $size (struct.get $Cpl-Map     $map    (ref.cast (ref $Cpl-Map)    (local.get 0))))))))
 	(i32.const 0)
 )
 
@@ -194,19 +194,19 @@
 (func $op:is-cpl-list (export "op::isCplList") (param $value (ref $Value)) (result (ref $Value))
 	(call $Value.bool-from-i32 (i32.and
 		(call $Value.is-composite (local.get $value))
-		(ref.test (ref $CplList) (struct.get $Value $composite (local.get $value)))
+		(ref.test (ref $Cpl-List) (struct.get $Value $composite (local.get $value)))
 	))
 )
 (func $op:is-cpl-dict (export "op::isCplDict") (param $value (ref $Value)) (result (ref $Value))
 	(call $Value.bool-from-i32 (i32.and
 		(call $Value.is-composite (local.get $value))
-		(ref.test (ref $CplDict) (struct.get $Value $composite (local.get $value)))
+		(ref.test (ref $Cpl-Dict) (struct.get $Value $composite (local.get $value)))
 	))
 )
 (func $op:is-cpl-map (export "op::isCplMap") (param $value (ref $Value)) (result (ref $Value))
 	(call $Value.bool-from-i32 (i32.and
 		(call $Value.is-composite (local.get $value))
-		(ref.test (ref $CplMap) (struct.get $Value $composite (local.get $value)))
+		(ref.test (ref $Cpl-Map) (struct.get $Value $composite (local.get $value)))
 	))
 )
 (func $op:is-exception (export "op::isException") (param $value (ref $Value)) (result (ref $Value))
@@ -335,13 +335,13 @@
 	(return_call $Value.new-composite (ref.cast (ref $Object) (struct.get $Value $composite (local.get $value))))
 )
 (func $op:as-cpl-list (export "op::asCplList") (param $value (ref $Value)) (result (ref $Value))
-	(return_call $Value.new-composite (ref.cast (ref $CplList) (struct.get $Value $composite (local.get $value))))
+	(return_call $Value.new-composite (ref.cast (ref $Cpl-List) (struct.get $Value $composite (local.get $value))))
 )
 (func $op:as-cpl-dict (export "op::asCplDict") (param $value (ref $Value)) (result (ref $Value))
-	(return_call $Value.new-composite (ref.cast (ref $CplDict) (struct.get $Value $composite (local.get $value))))
+	(return_call $Value.new-composite (ref.cast (ref $Cpl-Dict) (struct.get $Value $composite (local.get $value))))
 )
 (func $op:as-cpl-map (export "op::asCplMap") (param $value (ref $Value)) (result (ref $Value))
-	(return_call $Value.new-composite (ref.cast (ref $CplMap) (struct.get $Value $composite (local.get $value))))
+	(return_call $Value.new-composite (ref.cast (ref $Cpl-Map) (struct.get $Value $composite (local.get $value))))
 )
 (func $op:as-exception (export "op::asException") (param $value (ref $Value)) (result (ref $Value))
 	(return_call $Value.new-composite (ref.cast (ref $Exception) (struct.get $Value $composite (local.get $value))))
@@ -929,8 +929,8 @@
 		)
 		(if
 			(i32.and
-				(ref.test (ref $CplList) (local.get $ref0))
-				(ref.test (ref $CplList) (local.get $ref1))
+				(ref.test (ref $Cpl-List) (local.get $ref0))
+				(ref.test (ref $Cpl-List) (local.get $ref1))
 			)
 			(then (br $exit (call $!List.equal
 				(call $Value.as-list (local.get 0))
@@ -940,8 +940,8 @@
 		)
 		(if
 			(i32.and
-				(ref.test (ref $CplDict) (local.get $ref0))
-				(ref.test (ref $CplDict) (local.get $ref1))
+				(ref.test (ref $Cpl-Dict) (local.get $ref0))
+				(ref.test (ref $Cpl-Dict) (local.get $ref1))
 			)
 			(then (br $exit (call $!Dict.equal
 				(call $Value.as-dict (local.get 0))
@@ -951,8 +951,8 @@
 		)
 		(if
 			(i32.and
-				(ref.test (ref $CplMap) (local.get $ref0))
-				(ref.test (ref $CplMap) (local.get $ref1))
+				(ref.test (ref $Cpl-Map) (local.get $ref0))
+				(ref.test (ref $Cpl-Map) (local.get $ref1))
 			)
 			(then (br $exit (call $!Map.equal
 				(call $Value.as-map (local.get 0))

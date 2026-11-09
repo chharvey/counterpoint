@@ -78,7 +78,7 @@
 
 (func $Value.from-list (export "Value#fromList") (param (ref $List)) (result (ref $Value))
 	(return_call $Value.new-composite
-		(struct.new $CplList
+		(struct.new $Cpl-List
 			(call $Object.ctr-plus-plus)
 			(global.get $Class.LIST)
 			(ref.null $Dict)
@@ -88,7 +88,7 @@
 )
 (func $Value.from-dict (export "Value#fromDict") (param (ref $Dict)) (result (ref $Value))
 	(return_call $Value.new-composite
-		(struct.new $CplDict
+		(struct.new $Cpl-Dict
 			(call $Object.ctr-plus-plus)
 			(global.get $Class.DICT)
 			(ref.null $Dict)
@@ -98,7 +98,7 @@
 )
 (func $Value.from-map (export "Value#fromMap") (param (ref $Map)) (result (ref $Value))
 	(return_call $Value.new-composite
-		(struct.new $CplMap
+		(struct.new $Cpl-Map
 			(call $Object.ctr-plus-plus)
 			(global.get $Class.MAP)
 			(ref.null $Dict)
@@ -122,13 +122,13 @@
 
 
 (func $Value.as-list (export "Value#asList") (param (ref $Value)) (result (ref $List))
-	(struct.get $CplList $list (ref.cast (ref $CplList) (struct.get $Value $composite (local.get 0))))
+	(struct.get $Cpl-List $list (ref.cast (ref $Cpl-List) (struct.get $Value $composite (local.get 0))))
 )
 (func $Value.as-dict (export "Value#asDict") (param (ref $Value)) (result (ref $Dict))
-	(struct.get $CplDict $dict (ref.cast (ref $CplDict) (struct.get $Value $composite (local.get 0))))
+	(struct.get $Cpl-Dict $dict (ref.cast (ref $Cpl-Dict) (struct.get $Value $composite (local.get 0))))
 )
 (func $Value.as-map (export "Value#asMap") (param (ref $Value)) (result (ref $Map))
-	(struct.get $CplMap $map (ref.cast (ref $CplMap) (struct.get $Value $composite (local.get 0))))
+	(struct.get $Cpl-Map $map (ref.cast (ref $Cpl-Map) (struct.get $Value $composite (local.get 0))))
 )
 
 

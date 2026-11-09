@@ -102,7 +102,7 @@
 
 	;; ### Reference Types (id-by-reference)
 	;; precursor to the Counterpoint `List` class
-	(type $CplList (sub final $Object (struct
+	(type $Cpl-List (sub final $Object (struct
 		;; --- inherited ---
 		(field $id i64)
 		(field $class (ref null $Class))
@@ -113,7 +113,7 @@
 		(field $list (ref $List))
 	)))
 	;; precursor to the Counterpoint `Dict` class
-	(type $CplDict (sub final $Object (struct
+	(type $Cpl-Dict (sub final $Object (struct
 		;; --- inherited ---
 		(field $id i64)
 		(field $class (ref null $Class))
@@ -124,7 +124,7 @@
 		(field $dict (ref $Dict))
 	)))
 	;; precursor to the Counterpoint `Map` class
-	(type $CplMap (sub final $Object (struct
+	(type $Cpl-Map (sub final $Object (struct
 		;; --- inherited ---
 		(field $id i64)
 		(field $class (ref null $Class))
