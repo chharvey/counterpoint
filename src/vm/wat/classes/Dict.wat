@@ -9,7 +9,7 @@
 	(local $prop (ref null $Property))
 
 	(local.set $count    (i32.const 0))
-	(local.set $internal (struct.get $Dict $internal (local.get $dict)))
+	(local.set $internal (struct.get $Dict $array (local.get $dict)))
 
 	(block $exit
 		(local.set $i (i32.const 0))
@@ -49,7 +49,7 @@
 	(local $tombidx  i32)
 	(local $tombprop (ref null $Property))
 
-	(local.set $internal (struct.get $Dict $internal (local.get $dict)))
+	(local.set $internal (struct.get $Dict $array (local.get $dict)))
 	(local.set $ARRLEN   (array.len (local.get $internal)))
 	(local.set $index    (call $util:mod (i32.wrap_i64 (local.get $key)) (local.get $ARRLEN))) ;; will trap if ARRLEN == 0
 	(local.set $tombidx  (i32.const -1))
@@ -99,10 +99,10 @@
 	;; property at index $i in original array.
 	(local $prop (ref null $Property))
 
-	(local.set $orig (struct.get $Dict $internal (local.get $dict)))
+	(local.set $orig (struct.get $Dict $array (local.get $dict)))
 	(local.set $copy (array.new_default $DictArray (local.get $capacity)))
 
-	(struct.set $Dict $internal (local.get $dict) (local.get $copy))
+	(struct.set $Dict $array (local.get $dict) (local.get $copy))
 
 	;; we can’t perform a simple `(array.copy)` because hashing could be different
 	;; reset the size, incrementing on iteration
@@ -168,7 +168,7 @@
 		(then
 			(local.set $new-capacity (call $util:capacity-needed (i32.add (struct.get $Dict $size (local.get $dict)) (i32.const 1))))
 			(if
-				(i32.lt_u (array.len (struct.get $Dict $internal (local.get $dict))) (local.get $new-capacity))
+				(i32.lt_u (array.len (struct.get $Dict $array (local.get $dict))) (local.get $new-capacity))
 				(then
 					(call $Dict.adjust-capacity (local.get $dict) (local.get $new-capacity))
 					;; if adjusting the array, local index pointer needs to be reset
@@ -180,7 +180,7 @@
 		)
 	)
 	(array.set $DictArray
-		(struct.get $Dict $internal (local.get $dict))
+		(struct.get $Dict $array (local.get $dict))
 		(local.get $index)
 		(struct.new $Property
 			(local.get $key)
@@ -211,7 +211,7 @@
 
 	;; replace the property with a tombstone
 	(array.set $DictArray
-		(struct.get $Dict $internal (local.get $dict))
+		(struct.get $Dict $array (local.get $dict))
 		(local.get $index)
 		(global.get $Property.TOMBSTONE)
 	)
@@ -225,7 +225,7 @@
 (func $Dict.copy-from-record (export "Dict#copyFromRecord") (param $dest (ref $Dict)) (param $src (ref $Record))
 	(local $dest-internal (ref $DictArray))
 
-	(local.set $dest-internal (struct.get $Dict $internal (local.get $dest)))
+	(local.set $dest-internal (struct.get $Dict $array (local.get $dest)))
 
 	(call $Dict.adjust-capacity (local.get $dest) (call $util:capacity-needed (array.len (local.get $src))))
 	(array.copy $DictArray $Record
@@ -240,8 +240,8 @@
 	(local $dest-internal (ref $DictArray))
 	(local $src-internal  (ref $DictArray))
 
-	(local.set $dest-internal (struct.get $Dict $internal (local.get $dest)))
-	(local.set $src-internal  (struct.get $Dict $internal (local.get $src)))
+	(local.set $dest-internal (struct.get $Dict $array (local.get $dest)))
+	(local.set $src-internal  (struct.get $Dict $array (local.get $src)))
 
 	(call $Dict.adjust-capacity (local.get $dest) (array.len (local.get $src-internal)))
 	(array.copy $DictArray $DictArray
@@ -277,7 +277,7 @@
 	(local $i            i32)
 	(local $item         (ref null $Value))
 
-	(local.set $src-internal (struct.get $List $internal (local.get $src)))
+	(local.set $src-internal (struct.get $List $array (local.get $src)))
 
 	(block $exit
 		(local.set $i (i32.const 0))
@@ -300,7 +300,7 @@
 	(local $i            i32)
 	(local $item         (ref null $Case))
 
-	(local.set $src-internal (struct.get $Map $internal (local.get $src)))
+	(local.set $src-internal (struct.get $Map $array (local.get $src)))
 
 	(block $exit
 		(local.set $i (i32.const 0))
@@ -323,7 +323,7 @@
 	(local $i            i32)
 	(local $item         (ref null $Case))
 
-	(local.set $src-internal (struct.get $Map $internal (local.get $src)))
+	(local.set $src-internal (struct.get $Map $array (local.get $src)))
 
 	(block $exit
 		(local.set $i (i32.const 0))

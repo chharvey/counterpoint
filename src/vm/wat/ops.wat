@@ -1092,8 +1092,8 @@
 		(then (return (i32.const 0)))
 	)
 
-	(local.set $internal0 (struct.get $List $internal (local.get $list0)))
-	(local.set $internal1 (struct.get $List $internal (local.get $list1)))
+	(local.set $internal0 (struct.get $List $array (local.get $list0)))
+	(local.set $internal1 (struct.get $List $array (local.get $list1)))
 
 	(block $exit
 		(local.set $i (i32.const 0))
@@ -1172,8 +1172,8 @@
 		(then (return (i32.const 0)))
 	)
 
-	(local.set $internal0 (struct.get $Dict $internal (local.get $dict0)))
-	(local.set $internal1 (struct.get $Dict $internal (local.get $dict1)))
+	(local.set $internal0 (struct.get $Dict $array (local.get $dict0)))
+	(local.set $internal1 (struct.get $Dict $array (local.get $dict1)))
 
 	(block $exit
 		(local.set $i (i32.const 0))
@@ -1238,8 +1238,8 @@
 		(then (return (i32.const 0)))
 	)
 
-	(local.set $internal0 (struct.get $Map $internal (local.get $map0)))
-	(local.set $internal1 (struct.get $Map $internal (local.get $map1)))
+	(local.set $internal0 (struct.get $Map $array (local.get $map0)))
+	(local.set $internal1 (struct.get $Map $array (local.get $map1)))
 
 	(block $exit
 		(local.set $i (i32.const 0))

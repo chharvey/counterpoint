@@ -34,19 +34,19 @@
 		;; number of items currently in the array (for total capacity, get its `(array.len)`); mutable to allow array mutation
 		(field $size (mut i32))
 		;; the array of List items; mutable to allow reallocation
-		(field $internal (mut (ref $ListArray)))
+		(field $array (mut (ref $ListArray)))
 	))
 	(type $Dict (struct
 		;; number of items currently in the array, including tombstones (for total capacity, get its `(array.len)`); mutable to allow array mutation
 		(field $size (mut i32))
 		;; the array of Dict properties; mutable to allow reallocation
-		(field $internal (mut (ref $DictArray)))
+		(field $array (mut (ref $DictArray)))
 	))
 	(type $Map (struct
 		;; number of items currently in the array, including tombstones (for total capacity, get its `(array.len)`); mutable to allow array mutation
 		(field $size (mut i32))
 		;; the array of Map cases; mutable to allow reallocation
-		(field $internal (mut (ref $MapArray)))
+		(field $array (mut (ref $MapArray)))
 	))
 
 	;; abstract root of all non-primitives. the type of `$Value.$composite`

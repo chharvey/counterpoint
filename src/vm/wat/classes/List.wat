@@ -10,10 +10,10 @@
 	;; copy of the List’s entries, to be used as the List’s new internal array.
 	(local $copy (ref $ListArray))
 
-	(local.set $orig (struct.get $List $internal (local.get $list)))
+	(local.set $orig (struct.get $List $array (local.get $list)))
 	(local.set $copy (array.new_default $ListArray (local.get $capacity)))
 
-	(struct.set $List $internal (local.get $list) (local.get $copy))
+	(struct.set $List $array (local.get $list) (local.get $copy))
 
 	;; we can use `(array.copy)` because all items are front-packed contiguously and we must preserve order
 	(array.copy $ListArray $ListArray
@@ -30,7 +30,7 @@
 (func $List.get (export "List#get") (param $list (ref $List)) (param $index i32) (result (ref $Value))
 	;; item at the specified index.
 	(local $item (ref null $Value))
-	(local.set $item (array.get $ListArray (struct.get $List $internal (local.get $list)) (local.get $index)))
+	(local.set $item (array.get $ListArray (struct.get $List $array (local.get $list)) (local.get $index)))
 	(if
 		(i32.eqz (ref.is_null (local.get $item)))
 		(then (return (ref.as_non_null (local.get $item))))
@@ -51,14 +51,14 @@
 		(then (unreachable))
 	)
 
-	(local.set $item (array.get $ListArray (struct.get $List $internal (local.get $list)) (local.get $index)))
+	(local.set $item (array.get $ListArray (struct.get $List $array (local.get $list)) (local.get $index)))
 
 	(if
 		(ref.is_null (local.get $item))
 		(then
 			(local.set $new-capacity (call $util:capacity-needed (i32.add (struct.get $List $size (local.get $list)) (i32.const 1))))
 			(if
-				(i32.lt_u (array.len (struct.get $List $internal (local.get $list))) (local.get $new-capacity))
+				(i32.lt_u (array.len (struct.get $List $array (local.get $list))) (local.get $new-capacity))
 				(then (call $List.adjust-capacity (local.get $list) (local.get $new-capacity)))
 			)
 			;; set this after adjusting, to mirror `$Dict.set`
@@ -66,7 +66,7 @@
 		)
 	)
 	(array.set $ListArray
-		(struct.get $List $internal (local.get $list))
+		(struct.get $List $array (local.get $list))
 		(local.get $index)
 		(local.get $value)
 	)
@@ -87,7 +87,7 @@
 		(then (unreachable))
 	)
 
-	(local.set $internal (struct.get $List $internal (local.get $list)))
+	(local.set $internal (struct.get $List $array (local.get $list)))
 	(local.set $item     (ref.as_non_null (array.get $ListArray (local.get $internal) (local.get $index))))
 
 	;; leftward shift (destination index <= source index) is safe
@@ -114,7 +114,7 @@
 (func $List.copy-from-tuple (export "List#copyFromTuple") (param $dest (ref $List)) (param $src (ref $Tuple))
 	(local $dest-internal (ref $ListArray))
 
-	(local.set $dest-internal (struct.get $List $internal (local.get $dest)))
+	(local.set $dest-internal (struct.get $List $array (local.get $dest)))
 
 	(call $List.adjust-capacity (local.get $dest) (call $util:capacity-needed (array.len (local.get $src))))
 	(array.copy $ListArray $Tuple
@@ -129,8 +129,8 @@
 	(local $dest-internal (ref $ListArray))
 	(local $src-internal  (ref $ListArray))
 
-	(local.set $dest-internal (struct.get $List $internal (local.get $dest)))
-	(local.set $src-internal  (struct.get $List $internal (local.get $src)))
+	(local.set $dest-internal (struct.get $List $array (local.get $dest)))
+	(local.set $src-internal  (struct.get $List $array (local.get $src)))
 
 	(call $List.adjust-capacity (local.get $dest) (array.len (local.get $src-internal)))
 	(array.copy $ListArray $ListArray
@@ -150,7 +150,7 @@
 	(local $i            i32)
 	(local $item         (ref null $Case))
 
-	(local.set $src-internal (struct.get $Map $internal (local.get $src)))
+	(local.set $src-internal (struct.get $Map $array (local.get $src)))
 	(local.set $j (i32.const 0))
 
 	(block $exit

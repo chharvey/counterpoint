@@ -9,7 +9,7 @@
 	(local $case (ref null $Case))
 
 	(local.set $count    (i32.const 0))
-	(local.set $internal (struct.get $Map $internal (local.get $map)))
+	(local.set $internal (struct.get $Map $array (local.get $map)))
 
 	(block $exit
 		(local.set $i (i32.const 0))
@@ -49,7 +49,7 @@
 	(local $tombidx  i32)
 	(local $tombcase (ref null $Case))
 
-	(local.set $internal (struct.get $Map $internal (local.get $map)))
+	(local.set $internal (struct.get $Map $array (local.get $map)))
 	(local.set $ARRLEN   (array.len (local.get $internal)))
 	(local.set $index    (call $util:mod (i32.wrap_i64 (call $Value.hash (local.get $ant))) (local.get $ARRLEN))) ;; will trap if ARRLEN == 0
 	(local.set $tombidx  (i32.const -1))
@@ -99,10 +99,10 @@
 	;; case at index $i in original array.
 	(local $case (ref null $Case))
 
-	(local.set $orig (struct.get $Map $internal (local.get $map)))
+	(local.set $orig (struct.get $Map $array (local.get $map)))
 	(local.set $copy (array.new_default $MapArray (local.get $capacity)))
 
-	(struct.set $Map $internal (local.get $map) (local.get $copy))
+	(struct.set $Map $array (local.get $map) (local.get $copy))
 
 	;; we can’t perform a simple `(array.copy)` because hashing could be different
 	;; reset the size, incrementing on iteration
@@ -168,7 +168,7 @@
 		(then
 			(local.set $new-capacity (call $util:capacity-needed (i32.add (struct.get $Map $size (local.get $map)) (i32.const 1))))
 			(if
-				(i32.lt_u (array.len (struct.get $Map $internal (local.get $map))) (local.get $new-capacity))
+				(i32.lt_u (array.len (struct.get $Map $array (local.get $map))) (local.get $new-capacity))
 				(then
 					(call $Map.adjust-capacity (local.get $map) (local.get $new-capacity))
 					;; if adjusting the array, local index pointer needs to be reset
@@ -180,7 +180,7 @@
 		)
 	)
 	(array.set $MapArray
-		(struct.get $Map $internal (local.get $map))
+		(struct.get $Map $array (local.get $map))
 		(local.get $index)
 		(struct.new $Case
 			(local.get $ant)
@@ -211,7 +211,7 @@
 
 	;; replace the case with a tombstone
 	(array.set $MapArray
-		(struct.get $Map $internal (local.get $map))
+		(struct.get $Map $array (local.get $map))
 		(local.get $index)
 		(global.get $Case.TOMBSTONE)
 	)
@@ -226,8 +226,8 @@
 	(local $dest-internal (ref $MapArray))
 	(local $src-internal  (ref $MapArray))
 
-	(local.set $dest-internal (struct.get $Map $internal (local.get $dest)))
-	(local.set $src-internal  (struct.get $Map $internal (local.get $src)))
+	(local.set $dest-internal (struct.get $Map $array (local.get $dest)))
+	(local.set $src-internal  (struct.get $Map $array (local.get $src)))
 
 	(call $Map.adjust-capacity (local.get $dest) (array.len (local.get $src-internal)))
 	(array.copy $MapArray $MapArray
@@ -261,7 +261,7 @@
 	(local $i            i32)
 	(local $item         (ref null $Value))
 
-	(local.set $src-internal (struct.get $List $internal (local.get $src)))
+	(local.set $src-internal (struct.get $List $array (local.get $src)))
 
 	(block $exit
 		(local.set $i (i32.const 0))
@@ -302,7 +302,7 @@
 	(local $i            i32)
 	(local $item         (ref null $Value))
 
-	(local.set $src-internal (struct.get $List $internal (local.get $src)))
+	(local.set $src-internal (struct.get $List $array (local.get $src)))
 
 	(block $exit
 		(local.set $i (i32.const 0))
@@ -325,7 +325,7 @@
 	(local $i            i32)
 	(local $item         (ref null $Case))
 
-	(local.set $src-internal (struct.get $Map $internal (local.get $src)))
+	(local.set $src-internal (struct.get $Map $array (local.get $src)))
 
 	(block $exit
 		(local.set $i (i32.const 0))

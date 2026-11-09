@@ -179,20 +179,20 @@ const TYPES: {
 
 	/* (type $List ...) */
 	tb.setStructType(i_list, [
-		/* $size */     make_struct_field(binaryen.Type.i32, true),
-		/* $internal */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_list_array), false), true),
+		/* $size */  make_struct_field(binaryen.Type.i32, true),
+		/* $array */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_list_array), false), true),
 	]);
 
 	/* (type $Dict ...) */
 	tb.setStructType(i_dict, [
-		/* $size */     make_struct_field(binaryen.Type.i32, true),
-		/* $internal */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_dict_array), false), true),
+		/* $size */  make_struct_field(binaryen.Type.i32, true),
+		/* $array */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_dict_array), false), true),
 	]);
 
 	/* (type $Map ...) */
 	tb.setStructType(i_map, [
-		/* $size */     make_struct_field(binaryen.Type.i32, true),
-		/* $internal */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_map_array), false), true),
+		/* $size */  make_struct_field(binaryen.Type.i32, true),
+		/* $array */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_map_array), false), true),
 	]);
 
 	/* (type $Composite ...) */
@@ -232,19 +232,19 @@ const TYPES: {
 
 	/* (type $Cpl-String ...) */
 	tb.setStructType(i_cpl_string, [
-		/* $internal */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_string), false)),
+		/* $string */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_string), false)),
 	]);
 	tb.setSubType(i_cpl_string, tb.getTempHeapType(i_composite));
 
 	/* (type $Cpl-Tuple ...) */
 	tb.setStructType(i_cpl_tuple, [
-		/* $internal */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_tuple), false)),
+		/* $tuple */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_tuple), false)),
 	]);
 	tb.setSubType(i_cpl_tuple, tb.getTempHeapType(i_composite));
 
 	/* (type $Cpl-Record ...) */
 	tb.setStructType(i_cpl_record, [
-		/* $internal */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_record), false)),
+		/* $record */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_record), false)),
 	]);
 	tb.setSubType(i_cpl_record, tb.getTempHeapType(i_composite));
 
