@@ -12,9 +12,9 @@ import {Map as VmMap} from './classes/Map.ts';
 import {Value} from './classes/Value.ts';
 import {Object as VmObject} from './classes/Object.ts';
 import {Class as VmClass} from './classes/Class.ts';
-import {CplString} from './classes/String.ts';
-import {CplTuple} from './classes/Tuple.ts';
-import {CplRecord} from './classes/Record.ts';
+import {CplString} from './classes/CplString.ts';
+import {CplTuple} from './classes/CplTuple.ts';
+import {CplRecord} from './classes/CplRecord.ts';
 
 
 
