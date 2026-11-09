@@ -34,8 +34,6 @@ type TypeKey = (
 	| 'Object'
 	| 'Class'
 	| 'CplString'
-	| 'CplTuple'
-	| 'CplRecord'
 	| 'Exception'
 	| 'Maybe'
 	| 'Result'
@@ -327,8 +325,6 @@ const TYPES: {
 			Object:    heaptypes[i_object],
 			Class:     heaptypes[i_class],
 			CplString: heaptypes[i_cpl_string],
-			CplTuple:  heaptypes[i_cpl_tuple],
-			CplRecord: heaptypes[i_cpl_record],
 			Exception: heaptypes[i_exception],
 			Maybe:     heaptypes[i_maybe],
 			Result:    heaptypes[i_result],
@@ -353,8 +349,6 @@ const TYPES: {
 			Object:    binaryen.getTypeFromHeapType(heaptypes[i_object],     false),
 			Class:     binaryen.getTypeFromHeapType(heaptypes[i_class],      false),
 			CplString: binaryen.getTypeFromHeapType(heaptypes[i_cpl_string], false),
-			CplTuple:  binaryen.getTypeFromHeapType(heaptypes[i_cpl_tuple],  false),
-			CplRecord: binaryen.getTypeFromHeapType(heaptypes[i_cpl_record], false),
 			Exception: binaryen.getTypeFromHeapType(heaptypes[i_exception],  false),
 			Maybe:     binaryen.getTypeFromHeapType(heaptypes[i_maybe],      false),
 			Result:    binaryen.getTypeFromHeapType(heaptypes[i_result],     false),
