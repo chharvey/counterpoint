@@ -59,12 +59,13 @@
 
 
 (func $op:not (export "op::not") (param $value (ref $Value)) (result (ref $Value))
-	(call $Value.bool-from-i32 (i32.and
+	(call $Value.bool-from-i32 (if (result i32) ;; `(i32.and)` doesn’t short-circuit, so using conditional
 		(call $Value.is-primitive (local.get $value))
-		(i32.or
+		(then (i32.or
 			(call $Vect.is-null  (call $Value.as-primitive (local.get $value)))
 			(call $Vect.is-false (call $Value.as-primitive (local.get $value)))
-		)
+		))
+		(else (i32.const 0))
 	))
 )
 
@@ -150,21 +151,24 @@
 
 
 (func $op:is-int (export "op::isInt") (param $value (ref $Value)) (result (ref $Value))
-	(call $Value.bool-from-i32 (i32.and
+	(call $Value.bool-from-i32 (if (result i32) ;; `(i32.and)` doesn’t short-circuit, so using conditional
 		(call $Value.is-primitive (local.get $value))
-		(call $Vect.is-int (call $Value.as-primitive (local.get $value)))
+		(then (call $Vect.is-int (call $Value.as-primitive (local.get $value))))
+		(else (i32.const 0))
 	))
 )
 (func $op:is-nat (export "op::isNat") (param $value (ref $Value)) (result (ref $Value))
-	(call $Value.bool-from-i32 (i32.and
+	(call $Value.bool-from-i32 (if (result i32) ;; `(i32.and)` doesn’t short-circuit, so using conditional
 		(call $Value.is-primitive (local.get $value))
-		(call $Vect.is-nat (call $Value.as-primitive (local.get $value)))
+		(then (call $Vect.is-nat (call $Value.as-primitive (local.get $value))))
+		(else (i32.const 0))
 	))
 )
 (func $op:is-float (export "op::isFloat") (param $value (ref $Value)) (result (ref $Value))
-	(call $Value.bool-from-i32 (i32.and
+	(call $Value.bool-from-i32 (if (result i32) ;; `(i32.and)` doesn’t short-circuit, so using conditional
 		(call $Value.is-primitive (local.get $value))
-		(call $Vect.is-float (call $Value.as-primitive (local.get $value)))
+		(then (call $Vect.is-float (call $Value.as-primitive (local.get $value))))
+		(else (i32.const 0))
 	))
 )
 (func $op:is-string (export "op::isString") (param $value (ref $Value)) (result (ref $Value))
@@ -285,27 +289,27 @@
 
 
 (func $op:as-null (export "op::asNull") (param $value (ref $Value)) (result (ref $Value))
-	(if
-		(i32.and
-			(call $Value.is-primitive (local.get $value))
+	(if ;; `(i32.and)` doesn’t short-circuit, so using conditional
+		(call $Value.is-primitive (local.get $value))
+		(then (if
 			(call $Vect.is-null (call $Value.as-primitive (local.get $value)))
-		)
-		(then (return (local.get $value)))
-		(else (unreachable))
+			(then (return (local.get $value)))
+		))
 	)
+	(unreachable)
 )
 (func $op:as-bool (export "op::asBool") (param $value (ref $Value)) (result (ref $Value))
-	(if
-		(i32.and
-			(call $Value.is-primitive (local.get $value))
+	(if ;; `(i32.and)` doesn’t short-circuit, so using conditional
+		(call $Value.is-primitive (local.get $value))
+		(then (if
 			(i32.or
 				(call $Vect.is-false (call $Value.as-primitive (local.get $value)))
 				(call $Vect.is-true  (call $Value.as-primitive (local.get $value)))
 			)
-		)
-		(then (return (local.get $value)))
-		(else (unreachable))
+			(then (return (local.get $value)))
+		))
 	)
+	(unreachable)
 )
 (func $op:as-int (export "op::asInt") (param $value (ref $Value)) (result (ref $Value))
 	(if
@@ -619,8 +623,6 @@
 	(local $vect1 v128)
 	(local $ref0 (ref null $Composite))
 	(local $ref1 (ref null $Composite))
-	(local.set $vect0 (call $Value.as-primitive (local.get 0)))
-	(local.set $vect1 (call $Value.as-primitive (local.get 1)))
 	(local.set $ref0  (struct.get $Value $composite (local.get 0)))
 	(local.set $ref1  (struct.get $Value $composite (local.get 1)))
 
@@ -631,6 +633,8 @@
 				(call $Value.is-primitive (local.get 1))
 			)
 			(then
+				(local.set $vect0 (call $Value.as-primitive (local.get 0)))
+				(local.set $vect1 (call $Value.as-primitive (local.get 1)))
 				(if
 					(i32.and
 						(call $Vect.is-special (local.get $vect0))
@@ -861,8 +865,6 @@
 		(then (return (global.get $Value.TRUE)))
 	)
 
-	(local.set $vect0 (call $Value.as-primitive (local.get 0)))
-	(local.set $vect1 (call $Value.as-primitive (local.get 1)))
 	(local.set $ref0  (struct.get $Value $composite (local.get 0)))
 	(local.set $ref1  (struct.get $Value $composite (local.get 1)))
 
@@ -872,20 +874,24 @@
 				(call $Value.is-primitive (local.get 0))
 				(call $Value.is-primitive (local.get 1))
 			)
-			(then (br $exit (if (result i32)
-				(i32.or
-					(call $Vect.is-special (local.get $vect0))
-					(call $Vect.is-special (local.get $vect1))
-				)
-				(then (i32.const 0))
-				(else (call $util:compare-numbers
-					(local.get $vect0)
-					(local.get $vect1)
-					(ref.func $!i64.eq)
-					(ref.func $!i64.eq)
-					(ref.func $!f64.eq)
+			(then
+				(local.set $vect0 (call $Value.as-primitive (local.get 0)))
+				(local.set $vect1 (call $Value.as-primitive (local.get 1)))
+				(br $exit (if (result i32)
+					(i32.or
+						(call $Vect.is-special (local.get $vect0))
+						(call $Vect.is-special (local.get $vect1))
+					)
+					(then (i32.const 0))
+					(else (call $util:compare-numbers
+						(local.get $vect0)
+						(local.get $vect1)
+						(ref.func $!i64.eq)
+						(ref.func $!i64.eq)
+						(ref.func $!f64.eq)
+					))
 				))
-			)))
+			)
 		)
 		(if
 			(i32.and

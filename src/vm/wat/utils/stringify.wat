@@ -3,12 +3,12 @@
 	(local $primitive v128)
 	(local $composite (ref null $Composite))
 
-	(local.set $primitive (call $Value.as-primitive (local.get $value)))
 	(local.set $composite (struct.get $Value $composite (local.get $value)))
 
 	(if
 		(call $Value.is-primitive (local.get $value))
 		(then
+			(local.set $primitive (call $Value.as-primitive (local.get $value)))
 			(if (call $Vect.is-null (local.get $primitive)) (then (return (array.new_fixed $String 4
 				(i32.const 0x6e) ;; 'n'
 				(i32.const 0x75) ;; 'u'
