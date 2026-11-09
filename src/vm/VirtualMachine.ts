@@ -88,32 +88,33 @@ const TYPES: {
 } = (() => {
 	const tb = new binaryen.TypeBuilder();
 
-	const i_property:   number = tb.getSize(); tb.grow(1);
-	const i_case:       number = tb.getSize(); tb.grow(1);
-	const i_string:     number = tb.getSize(); tb.grow(1);
-	const i_tuple:      number = tb.getSize(); tb.grow(1);
-	const i_record:     number = tb.getSize(); tb.grow(1);
-	const i_list_array: number = tb.getSize(); tb.grow(1);
-	const i_dict_array: number = tb.getSize(); tb.grow(1);
-	const i_map_array:  number = tb.getSize(); tb.grow(1);
-	const i_list:       number = tb.getSize(); tb.grow(1);
-	const i_dict:       number = tb.getSize(); tb.grow(1);
-	const i_map:        number = tb.getSize(); tb.grow(1);
-	const i_composite:  number = tb.getSize(); tb.grow(1);
-	const i_value:      number = tb.getSize(); tb.grow(1);
-	const i_data:       number = tb.getSize(); tb.grow(1);
-	const i_object:     number = tb.getSize(); tb.grow(1);
-	const i_class:      number = tb.getSize(); tb.grow(1);
-	const i_cpl_string: number = tb.getSize(); tb.grow(1);
-	const i_cpl_tuple:  number = tb.getSize(); tb.grow(1);
-	const i_cpl_record: number = tb.getSize(); tb.grow(1);
-	const i_cpl_list:   number = tb.getSize(); tb.grow(1);
-	const i_cpl_dict:   number = tb.getSize(); tb.grow(1);
-	const i_cpl_map:    number = tb.getSize(); tb.grow(1);
-	const i_exception:  number = tb.getSize(); tb.grow(1);
-	const i_maybe:      number = tb.getSize(); tb.grow(1);
-	const i_result:     number = tb.getSize(); tb.grow(1);
-	const i_function:   number = tb.getSize(); tb.grow(1);
+	const i_property:      number = tb.getSize(); tb.grow(1);
+	const i_case:          number = tb.getSize(); tb.grow(1);
+	const i_string:        number = tb.getSize(); tb.grow(1);
+	const i_tuple:         number = tb.getSize(); tb.grow(1);
+	const i_record:        number = tb.getSize(); tb.grow(1);
+	const i_list_array:    number = tb.getSize(); tb.grow(1);
+	const i_dict_array:    number = tb.getSize(); tb.grow(1);
+	const i_map_array:     number = tb.getSize(); tb.grow(1);
+	const i_list:          number = tb.getSize(); tb.grow(1);
+	const i_dict:          number = tb.getSize(); tb.grow(1);
+	const i_map:           number = tb.getSize(); tb.grow(1);
+	const i_composite:     number = tb.getSize(); tb.grow(1);
+	const i_value:         number = tb.getSize(); tb.grow(1);
+	const i_data:          number = tb.getSize(); tb.grow(1);
+	const i_object:        number = tb.getSize(); tb.grow(1);
+	const i_class:         number = tb.getSize(); tb.grow(1);
+	const i_cpl_primitive: number = tb.getSize(); tb.grow(1);
+	const i_cpl_string:    number = tb.getSize(); tb.grow(1);
+	const i_cpl_tuple:     number = tb.getSize(); tb.grow(1);
+	const i_cpl_record:    number = tb.getSize(); tb.grow(1);
+	const i_cpl_list:      number = tb.getSize(); tb.grow(1);
+	const i_cpl_dict:      number = tb.getSize(); tb.grow(1);
+	const i_cpl_map:       number = tb.getSize(); tb.grow(1);
+	const i_exception:     number = tb.getSize(); tb.grow(1);
+	const i_maybe:         number = tb.getSize(); tb.grow(1);
+	const i_result:        number = tb.getSize(); tb.grow(1);
+	const i_function:      number = tb.getSize(); tb.grow(1);
 
 	/* (type $Property ...) */
 	tb.setStructType(i_property, [
@@ -230,6 +231,13 @@ const TYPES: {
 		...fields_object,
 	]);
 	tb.setSubType(i_class, tb.getTempHeapType(i_object));
+
+	/* (type $Cpl-Primitive ...) */
+	tb.setStructType(i_cpl_primitive, [
+		...fields_data,
+		/* $bits */ make_struct_field(binaryen.Type.v128),
+	]);
+	tb.setSubType(i_cpl_primitive, tb.getTempHeapType(i_data));
 
 	/* (type $Cpl-String ...) */
 	tb.setStructType(i_cpl_string, [

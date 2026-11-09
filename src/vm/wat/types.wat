@@ -95,6 +95,16 @@
 
 
 	;; ### “Value” Types (id-by-value)
+	;; precursor to the Counterpoint classes `Null`, `Boolean`, `Symbol`, `Integer`, `Natural`, `Float`
+	(type $Cpl-Primitive (sub final $Data (struct
+		;; --- inherited ---
+		(field $class (ref $Class))
+		(field $fields (ref null $Dict))
+
+		;; --- own ---
+		;; the stored value
+		(field $bits v128)
+	)))
 	;; precursor to the Counterpoint `String` class
 	(type $Cpl-String (sub final $Data (struct
 		;; --- inherited ---
