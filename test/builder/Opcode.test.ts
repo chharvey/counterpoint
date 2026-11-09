@@ -1352,7 +1352,7 @@ test.suite('Opcode', () => {
 					val user: (name: str) = (name= "Alan");
 					"""Hello, {{user.name}}, you have {{2 * 3}} new messages.""";
 				}`);
-				const {heaptype, reftype, Value, CplString} = cg.vm;
+				const {heaptype, reftype, Value} = cg.vm;
 
 				const strings = [
 					genConst(cg, 'Hello, '),
@@ -1360,7 +1360,7 @@ test.suite('Opcode', () => {
 					genConst(cg, ', you have '),
 					wasm.local.get(3, reftype.Value),
 					genConst(cg, ' new messages.'),
-				].map((code) => CplString.field(Value.asString(code)).string);
+				].map((code) => Value.asString(code));
 
 				const RESULT_IDX =  9;
 				const OFFSET_IDX = 10;
@@ -1674,14 +1674,14 @@ test.suite('Opcode', () => {
 				const cg = new CodeGenerator();
 				const {vm: {reftype, Value}} = cg;
 				const actual = new OP.ExcpNew(new OP.Const(new VALUE.String('hello')));
-				const expected: binaryen.ExpressionRef /* (ref $Value) */ = Value.newComposite(cg.codegenException(Value.asString(genConst(cg, 'hello'))));
+				const expected: binaryen.ExpressionRef /* (ref $Value) */ = Value.newComposite(cg.codegenException(Value.cast(genConst(cg, 'hello'), reftype.CplString)));
 				return assertEqualBins([
 					actual,
 					new OP.ExcpNew(new OP.Const(new VALUE.String('world')), actual),
 				].map((opcode) => opcode.codegen(cg)), [
 					expected,
 					Value.newComposite(cg.codegenException(
-						Value.asString(genConst(cg, 'world')),
+						Value.cast(genConst(cg, 'world'), reftype.CplString),
 						Value.cast(expected, reftype.Exception),
 					)),
 				]);
@@ -1716,12 +1716,12 @@ test.suite('Opcode', () => {
 				// there exists no syntax for Tuple has, so constructing it manually
 				const tuple = new AST.ExprVisitorBuild(new Builder()).visit(AST.EXPR.Tuple.fromSource('(10, 20)'));
 				const cg    = new CodeGenerator();
-				const {vm: {Value, CplTuple}, mod: {wasm}} = cg;
+				const {vm: {Value}, mod: {wasm}} = cg;
 				xjs.Array.forEachAggregated([1n, 2n], (idx) => assertEqualBins(
 					new OP.TupleHas(tuple, idx).codegen(cg),
 					Value.boolFromI32(wasm.i32.lt_u(
 						wasm.i32.const(Number(idx)),
-						wasm.array.len(CplTuple.field(Value.asTuple(tuple.codegen(cg))).tuple),
+						wasm.array.len(Value.asTuple(tuple.codegen(cg))),
 					)),
 				));
 			});
@@ -1730,13 +1730,13 @@ test.suite('Opcode', () => {
 				// there exists no syntax for Record has, so constructing it manually
 				const record = new AST.ExprVisitorBuild(new Builder()).visit(AST.EXPR.Record.fromSource('(a= 10, c= 20)'));
 				const cg     = new CodeGenerator();
-				const {vm: {Value, CplRecord}, mod: {wasm}} = cg;
+				const {vm: {heaptype, Value, CplRecord}, mod: {wasm}} = cg;
 				return xjs.Array.forEachAggregated(['a', 'b'], (keysrc) => {
 					const keyid: bigint = Validator.keyId(keysrc);
 					return assertEqualBins(
 						new OP.RecordHas(record, {keyid, keysrc}).codegen(cg),
 						Value.boolFromI32(CplRecord.hasKey(
-							Value.asRecord(record.codegen(cg)),
+							wasm.struct.new([Value.asRecord(record.codegen(cg))], heaptype.CplRecord),
 							wasm.i64.const(keyid),
 						)),
 					);
@@ -1752,20 +1752,20 @@ test.suite('Opcode', () => {
 					tup.0;
 					tup.1;
 				}`);
-				const {reftype, Value, CplTuple} = cg.vm;
+				const {reftype, Value} = cg.vm;
 				return assertEqualBins(builder.instructions.slice(3).map((instr) => instr.codegen(cg)), [
 					wasm.drop(wasm.array.get(
-						CplTuple.field(Value.asTuple(wasm.local.get(2, reftype.Value))).tuple,
+						Value.asTuple(wasm.local.get(2, reftype.Value)),
 						wasm.i32.const(2),
 						reftype.Value,
 					)),
 					wasm.drop(wasm.array.get(
-						CplTuple.field(Value.asTuple(wasm.local.get(1, reftype.Value))).tuple,
+						Value.asTuple(wasm.local.get(1, reftype.Value)),
 						wasm.i32.const(0),
 						reftype.Value,
 					)),
 					wasm.drop(wasm.array.get(
-						CplTuple.field(Value.asTuple(wasm.local.get(1, reftype.Value))).tuple,
+						Value.asTuple(wasm.local.get(1, reftype.Value)),
 						wasm.i32.const(1),
 						reftype.Value,
 					)),
@@ -1781,18 +1781,18 @@ test.suite('Opcode', () => {
 					rec.a;
 					rec.b;
 				}`);
-				const {reftype, Value, CplRecord} = cg.vm;
+				const {heaptype, reftype, Value, CplRecord} = cg.vm;
 				return assertEqualBins(builder.instructions.slice(3).map((instr) => instr.codegen(cg)), [
 					wasm.drop(CplRecord.get(
-						Value.asRecord(wasm.local.get(2, reftype.Value)),
+						wasm.struct.new([Value.asRecord(wasm.local.get(2, reftype.Value))], heaptype.CplRecord),
 						wasm.i64.const(Validator.keyId('c')),
 					)),
 					wasm.drop(CplRecord.get(
-						Value.asRecord(wasm.local.get(1, reftype.Value)),
+						wasm.struct.new([Value.asRecord(wasm.local.get(1, reftype.Value))], heaptype.CplRecord),
 						wasm.i64.const(Validator.keyId('a')),
 					)),
 					wasm.drop(CplRecord.get(
-						Value.asRecord(wasm.local.get(1, reftype.Value)),
+						wasm.struct.new([Value.asRecord(wasm.local.get(1, reftype.Value))], heaptype.CplRecord),
 						wasm.i64.const(Validator.keyId('b')),
 					)),
 				]);
@@ -2091,7 +2091,7 @@ test.suite('Opcode', () => {
 						z~!;
 					}`);
 					const {reftype, op, Value} = cg.vm;
-					const excp: binaryen.ExpressionRef /* (ref $Value) */ = Value.newComposite(cg.codegenException(Value.asString(genConst(cg, '42'))));
+					const excp: binaryen.ExpressionRef /* (ref $Value) */ = Value.newComposite(cg.codegenException(Value.cast(genConst(cg, '42'), reftype.CplString)));
 					return assertEqualBins(builder.instructions.map((instr) => instr.codegen(cg)), [
 						wasm.local.set(0, excp),
 						wasm.local.set(1, Value.newComposite(cg.codegenResult(false, Value.cast(wasm.local.get(0, reftype.Value), reftype.Exception)))),
@@ -2442,13 +2442,13 @@ test.suite('Opcode', () => {
 						const {builder, cg, wasm} = setupScript(`{
 							List.<int>((2, 3, 5));
 						}`, {codegen: false});
-						const {reftype, Value, List} = cg.vm;
+						const {heaptype, reftype, Value, List} = cg.vm;
 						builder.instructions.slice(0, 2).forEach((instr) => instr.codegen(cg));
 						return assertEqualBins(
 							builder.instructions[2].codegen(cg),
 							List.copyFromTuple(
 								Value.asList (wasm.local.get(0, reftype.Value)),
-								Value.asTuple(wasm.local.get(1, reftype.Value)),
+								wasm.struct.new([Value.asTuple(wasm.local.get(1, reftype.Value))], heaptype.CplTuple),
 							),
 						);
 					});
@@ -2486,13 +2486,13 @@ test.suite('Opcode', () => {
 						const {builder, cg, wasm} = setupScript(`{
 							Dict.<int>(( (@a, 2), (@b, 3), (@c, 5) ));
 						}`, {codegen: false});
-						const {reftype, Value, Dict} = cg.vm;
+						const {heaptype, reftype, Value, Dict} = cg.vm;
 						builder.instructions.slice(0, 5).forEach((instr) => instr.codegen(cg));
 						return assertEqualBins(
 							builder.instructions[5].codegen(cg),
 							Dict.fillFromTuple(
 								Value.asDict(wasm.local.get(0, reftype.Value)),
-								Value.asTuple(wasm.local.get(4, reftype.Value)),
+								wasm.struct.new([Value.asTuple(wasm.local.get(4, reftype.Value))], heaptype.CplTuple),
 							),
 						);
 					});
@@ -2500,13 +2500,13 @@ test.suite('Opcode', () => {
 						const {builder, cg, wasm} = setupScript(`{
 							Dict.<int>((a= 2, b= 3, c= 5));
 						}`, {codegen: false});
-						const {reftype, Value, Dict} = cg.vm;
+						const {heaptype, reftype, Value, Dict} = cg.vm;
 						builder.instructions.slice(0, 2).forEach((instr) => instr.codegen(cg));
 						return assertEqualBins(
 							builder.instructions[2].codegen(cg),
 							Dict.copyFromRecord(
 								Value.asDict(wasm.local.get(0, reftype.Value)),
-								Value.asRecord(wasm.local.get(1, reftype.Value)),
+								wasm.struct.new([Value.asRecord(wasm.local.get(1, reftype.Value))], heaptype.CplRecord),
 							),
 						);
 					});
@@ -2572,13 +2572,13 @@ test.suite('Opcode', () => {
 						const {builder, cg, wasm} = setupScript(`{
 							Set.<int>((2, 3, 5));
 						}`, {codegen: false});
-						const {reftype, Value, Map: VmMap} = cg.vm;
+						const {heaptype, reftype, Value, Map: VmMap} = cg.vm;
 						builder.instructions.slice(0, 2).forEach((instr) => instr.codegen(cg));
 						return assertEqualBins(
 							builder.instructions[2].codegen(cg),
 							VmMap.fillSetFromTuple(
 								Value.asMap  (wasm.local.get(0, reftype.Value)),
-								Value.asTuple(wasm.local.get(1, reftype.Value)),
+								wasm.struct.new([Value.asTuple(wasm.local.get(1, reftype.Value))], heaptype.CplTuple),
 							),
 						);
 					});
@@ -2616,13 +2616,13 @@ test.suite('Opcode', () => {
 						const {builder, cg, wasm} = setupScript(`{
 							Map.<float, int>(( (1.414, 2), (1.732, 3), (2.236, 5) ));
 						}`, {codegen: false});
-						const {reftype, Value, Map: VmMap} = cg.vm;
+						const {heaptype, reftype, Value, Map: VmMap} = cg.vm;
 						builder.instructions.slice(0, 5).forEach((instr) => instr.codegen(cg));
 						return assertEqualBins(
 							builder.instructions[5].codegen(cg),
 							VmMap.fillFromTuple(
 								Value.asMap  (wasm.local.get(0, reftype.Value)),
-								Value.asTuple(wasm.local.get(4, reftype.Value)),
+								wasm.struct.new([Value.asTuple(wasm.local.get(4, reftype.Value))], heaptype.CplTuple),
 							),
 						);
 					});

@@ -41,8 +41,8 @@ export class Template extends Value {
 
 	@memoizeMethod
 	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
-		const {vm: {heaptype, reftype, Value: VmValue, CplString}, mod: {wasm}} = cg;
-		const strings: readonly Local[]                  = this.items.map((item) => cg.newLocal(CplString.field(VmValue.asString(item.codegen(cg))).string));
+		const {vm: {heaptype, reftype, Value: VmValue}, mod: {wasm}} = cg;
+		const strings: readonly Local[]                  = this.items.map((item) => cg.newLocal(VmValue.asString(item.codegen(cg))));
 		const lengths: readonly binaryen.ExpressionRef[] = strings.map((strarr) => wasm.array.len(strarr.get()));
 
 		const result: Local = cg.newLocal(wasm.array.new_default(heaptype.String, lengths.reduce((a, b) => wasm.i32.add(a, b))));

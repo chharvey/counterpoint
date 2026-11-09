@@ -329,7 +329,7 @@
 	)
 )
 (func $op:as-string (export "op::asString") (param (ref $Value)) (result (ref $Value))
-	(return_call $Value.new-composite (call $Value.as-string (local.get 0)))
+	(return_call $Value.new-composite (struct.new $Cpl-String (call $Value.as-string (local.get 0))))
 )
 (func $op:as-object (export "op::asObject") (param $value (ref $Value)) (result (ref $Value))
 	(return_call $Value.new-composite (ref.cast (ref $Object) (struct.get $Value $composite (local.get $value))))
