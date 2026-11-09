@@ -2,7 +2,7 @@
 	;; the return value, the number of live elements.
 	(local $count i32)
 	;; the Dict’s internal array.
-	(local $internal (ref $DictInternal))
+	(local $internal (ref $DictArray))
 	;; index of iteration.
 	(local $i i32)
 	;; object of iteration.
@@ -15,7 +15,7 @@
 		(local.set $i (i32.const 0))
 		(loop $repeat
 			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $internal))))
-			(local.set $prop (array.get $DictInternal (local.get $internal) (local.get $i)))
+			(local.set $prop (array.get $DictArray (local.get $internal) (local.get $i)))
 			;; if the property is “live”, increment the count
 			(if
 				(i32.and
@@ -35,7 +35,7 @@
 
 (func $Dict.find (export "Dict#find") (param $dict (ref $Dict)) (param $key i64) (result i32 (ref null $Property))
 	;; the given Dict’s internal array.
-	(local $internal (ref $DictInternal))
+	(local $internal (ref $DictArray))
 	;; the length of the array. constant.
 	(local $ARRLEN i32)
 	;; index of the array to retrieve from. increments on each loop until an entry or null is found.
@@ -56,7 +56,7 @@
 	(local.set $tombprop (ref.null $Property))
 
 	(loop $repeat
-		(local.set $prop (array.get $DictInternal (local.get $internal) (local.get $index)))
+		(local.set $prop (array.get $DictArray (local.get $internal) (local.get $index)))
 		;; if the current property is null, the key is definitely not in the Dict.
 		;; if we’ve passed a tombstone, return it and its index.
 		;; otherwise, return the current null property and its index.
@@ -91,16 +91,16 @@
 
 (func $Dict.adjust-capacity (export "Dict#adjustCapacity") (param $dict (ref $Dict)) (param $capacity i32)
 	;; the given Dict’s original internal array.
-	(local $orig (ref $DictInternal))
+	(local $orig (ref $DictArray))
 	;; copy of the Dict’s entries, to be used as the Dict’s new internal array.
-	(local $copy (ref $DictInternal))
+	(local $copy (ref $DictArray))
 	;; index of iteration over original array.
 	(local $i i32)
 	;; property at index $i in original array.
 	(local $prop (ref null $Property))
 
 	(local.set $orig (struct.get $Dict $internal (local.get $dict)))
-	(local.set $copy (array.new_default $DictInternal (local.get $capacity)))
+	(local.set $copy (array.new_default $DictArray (local.get $capacity)))
 
 	(struct.set $Dict $internal (local.get $dict) (local.get $copy))
 
@@ -111,7 +111,7 @@
 		(local.set $i (i32.const 0))
 		(loop $repeat
 			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $orig))))
-			(local.set $prop (array.get $DictInternal (local.get $orig) (local.get $i)))
+			(local.set $prop (array.get $DictArray (local.get $orig) (local.get $i)))
 			;; if the property is “live”, put it in the copy and increment the size
 			(if
 				(i32.and
@@ -119,7 +119,7 @@
 					(i32.eqz (ref.eq (local.get $prop) (global.get $Property.TOMBSTONE)))
 				)
 				(then
-					(array.set $DictInternal
+					(array.set $DictArray
 						(local.get $copy)
 						(drop (call $Dict.find (local.get $dict) (struct.get $Property $key (local.get $prop))))
 						(local.get $prop)
@@ -179,7 +179,7 @@
 			(struct.set $Dict $size (local.get $dict) (i32.add (struct.get $Dict $size (local.get $dict)) (i32.const 1)))
 		)
 	)
-	(array.set $DictInternal
+	(array.set $DictArray
 		(struct.get $Dict $internal (local.get $dict))
 		(local.get $index)
 		(struct.new $Property
@@ -210,7 +210,7 @@
 	)
 
 	;; replace the property with a tombstone
-	(array.set $DictInternal
+	(array.set $DictArray
 		(struct.get $Dict $internal (local.get $dict))
 		(local.get $index)
 		(global.get $Property.TOMBSTONE)
@@ -223,12 +223,12 @@
 
 
 (func $Dict.copy-from-record (export "Dict#copyFromRecord") (param $dest (ref $Dict)) (param $src (ref $Record))
-	(local $dest-internal (ref $DictInternal))
+	(local $dest-internal (ref $DictArray))
 
 	(local.set $dest-internal (struct.get $Dict $internal (local.get $dest)))
 
 	(call $Dict.adjust-capacity (local.get $dest) (call $util:capacity-needed (array.len (local.get $src))))
-	(array.copy $DictInternal $Record
+	(array.copy $DictArray $Record
 		(local.get $dest-internal)
 		(i32.const 0)
 		(local.get $src)
@@ -237,14 +237,14 @@
 	)
 )
 (func $Dict.copy-from-dict (export "Dict#copyFromDict") (param $dest (ref $Dict)) (param $src (ref $Dict))
-	(local $dest-internal (ref $DictInternal))
-	(local $src-internal  (ref $DictInternal))
+	(local $dest-internal (ref $DictArray))
+	(local $src-internal  (ref $DictArray))
 
 	(local.set $dest-internal (struct.get $Dict $internal (local.get $dest)))
 	(local.set $src-internal  (struct.get $Dict $internal (local.get $src)))
 
 	(call $Dict.adjust-capacity (local.get $dest) (array.len (local.get $src-internal)))
-	(array.copy $DictInternal $DictInternal
+	(array.copy $DictArray $DictArray
 		(local.get $dest-internal)
 		(i32.const 0)
 		(local.get $src-internal)
@@ -273,7 +273,7 @@
 	)
 )
 (func $Dict.fill-from-list (export "Dict#fillFromList") (param $dest (ref $Dict)) (param $src (ref $List))
-	(local $src-internal (ref $ListInternal))
+	(local $src-internal (ref $ListArray))
 	(local $i            i32)
 	(local $item         (ref null $Value))
 
@@ -283,7 +283,7 @@
 		(local.set $i (i32.const 0))
 		(loop $repeat
 			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $src-internal))))
-			(local.set $item (array.get $ListInternal (local.get $src-internal) (local.get $i)))
+			(local.set $item (array.get $ListArray (local.get $src-internal) (local.get $i)))
 			(if
 				(i32.eqz (ref.is_null (local.get $item)))
 				(then (call $Dict.set (local.get $dest) (call $Property.from-tuple
@@ -296,7 +296,7 @@
 	)
 )
 (func $Dict.fill-from-set (export "Dict#fillFromSet") (param $dest (ref $Dict)) (param $src (ref $Map))
-	(local $src-internal (ref $MapInternal))
+	(local $src-internal (ref $MapArray))
 	(local $i            i32)
 	(local $item         (ref null $Case))
 
@@ -306,7 +306,7 @@
 		(local.set $i (i32.const 0))
 		(loop $repeat
 			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $src-internal))))
-			(local.set $item (array.get $MapInternal (local.get $src-internal) (local.get $i)))
+			(local.set $item (array.get $MapArray (local.get $src-internal) (local.get $i)))
 			(if
 				(i32.eqz (ref.is_null (local.get $item)))
 				(then (call $Dict.set (local.get $dest) (call $Property.from-tuple
@@ -319,7 +319,7 @@
 	)
 )
 (func $Dict.fill-from-map (export "Dict#fillFromMap") (param $dest (ref $Dict)) (param $src (ref $Map))
-	(local $src-internal (ref $MapInternal))
+	(local $src-internal (ref $MapArray))
 	(local $i            i32)
 	(local $item         (ref null $Case))
 
@@ -329,7 +329,7 @@
 		(local.set $i (i32.const 0))
 		(loop $repeat
 			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $src-internal))))
-			(local.set $item (array.get $MapInternal (local.get $src-internal) (local.get $i)))
+			(local.set $item (array.get $MapArray (local.get $src-internal) (local.get $i)))
 			(if
 				(i32.eqz (ref.is_null (local.get $item)))
 				(then (call $Dict.set (local.get $dest) (call $Property.from-case (ref.as_non_null (local.get $item)))))

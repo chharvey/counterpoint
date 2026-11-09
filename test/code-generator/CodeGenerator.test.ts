@@ -126,7 +126,7 @@ test.suite('CodeGenerator', () => {
 				wasm.struct.new([
 					wasm.i32.const(0),
 					wasm.array.new_fixed(
-						cg.vm.heaptype.ListInternal,
+						cg.vm.heaptype.ListArray,
 						repeat(wasm.ref.null(cg.vm.heaptype.Value), 8),
 					),
 				], cg.vm.heaptype.List),
@@ -142,7 +142,7 @@ test.suite('CodeGenerator', () => {
 				wasm.struct.new([
 					wasm.i32.const(3),
 					wasm.array.new_fixed(
-						cg.vm.heaptype.ListInternal,
+						cg.vm.heaptype.ListArray,
 						[
 							genConst(cg, 1.1),
 							genConst(cg, 2.2),
@@ -159,7 +159,7 @@ test.suite('CodeGenerator', () => {
 				wasm.struct.new([
 					wasm.i32.const(0),
 					wasm.array.new_fixed(
-						cg.vm.heaptype.DictInternal,
+						cg.vm.heaptype.DictArray,
 						repeat(wasm.ref.null(cg.vm.heaptype.Property), 8),
 					),
 				], cg.vm.heaptype.Dict),
@@ -177,7 +177,7 @@ test.suite('CodeGenerator', () => {
 				wasm.struct.new([
 					wasm.i32.const(5),
 					wasm.array.new_fixed(
-						cg.vm.heaptype.DictInternal,
+						cg.vm.heaptype.DictArray,
 						[
 							cg.newProperty(0x108n, genConst(cg, 3.3)),
 							cg.newProperty(0x109n, genConst(cg, 4.4)),
@@ -219,7 +219,7 @@ test.suite('CodeGenerator', () => {
 				cg.codegenMap(),
 				wasm.struct.new([
 					wasm.i32.const(0),
-					wasm.array.new_default(cg.vm.heaptype.MapInternal, wasm.i32.const(8)),
+					wasm.array.new_default(cg.vm.heaptype.MapArray, wasm.i32.const(8)),
 				], cg.vm.heaptype.Map),
 			);
 		});
@@ -237,7 +237,7 @@ test.suite('CodeGenerator', () => {
 				wasm.block(null, [
 					wasm.local.set(0, wasm.struct.new([
 						wasm.i32.const(5),
-						wasm.array.new_default(cg.vm.heaptype.MapInternal, wasm.i32.const(8)),
+						wasm.array.new_default(cg.vm.heaptype.MapArray, wasm.i32.const(8)),
 					], cg.vm.heaptype.Map)),
 					VmMap.set(map_get, genConst(cg, 10n), genConst(cg, 1.1)),
 					VmMap.set(map_get, genConst(cg, 20n), genConst(cg, 2.2)),
@@ -539,7 +539,7 @@ test.suite('CodeGenerator', () => {
 					WASM_NULL,
 				]].map((entries) => wasm.struct.new([
 					wasm.i32.const(3),
-					wasm.array.new_fixed(cg.vm.heaptype.DictInternal, entries),
+					wasm.array.new_fixed(cg.vm.heaptype.DictArray, entries),
 				], cg.vm.heaptype.Dict)),
 			);
 		});

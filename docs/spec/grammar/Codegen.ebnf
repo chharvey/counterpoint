@@ -54,13 +54,13 @@ Codegen((RECORD.NEW `pairs`)) := (call $Value.from-record
 Codegen((LIST.NEW)) := (call $Value.from-list
 	(struct.new $List
 		(i32.const 0)
-		(array.new_default $ListInternal (i32.const 8))
+		(array.new_default $ListArray (i32.const 8))
 	)
 );
 Codegen((LIST.NEW `values`)) := (call $Value.from-list
 	(struct.new $List
 		(i32.const `values.count`)
-		(array.new_fixed $ListInternal `CapacityNeeded(values.count)`
+		(array.new_fixed $ListArray `CapacityNeeded(values.count)`
 			`values.pad(CapacityNeeded(values.count), "(ref.null $Value)").map(Codegen)`
 		)
 	)
@@ -69,13 +69,13 @@ Codegen((LIST.NEW `values`)) := (call $Value.from-list
 Codegen((DICT.NEW)) := (call $Value.from-dict
 	(struct.new $Dict
 		(i32.const 0)
-		(array.new_default $DictInternal (i32.const 8))
+		(array.new_default $DictArray (i32.const 8))
 	)
 );
 Codegen((DICT.NEW `pairs`)) := (call $Value.from-dict
 	(struct.new $Dict
 		(i32.const `pairs.count`)
-		(array.new_fixed $DictInternal `CapacityNeeded(pairs.count)`
+		(array.new_fixed $DictArray `CapacityNeeded(pairs.count)`
 			`pairs.pad(CapacityNeeded(pairs.count), "(ref.null $Property)").hashMap("(struct.new $Property
 				(i64.const `pairs[i].0`)
 				`Codegen(pairs[i].1)`
@@ -88,14 +88,14 @@ Codegen((DICT.NEW `pairs`)) := (call $Value.from-dict
 Codegen((SET.NEW)) := (call $Value.from-map
 	(struct.new $Map
 		(i32.const 0)
-		(array.new_default $MapInternal (i32.const 8))
+		(array.new_default $MapArray (i32.const 8))
 	)
 );
 Codegen((SET.NEW `values`)) := (call $Value.from-map
 	(block (result (ref $Map))
 		(local.set $map (struct.new $Map
 			(i32.const `values.count`)
-			(array.new_default $MapInternal `CapacityNeeded(values.count)`)
+			(array.new_default $MapArray `CapacityNeeded(values.count)`)
 		))
 		`...values.map("(call $Map.set `Codegen(values[i])` `Codegen((NULL.CONST null))`)")`
 		(local.get $map)
@@ -105,14 +105,14 @@ Codegen((SET.NEW `values`)) := (call $Value.from-map
 Codegen((MAP.NEW)) := (call $Value.from-map
 	(struct.new $Map
 		(i32.const 0)
-		(array.new_default $MapInternal (i32.const 8))
+		(array.new_default $MapArray (i32.const 8))
 	)
 );
 Codegen((MAP.NEW `pairs`)) := (call $Value.from-map
 	(block (result (ref $Map))
 		(local.set $map (struct.new $Map
 			(i32.const `pairs.count`)
-			(array.new_default $MapInternal `CapacityNeeded(pairs.count)`)
+			(array.new_default $MapArray `CapacityNeeded(pairs.count)`)
 		))
 		`...pairs.map("(call $Map.set `Codegen(pairs[i].0)` `Codegen(pairs[i].1)`)")`
 		(local.get $map)
@@ -124,7 +124,7 @@ Codegen((OBJECT.NEW `false` `class`)) := (call $Value.new-composite (struct.new 
 	(ref.cast (ref $Class) (struct.get $Value $composite `Codegen(class)`))
 	(struct.new $Dict
 		(i32.const 0)
-		(array.new_default $DictInternal (i32.const 8))
+		(array.new_default $DictArray (i32.const 8))
 	)
 ));
 Codegen((OBJECT.NEW `true` `class`)) := (call $Value.new-composite (struct.new $Class
@@ -132,7 +132,7 @@ Codegen((OBJECT.NEW `true` `class`)) := (call $Value.new-composite (struct.new $
 	(ref.cast (ref $Class) (struct.get $Value $composite `Codegen(class)`))
 	(struct.new $Dict
 		(i32.const 0)
-		(array.new_default $DictInternal (i32.const 8))
+		(array.new_default $DictArray (i32.const 8))
 	)
 ));
 Codegen((OBJECT.NEW `true`)) := (call $Value.new-composite (struct.new $Class
@@ -140,7 +140,7 @@ Codegen((OBJECT.NEW `true`)) := (call $Value.new-composite (struct.new $Class
 	(ref.null $Class)
 	(struct.new $Dict
 		(i32.const 0)
-		(array.new_default $DictInternal (i32.const 8))
+		(array.new_default $DictArray (i32.const 8))
 	)
 ));
 

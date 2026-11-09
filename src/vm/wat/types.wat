@@ -26,27 +26,27 @@
 	(type $Record (array (ref $Property)))
 
 	;; mutable to allow reassigning array entries, nullable because array can be sparse
-	(type $ListInternal (array (mut (ref null $Value))))
-	(type $DictInternal (array (mut (ref null $Property))))
-	(type $MapInternal  (array (mut (ref null $Case))))
+	(type $ListArray (array (mut (ref null $Value))))
+	(type $DictArray (array (mut (ref null $Property))))
+	(type $MapArray  (array (mut (ref null $Case))))
 
 	(type $List (struct
 		;; number of items currently in the array (for total capacity, get its `(array.len)`); mutable to allow array mutation
 		(field $size (mut i32))
 		;; the array of List items; mutable to allow reallocation
-		(field $internal (mut (ref $ListInternal)))
+		(field $internal (mut (ref $ListArray)))
 	))
 	(type $Dict (struct
 		;; number of items currently in the array, including tombstones (for total capacity, get its `(array.len)`); mutable to allow array mutation
 		(field $size (mut i32))
 		;; the array of Dict properties; mutable to allow reallocation
-		(field $internal (mut (ref $DictInternal)))
+		(field $internal (mut (ref $DictArray)))
 	))
 	(type $Map (struct
 		;; number of items currently in the array, including tombstones (for total capacity, get its `(array.len)`); mutable to allow array mutation
 		(field $size (mut i32))
 		;; the array of Map cases; mutable to allow reallocation
-		(field $internal (mut (ref $MapInternal)))
+		(field $internal (mut (ref $MapArray)))
 	))
 
 	;; abstract root of all non-primitives. the type of `$Value.$composite`

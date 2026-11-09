@@ -1075,8 +1075,8 @@
 ;; provide shallow=1 to compare items shallowly (identity rather than equality).
 (func $!List.equal (param $list0 (ref $List)) (param $list1 (ref $List)) (param $shallow i32) (result i32)
 	(local $i         i32)
-	(local $internal0 (ref $ListInternal))
-	(local $internal1 (ref $ListInternal))
+	(local $internal0 (ref $ListArray))
+	(local $internal1 (ref $ListArray))
 	(local $item0     (ref null $Value))
 	(local $item1     (ref null $Value))
 
@@ -1099,8 +1099,8 @@
 		(local.set $i (i32.const 0))
 		(loop $repeat
 			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $internal0))))
-			(local.set $item0 (array.get $ListInternal (local.get $internal0) (local.get $i)))
-			(local.set $item1 (array.get $ListInternal (local.get $internal1) (local.get $i)))
+			(local.set $item0 (array.get $ListArray (local.get $internal0) (local.get $i)))
+			(local.set $item1 (array.get $ListArray (local.get $internal1) (local.get $i)))
 
 			;; if they’re both null, we’ve reached the end of all live items; the Lists are equal; return true
 			(if
@@ -1154,8 +1154,8 @@
 ;; provide shallow=1 to compare values shallowly (identity rather than equality).
 (func $!Dict.equal (param $dict0 (ref $Dict)) (param $dict1 (ref $Dict)) (param $shallow i32) (result i32)
 	(local $i         i32)
-	(local $internal0 (ref $DictInternal))
-	(local $internal1 (ref $DictInternal))
+	(local $internal0 (ref $DictArray))
+	(local $internal1 (ref $DictArray))
 	(local $prop0     (ref null $Property))
 	(local $prop1     (ref null $Property))
 	(local $key       i64)
@@ -1179,7 +1179,7 @@
 		(local.set $i (i32.const 0))
 		(loop $repeat
 			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $internal0))))
-			(local.set $prop0 (array.get $DictInternal (local.get $internal0) (local.get $i)))
+			(local.set $prop0 (array.get $DictArray (local.get $internal0) (local.get $i)))
 			(if
 				(i32.eqz (ref.is_null (local.get $prop0)))
 				(then
@@ -1220,8 +1220,8 @@
 ;; provide shallow=1 to compare antecedents and consequents shallowly (identity rather than equality).
 (func $!Map.equal (param $map0 (ref $Map)) (param $map1 (ref $Map)) (param $shallow i32) (result i32)
 	(local $i         i32)
-	(local $internal0 (ref $MapInternal))
-	(local $internal1 (ref $MapInternal))
+	(local $internal0 (ref $MapArray))
+	(local $internal1 (ref $MapArray))
 	(local $case0     (ref null $Case))
 	(local $case1     (ref null $Case))
 	(local $ant       (ref $Value))
@@ -1245,7 +1245,7 @@
 		(local.set $i (i32.const 0))
 		(loop $repeat
 			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $internal0))))
-			(local.set $case0 (array.get $MapInternal (local.get $internal0) (local.get $i)))
+			(local.set $case0 (array.get $MapArray (local.get $internal0) (local.get $i)))
 			(if
 				(i32.eqz (ref.is_null (local.get $case0)))
 				(then
