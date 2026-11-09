@@ -212,12 +212,12 @@ Codegen((RECORD.GET `key` `obj`)) := (call $Record.get
 
 Codegen((LIST.GET `obj` `accessor`)) := (call $List.get
 	(call $Value.as-list             `Codegen(obj)`)
-	(i32.wrap_i64 (call $Vect.as-int (struct.get $Value $primitive `Codegen(accessor)`)))
+	(i32.wrap_i64 (call $Vect.as-int (call $Value.as-primitive `Codegen(accessor)`)))
 );
 
 Codegen((DICT.GET `obj` `accessor`)) := (call $Dict.get
 	(call $Value.as-dict `Codegen(obj)`)
-	(call $Vect.as-nat (struct.get $Value $primitive `Codegen(accessor)`))
+	(call $Vect.as-nat (call $Value.as-primitive `Codegen(accessor)`))
 );
 
 Codegen((SET.GET `obj` `accessor`)) := (block (result (ref $Value))
@@ -360,13 +360,13 @@ Codegen((SET  `id` `v`))        := (local.set ‹index› `id` `Codegen(v)`);
 
 Codegen((LIST.SET `obj` `accessor` `v`)) := (call $List.set
 	(call $Value.as-list `Codegen(obj)`)
-	(i32.wrap_i64 (i64x2.extract_lane 1 (struct.get $Value $primitive `Codegen(accessor)`)))
+	(i32.wrap_i64 (i64x2.extract_lane 1 (call $Value.as-primitive `Codegen(accessor)`)))
 	`Codegen(v)`
 );
 
 Codegen((DICT.SET `obj` `accessor` `v`)) := (call $Dict.set
 	(call $Value.as-dict `Codegen(obj)`)
-	(i64x2.extract_lane 1 (struct.get $Value $primitive `Codegen(accessor)`))
+	(i64x2.extract_lane 1 (call $Value.as-primitive `Codegen(accessor)`))
 	`Codegen(v)`
 );
 
@@ -374,7 +374,7 @@ Codegen((SET.SET `obj` `accessor` `v`)) := (block
 	(local.set $base     (call $Value.as-map `Codegen(obj)`))
 	(local.set $accessor `Codegen(accessor)`)
 	(if
-		(call $Vect.is-true (struct.get $Value $primitive `Codegen(v)`))
+		(call $Vect.is-true (call $Value.isprimitive `Codegen(v)`))
 		(call $Map.set
 			(local.get $base)
 			(local.get $accessor)

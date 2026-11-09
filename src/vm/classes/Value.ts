@@ -39,6 +39,7 @@ export class Value implements HasFuncData {
 			['Value#fromList',     {name: 'Value.from-list',     param: reftype.List,        result: reftype.Value}],
 			['Value#fromDict',     {name: 'Value.from-dict',     param: reftype.Dict,        result: reftype.Value}],
 			['Value#fromMap',      {name: 'Value.from-map',      param: reftype.Map,         result: reftype.Value}],
+			['Value#asPrimitive',  {name: 'Value.as-primitive',  param: reftype.Value,       result: binaryen.Type.v128}],
 			['Value#asString',     {name: 'Value.as-string',     param: reftype.Value,       result: reftype.String}],
 			['Value#asTuple',      {name: 'Value.as-tuple',      param: reftype.Value,       result: reftype.Tuple}],
 			['Value#asRecord',     {name: 'Value.as-record',     param: reftype.Value,       result: reftype.Record}],
@@ -56,10 +57,11 @@ export class Value implements HasFuncData {
 	/** The Counterpoint `true`  value. */ public get TRUE():  binaryen.ExpressionRef /* (ref $Value) */ { return this.vm.mod.wasm.global.get('Value.TRUE',  this.vm.reftype.Value); }
 
 
-	public field(ref: binaryen.ExpressionRef /* (ref null $Value) */): {
+	/** @deprecated */
+	private field(ref: binaryen.ExpressionRef /* (ref null $Value) */): {
 		/** @return `(struct.get $Value $tag       <ref>)` */ readonly tag:       binaryen.ExpressionRef /* i32 */,
 		/** @return `(struct.get $Value $primitive <ref>)` */ readonly primitive: binaryen.ExpressionRef /* v128 */,
-		/** @return `(struct.get $Value $primitive <ref>)` */ readonly composite: binaryen.ExpressionRef /* (ref null $Composite) */,
+		/** @return `(struct.get $Value $composite <ref>)` */ readonly composite: binaryen.ExpressionRef /* (ref null $Composite) */,
 	} {
 		const {mod: {wasm}, reftypeNull} = this.vm;
 		return {
@@ -139,6 +141,11 @@ export class Value implements HasFuncData {
 	/** Creates a new value holding the given Map. */
 	public fromMap(list: binaryen.ExpressionRef /* (ref $Map) */): binaryen.ExpressionRef /* (ref $Value) */ {
 		return this.vm.mod.wasm.call('Value.from-map', [list], this.vm.reftype.Value);
+	}
+
+	/** Casts the value to a v128. */
+	public asPrimitive(value: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* v128 */ {
+		return this.vm.mod.wasm.call('Value.as-primitive', [value], binaryen.Type.v128);
 	}
 
 	/** Casts the value to a String. */

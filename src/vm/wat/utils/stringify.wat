@@ -3,7 +3,7 @@
 	(local $primitive v128)
 	(local $composite (ref null $Composite))
 
-	(local.set $primitive (struct.get $Value $primitive (local.get $value)))
+	(local.set $primitive (call $Value.as-primitive (local.get $value)))
 	(local.set $composite (struct.get $Value $composite (local.get $value)))
 
 	(if

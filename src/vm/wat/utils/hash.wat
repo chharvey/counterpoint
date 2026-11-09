@@ -12,7 +12,7 @@
 
 	(if
 		(call $Value.is-primitive (local.get $value))
-		(then (return_call $!v128.hash (struct.get $Value $primitive (local.get $value))))
+		(then (return_call $!v128.hash (call $Value.as-primitive (local.get $value))))
 	)
 	(if
 		(call $Value.is-composite (local.get $value))

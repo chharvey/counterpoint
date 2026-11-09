@@ -117,13 +117,13 @@ export class CollectionDynamicGet extends Value {
 			case TypeName.LIST: {
 				return List.get(
 					VmValue.asList(collection),
-					wasm.i32.wrap_i64(Vect.asInt(VmValue.field(accessor).primitive)),
+					wasm.i32.wrap_i64(Vect.asInt(VmValue.asPrimitive(accessor))),
 				);
 			}
 			case TypeName.DICT: {
 				return Dict.get(
 					VmValue.asDict(collection),
-					Vect.asNat(VmValue.field(accessor).primitive),
+					Vect.asNat(VmValue.asPrimitive(accessor)),
 				);
 			}
 			case TypeName.SET: {

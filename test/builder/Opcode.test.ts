@@ -1814,19 +1814,19 @@ test.suite('Opcode', () => {
 					return assertEqualBins(builder.instructions.slice(4).map((instr) => instr.codegen(cg)), [
 						wasm.drop(List.get(
 							Value.asList(wasm.local.get(2, reftype.Value)),
-							wasm.i32.wrap(Vect.asInt(Value.field(wasm.local.get(3, reftype.Value)).primitive)),
+							wasm.i32.wrap(Vect.asInt(Value.asPrimitive(wasm.local.get(3, reftype.Value)))),
 						)),
 						wasm.drop(List.get(
 							list_cast,
-							wasm.i32.wrap_i64(Vect.asInt(Value.field(genConst(cg, 0n)).primitive)),
+							wasm.i32.wrap_i64(Vect.asInt(Value.asPrimitive(genConst(cg, 0n)))),
 						)),
 						wasm.drop(List.get(
 							list_cast,
-							wasm.i32.wrap_i64(Vect.asInt(Value.field(genConst(cg, 3n)).primitive)),
+							wasm.i32.wrap_i64(Vect.asInt(Value.asPrimitive(genConst(cg, 3n)))),
 						)),
 						wasm.drop(List.get(
 							list_cast,
-							wasm.i32.wrap_i64(Vect.asInt(Value.field(genConst(cg, -1n)).primitive)),
+							wasm.i32.wrap_i64(Vect.asInt(Value.asPrimitive(genConst(cg, -1n)))),
 						)),
 					]);
 				});
@@ -1844,15 +1844,15 @@ test.suite('Opcode', () => {
 					return assertEqualBins(builder.instructions.slice(3).map((instr) => instr.codegen(cg)), [
 						wasm.drop(Dict.get(
 							Value.asDict(wasm.local.get(2, reftype.Value)),
-							Vect.asNat(Value.field(genConst(cg, 'b', 'sym')).primitive),
+							Vect.asNat(Value.asPrimitive(genConst(cg, 'b', 'sym'))),
 						)),
 						wasm.drop(Dict.get(
 							dict_cast,
-							Vect.asNat(Value.field(genConst(cg, 'a', 'sym')).primitive),
+							Vect.asNat(Value.asPrimitive(genConst(cg, 'a', 'sym'))),
 						)),
 						wasm.drop(Dict.get(
 							dict_cast,
-							Vect.asNat(Value.field(genConst(cg, 'c', 'sym')).primitive),
+							Vect.asNat(Value.asPrimitive(genConst(cg, 'c', 'sym'))),
 						)),
 					]);
 				});
@@ -2344,17 +2344,17 @@ test.suite('Opcode', () => {
 					return assertEqualBins(builder.instructions.slice(4).map((instr) => instr.codegen(cg)), [
 						List.set(
 							Value.asList(wasm.local.get(2, reftype.Value)),
-							wasm.i32.wrap_i64(Vect.asInt(Value.field(wasm.local.get(3, reftype.Value)).primitive)),
+							wasm.i32.wrap_i64(Vect.asInt(Value.asPrimitive(wasm.local.get(3, reftype.Value)))),
 							genConst(cg, 45n),
 						),
 						List.set(
 							Value.asList(wasm.local.get(1, reftype.Value)),
-							wasm.i32.wrap_i64(Vect.asInt(Value.field(genConst(cg, 0n)).primitive)),
+							wasm.i32.wrap_i64(Vect.asInt(Value.asPrimitive(genConst(cg, 0n)))),
 							genConst(cg, 46n),
 						),
 						List.set(
 							Value.asList(wasm.local.get(1, reftype.Value)),
-							wasm.i32.wrap_i64(Vect.asInt(Value.field(genConst(cg, 2n)).primitive)),
+							wasm.i32.wrap_i64(Vect.asInt(Value.asPrimitive(genConst(cg, 2n)))),
 							genConst(cg, 47n),
 						),
 					]);
@@ -2372,17 +2372,17 @@ test.suite('Opcode', () => {
 					return assertEqualBins(builder.instructions.slice(3).map((instr) => instr.codegen(cg)), [
 						Dict.set(
 							Value.asDict(wasm.local.get(2, reftype.Value)),
-							Vect.asNat(Value.field(genConst(cg, 'b', 'sym')).primitive),
+							Vect.asNat(Value.asPrimitive(genConst(cg, 'b', 'sym'))),
 							genConst(cg, 45n),
 						),
 						Dict.set(
 							Value.asDict(wasm.local.get(1, reftype.Value)),
-							Vect.asNat(Value.field(genConst(cg, 'a', 'sym')).primitive),
+							Vect.asNat(Value.asPrimitive(genConst(cg, 'a', 'sym'))),
 							genConst(cg, 46n),
 						),
 						Dict.set(
 							Value.asDict(wasm.local.get(1, reftype.Value)),
-							Vect.asNat(Value.field(genConst(cg, 'c', 'sym')).primitive),
+							Vect.asNat(Value.asPrimitive(genConst(cg, 'c', 'sym'))),
 							genConst(cg, 47n),
 						),
 					]);
@@ -2405,7 +2405,7 @@ test.suite('Opcode', () => {
 							wasm.local.set(2, Value.asMap(base)),
 							wasm.local.set(3, genConst(cg, 4.2)),
 							wasm.if(
-								Vect.isConst(Value.field(genConst(cg, false)).primitive, true),
+								Vect.isConst(Value.asPrimitive(genConst(cg, false)), true),
 								VmMap.set(base_get_0, accessor_get_0, genConst(cg)),
 								wasm.drop(VmMap.delete(base_get_0, accessor_get_0)),
 							),
@@ -2414,7 +2414,7 @@ test.suite('Opcode', () => {
 							wasm.local.set(4, Value.asMap(base)),
 							wasm.local.set(5, genConst(cg, 3.3)),
 							wasm.if(
-								Vect.isConst(Value.field(genConst(cg, true)).primitive, true),
+								Vect.isConst(Value.asPrimitive(genConst(cg, true)), true),
 								VmMap.set(base_get_1, accessor_get_1, genConst(cg)),
 								wasm.drop(VmMap.delete(base_get_1, accessor_get_1)),
 							),

@@ -117,14 +117,14 @@ export class CollectionDynamicSet extends Instruction {
 			case TypeName.LIST: {
 				return List.set(
 					Value.asList(collection),
-					wasm.i32.wrap_i64(Vect.asInt(Value.field(accessor).primitive)),
+					wasm.i32.wrap_i64(Vect.asInt(Value.asPrimitive(accessor))),
 					value,
 				);
 			}
 			case TypeName.DICT: {
 				return Dict.set(
 					Value.asDict(collection),
-					Vect.asNat(Value.field(accessor).primitive),
+					Vect.asNat(Value.asPrimitive(accessor)),
 					value,
 				);
 			}
@@ -135,7 +135,7 @@ export class CollectionDynamicSet extends Instruction {
 					base.set(),
 					xsor.set(),
 					wasm.if(
-						Vect.isConst(Value.field(value).primitive, true),
+						Vect.isConst(Value.asPrimitive(value), true),
 						VmMap.set(
 							base.get(),
 							xsor.get(),
