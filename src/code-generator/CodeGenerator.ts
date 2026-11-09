@@ -502,12 +502,12 @@ export class CodeGenerator {
 			this.vm.Value     .funcImportDataMap,
 			this.vm.Property  .funcImportDataMap,
 			this.vm.Case      .funcImportDataMap,
+			this.vm.Record    .funcImportDataMap,
 			this.vm.List      .funcImportDataMap,
 			this.vm.Dict      .funcImportDataMap,
 			this.vm.Map       .funcImportDataMap,
 			this.vm.CplString .funcImportDataMap,
 			this.vm.CplTuple  .funcImportDataMap,
-			this.vm.CplRecord .funcImportDataMap,
 			this.vm.Object    .funcImportDataMap,
 		].forEach((datamap) => datamap.forEach((data, export_name) => (
 			this.mod.imports.addFunction(data.name, extern_mod_name, export_name, data.param, data.result)

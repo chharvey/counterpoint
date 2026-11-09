@@ -1730,13 +1730,13 @@ test.suite('Opcode', () => {
 				// there exists no syntax for Record has, so constructing it manually
 				const record = new AST.ExprVisitorBuild(new Builder()).visit(AST.EXPR.Record.fromSource('(a= 10, c= 20)'));
 				const cg     = new CodeGenerator();
-				const {vm: {heaptype, Value, CplRecord}, mod: {wasm}} = cg;
+				const {vm: {Value, Record}, mod: {wasm}} = cg;
 				return xjs.Array.forEachAggregated(['a', 'b'], (keysrc) => {
 					const keyid: bigint = Validator.keyId(keysrc);
 					return assertEqualBins(
 						new OP.RecordHas(record, {keyid, keysrc}).codegen(cg),
-						Value.boolFromI32(CplRecord.hasKey(
-							wasm.struct.new([Value.asRecord(record.codegen(cg))], heaptype.CplRecord),
+						Value.boolFromI32(Record.hasKey(
+							Value.asRecord(record.codegen(cg)),
 							wasm.i64.const(keyid),
 						)),
 					);
@@ -1772,7 +1772,7 @@ test.suite('Opcode', () => {
 				]);
 			});
 
-			test.test('RecordGet returns (call $Cpl-Record.get).', () => {
+			test.test('RecordGet returns (call $Record.get).', () => {
 				const {builder, cg, wasm} = setupScript(`{
 					val mut x:   int                       = 42;
 					val mut rec: (a: int, b: int, c?: int) = (a= 42, b= 43);
@@ -1781,18 +1781,18 @@ test.suite('Opcode', () => {
 					rec.a;
 					rec.b;
 				}`);
-				const {heaptype, reftype, Value, CplRecord} = cg.vm;
+				const {reftype, Value, Record} = cg.vm;
 				return assertEqualBins(builder.instructions.slice(3).map((instr) => instr.codegen(cg)), [
-					wasm.drop(CplRecord.get(
-						wasm.struct.new([Value.asRecord(wasm.local.get(2, reftype.Value))], heaptype.CplRecord),
+					wasm.drop(Record.get(
+						Value.asRecord(wasm.local.get(2, reftype.Value)),
 						wasm.i64.const(Validator.keyId('c')),
 					)),
-					wasm.drop(CplRecord.get(
-						wasm.struct.new([Value.asRecord(wasm.local.get(1, reftype.Value))], heaptype.CplRecord),
+					wasm.drop(Record.get(
+						Value.asRecord(wasm.local.get(1, reftype.Value)),
 						wasm.i64.const(Validator.keyId('a')),
 					)),
-					wasm.drop(CplRecord.get(
-						wasm.struct.new([Value.asRecord(wasm.local.get(1, reftype.Value))], heaptype.CplRecord),
+					wasm.drop(Record.get(
+						Value.asRecord(wasm.local.get(1, reftype.Value)),
 						wasm.i64.const(Validator.keyId('b')),
 					)),
 				]);

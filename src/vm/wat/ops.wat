@@ -786,9 +786,6 @@
 	(local $prop (ref $Property))
 	(local $key  i64)
 
-	(local $cpl-record-1 (ref $Cpl-Record))
-	(local.set $cpl-record-1 (struct.new $Cpl-Record (local.get 1)))
-
 	(if
 		(i32.ne (array.len (local.get 0)) (array.len (local.get 1)))
 		(then (return (i32.const 0)))
@@ -801,13 +798,13 @@
 			(local.set $prop (array.get $Record (local.get 0) (local.get $i)))
 			(local.set $key  (struct.get $Property $key (local.get $prop)))
 			(if
-				(i32.eqz (call $Cpl-Record.has-key (local.get $cpl-record-1) (local.get $key)))
+				(i32.eqz (call $Record.has-key (local.get 1) (local.get $key)))
 				(then (return (i32.const 0)))
 			)
 			(if
 				(i32.eqz (call $Value.bool-to-i32 (call $op:id
 					(struct.get $Property $val (local.get $prop))
-					(call $Cpl-Record.get (local.get $cpl-record-1) (local.get $key))
+					(call $Record.get (local.get 1) (local.get $key))
 				)))
 				(then (return (i32.const 0)))
 			)
@@ -1045,9 +1042,6 @@
 	(local $prop (ref $Property))
 	(local $key  i64)
 
-	(local $cpl-record-1 (ref $Cpl-Record))
-	(local.set $cpl-record-1 (struct.new $Cpl-Record (local.get 1)))
-
 	(if
 		(i32.ne (array.len (local.get 0)) (array.len (local.get 1)))
 		(then (return (i32.const 0)))
@@ -1060,13 +1054,13 @@
 			(local.set $prop (array.get $Record (local.get 0) (local.get $i)))
 			(local.set $key  (struct.get $Property $key (local.get $prop)))
 			(if
-				(i32.eqz (call $Cpl-Record.has-key (local.get $cpl-record-1) (local.get $key)))
+				(i32.eqz (call $Record.has-key (local.get 1) (local.get $key)))
 				(then (return (i32.const 0)))
 			)
 			(if
 				(i32.eqz (call $Value.bool-to-i32 (call $op:eq ;; TODO: use `$Value.relop` and get rid of the `.identical` version
 					(struct.get $Property $val (local.get $prop))
-					(call $Cpl-Record.get (local.get $cpl-record-1) (local.get $key))
+					(call $Record.get (local.get 1) (local.get $key))
 				)))
 				(then (return (i32.const 0)))
 			)

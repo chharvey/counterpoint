@@ -6,6 +6,7 @@ import {ops} from './ad-hoc/ops.ts';
 import {Vect} from './classes/Vect.ts';
 import {Property} from './classes/Property.ts';
 import {Case} from './classes/Case.ts';
+import {Record as VmRecord} from './classes/Record.ts';
 import {List} from './classes/List.ts';
 import {Dict} from './classes/Dict.ts';
 import {Map as VmMap} from './classes/Map.ts';
@@ -14,7 +15,6 @@ import {Object as VmObject} from './classes/Object.ts';
 import {Class as VmClass} from './classes/Class.ts';
 import {CplString} from './classes/CplString.ts';
 import {CplTuple} from './classes/CplTuple.ts';
-import {CplRecord} from './classes/CplRecord.ts';
 
 
 
@@ -398,6 +398,7 @@ export class VirtualMachine {
 	public readonly Vect      = new Vect(this);
 	public readonly Property  = new Property(this);
 	public readonly Case      = new Case(this);
+	public readonly Record    = new VmRecord(this);
 	public readonly List      = new List(this);
 	public readonly Dict      = new Dict(this);
 	public readonly Map       = new VmMap(this);
@@ -406,7 +407,6 @@ export class VirtualMachine {
 	public readonly Class     = new VmClass(this);
 	public readonly CplString = new CplString(this);
 	public readonly CplTuple  = new CplTuple(this);
-	public readonly CplRecord = new CplRecord(this);
 
 
 	public constructor() {

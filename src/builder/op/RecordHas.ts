@@ -48,8 +48,8 @@ export class RecordHas extends Value {
 
 	@memoizeMethod
 	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
-		return cg.vm.Value.boolFromI32(cg.vm.CplRecord.hasKey(
-			cg.mod.wasm.struct.new([cg.vm.Value.asRecord(this.record.codegen(cg))], cg.vm.heaptype.CplRecord),
+		return cg.vm.Value.boolFromI32(cg.vm.Record.hasKey(
+			cg.vm.Value.asRecord(this.record.codegen(cg)),
 			cg.mod.wasm.i64.const(this.accessor.keyid),
 		));
 	}

@@ -195,8 +195,8 @@ Codegen((TUPLE.HAS `index` `obj`)) := (call $Value.bool-from-i32 (i32.lt_u
 	(array.len (call $Value.as-tuple `Codegen(obj)`))
 ));
 
-Codegen((RECORD.HAS `key` `obj`)) := (call cg.vm.Value.boolFromI32 (call $Cpl-Record.has-key
-	(struct.new $Cpl-Record (call $Value.as-record `Codegen(obj)`))
+Codegen((RECORD.HAS `key` `obj`)) := (call cg.vm.Value.boolFromI32 (call $Record.has-key
+	(call $Value.as-record `Codegen(obj)`)
 	(i64.const `key`)
 ));
 
@@ -205,8 +205,8 @@ Codegen((TUPLE.GET `index` `obj`)) := (array.get
 	(i32.const `index`)
 );
 
-Codegen((RECORD.GET `key` `obj`)) := (call $Cpl-Record.get
-	(struct.new $Cpl-Record (call $Value.as-record `Codegen(obj)`))
+Codegen((RECORD.GET `key` `obj`)) := (call $Record.get
+	(call $Value.as-record `Codegen(obj)`)
 	(i64.const `key`)
 );
 
