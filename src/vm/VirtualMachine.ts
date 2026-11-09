@@ -13,8 +13,6 @@ import {Map as VmMap} from './classes/Map.ts';
 import {Value} from './classes/Value.ts';
 import {Object as VmObject} from './classes/Object.ts';
 import {Class as VmClass} from './classes/Class.ts';
-import {CplString} from './classes/CplString.ts';
-import {CplTuple} from './classes/CplTuple.ts';
 
 
 
@@ -395,18 +393,16 @@ export class VirtualMachine {
 	public readonly util = utils(this);
 	public readonly op   = ops(this);
 
-	public readonly Vect      = new Vect(this);
-	public readonly Property  = new Property(this);
-	public readonly Case      = new Case(this);
-	public readonly Record    = new VmRecord(this);
-	public readonly List      = new List(this);
-	public readonly Dict      = new Dict(this);
-	public readonly Map       = new VmMap(this);
-	public readonly Value     = new Value(this);
-	public readonly Object    = new VmObject(this);
-	public readonly Class     = new VmClass(this);
-	public readonly CplString = new CplString(this);
-	public readonly CplTuple  = new CplTuple(this);
+	public readonly Vect     = new Vect(this);
+	public readonly Property = new Property(this);
+	public readonly Case     = new Case(this);
+	public readonly Record   = new VmRecord(this);
+	public readonly List     = new List(this);
+	public readonly Dict     = new Dict(this);
+	public readonly Map      = new VmMap(this);
+	public readonly Value    = new Value(this);
+	public readonly Object   = new VmObject(this);
+	public readonly Class    = new VmClass(this);
 
 
 	public constructor() {
