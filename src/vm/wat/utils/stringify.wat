@@ -28,19 +28,19 @@
 				(i32.const 0x75) ;; 'u'
 				(i32.const 0x65) ;; 'e'
 			)))))
-			(if (call $Vect.is-int   (local.get $primitive)) (then (return_call $!i64.stringify_s (call $Vect.as-int   (local.get $primitive)))))
-			(if (call $Vect.is-nat   (local.get $primitive)) (then (return_call $!i64.stringify_u (call $Vect.as-nat   (local.get $primitive)))))
-			(if (call $Vect.is-float (local.get $primitive)) (then (return_call $!f64.stringify   (call $Vect.as-float (local.get $primitive)))))
+			(if (call $Vect.is-int   (local.get $primitive)) (then (return (struct.new $Cpl-String (call $!i64.stringify_s (call $Vect.as-int   (local.get $primitive)))))))
+			(if (call $Vect.is-nat   (local.get $primitive)) (then (return (struct.new $Cpl-String (call $!i64.stringify_u (call $Vect.as-nat   (local.get $primitive)))))))
+			(if (call $Vect.is-float (local.get $primitive)) (then (return (struct.new $Cpl-String (call $!f64.stringify   (call $Vect.as-float (local.get $primitive)))))))
 			(unreachable)
 		)
 	)
 	(if
 		(call $Value.is-composite (local.get $value))
 		(then
-			(if (ref.test (ref $Cpl-String) (local.get $composite)) (then (return                         (ref.cast (ref $Cpl-String) (local.get $composite)))))
-			(if (ref.test (ref $Cpl-Tuple)  (local.get $composite)) (then (return_call $!Tuple.stringify  (ref.cast (ref $Cpl-Tuple)  (local.get $composite)))))
-			(if (ref.test (ref $Cpl-Record) (local.get $composite)) (then (return_call $!Record.stringify (ref.cast (ref $Cpl-Record) (local.get $composite)))))
-			(if (ref.test (ref $Object)     (local.get $composite)) (then (return_call $!Object.stringify (ref.cast (ref $Object)     (local.get $composite)))))
+			(if (ref.test (ref $Cpl-String) (local.get $composite)) (then (return                                                                                  (ref.cast (ref $Cpl-String) (local.get $composite)))))
+			(if (ref.test (ref $Cpl-Tuple)  (local.get $composite)) (then (return (struct.new $Cpl-String (call $!Tuple.stringify  (struct.get $Cpl-Tuple  $tuple  (ref.cast (ref $Cpl-Tuple)  (local.get $composite))))))))
+			(if (ref.test (ref $Cpl-Record) (local.get $composite)) (then (return (struct.new $Cpl-String (call $!Record.stringify (struct.get $Cpl-Record $record (ref.cast (ref $Cpl-Record) (local.get $composite))))))))
+			(if (ref.test (ref $Object)     (local.get $composite)) (then (return (struct.new $Cpl-String (call $!Object.stringify                                 (ref.cast (ref $Object)     (local.get $composite)))))))
 		)
 	)
 	(unreachable)
@@ -49,7 +49,7 @@
 
 
 ;; stringify a signed i64 in base ten
-(func $!i64.stringify_s (param $int i64) (result (ref $Cpl-String))
+(func $!i64.stringify_s (param $int i64) (result (ref $String))
 	(local $is-negative i32)
 	(local $copy        i64)
 	(local $rem         i64)
@@ -59,7 +59,7 @@
 
 	(if
 		(i64.eqz (local.get $int))
-		(then (return (struct.new $Cpl-String (array.new_fixed $String 1 (i32.const 0x30))))) ;; UTF8_codeunit('0')
+		(then (return (array.new_fixed $String 1 (i32.const 0x30)))) ;; UTF8_codeunit('0')
 	)
 
 	;; force the copy to be negative to handle the `i64::min_s` overflow case (`-(2 ^ 63)`)
@@ -122,10 +122,10 @@
 		))
 	)
 
-	(struct.new $Cpl-String (local.get $internal))
+	(local.get $internal)
 )
 ;; stringify an unsigned i64 in base ten
-(func $!i64.stringify_u (param $nat i64) (result (ref $Cpl-String))
+(func $!i64.stringify_u (param $nat i64) (result (ref $String))
 	(local $copy     i64)
 	(local $rem      i64)
 	(local $internal (ref $String))
@@ -134,7 +134,7 @@
 
 	(if
 		(i64.eqz (local.get $nat))
-		(then (return (struct.new $Cpl-String (array.new_fixed $String 1 (i32.const 0x30))))) ;; UTF8_codeunit('0')
+		(then (return (array.new_fixed $String 1 (i32.const 0x30)))) ;; UTF8_codeunit('0')
 	)
 
 	(local.set $copy   (local.get $nat))
@@ -171,21 +171,21 @@
 		)
 	)
 
-	(struct.new $Cpl-String (local.get $internal))
+	(local.get $internal)
 )
 ;; stringify an f64 in base ten
-(func $!f64.stringify (param $float f64) (result (ref $Cpl-String))
+(func $!f64.stringify (param $float f64) (result (ref $String))
 	(unreachable) ;; TODO:
 )
-;; stringify a $Cpl-Tuple
-(func $!Tuple.stringify (param $tuple (ref $Cpl-Tuple)) (result (ref $Cpl-String))
+;; stringify a $Tuple
+(func $!Tuple.stringify (param $tuple (ref $Tuple)) (result (ref $String))
 	(unreachable) ;; TODO:
 )
-;; stringify a $Cpl-Record
-(func $!Record.stringify (param $record (ref $Cpl-Record)) (result (ref $Cpl-String))
+;; stringify a $Record
+(func $!Record.stringify (param $record (ref $Record)) (result (ref $String))
 	(unreachable) ;; TODO:
 )
 ;; stringify an $Object
-(func $!Object.stringify (param $object (ref $Object)) (result (ref $Cpl-String))
+(func $!Object.stringify (param $object (ref $Object)) (result (ref $String))
 	(unreachable) ;; TODO:
 )

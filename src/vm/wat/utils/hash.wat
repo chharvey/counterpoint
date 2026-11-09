@@ -17,10 +17,10 @@
 	(if
 		(call $Value.is-composite (local.get $value))
 		(then
-			(if (ref.test (ref $Cpl-String) (local.get $composite)) (then (return_call $!Cpl-String.hash (ref.cast (ref $Cpl-String) (local.get $composite)))))
-			(if (ref.test (ref $Cpl-Tuple)  (local.get $composite)) (then (return_call $!Cpl-Tuple.hash  (ref.cast (ref $Cpl-Tuple)  (local.get $composite)))))
-			(if (ref.test (ref $Cpl-Record) (local.get $composite)) (then (return_call $!Cpl-Record.hash (ref.cast (ref $Cpl-Record) (local.get $composite)))))
-			(if (ref.test (ref $Object)     (local.get $composite)) (then (return_call $!Object.hash     (ref.cast (ref $Object)     (local.get $composite)))))
+			(if (ref.test (ref $Cpl-String) (local.get $composite)) (then (return_call $!String.hash (struct.get $Cpl-String $string (ref.cast (ref $Cpl-String) (local.get $composite))))))
+			(if (ref.test (ref $Cpl-Tuple)  (local.get $composite)) (then (return_call $!Tuple.hash  (struct.get $Cpl-Tuple  $tuple  (ref.cast (ref $Cpl-Tuple)  (local.get $composite))))))
+			(if (ref.test (ref $Cpl-Record) (local.get $composite)) (then (return_call $!Record.hash (struct.get $Cpl-Record $record (ref.cast (ref $Cpl-Record) (local.get $composite))))))
+			(if (ref.test (ref $Object)     (local.get $composite)) (then (return_call $!Object.hash                                 (ref.cast (ref $Object)     (local.get $composite)))))
 		)
 	)
 	(unreachable)
@@ -72,26 +72,24 @@
 
 
 
-;; hash a $Cpl-String.
+;; hash a $String.
 ;; ```
 ;; [SEED, ...$string.codeunits].reduce((a, b) => (a xor i64.extend_i32_u(b)) * PRIME);
 ;; ```
-(func $!Cpl-String.hash (param $string (ref $Cpl-String)) (result i64)
-	(local $internal (ref $String))
-	(local $result   i64)
-	(local $i        i32)
+(func $!String.hash (param (ref $String)) (result i64)
+	(local $result i64)
+	(local $i      i32)
 
-	(local.set $internal (struct.get $Cpl-String $string (local.get $string)))
-	(local.set $result   (global.get $SEED))
+	(local.set $result (global.get $SEED))
 
 	(block $exit
 		(local.set $i (i32.const 0))
 		(loop $repeat
-			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $internal))))
+			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get 0))))
 			(local.set $result (i64.mul
 				(i64.xor
 					(local.get $result)
-					(i64.extend_i32_u (array.get_u $String (local.get $internal) (local.get $i)))
+					(i64.extend_i32_u (array.get_u $String (local.get 0) (local.get $i)))
 				)
 				(global.get $PRIME)
 			))
@@ -104,26 +102,24 @@
 
 
 
-;; hash a $Cpl-Tuple.
+;; hash a $Tuple.
 ;; ```
 ;; [SEED, ...$tuple.values()].reduce((a, b) => (a xor hash(b)) * PRIME);
 ;; ```
-(func $!Cpl-Tuple.hash (param $tuple (ref $Cpl-Tuple)) (result i64)
-	(local $internal (ref $Tuple))
-	(local $result   i64)
-	(local $i        i32)
+(func $!Tuple.hash (param $tuple (ref $Tuple)) (result i64)
+	(local $result i64)
+	(local $i      i32)
 
-	(local.set $internal (struct.get $Cpl-Tuple $tuple (local.get $tuple)))
-	(local.set $result   (global.get $SEED))
+	(local.set $result (global.get $SEED))
 
 	(block $exit
 		(local.set $i (i32.const 0))
 		(loop $repeat
-			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $internal))))
+			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get 0))))
 			(local.set $result (i64.mul
 				(i64.xor
 					(local.get $result)
-					(call $Value.hash (array.get $Tuple (local.get $internal) (local.get $i)))
+					(call $Value.hash (array.get $Tuple (local.get 0) (local.get $i)))
 				)
 				(global.get $PRIME)
 			))
@@ -136,28 +132,26 @@
 
 
 
-;; hash a $Cpl-Record.
+;; hash a $Record.
 ;; Similar to `$!Tuple.hash` except that we don’t multiply by PRIME until the very end.
 ;; Doing so preserves commutativity, which is necessary for Records,
 ;; because keys may be inserted in any order.
 ;; ```
 ;; [SEED, ...$record.entries()].reduce((a, b) => a xor hash(b)) * PRIME;
 ;; ```
-(func $!Cpl-Record.hash (param $record (ref $Cpl-Record)) (result i64)
-	(local $internal (ref $Record))
-	(local $result   i64)
-	(local $i        i32)
+(func $!Record.hash (param $record (ref $Record)) (result i64)
+	(local $result i64)
+	(local $i      i32)
 
-	(local.set $internal (struct.get $Cpl-Record $record (local.get $record)))
-	(local.set $result   (global.get $SEED))
+	(local.set $result (global.get $SEED))
 
 	(block $exit
 		(local.set $i (i32.const 0))
 		(loop $repeat
-			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $internal))))
+			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get 0))))
 			(local.set $result (i64.xor
 				(local.get $result)
-				(call $!Property.hash (array.get $Record (local.get $internal) (local.get $i)))
+				(call $!Property.hash (array.get $Record (local.get 0) (local.get $i)))
 			))
 			(local.set $i (i32.add (local.get $i) (i32.const 1)))
 			(br $repeat)

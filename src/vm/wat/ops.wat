@@ -684,9 +684,9 @@
 				(ref.test (ref $Cpl-String) (local.get $ref0))
 				(ref.test (ref $Cpl-String) (local.get $ref1))
 			)
-			(then (br $exit (call $!Cpl-String.identical
-				(ref.cast (ref $Cpl-String) (local.get $ref0))
-				(ref.cast (ref $Cpl-String) (local.get $ref1))
+			(then (br $exit (call $!String.identical
+				(struct.get $Cpl-String $string (ref.cast (ref $Cpl-String) (local.get $ref0)))
+				(struct.get $Cpl-String $string (ref.cast (ref $Cpl-String) (local.get $ref1)))
 			)))
 		)
 		(if
@@ -694,9 +694,9 @@
 				(ref.test (ref $Cpl-Tuple) (local.get $ref0))
 				(ref.test (ref $Cpl-Tuple) (local.get $ref1))
 			)
-			(then (br $exit (call $!Cpl-Tuple.identical
-				(ref.cast (ref $Cpl-Tuple) (local.get $ref0))
-				(ref.cast (ref $Cpl-Tuple) (local.get $ref1))
+			(then (br $exit (call $!Tuple.identical
+				(struct.get $Cpl-Tuple $tuple (ref.cast (ref $Cpl-Tuple) (local.get $ref0)))
+				(struct.get $Cpl-Tuple $tuple (ref.cast (ref $Cpl-Tuple) (local.get $ref1)))
 			)))
 		)
 		(if
@@ -704,9 +704,9 @@
 				(ref.test (ref $Cpl-Record) (local.get $ref0))
 				(ref.test (ref $Cpl-Record) (local.get $ref1))
 			)
-			(then (br $exit (call $!Cpl-Record.identical
-				(ref.cast (ref $Cpl-Record) (local.get $ref0))
-				(ref.cast (ref $Cpl-Record) (local.get $ref1))
+			(then (br $exit (call $!Record.identical
+				(struct.get $Cpl-Record $record (ref.cast (ref $Cpl-Record) (local.get $ref0)))
+				(struct.get $Cpl-Record $record (ref.cast (ref $Cpl-Record) (local.get $ref1)))
 			)))
 		)
 		(if
@@ -724,27 +724,22 @@
 )
 ;; Returns whether two strings are identical by value —
 ;; whether they contain the exact same sequence of code units.
-(func $!Cpl-String.identical (param (ref $Cpl-String) (ref $Cpl-String)) (result i32)
-	(local $internal0 (ref $String))
-	(local $internal1 (ref $String))
-	(local $i         i32)
-
-	(local.set $internal0 (struct.get $Cpl-String $string (local.get 0)))
-	(local.set $internal1 (struct.get $Cpl-String $string (local.get 1)))
+(func $!String.identical (param (ref $String) (ref $String)) (result i32)
+	(local $i i32)
 
 	(if
-		(i32.ne (array.len (local.get $internal0)) (array.len (local.get $internal1)))
+		(i32.ne (array.len (local.get 0)) (array.len (local.get 1)))
 		(then (return (i32.const 0)))
 	)
 
 	(block $exit
 		(local.set $i (i32.const 0))
 		(loop $repeat
-			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $internal0))))
+			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get 0))))
 			(if
 				(i32.ne
-					(array.get $String (local.get $internal0) (local.get $i))
-					(array.get $String (local.get $internal1) (local.get $i))
+					(array.get $String (local.get 0) (local.get $i))
+					(array.get $String (local.get 1) (local.get $i))
 				)
 				(then (return (i32.const 0)))
 			)
@@ -756,27 +751,22 @@
 )
 ;; Returns whether two tuples are identical by value —
 ;; whether they have identical items at the same indices.
-(func $!Cpl-Tuple.identical (param (ref $Cpl-Tuple) (ref $Cpl-Tuple)) (result i32)
-	(local $internal0 (ref $Tuple))
-	(local $internal1 (ref $Tuple))
-	(local $i         i32)
-
-	(local.set $internal0 (struct.get $Cpl-Tuple $tuple (local.get 0)))
-	(local.set $internal1 (struct.get $Cpl-Tuple $tuple (local.get 1)))
+(func $!Tuple.identical (param (ref $Tuple) (ref $Tuple)) (result i32)
+	(local $i i32)
 
 	(if
-		(i32.ne (array.len (local.get $internal0)) (array.len (local.get $internal1)))
+		(i32.ne (array.len (local.get 0)) (array.len (local.get 1)))
 		(then (return (i32.const 0)))
 	)
 
 	(block $exit
 		(local.set $i (i32.const 0))
 		(loop $repeat
-			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $internal0))))
+			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get 0))))
 			(if
 				(i32.eqz (call $Value.bool-to-i32 (call $op:id
-					(array.get $Tuple (local.get $internal0) (local.get $i))
-					(array.get $Tuple (local.get $internal1) (local.get $i))
+					(array.get $Tuple (local.get 0) (local.get $i))
+					(array.get $Tuple (local.get 1) (local.get $i))
 				)))
 				(then (return (i32.const 0)))
 			)
@@ -788,35 +778,33 @@
 )
 ;; Returns whether two records are identical by value —
 ;; whether they have identical values at the same keys.
-(func $!Cpl-Record.identical (param (ref $Cpl-Record) (ref $Cpl-Record)) (result i32)
-	(local $internal0 (ref $Record))
-	(local $internal1 (ref $Record))
-	(local $i         i32)
-	(local $prop      (ref $Property))
-	(local $key       i64)
+(func $!Record.identical (param (ref $Record) (ref $Record)) (result i32)
+	(local $i    i32)
+	(local $prop (ref $Property))
+	(local $key  i64)
 
-	(local.set $internal0 (struct.get $Cpl-Record $record (local.get 0)))
-	(local.set $internal1 (struct.get $Cpl-Record $record (local.get 1)))
+	(local $cpl-record-1 (ref $Cpl-Record))
+	(local.set $cpl-record-1 (struct.new $Cpl-Record (local.get 1)))
 
 	(if
-		(i32.ne (array.len (local.get $internal0)) (array.len (local.get $internal1)))
+		(i32.ne (array.len (local.get 0)) (array.len (local.get 1)))
 		(then (return (i32.const 0)))
 	)
 
 	(block $exit
 		(local.set $i (i32.const 0))
 		(loop $repeat
-			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $internal0))))
-			(local.set $prop (array.get $Record (local.get $internal0) (local.get $i)))
+			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get 0))))
+			(local.set $prop (array.get $Record (local.get 0) (local.get $i)))
 			(local.set $key  (struct.get $Property $key (local.get $prop)))
 			(if
-				(i32.eqz (call $Cpl-Record.has-key (local.get 1) (local.get $key)))
+				(i32.eqz (call $Cpl-Record.has-key (local.get $cpl-record-1) (local.get $key)))
 				(then (return (i32.const 0)))
 			)
 			(if
 				(i32.eqz (call $Value.bool-to-i32 (call $op:id
 					(struct.get $Property $val (local.get $prop))
-					(call $Cpl-Record.get (local.get 1) (local.get $key))
+					(call $Cpl-Record.get (local.get $cpl-record-1) (local.get $key))
 				)))
 				(then (return (i32.const 0)))
 			)
@@ -904,9 +892,9 @@
 				(ref.test (ref $Cpl-String) (local.get $ref0))
 				(ref.test (ref $Cpl-String) (local.get $ref1))
 			)
-			(then (br $exit (call $!Cpl-String.equal
-				(ref.cast (ref $Cpl-String) (local.get $ref0))
-				(ref.cast (ref $Cpl-String) (local.get $ref1))
+			(then (br $exit (call $!String.equal
+				(struct.get $Cpl-String $string (ref.cast (ref $Cpl-String) (local.get $ref0)))
+				(struct.get $Cpl-String $string (ref.cast (ref $Cpl-String) (local.get $ref1)))
 			)))
 		)
 		(if
@@ -914,9 +902,9 @@
 				(ref.test (ref $Cpl-Tuple) (local.get $ref0))
 				(ref.test (ref $Cpl-Tuple) (local.get $ref1))
 			)
-			(then (br $exit (call $!Cpl-Tuple.equal
-				(ref.cast (ref $Cpl-Tuple) (local.get $ref0))
-				(ref.cast (ref $Cpl-Tuple) (local.get $ref1))
+			(then (br $exit (call $!Tuple.equal
+				(struct.get $Cpl-Tuple $tuple (ref.cast (ref $Cpl-Tuple) (local.get $ref0)))
+				(struct.get $Cpl-Tuple $tuple (ref.cast (ref $Cpl-Tuple) (local.get $ref1)))
 			)))
 		)
 		(if
@@ -924,9 +912,9 @@
 				(ref.test (ref $Cpl-Record) (local.get $ref0))
 				(ref.test (ref $Cpl-Record) (local.get $ref1))
 			)
-			(then (br $exit (call $!Cpl-Record.equal
-				(ref.cast (ref $Cpl-Record) (local.get $ref0))
-				(ref.cast (ref $Cpl-Record) (local.get $ref1))
+			(then (br $exit (call $!Record.equal
+				(struct.get $Cpl-Record $record (ref.cast (ref $Cpl-Record) (local.get $ref0)))
+				(struct.get $Cpl-Record $record (ref.cast (ref $Cpl-Record) (local.get $ref1)))
 			)))
 		)
 		(if
@@ -1017,32 +1005,27 @@
 )
 ;; Returns whether two strings are equal —
 ;; strings are equal if and only if they are identical.
-(func $!Cpl-String.equal (param (ref $Cpl-String) (ref $Cpl-String)) (result i32)
-	(call $!Cpl-String.identical (local.get 0) (local.get 1))
+(func $!String.equal (param (ref $String) (ref $String)) (result i32)
+	(call $!String.identical (local.get 0) (local.get 1))
 )
 ;; Returns whether two tuples are equal —
 ;; whether they have equal items at the same indices.
-(func $!Cpl-Tuple.equal (param (ref $Cpl-Tuple) (ref $Cpl-Tuple)) (result i32)
-	(local $internal0 (ref $Tuple))
-	(local $internal1 (ref $Tuple))
-	(local $i         i32)
-
-	(local.set $internal0 (struct.get $Cpl-Tuple $tuple (local.get 0)))
-	(local.set $internal1 (struct.get $Cpl-Tuple $tuple (local.get 1)))
+(func $!Tuple.equal (param (ref $Tuple) (ref $Tuple)) (result i32)
+	(local $i i32)
 
 	(if
-		(i32.ne (array.len (local.get $internal0)) (array.len (local.get $internal1)))
+		(i32.ne (array.len (local.get 0)) (array.len (local.get 1)))
 		(then (return (i32.const 0)))
 	)
 
 	(block $exit
 		(local.set $i (i32.const 0))
 		(loop $repeat
-			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $internal0))))
+			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get 0))))
 			(if
-				(i32.eqz (call $Value.bool-to-i32 (call $op:eq
-					(array.get $Tuple (local.get $internal0) (local.get $i))
-					(array.get $Tuple (local.get $internal1) (local.get $i))
+				(i32.eqz (call $Value.bool-to-i32 (call $op:eq ;; TODO: use `$Value.relop` and get rid of the `.identical` version
+					(array.get $Tuple (local.get 0) (local.get $i))
+					(array.get $Tuple (local.get 1) (local.get $i))
 				)))
 				(then (return (i32.const 0)))
 			)
@@ -1054,35 +1037,33 @@
 )
 ;; Returns whether two records are equal —
 ;; whether they have equal values at the same keys.
-(func $!Cpl-Record.equal (param (ref $Cpl-Record) (ref $Cpl-Record)) (result i32)
-	(local $internal0 (ref $Record))
-	(local $internal1 (ref $Record))
-	(local $i         i32)
-	(local $prop      (ref $Property))
-	(local $key       i64)
+(func $!Record.equal (param (ref $Record) (ref $Record)) (result i32)
+	(local $i    i32)
+	(local $prop (ref $Property))
+	(local $key  i64)
 
-	(local.set $internal0 (struct.get $Cpl-Record $record (local.get 0)))
-	(local.set $internal1 (struct.get $Cpl-Record $record (local.get 1)))
+	(local $cpl-record-1 (ref $Cpl-Record))
+	(local.set $cpl-record-1 (struct.new $Cpl-Record (local.get 1)))
 
 	(if
-		(i32.ne (array.len (local.get $internal0)) (array.len (local.get $internal1)))
+		(i32.ne (array.len (local.get 0)) (array.len (local.get 1)))
 		(then (return (i32.const 0)))
 	)
 
 	(block $exit
 		(local.set $i (i32.const 0))
 		(loop $repeat
-			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $internal0))))
-			(local.set $prop (array.get $Record (local.get $internal0) (local.get $i)))
+			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get 0))))
+			(local.set $prop (array.get $Record (local.get 0) (local.get $i)))
 			(local.set $key  (struct.get $Property $key (local.get $prop)))
 			(if
-				(i32.eqz (call $Cpl-Record.has-key (local.get 1) (local.get $key)))
+				(i32.eqz (call $Cpl-Record.has-key (local.get $cpl-record-1) (local.get $key)))
 				(then (return (i32.const 0)))
 			)
 			(if
-				(i32.eqz (call $Value.bool-to-i32 (call $op:eq
+				(i32.eqz (call $Value.bool-to-i32 (call $op:eq ;; TODO: use `$Value.relop` and get rid of the `.identical` version
 					(struct.get $Property $val (local.get $prop))
-					(call $Cpl-Record.get (local.get 1) (local.get $key))
+					(call $Cpl-Record.get (local.get $cpl-record-1) (local.get $key))
 				)))
 				(then (return (i32.const 0)))
 			)
@@ -1324,9 +1305,9 @@
 
 	;; if messages are unequal, return false
 	(if
-		(i32.eqz (call $!Cpl-String.equal
-			(local.get $message0)
-			(local.get $message1)
+		(i32.eqz (call $!String.equal
+			(struct.get $Cpl-String $string (local.get $message0))
+			(struct.get $Cpl-String $string (local.get $message1))
 		))
 		(then (return (i32.const 0)))
 	)
