@@ -44,12 +44,6 @@
 
 
 
-(func $Value.is-composite (export "Value#isComposite") (param $value (ref $Value)) (result i32)
-	(i32.eq (struct.get $Value $tag (local.get $value)) (i32.const 2))
-)
-
-
-
 (func $Value.bool-to-i32 (export "Value#boolToI32") (param $value (ref $Value)) (result i32)
 	(call $Vect.is-true (call $Value.as-primitive (local.get $value)))
 )

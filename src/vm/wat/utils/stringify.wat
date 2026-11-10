@@ -34,15 +34,10 @@
 			(unreachable)
 		)
 	)
-	(if
-		(call $Value.is-composite (local.get $value))
-		(then
-			(if (ref.test (ref $Cpl-String) (local.get $composite)) (then (return                         (struct.get $Cpl-String $string (ref.cast (ref $Cpl-String) (local.get $composite))))))
-			(if (ref.test (ref $Cpl-Tuple)  (local.get $composite)) (then (return_call $!Tuple.stringify  (struct.get $Cpl-Tuple  $tuple  (ref.cast (ref $Cpl-Tuple)  (local.get $composite))))))
-			(if (ref.test (ref $Cpl-Record) (local.get $composite)) (then (return_call $!Record.stringify (struct.get $Cpl-Record $record (ref.cast (ref $Cpl-Record) (local.get $composite))))))
-			(if (ref.test (ref $Object)     (local.get $composite)) (then (return_call $!Object.stringify                                 (ref.cast (ref $Object)     (local.get $composite)))))
-		)
-	)
+	(if (ref.test (ref $Cpl-String) (local.get $composite)) (then (return                         (call $Value.as-string  (local.get $value)))))
+	(if (ref.test (ref $Cpl-Tuple)  (local.get $composite)) (then (return_call $!Tuple.stringify  (call $Value.as-tuple   (local.get $value)))))
+	(if (ref.test (ref $Cpl-Record) (local.get $composite)) (then (return_call $!Record.stringify (call $Value.as-record  (local.get $value)))))
+	(if (ref.test (ref $Object)     (local.get $composite)) (then (return_call $!Object.stringify (ref.cast (ref $Object) (local.get $composite)))))
 	(unreachable)
 )
 

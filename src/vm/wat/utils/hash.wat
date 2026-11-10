@@ -10,19 +10,11 @@
 
 	(local.set $composite (struct.get $Value $composite (local.get $value)))
 
-	(if
-		(call $Value.is-primitive (local.get $value))
-		(then (return_call $!v128.hash (call $Value.as-primitive (local.get $value))))
-	)
-	(if
-		(call $Value.is-composite (local.get $value))
-		(then
-			(if (ref.test (ref $Cpl-String) (local.get $composite)) (then (return_call $!String.hash (struct.get $Cpl-String $string (ref.cast (ref $Cpl-String) (local.get $composite))))))
-			(if (ref.test (ref $Cpl-Tuple)  (local.get $composite)) (then (return_call $!Tuple.hash  (struct.get $Cpl-Tuple  $tuple  (ref.cast (ref $Cpl-Tuple)  (local.get $composite))))))
-			(if (ref.test (ref $Cpl-Record) (local.get $composite)) (then (return_call $!Record.hash (struct.get $Cpl-Record $record (ref.cast (ref $Cpl-Record) (local.get $composite))))))
-			(if (ref.test (ref $Object)     (local.get $composite)) (then (return_call $!Object.hash                                 (ref.cast (ref $Object)     (local.get $composite)))))
-		)
-	)
+	(if (ref.test (ref $Cpl-Primitive) (local.get $composite)) (then (return_call $!v128.hash   (call $Value.as-primitive (local.get $value)))))
+	(if (ref.test (ref $Cpl-String)    (local.get $composite)) (then (return_call $!String.hash (call $Value.as-string    (local.get $value)))))
+	(if (ref.test (ref $Cpl-Tuple)     (local.get $composite)) (then (return_call $!Tuple.hash  (call $Value.as-tuple     (local.get $value)))))
+	(if (ref.test (ref $Cpl-Record)    (local.get $composite)) (then (return_call $!Record.hash (call $Value.as-record    (local.get $value)))))
+	(if (ref.test (ref $Object)        (local.get $composite)) (then (return_call $!Object.hash (ref.cast (ref $Object)   (local.get $composite)))))
 	(unreachable)
 )
 
