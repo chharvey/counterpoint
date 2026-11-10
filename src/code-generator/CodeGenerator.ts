@@ -420,9 +420,9 @@ export class CodeGenerator {
 	 * @return        `(struct.new $Exception <message> <cause?>)`
 	 */
 	public codegenException(message: binaryen.ExpressionRef /* (ref $Cpl-String) */, cause?: binaryen.ExpressionRef /* (ref $Exception) */): binaryen.ExpressionRef /* (ref $Exception) */ {
-		const {vm: {heaptype, Object: VmObject}, mod: {wasm}} = this;
+		const {vm: {heaptype, Object: VmObject, Class: VmClass}, mod: {wasm}} = this;
 		return wasm.struct.new([
-			wasm.ref.null(heaptype.Class),
+			VmClass.EXCEPTION,
 			wasm.ref.null(heaptype.Dict),
 			VmObject.ctrPlusPlus(),
 			message,
@@ -436,12 +436,17 @@ export class CodeGenerator {
 	 * @return      `(struct.new $Maybe <value?>)`
 	 */
 	public codegenMaybe(value?: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Maybe) */ {
-		const {vm: {heaptype, Object: VmObject}, mod: {wasm}} = this;
-		return wasm.struct.new([
-			wasm.ref.null(heaptype.Class),
+		const {vm: {heaptype, Object: VmObject, Class: VmClass}, mod: {wasm}} = this;
+		return value === undefined ? wasm.struct.new([
+			VmClass.NONE,
 			wasm.ref.null(heaptype.Dict),
 			VmObject.ctrPlusPlus(),
-			value ?? wasm.ref.null(heaptype.Value),
+			wasm.ref.null(heaptype.Value),
+		], heaptype.Maybe) : wasm.struct.new([
+			VmClass.SOME,
+			wasm.ref.null(heaptype.Dict),
+			VmObject.ctrPlusPlus(),
+			value,
 		], heaptype.Maybe);
 	}
 
@@ -454,15 +459,15 @@ export class CodeGenerator {
 	 * @return         `(struct.new $Result <value?> <reason?>)`
 	 */
 	public codegenResult(is_ok: boolean, argument: binaryen.ExpressionRef /* (ref $Value) | (ref $Exception) */): binaryen.ExpressionRef /* (ref $Result) */ {
-		const {vm: {heaptype, Object: VmObject}, mod: {wasm}} = this;
+		const {vm: {heaptype, Object: VmObject, Class: VmClass}, mod: {wasm}} = this;
 		return wasm.struct.new(is_ok ? [
-			wasm.ref.null(heaptype.Class),
+			VmClass.OK,
 			wasm.ref.null(heaptype.Dict),
 			VmObject.ctrPlusPlus(),
 			argument,
 			wasm.ref.null(heaptype.Exception),
 		] : [
-			wasm.ref.null(heaptype.Class),
+			VmClass.FAIL,
 			wasm.ref.null(heaptype.Dict),
 			VmObject.ctrPlusPlus(),
 			wasm.ref.null(heaptype.Value),
@@ -476,9 +481,9 @@ export class CodeGenerator {
 	 * @return      `(struct.new $Function <arity>)`
 	 */
 	public codegenFunction(arity: bigint): binaryen.ExpressionRef /* (ref $Function) */ {
-		const {vm: {heaptype, Object: VmObject}, mod: {wasm}} = this;
+		const {vm: {heaptype, Object: VmObject, Class: VmClass}, mod: {wasm}} = this;
 		return wasm.struct.new([
-			wasm.ref.null(heaptype.Class),
+			VmClass.FUNCTION,
 			wasm.ref.null(heaptype.Dict),
 			VmObject.ctrPlusPlus(),
 			wasm.i32.const(Number(arity)),

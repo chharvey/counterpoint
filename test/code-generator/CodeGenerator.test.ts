@@ -296,7 +296,7 @@ test.suite('CodeGenerator', () => {
 		test.test('#codegenException', () => {
 			const message:   binaryen.ExpressionRef /* (ref $Cpl-String) */ = cg.vm.Value.cast(genConst(cg, 'message'), cg.vm.reftype.CplString);
 			const expected1: binaryen.ExpressionRef /* (ref $Exception) */  = wasm.struct.new([
-				cg.mod.wasm.ref.null(cg.vm.heaptype.Class),
+				cg.vm.Class.EXCEPTION,
 				wasm.ref.null(cg.vm.heaptype.Dict),
 				cg.vm.Object.ctrPlusPlus(),
 				message,
@@ -309,7 +309,7 @@ test.suite('CodeGenerator', () => {
 			return assertEqualBins(
 				cg.codegenException(message, expected1),
 				wasm.struct.new([
-					cg.mod.wasm.ref.null(cg.vm.heaptype.Class),
+					cg.vm.Class.EXCEPTION,
 					wasm.ref.null(cg.vm.heaptype.Dict),
 					cg.vm.Object.ctrPlusPlus(),
 					message,
@@ -322,7 +322,7 @@ test.suite('CodeGenerator', () => {
 			assertEqualBins(
 				cg.codegenMaybe(),
 				wasm.struct.new([
-					cg.mod.wasm.ref.null(cg.vm.heaptype.Class),
+					cg.vm.Class.NONE,
 					wasm.ref.null(cg.vm.heaptype.Dict),
 					cg.vm.Object.ctrPlusPlus(),
 					wasm.ref.null(cg.vm.heaptype.Value),
@@ -331,7 +331,7 @@ test.suite('CodeGenerator', () => {
 			return assertEqualBins(
 				cg.codegenMaybe(genConst(cg, 42)),
 				wasm.struct.new([
-					cg.mod.wasm.ref.null(cg.vm.heaptype.Class),
+					cg.vm.Class.SOME,
 					wasm.ref.null(cg.vm.heaptype.Dict),
 					cg.vm.Object.ctrPlusPlus(),
 					genConst(cg, 42),
@@ -345,7 +345,7 @@ test.suite('CodeGenerator', () => {
 			assertEqualBins(
 				cg.codegenResult(false, excp),
 				wasm.struct.new([
-					cg.mod.wasm.ref.null(cg.vm.heaptype.Class),
+					cg.vm.Class.FAIL,
 					wasm.ref.null(cg.vm.heaptype.Dict),
 					cg.vm.Object.ctrPlusPlus(),
 					wasm.ref.null(cg.vm.heaptype.Value),
@@ -355,7 +355,7 @@ test.suite('CodeGenerator', () => {
 			return assertEqualBins(
 				cg.codegenResult(true, value),
 				wasm.struct.new([
-					cg.mod.wasm.ref.null(cg.vm.heaptype.Class),
+					cg.vm.Class.OK,
 					wasm.ref.null(cg.vm.heaptype.Dict),
 					cg.vm.Object.ctrPlusPlus(),
 					value,
@@ -368,7 +368,7 @@ test.suite('CodeGenerator', () => {
 			assertEqualBins(
 				cg.codegenFunction(3n),
 				wasm.struct.new([
-					cg.mod.wasm.ref.null(cg.vm.heaptype.Class),
+					cg.vm.Class.FUNCTION,
 					wasm.ref.null(cg.vm.heaptype.Dict),
 					cg.vm.Object.ctrPlusPlus(),
 					wasm.i32.const(3),

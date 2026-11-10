@@ -135,7 +135,7 @@ Codegen((OBJECT.NEW `true`)) := (call $Value.new-composite (struct.new $Class
 
 Codegen((EXCP.NEW `message`)) := (call $Value.new-newComposite
 	(struct.new $Exception
-		(ref.null $Class)
+		(global.get $Class.EXCEPTION)
 		(ref.null $Dict)
 		(call $Object.ctr-plus-plus)
 		(ref.cast (ref $Cpl-String) (struct.get $Value $composite `Codegen(message)`))
@@ -143,7 +143,7 @@ Codegen((EXCP.NEW `message`)) := (call $Value.new-newComposite
 );
 Codegen((EXCP.NEW `message` `cause`)) := (call $Value.new-newComposite
 	(struct.new $Exception
-		(ref.null $Class)
+		(global.get $Class.EXCEPTION)
 		(ref.null $Dict)
 		(call $Object.ctr-plus-plus)
 		(ref.cast (ref $Cpl-String) (struct.get $Value $composite `Codegen(message)`))
@@ -153,7 +153,7 @@ Codegen((EXCP.NEW `message` `cause`)) := (call $Value.new-newComposite
 
 Codegen((MAYBE.NEW)) := (call $Value.new-composite
 	(struct.new $Maybe
-		(ref.null $Class)
+		(global.get $Class.NONE)
 		(ref.null $Dict)
 		(call $Object.ctr-plus-plus)
 		(ref.null $Value)
@@ -161,7 +161,7 @@ Codegen((MAYBE.NEW)) := (call $Value.new-composite
 );
 Codegen((MAYBE.NEW `value`)) := (call $Value.new-composite
 	(struct.new $Maybe
-		(ref.null $Class)
+		(global.get $Class.SOME)
 		(ref.null $Dict)
 		(call $Object.ctr-plus-plus)
 		`Codegen(value)`
@@ -170,7 +170,7 @@ Codegen((MAYBE.NEW `value`)) := (call $Value.new-composite
 
 Codegen((RESULT.NEW nil `excp`)) := (call $Value.new-composite
 	(struct.new $Result
-		(ref.null $Class)
+		(global.get $Class.FAIL)
 		(ref.null $Dict)
 		(call $Object.ctr-plus-plus)
 		(ref.null $Value)
@@ -179,7 +179,7 @@ Codegen((RESULT.NEW nil `excp`)) := (call $Value.new-composite
 );
 Codegen((RESULT.NEW `value` nil)) := (call $Value.new-composite
 	(struct.new $Result
-		(ref.null $Class)
+		(global.get $Class.OK)
 		(ref.null $Dict)
 		(call $Object.ctr-plus-plus)
 		`Codegen(value)`
@@ -344,7 +344,7 @@ Codegen((EQ `v0` `v1`)) := (call $op:eq `Codegen(v0)` `Codegen(v1)`);
 
 Codegen((LAMBDA `name` `arity` `source`)) := (call $Value.new-composite
 	(struct.new $Function
-		(ref.null $Class)
+		(global.get $Class.FUNCTION)
 		(ref.null $Dict)
 		(call $Object.ctr-plus-plus)
 		(i32.const `arity`)
