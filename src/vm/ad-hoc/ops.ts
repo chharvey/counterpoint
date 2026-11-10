@@ -24,7 +24,7 @@ export function ops(vm: VirtualMachine) {
 					['op::negate',        {name: 'op:negate',         param: reftype.Value,  result: reftype.Value}],
 					['op::unwrapMaybe',   {name: 'op:unwrap-maybe',   param: reftype.Value,  result: reftype.Value}],
 					['op::unwrapResult',  {name: 'op:unwrap-result',  param: reftype.Value,  result: reftype.Value}],
-					['op::extractResult', {name: 'op:extract-result', param: reftype.Value,  result: reftype.Value}],
+					['op::extractResult', {name: 'op:extract-result', param: reftype.Value,  result: reftype.Exception}],
 					['op::isInt',         {name: 'op:is-int',         param: reftype.Value,  result: reftype.Value}],
 					['op::isNat',         {name: 'op:is-nat',         param: reftype.Value,  result: reftype.Value}],
 					['op::isFloat',       {name: 'op:is-float',       param: reftype.Value,  result: reftype.Value}],
@@ -134,8 +134,8 @@ export function ops(vm: VirtualMachine) {
 		),
 
 		/** Return the failure reason of the given `Result` if it exists, else trap. */
-		extractResult: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
-			vm.mod.wasm.call('op:extract-result', [param0], vm.reftype.Value)
+		extractResult: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Exception) */ => (
+			vm.mod.wasm.call('op:extract-result', [param0], vm.reftype.Exception)
 		),
 
 		/** Is the value a primitive holding an int? */

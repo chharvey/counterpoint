@@ -107,13 +107,13 @@
 		(else (ref.as_non_null (local.get $rval)))
 	)
 )
-(func $op:extract-result (export "op::extractResult") (param $value (ref $Value)) (result (ref $Value))
+(func $op:extract-result (export "op::extractResult") (param $value (ref $Value)) (result (ref $Exception))
 	(local $reason (ref null $Exception))
 	(local.set $reason (struct.get $Result $reason (ref.cast (ref $Result) (local.get $value))))
-	(if
+	(if (result (ref $Exception))
 		(ref.is_null (local.get $reason))
 		(then (unreachable))
-		(else (return_call $Value.new-composite (ref.as_non_null (local.get $reason))))
+		(else (ref.as_non_null (local.get $reason)))
 	)
 )
 

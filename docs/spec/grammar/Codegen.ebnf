@@ -13,7 +13,7 @@ Codegen((STR.CONST `v`)) := (call $Value.from-string
 	(array.new_fixed $String `v.data.map("(i32.const `v.data[i]`)")`)
 );
 
-Codegen((GET `id ::= CoreLibName`)) := (call $Value.new-composite (global.get ‹index›));
+Codegen((GET `id ::= CoreLibName`)) := (global.get ‹index›);
 Codegen((GET `id`)) := (local.get ‹index›);
 
 Codegen((STR.TEMPLATE `strings`)) := (block (result (ref $Value))
@@ -117,74 +117,62 @@ Codegen((MAP.NEW `pairs`)) := (call $Value.from-map
 	)
 );
 
-Codegen((OBJECT.NEW `false` `class`)) := (call $Value.new-composite (struct.new $Object
+Codegen((OBJECT.NEW `false` `class`)) := (struct.new $Object
 	(ref.cast (ref $Class) `Codegen(class)`)
 	(ref.null $Dict)
 	(call $Object.ctr-plus-plus)
-));
-Codegen((OBJECT.NEW `true` `class`)) := (call $Value.new-composite (struct.new $Class
+);
+Codegen((OBJECT.NEW `true` `class`)) := (struct.new $Class
 	(ref.cast (ref $Class) `Codegen(class)`)
 	(ref.null $Dict)
 	(call $Object.ctr-plus-plus)
-));
-Codegen((OBJECT.NEW `true`)) := (call $Value.new-composite (struct.new $Class
+);
+Codegen((OBJECT.NEW `true`)) := (struct.new $Class
 	(ref.null $Class)
 	(ref.null $Dict)
 	(call $Object.ctr-plus-plus)
-));
-
-Codegen((EXCP.NEW `message`)) := (call $Value.new-newComposite
-	(struct.new $Exception
-		(global.get $Class.EXCEPTION)
-		(ref.null $Dict)
-		(call $Object.ctr-plus-plus)
-		(ref.cast (ref $Cpl-String) `Codegen(message)`)
-	)
-);
-Codegen((EXCP.NEW `message` `cause`)) := (call $Value.new-newComposite
-	(struct.new $Exception
-		(global.get $Class.EXCEPTION)
-		(ref.null $Dict)
-		(call $Object.ctr-plus-plus)
-		(ref.cast (ref $Cpl-String) `Codegen(message)`)
-		(ref.cast (ref $Exception)  `Codegen(cause)`)
-	)
 );
 
-Codegen((MAYBE.NEW)) := (call $Value.new-composite
-	(struct.new $Maybe
-		(global.get $Class.NONE)
-		(ref.null $Dict)
-		(call $Object.ctr-plus-plus)
-		(ref.null $Value)
-	)
+Codegen((EXCP.NEW `message`)) := (struct.new $Exception
+	(global.get $Class.EXCEPTION)
+	(ref.null $Dict)
+	(call $Object.ctr-plus-plus)
+	(ref.cast (ref $Cpl-String) `Codegen(message)`)
 );
-Codegen((MAYBE.NEW `value`)) := (call $Value.new-composite
-	(struct.new $Maybe
-		(global.get $Class.SOME)
-		(ref.null $Dict)
-		(call $Object.ctr-plus-plus)
-		`Codegen(value)`
-	)
+Codegen((EXCP.NEW `message` `cause`)) := (struct.new $Exception
+	(global.get $Class.EXCEPTION)
+	(ref.null $Dict)
+	(call $Object.ctr-plus-plus)
+	(ref.cast (ref $Cpl-String) `Codegen(message)`)
+	(ref.cast (ref $Exception)  `Codegen(cause)`)
 );
 
-Codegen((RESULT.NEW nil `excp`)) := (call $Value.new-composite
-	(struct.new $Result
-		(global.get $Class.FAIL)
-		(ref.null $Dict)
-		(call $Object.ctr-plus-plus)
-		(ref.null $Value)
-		(ref.cast (ref $Exception) `Codegen(excp)`)
-	)
+Codegen((MAYBE.NEW)) := (struct.new $Maybe
+	(global.get $Class.NONE)
+	(ref.null $Dict)
+	(call $Object.ctr-plus-plus)
+	(ref.null $Value)
 );
-Codegen((RESULT.NEW `value` nil)) := (call $Value.new-composite
-	(struct.new $Result
-		(global.get $Class.OK)
-		(ref.null $Dict)
-		(call $Object.ctr-plus-plus)
-		`Codegen(value)`
-		(ref.null $Exception)
-	)
+Codegen((MAYBE.NEW `value`)) := (struct.new $Maybe
+	(global.get $Class.SOME)
+	(ref.null $Dict)
+	(call $Object.ctr-plus-plus)
+	`Codegen(value)`
+);
+
+Codegen((RESULT.NEW nil `excp`)) := (struct.new $Result
+	(global.get $Class.FAIL)
+	(ref.null $Dict)
+	(call $Object.ctr-plus-plus)
+	(ref.null $Value)
+	(ref.cast (ref $Exception) `Codegen(excp)`)
+);
+Codegen((RESULT.NEW `value` nil)) := (struct.new $Result
+	(global.get $Class.OK)
+	(ref.null $Dict)
+	(call $Object.ctr-plus-plus)
+	`Codegen(value)`
+	(ref.null $Exception)
 );
 
 Codegen((TUPLE.HAS `index` `obj`)) := (call $Value.bool-from-i32 (i32.lt_u
@@ -342,13 +330,11 @@ Codegen((GE `v0` `v1`)) := (call $op:ge `Codegen(v0)` `Codegen(v1)`);
 Codegen((ID `v0` `v1`)) := (call $op:id `Codegen(v0)` `Codegen(v1)`);
 Codegen((EQ `v0` `v1`)) := (call $op:eq `Codegen(v0)` `Codegen(v1)`);
 
-Codegen((LAMBDA `name` `arity` `source`)) := (call $Value.new-composite
-	(struct.new $Function
-		(global.get $Class.FUNCTION)
-		(ref.null $Dict)
-		(call $Object.ctr-plus-plus)
-		(i32.const `arity`)
-	)
+Codegen((LAMBDA `name` `arity` `source`)) := (struct.new $Function
+	(global.get $Class.FUNCTION)
+	(ref.null $Dict)
+	(call $Object.ctr-plus-plus)
+	(i32.const `arity`)
 );
 
 Codegen((DROP `v`)) := (drop `Codegen(v)`);

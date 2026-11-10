@@ -16,12 +16,6 @@
 
 
 
-(func $Value.new-composite (export "Value#newComposite") (param (ref $Value)) (result (ref $Value))
-	(local.get 0)
-)
-
-
-
 (func $Value.is-primitive (export "Value#isPrimitive") (param (ref $Value)) (result i32)
 	(ref.test (ref $Cpl-Primitive) (local.get 0))
 )

@@ -53,6 +53,6 @@ export class ResultNew extends Value {
 		if (!this.isOk) {
 			argument /* (ref $Exception) */ = cg.vm.Value.cast(argument, cg.vm.reftype.Exception);
 		}
-		return cg.vm.Value.newComposite(cg.codegenResult(this.isOk, argument));
+		return cg.codegenResult(this.isOk, argument);
 	}
 }
