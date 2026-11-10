@@ -18,27 +18,24 @@ export class Value implements HasFuncData {
 	public get funcImportDataMap(): ReadonlyMap<string, FuncImportData> {
 		const {reftype} = this.vm;
 		return new Map<string, FuncImportData>([
-			['Value#boolToI32',   {name: 'Value.bool-to-i32',   param: reftype.Value,       result: binaryen.Type.i32}],
-			['Value#boolFromI32', {name: 'Value.bool-from-i32', param: binaryen.Type.i32,   result: reftype.Value}],
-			['Value#fromInt',     {name: 'Value.from-int',      param: binaryen.Type.v128,  result: reftype.Value}],
-			['Value#fromNat',     {name: 'Value.from-nat',      param: binaryen.Type.v128,  result: reftype.Value}],
-			['Value#fromFloat',   {name: 'Value.from-float',    param: binaryen.Type.v128,  result: reftype.Value}],
-			['Value#fromString',  {name: 'Value.from-string',   param: reftype.String,      result: reftype.Value}],
-			['Value#fromTuple',   {name: 'Value.from-tuple',    param: reftype.Tuple,       result: reftype.Value}],
-			['Value#fromRecord',  {name: 'Value.from-record',   param: reftype.Record,      result: reftype.Value}],
-			['Value#fromList',    {name: 'Value.from-list',     param: reftype.List,        result: reftype.Value}],
-			['Value#fromDict',    {name: 'Value.from-dict',     param: reftype.Dict,        result: reftype.Value}],
-			['Value#fromMap',     {name: 'Value.from-map',      param: reftype.Map,         result: reftype.Value}],
-			['Value#asPrimitive', {name: 'Value.as-primitive',  param: reftype.Value,       result: binaryen.Type.v128}],
-			['Value#asString',    {name: 'Value.as-string',     param: reftype.Value,       result: reftype.String}],
-			['Value#asTuple',     {name: 'Value.as-tuple',      param: reftype.Value,       result: reftype.Tuple}],
-			['Value#asRecord',    {name: 'Value.as-record',     param: reftype.Value,       result: reftype.Record}],
-			['Value#asList',      {name: 'Value.as-list',       param: reftype.Value,       result: reftype.List}],
-			['Value#asDict',      {name: 'Value.as-dict',       param: reftype.Value,       result: reftype.Dict}],
-			['Value#asMap',       {name: 'Value.as-map',        param: reftype.Value,       result: reftype.Map}],
-			['Value#asData',      {name: 'Value.as-data',       param: reftype.Value,       result: reftype.Data}],
-			['Value#asObject',    {name: 'Value.as-object',     param: reftype.Value,       result: reftype.Object}],
-			['Value#asClass',     {name: 'Value.as-class',      param: reftype.Value,       result: reftype.Class}],
+			['Value#boolToI32',   {name: 'Value.bool-to-i32',   param: reftype.Value,      result: binaryen.Type.i32}],
+			['Value#boolFromI32', {name: 'Value.bool-from-i32', param: binaryen.Type.i32,  result: reftype.Value}],
+			['Value#fromInt',     {name: 'Value.from-int',      param: binaryen.Type.v128, result: reftype.Value}],
+			['Value#fromNat',     {name: 'Value.from-nat',      param: binaryen.Type.v128, result: reftype.Value}],
+			['Value#fromFloat',   {name: 'Value.from-float',    param: binaryen.Type.v128, result: reftype.Value}],
+			['Value#fromString',  {name: 'Value.from-string',   param: reftype.String,     result: reftype.Value}],
+			['Value#fromTuple',   {name: 'Value.from-tuple',    param: reftype.Tuple,      result: reftype.Value}],
+			['Value#fromRecord',  {name: 'Value.from-record',   param: reftype.Record,     result: reftype.Value}],
+			['Value#fromList',    {name: 'Value.from-list',     param: reftype.List,       result: reftype.Value}],
+			['Value#fromDict',    {name: 'Value.from-dict',     param: reftype.Dict,       result: reftype.Value}],
+			['Value#fromMap',     {name: 'Value.from-map',      param: reftype.Map,        result: reftype.Value}],
+			['Value#asPrimitive', {name: 'Value.as-primitive',  param: reftype.Value,      result: binaryen.Type.v128}],
+			['Value#asString',    {name: 'Value.as-string',     param: reftype.Value,      result: reftype.String}],
+			['Value#asTuple',     {name: 'Value.as-tuple',      param: reftype.Value,      result: reftype.Tuple}],
+			['Value#asRecord',    {name: 'Value.as-record',     param: reftype.Value,      result: reftype.Record}],
+			['Value#asList',      {name: 'Value.as-list',       param: reftype.Value,      result: reftype.List}],
+			['Value#asDict',      {name: 'Value.as-dict',       param: reftype.Value,      result: reftype.Dict}],
+			['Value#asMap',       {name: 'Value.as-map',        param: reftype.Value,      result: reftype.Map}],
 		]);
 	}
 
@@ -135,20 +132,5 @@ export class Value implements HasFuncData {
 	/** Returns the value as a Map. */
 	public asMap(value: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Map) */ {
 		return this.vm.mod.wasm.call('Value.as-map', [value], this.vm.reftype.Map);
-	}
-
-	/** Returns the value as a Data. @deprecated use `(ref.cast (ref $Data))` directly */
-	private asData(value: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Data) */ {
-		return this.vm.mod.wasm.call('Value.as-data', [value], this.vm.reftype.Data);
-	}
-
-	/** Returns the value as an Object. @deprecated use `(ref.cast (ref $Object))` directly */
-	private asObject(value: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Object) */ {
-		return this.vm.mod.wasm.call('Value.as-object', [value], this.vm.reftype.Object);
-	}
-
-	/** Returns the value as a Class. @deprecated use `(ref.cast (ref $Class))` directly */
-	public asClass(value: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Class) */ {
-		return this.vm.mod.wasm.call('Value.as-class', [value], this.vm.reftype.Class);
 	}
 }

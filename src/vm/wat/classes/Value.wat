@@ -114,15 +114,3 @@
 (func $Value.as-list      (export "Value#asList")      (param (ref $Value)) (result (ref $List))   (struct.get $Cpl-List      $list   (ref.cast (ref $Cpl-List)      (local.get 0))))
 (func $Value.as-dict      (export "Value#asDict")      (param (ref $Value)) (result (ref $Dict))   (struct.get $Cpl-Dict      $dict   (ref.cast (ref $Cpl-Dict)      (local.get 0))))
 (func $Value.as-map       (export "Value#asMap")       (param (ref $Value)) (result (ref $Map))    (struct.get $Cpl-Map       $map    (ref.cast (ref $Cpl-Map)       (local.get 0))))
-
-
-
-(func $Value.as-data (export "Value#asData") (param (ref $Value)) (result (ref $Data))
-	(ref.cast (ref $Data) (local.get 0))
-)
-(func $Value.as-object (export "Value#asObject") (param (ref $Value)) (result (ref $Object))
-	(ref.cast (ref $Object) (local.get 0))
-)
-(func $Value.as-class (export "Value#asClass") (param (ref $Value)) (result (ref $Class))
-	(ref.cast (ref $Class) (local.get 0))
-)

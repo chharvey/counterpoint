@@ -1647,7 +1647,7 @@ test.suite('Opcode', () => {
 
 			test.test('ObjectNew', () => {
 				const cg = new CodeGenerator();
-				const {Value} = cg.vm;
+				const {mod: {wasm}, vm: {reftype}} = cg;
 
 				/** The class named `Class` — it has a null `class_` field. */
 				const the_class_class = new OP.ObjectNew(true);
@@ -1657,7 +1657,7 @@ test.suite('Opcode', () => {
 				const new_object = new OP.ObjectNew(false, the_object_class);
 
 				const expected0: binaryen.ExpressionRef /* (ref $Class) */ = cg.codegenClass();
-				const expected1: binaryen.ExpressionRef /* (ref $Class) */ = cg.codegenClass(Value.asClass(expected0));
+				const expected1: binaryen.ExpressionRef /* (ref $Class) */ = cg.codegenClass(wasm.ref.cast(expected0, reftype.Class));
 
 				return assertEqualBins([
 					the_class_class,
@@ -1666,7 +1666,7 @@ test.suite('Opcode', () => {
 				].map((opcode) => opcode.codegen(cg)), [
 					expected0,
 					expected1,
-					cg.codegenObject(Value.asClass(expected1)),
+					cg.codegenObject(wasm.ref.cast(expected1, reftype.Class)),
 				]);
 			});
 
