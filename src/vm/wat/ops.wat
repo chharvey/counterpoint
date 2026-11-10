@@ -36,7 +36,7 @@
 
 (func $op:not (export "op::not") (param $value (ref $Value)) (result (ref $Value))
 	(call $Value.bool-from-i32 (if (result i32) ;; `(i32.and)` doesn’t short-circuit, so using conditional
-		(call $Value.is-primitive (local.get $value))
+		(ref.test (ref $Cpl-Primitive) (local.get $value))
 		(then (i32.or
 			(call $Vect.is-null  (call $Value.as-primitive (local.get $value)))
 			(call $Vect.is-false (call $Value.as-primitive (local.get $value)))
@@ -52,7 +52,7 @@
 	(local.set $primitive (call $Value.as-primitive (local.get $value)))
 
 	(if (result (ref $Value))
-		(call $Value.is-primitive (local.get $value))
+		(ref.test (ref $Cpl-Primitive) (local.get $value))
 		(then (if (result (ref $Value))
 			(call $Vect.is-special (local.get $primitive))
 			(then (call $op:not (local.get $value)))
@@ -121,21 +121,21 @@
 
 (func $op:is-int (export "op::isInt") (param $value (ref $Value)) (result (ref $Value))
 	(call $Value.bool-from-i32 (if (result i32) ;; `(i32.and)` doesn’t short-circuit, so using conditional
-		(call $Value.is-primitive (local.get $value))
+		(ref.test (ref $Cpl-Primitive) (local.get $value))
 		(then (call $Vect.is-int (call $Value.as-primitive (local.get $value))))
 		(else (i32.const 0))
 	))
 )
 (func $op:is-nat (export "op::isNat") (param $value (ref $Value)) (result (ref $Value))
 	(call $Value.bool-from-i32 (if (result i32) ;; `(i32.and)` doesn’t short-circuit, so using conditional
-		(call $Value.is-primitive (local.get $value))
+		(ref.test (ref $Cpl-Primitive) (local.get $value))
 		(then (call $Vect.is-nat (call $Value.as-primitive (local.get $value))))
 		(else (i32.const 0))
 	))
 )
 (func $op:is-float (export "op::isFloat") (param $value (ref $Value)) (result (ref $Value))
 	(call $Value.bool-from-i32 (if (result i32) ;; `(i32.and)` doesn’t short-circuit, so using conditional
-		(call $Value.is-primitive (local.get $value))
+		(ref.test (ref $Cpl-Primitive) (local.get $value))
 		(then (call $Vect.is-float (call $Value.as-primitive (local.get $value))))
 		(else (i32.const 0))
 	))
@@ -206,7 +206,7 @@
 
 (func $op:as-null (export "op::asNull") (param $value (ref $Value)) (result (ref $Value))
 	(if ;; `(i32.and)` doesn’t short-circuit, so using conditional
-		(call $Value.is-primitive (local.get $value))
+		(ref.test (ref $Cpl-Primitive) (local.get $value))
 		(then (if
 			(call $Vect.is-null (call $Value.as-primitive (local.get $value)))
 			(then (return (local.get $value)))
@@ -216,7 +216,7 @@
 )
 (func $op:as-bool (export "op::asBool") (param $value (ref $Value)) (result (ref $Value))
 	(if ;; `(i32.and)` doesn’t short-circuit, so using conditional
-		(call $Value.is-primitive (local.get $value))
+		(ref.test (ref $Cpl-Primitive) (local.get $value))
 		(then (if
 			(i32.or
 				(call $Vect.is-false (call $Value.as-primitive (local.get $value)))
@@ -533,8 +533,8 @@
 	(call $Value.bool-from-i32 (block $exit (result i32)
 		(if
 			(i32.and
-				(call $Value.is-primitive (local.get 0))
-				(call $Value.is-primitive (local.get 1))
+				(ref.test (ref $Cpl-Primitive) (local.get 0))
+				(ref.test (ref $Cpl-Primitive) (local.get 1))
 			)
 			(then
 				(local.set $vect0 (call $Value.as-primitive (local.get 0)))
@@ -770,8 +770,8 @@
 	(call $Value.bool-from-i32 (block $exit (result i32)
 		(if
 			(i32.and
-				(call $Value.is-primitive (local.get 0))
-				(call $Value.is-primitive (local.get 1))
+				(ref.test (ref $Cpl-Primitive) (local.get 0))
+				(ref.test (ref $Cpl-Primitive) (local.get 1))
 			)
 			(then
 				(local.set $vect0 (call $Value.as-primitive (local.get 0)))

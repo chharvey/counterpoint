@@ -3,7 +3,7 @@
 	(local $primitive v128)
 
 	(if
-		(call $Value.is-primitive (local.get $value))
+		(ref.test (ref $Cpl-Primitive) (local.get $value))
 		(then
 			(local.set $primitive (call $Value.as-primitive (local.get $value)))
 			(if (call $Vect.is-null (local.get $primitive)) (then (return (array.new_fixed $String 4

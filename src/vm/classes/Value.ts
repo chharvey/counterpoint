@@ -18,7 +18,6 @@ export class Value implements HasFuncData {
 	public get funcImportDataMap(): ReadonlyMap<string, FuncImportData> {
 		const {reftype} = this.vm;
 		return new Map<string, FuncImportData>([
-			['Value#isPrimitive', {name: 'Value.is-primitive',  param: reftype.Value,       result: binaryen.Type.i32}],
 			['Value#boolToI32',   {name: 'Value.bool-to-i32',   param: reftype.Value,       result: binaryen.Type.i32}],
 			['Value#boolFromI32', {name: 'Value.bool-from-i32', param: binaryen.Type.i32,   result: reftype.Value}],
 			['Value#fromInt',     {name: 'Value.from-int',      param: binaryen.Type.v128,  result: reftype.Value}],
@@ -56,11 +55,6 @@ export class Value implements HasFuncData {
 	 */
 	public cast(value: binaryen.ExpressionRef /* (ref $Value) */, reftype: binaryen.Type): binaryen.ExpressionRef /* <reftype> */ {
 		return this.vm.mod.wasm.ref.cast(value, reftype);
-	}
-
-	/** Whether the value contains primitive data (`v128`). @deprecated use `(ref.test (ref $Cpl-Primitive))` directly */
-	private isPrimitive(value: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* i32 */ {
-		return this.vm.mod.wasm.call('Value.is-primitive', [value], binaryen.Type.i32);
 	}
 
 	/** Converts this value (assuming it’s primitive and boolean) to i32. */

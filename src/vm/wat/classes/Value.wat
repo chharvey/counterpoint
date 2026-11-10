@@ -16,12 +16,6 @@
 
 
 
-(func $Value.is-primitive (export "Value#isPrimitive") (param (ref $Value)) (result i32)
-	(ref.test (ref $Cpl-Primitive) (local.get 0))
-)
-
-
-
 (func $Value.bool-to-i32 (export "Value#boolToI32") (param $value (ref $Value)) (result i32)
 	(call $Vect.is-true (call $Value.as-primitive (local.get $value)))
 )
