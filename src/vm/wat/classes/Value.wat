@@ -1,45 +1,29 @@
-(global $Value.NULL (export "Value#NULL") (ref $Value) (struct.new $Value
-	(i32.const 1)
+(global $Value.NULL (export "Value#NULL") (ref $Cpl-Primitive) (struct.new $Cpl-Primitive
+	(global.get $Class.NULL)
+	(ref.null $Dict)
 	(global.get $Vect.NULL)
-	(struct.new $Cpl-Primitive
-		(global.get $Class.NULL)
-		(ref.null $Dict)
-		(global.get $Vect.NULL)
-	)
 ))
-(global $Value.FALSE (export "Value#FALSE") (ref $Value) (struct.new $Value
-	(i32.const 1)
+(global $Value.FALSE (export "Value#FALSE") (ref $Cpl-Primitive) (struct.new $Cpl-Primitive
+	(global.get $Class.BOOLEAN)
+	(ref.null $Dict)
 	(global.get $Vect.FALSE)
-	(struct.new $Cpl-Primitive
-		(global.get $Class.BOOLEAN)
-		(ref.null $Dict)
-		(global.get $Vect.FALSE)
-	)
 ))
-(global $Value.TRUE (export "Value#TRUE") (ref $Value) (struct.new $Value
-	(i32.const 1)
+(global $Value.TRUE (export "Value#TRUE") (ref $Cpl-Primitive) (struct.new $Cpl-Primitive
+	(global.get $Class.BOOLEAN)
+	(ref.null $Dict)
 	(global.get $Vect.TRUE)
-	(struct.new $Cpl-Primitive
-		(global.get $Class.BOOLEAN)
-		(ref.null $Dict)
-		(global.get $Vect.TRUE)
-	)
 ))
 
 
 
-(func $Value.new-composite (export "Value#newComposite") (param $composite (ref $Composite)) (result (ref $Value))
-	(struct.new $Value
-		(i32.const 2)
-		(global.get $Vect.VOID)
-		(local.get $composite)
-	)
+(func $Value.new-composite (export "Value#newComposite") (param (ref $Value)) (result (ref $Value))
+	(local.get 0)
 )
 
 
 
 (func $Value.is-primitive (export "Value#isPrimitive") (param (ref $Value)) (result i32)
-	(ref.test (ref $Cpl-Primitive) (struct.get $Value $composite (local.get 0)))
+	(ref.test (ref $Cpl-Primitive) (local.get 0))
 )
 
 
@@ -60,133 +44,97 @@
 
 
 
-(func $Value.from-int (export "Value#fromInt") (param v128) (result (ref $Value))
-	(struct.new $Value
-		(i32.const 1)
+(func $Value.from-int (export "Value#fromInt") (param v128) (result (ref $Cpl-Primitive))
+	(struct.new $Cpl-Primitive
+		(global.get $Class.INTEGER)
+		(ref.null $Dict)
 		(local.get 0)
-		(struct.new $Cpl-Primitive
-			(global.get $Class.INTEGER)
-			(ref.null $Dict)
-			(local.get 0)
-		)
 	)
 )
-(func $Value.from-nat (export "Value#fromNat") (param v128) (result (ref $Value))
-	(struct.new $Value
-		(i32.const 1)
+(func $Value.from-nat (export "Value#fromNat") (param v128) (result (ref $Cpl-Primitive))
+	(struct.new $Cpl-Primitive
+		(global.get $Class.NATURAL)
+		(ref.null $Dict)
 		(local.get 0)
-		(struct.new $Cpl-Primitive
-			(global.get $Class.NATURAL)
-			(ref.null $Dict)
-			(local.get 0)
-		)
 	)
 )
-(func $Value.from-float (export "Value#fromFloat") (param v128) (result (ref $Value))
-	(struct.new $Value
-		(i32.const 1)
+(func $Value.from-float (export "Value#fromFloat") (param v128) (result (ref $Cpl-Primitive))
+	(struct.new $Cpl-Primitive
+		(global.get $Class.FLOAT)
+		(ref.null $Dict)
 		(local.get 0)
-		(struct.new $Cpl-Primitive
-			(global.get $Class.FLOAT)
-			(ref.null $Dict)
-			(local.get 0)
-		)
 	)
 )
 
 
 
-(func $Value.from-string (export "Value#fromString") (param (ref $String)) (result (ref $Value))
-	(struct.new $Value
-		(i32.const 2)
-		(global.get $Vect.VOID)
-		(struct.new $Cpl-String
-			(global.get $Class.STRING)
-			(ref.null $Dict)
-			(local.get 0)
-		)
+(func $Value.from-string (export "Value#fromString") (param (ref $String)) (result (ref $Cpl-String))
+	(struct.new $Cpl-String
+		(global.get $Class.STRING)
+		(ref.null $Dict)
+		(local.get 0)
 	)
 )
-(func $Value.from-tuple (export "Value#fromTuple") (param (ref $Tuple)) (result (ref $Value))
-	(struct.new $Value
-		(i32.const 2)
-		(global.get $Vect.VOID)
-		(struct.new $Cpl-Tuple
-			(global.get $Class.DATA)
-			(ref.null $Dict)
-			(local.get 0)
-		)
+(func $Value.from-tuple (export "Value#fromTuple") (param (ref $Tuple)) (result (ref $Cpl-Tuple))
+	(struct.new $Cpl-Tuple
+		(global.get $Class.DATA)
+		(ref.null $Dict)
+		(local.get 0)
 	)
 )
-(func $Value.from-record (export "Value#fromRecord") (param (ref $Record)) (result (ref $Value))
-	(struct.new $Value
-		(i32.const 2)
-		(global.get $Vect.VOID)
-		(struct.new $Cpl-Record
-			(global.get $Class.DATA)
-			(ref.null $Dict)
-			(local.get 0)
-		)
+(func $Value.from-record (export "Value#fromRecord") (param (ref $Record)) (result (ref $Cpl-Record))
+	(struct.new $Cpl-Record
+		(global.get $Class.DATA)
+		(ref.null $Dict)
+		(local.get 0)
 	)
 )
 
 
 
-(func $Value.from-list (export "Value#fromList") (param (ref $List)) (result (ref $Value))
-	(struct.new $Value
-		(i32.const 2)
-		(global.get $Vect.VOID)
-		(struct.new $Cpl-List
-			(global.get $Class.LIST)
-			(ref.null $Dict)
-			(call $Object.ctr-plus-plus)
-			(local.get 0)
-		)
+(func $Value.from-list (export "Value#fromList") (param (ref $List)) (result (ref $Cpl-List))
+	(struct.new $Cpl-List
+		(global.get $Class.LIST)
+		(ref.null $Dict)
+		(call $Object.ctr-plus-plus)
+		(local.get 0)
 	)
 )
-(func $Value.from-dict (export "Value#fromDict") (param (ref $Dict)) (result (ref $Value))
-	(struct.new $Value
-		(i32.const 2)
-		(global.get $Vect.VOID)
-		(struct.new $Cpl-Dict
-			(global.get $Class.DICT)
-			(ref.null $Dict)
-			(call $Object.ctr-plus-plus)
-			(local.get 0)
-		)
+(func $Value.from-dict (export "Value#fromDict") (param (ref $Dict)) (result (ref $Cpl-Dict))
+	(struct.new $Cpl-Dict
+		(global.get $Class.DICT)
+		(ref.null $Dict)
+		(call $Object.ctr-plus-plus)
+		(local.get 0)
 	)
 )
-(func $Value.from-map (export "Value#fromMap") (param (ref $Map)) (result (ref $Value))
-	(struct.new $Value
-		(i32.const 2)
-		(global.get $Vect.VOID)
-		(struct.new $Cpl-Map
-			(global.get $Class.MAP)
-			(ref.null $Dict)
-			(call $Object.ctr-plus-plus)
-			(local.get 0)
-		)
+(func $Value.from-map (export "Value#fromMap") (param (ref $Map)) (result (ref $Cpl-Map))
+	(struct.new $Cpl-Map
+		(global.get $Class.MAP)
+		(ref.null $Dict)
+		(call $Object.ctr-plus-plus)
+		(local.get 0)
 	)
 )
 
 
 
-(func $Value.as-primitive (export "Value#asPrimitive") (param (ref $Value)) (result v128)          (struct.get $Cpl-Primitive $bits   (ref.cast (ref $Cpl-Primitive) (struct.get $Value $composite (local.get 0)))))
-(func $Value.as-string    (export "Value#asString")    (param (ref $Value)) (result (ref $String)) (struct.get $Cpl-String    $string (ref.cast (ref $Cpl-String)    (struct.get $Value $composite (local.get 0)))))
-(func $Value.as-tuple     (export "Value#asTuple")     (param (ref $Value)) (result (ref $Tuple))  (struct.get $Cpl-Tuple     $tuple  (ref.cast (ref $Cpl-Tuple)     (struct.get $Value $composite (local.get 0)))))
-(func $Value.as-record    (export "Value#asRecord")    (param (ref $Value)) (result (ref $Record)) (struct.get $Cpl-Record    $record (ref.cast (ref $Cpl-Record)    (struct.get $Value $composite (local.get 0)))))
-(func $Value.as-list      (export "Value#asList")      (param (ref $Value)) (result (ref $List))   (struct.get $Cpl-List      $list   (ref.cast (ref $Cpl-List)      (struct.get $Value $composite (local.get 0)))))
-(func $Value.as-dict      (export "Value#asDict")      (param (ref $Value)) (result (ref $Dict))   (struct.get $Cpl-Dict      $dict   (ref.cast (ref $Cpl-Dict)      (struct.get $Value $composite (local.get 0)))))
-(func $Value.as-map       (export "Value#asMap")       (param (ref $Value)) (result (ref $Map))    (struct.get $Cpl-Map       $map    (ref.cast (ref $Cpl-Map)       (struct.get $Value $composite (local.get 0)))))
+(func $Value.as-primitive (export "Value#asPrimitive") (param (ref $Value)) (result v128)          (struct.get $Cpl-Primitive $bits   (ref.cast (ref $Cpl-Primitive) (local.get 0))))
+(func $Value.as-string    (export "Value#asString")    (param (ref $Value)) (result (ref $String)) (struct.get $Cpl-String    $string (ref.cast (ref $Cpl-String)    (local.get 0))))
+(func $Value.as-tuple     (export "Value#asTuple")     (param (ref $Value)) (result (ref $Tuple))  (struct.get $Cpl-Tuple     $tuple  (ref.cast (ref $Cpl-Tuple)     (local.get 0))))
+(func $Value.as-record    (export "Value#asRecord")    (param (ref $Value)) (result (ref $Record)) (struct.get $Cpl-Record    $record (ref.cast (ref $Cpl-Record)    (local.get 0))))
+(func $Value.as-list      (export "Value#asList")      (param (ref $Value)) (result (ref $List))   (struct.get $Cpl-List      $list   (ref.cast (ref $Cpl-List)      (local.get 0))))
+(func $Value.as-dict      (export "Value#asDict")      (param (ref $Value)) (result (ref $Dict))   (struct.get $Cpl-Dict      $dict   (ref.cast (ref $Cpl-Dict)      (local.get 0))))
+(func $Value.as-map       (export "Value#asMap")       (param (ref $Value)) (result (ref $Map))    (struct.get $Cpl-Map       $map    (ref.cast (ref $Cpl-Map)       (local.get 0))))
 
 
 
 (func $Value.as-data (export "Value#asData") (param (ref $Value)) (result (ref $Data))
-	(ref.cast (ref $Data) (struct.get $Value $composite (local.get 0)))
+	(ref.cast (ref $Data) (local.get 0))
 )
 (func $Value.as-object (export "Value#asObject") (param (ref $Value)) (result (ref $Object))
-	(ref.cast (ref $Object) (struct.get $Value $composite (local.get 0)))
+	(ref.cast (ref $Object) (local.get 0))
 )
 (func $Value.as-class (export "Value#asClass") (param (ref $Value)) (result (ref $Class))
-	(ref.cast (ref $Class) (struct.get $Value $composite (local.get 0)))
+	(ref.cast (ref $Class) (local.get 0))
 )

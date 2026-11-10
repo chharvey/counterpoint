@@ -6,16 +6,12 @@
 
 ;; ## Main Hash Function ##
 (func $Value.hash (param $value (ref $Value)) (result i64)
-	(local $composite (ref null $Composite))
-
-	(local.set $composite (struct.get $Value $composite (local.get $value)))
-
-	(if (ref.test (ref $Cpl-Primitive) (local.get $composite)) (then (return_call $!v128.hash   (call $Value.as-primitive (local.get $value)))))
-	(if (ref.test (ref $Cpl-String)    (local.get $composite)) (then (return_call $!String.hash (call $Value.as-string    (local.get $value)))))
-	(if (ref.test (ref $Cpl-Tuple)     (local.get $composite)) (then (return_call $!Tuple.hash  (call $Value.as-tuple     (local.get $value)))))
-	(if (ref.test (ref $Cpl-Record)    (local.get $composite)) (then (return_call $!Record.hash (call $Value.as-record    (local.get $value)))))
-	(if (ref.test (ref $Data)          (local.get $composite)) (then (return_call $!Data.hash   (ref.cast (ref $Data)     (local.get $composite)))))
-	(if (ref.test (ref $Object)        (local.get $composite)) (then (return_call $!Object.hash (ref.cast (ref $Object)   (local.get $composite)))))
+	(if (ref.test (ref $Cpl-Primitive) (local.get $value)) (then (return_call $!v128.hash   (call $Value.as-primitive (local.get $value)))))
+	(if (ref.test (ref $Cpl-String)    (local.get $value)) (then (return_call $!String.hash (call $Value.as-string    (local.get $value)))))
+	(if (ref.test (ref $Cpl-Tuple)     (local.get $value)) (then (return_call $!Tuple.hash  (call $Value.as-tuple     (local.get $value)))))
+	(if (ref.test (ref $Cpl-Record)    (local.get $value)) (then (return_call $!Record.hash (call $Value.as-record    (local.get $value)))))
+	(if (ref.test (ref $Data)          (local.get $value)) (then (return_call $!Data.hash   (ref.cast (ref $Data)     (local.get $value)))))
+	(if (ref.test (ref $Object)        (local.get $value)) (then (return_call $!Object.hash (ref.cast (ref $Object)   (local.get $value)))))
 	(unreachable)
 )
 

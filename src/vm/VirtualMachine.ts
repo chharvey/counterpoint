@@ -203,30 +203,35 @@ const TYPES: {
 	tb.setStructType(i_composite, fields_composite);
 	tb.setOpen(i_composite);
 
-	/* (type $Value ...) */
-	tb.setStructType(i_value, [
-		/* $tag */       make_struct_field(binaryen.Type.i32, false, binaryen.PackedType.i8),
-		/* $primitive */ make_struct_field(binaryen.Type.v128),
-		/* $composite */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_composite), true)),
-	]);
+	/** The fields of the `$Value` struct type. */
+	const fields_value = [
+		/* $class */  make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_class), true)),
+		/* $fields */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_dict),  true)),
+	];
 
+	/* (type $Value ...) */
+	tb.setStructType(i_value, fields_value);
+	tb.setOpen(i_value);
+
+	/** The fields of the `$Data` struct type. */
 	const fields_data = [
-		...fields_composite,
+		...fields_value,
 	];
 
 	/* (type $Data ...) */
 	tb.setStructType(i_data, fields_data);
-	tb.setSubType(i_data, tb.getTempHeapType(i_composite));
+	tb.setSubType(i_data, tb.getTempHeapType(i_value));
 	tb.setOpen(i_data);
 
+	/** The fields of the `$Object` struct type. */
 	const fields_object = [
-		...fields_composite,
+		...fields_value,
 		/* $id */ make_struct_field(binaryen.Type.i64),
 	];
 
 	/* (type $Object ...) */
 	tb.setStructType(i_object, fields_object);
-	tb.setSubType(i_object, tb.getTempHeapType(i_composite));
+	tb.setSubType(i_object, tb.getTempHeapType(i_value));
 	tb.setOpen(i_object);
 
 	/* (type $Class ...) */

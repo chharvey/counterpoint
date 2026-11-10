@@ -63,18 +63,19 @@
 	;; # All Values
 
 	;; WASM representation of a Counterpoint value
-	(type $Value (struct
-		(field $tag       i8) ;; 1 = primitive, 2 = composite
-		(field $primitive v128)
-		(field $composite (ref null $Composite))
-	))
+	(type $Value (sub (struct
+		;; pointer to the constructor class
+		(field $class (ref null $Class))
+		;; each instance has a set of fields
+		(field $fields (ref null $Dict))
+	)))
 
-	(type $Data (sub $Composite (struct
+	(type $Data (sub $Value (struct
 		;; --- inherited ---
 		(field $class (ref null $Class))
 		(field $fields (ref null $Dict))
 	)))
-	(type $Object (sub $Composite (struct
+	(type $Object (sub $Value (struct
 		;; --- inherited ---
 		(field $class (ref null $Class))
 		(field $fields (ref null $Dict))

@@ -290,7 +290,7 @@
 			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $src))))
 			(local.set $item (array.get $Tuple (local.get $src) (local.get $i)))
 			(call $Map.set (local.get $dest) (call $Case.from-tuple
-				(struct.get $Cpl-Tuple $tuple (ref.cast (ref $Cpl-Tuple) (struct.get $Value $composite (local.get $item))))
+				(call $Value.as-tuple (local.get $item))
 			))
 			(local.set $i (i32.add (local.get $i) (i32.const 1)))
 			(br $repeat)
@@ -312,7 +312,7 @@
 			(if
 				(i32.eqz (ref.is_null (local.get $item)))
 				(then (call $Map.set (local.get $dest) (call $Case.from-tuple
-					(struct.get $Cpl-Tuple $tuple (ref.cast (ref $Cpl-Tuple) (struct.get $Value $composite (local.get $item))))
+					(call $Value.as-tuple (ref.as_non_null (local.get $item)))
 				)))
 			)
 			(local.set $i (i32.add (local.get $i) (i32.const 1)))
@@ -335,7 +335,7 @@
 			(if
 				(i32.eqz (ref.is_null (local.get $item)))
 				(then (call $Map.set (local.get $dest) (call $Case.from-tuple
-					(struct.get $Cpl-Tuple $tuple (ref.cast (ref $Cpl-Tuple) (struct.get $Value $composite (struct.get $Case $ant (local.get $item)))))
+					(call $Value.as-tuple (struct.get $Case $ant (local.get $item)))
 				)))
 			)
 			(local.set $i (i32.add (local.get $i) (i32.const 1)))

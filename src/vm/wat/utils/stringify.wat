@@ -1,9 +1,6 @@
 ;; ## Main Stringify Function ##
 (func $Value.stringify (param $value (ref $Value)) (result (ref $String))
 	(local $primitive v128)
-	(local $composite (ref null $Composite))
-
-	(local.set $composite (struct.get $Value $composite (local.get $value)))
 
 	(if
 		(call $Value.is-primitive (local.get $value))
@@ -34,11 +31,11 @@
 			(unreachable)
 		)
 	)
-	(if (ref.test (ref $Cpl-String) (local.get $composite)) (then (return                         (call $Value.as-string  (local.get $value)))))
-	(if (ref.test (ref $Cpl-Tuple)  (local.get $composite)) (then (return_call $!Tuple.stringify  (call $Value.as-tuple   (local.get $value)))))
-	(if (ref.test (ref $Cpl-Record) (local.get $composite)) (then (return_call $!Record.stringify (call $Value.as-record  (local.get $value)))))
-	(if (ref.test (ref $Data)       (local.get $composite)) (then (return_call $!Data.stringify   (ref.cast (ref $Data)   (local.get $composite)))))
-	(if (ref.test (ref $Object)     (local.get $composite)) (then (return_call $!Object.stringify (ref.cast (ref $Object) (local.get $composite)))))
+	(if (ref.test (ref $Cpl-String) (local.get $value)) (then (return                         (call $Value.as-string  (local.get $value)))))
+	(if (ref.test (ref $Cpl-Tuple)  (local.get $value)) (then (return_call $!Tuple.stringify  (call $Value.as-tuple   (local.get $value)))))
+	(if (ref.test (ref $Cpl-Record) (local.get $value)) (then (return_call $!Record.stringify (call $Value.as-record  (local.get $value)))))
+	(if (ref.test (ref $Data)       (local.get $value)) (then (return_call $!Data.stringify   (ref.cast (ref $Data)   (local.get $value)))))
+	(if (ref.test (ref $Object)     (local.get $value)) (then (return_call $!Object.stringify (ref.cast (ref $Object) (local.get $value)))))
 	(unreachable)
 )
 

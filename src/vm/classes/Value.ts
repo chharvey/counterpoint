@@ -8,15 +8,6 @@ import type {
 
 
 
-/** Struct field constant indices. */
-const FIELD = {
-	/** `$Value.$tag` */       TAG:       0,
-	/** `$Value.$primitive` */ PRIMITIVE: 1,
-	/** `$Value.$composite` */ COMPOSITE: 2,
-} as const;
-
-
-
 /** WASM representation of a Counterpoint value. */
 export class Value implements HasFuncData {
 	public constructor(private readonly vm: VirtualMachine) {}
@@ -27,7 +18,7 @@ export class Value implements HasFuncData {
 	public get funcImportDataMap(): ReadonlyMap<string, FuncImportData> {
 		const {reftype} = this.vm;
 		return new Map<string, FuncImportData>([
-			['Value#newComposite', {name: 'Value.new-composite', param: reftype.Composite,   result: reftype.Value}],
+			['Value#newComposite', {name: 'Value.new-composite', param: reftype.Value,       result: reftype.Value}],
 			['Value#isPrimitive',  {name: 'Value.is-primitive',  param: reftype.Value,       result: binaryen.Type.i32}],
 			['Value#boolToI32',    {name: 'Value.bool-to-i32',   param: reftype.Value,       result: binaryen.Type.i32}],
 			['Value#boolFromI32',  {name: 'Value.bool-from-i32', param: binaryen.Type.i32,   result: reftype.Value}],
@@ -58,39 +49,23 @@ export class Value implements HasFuncData {
 	/** The Counterpoint `true`  value. */ public get TRUE():  binaryen.ExpressionRef /* (ref $Value) */ { return this.vm.mod.wasm.global.get('Value.TRUE',  this.vm.reftype.Value); }
 
 
-	/** @deprecated */
-	private field(ref: binaryen.ExpressionRef /* (ref null $Value) */): {
-		/** @return `(struct.get $Value $tag       <ref>)` */ readonly tag:       binaryen.ExpressionRef /* i32 */,
-		/** @return `(struct.get $Value $primitive <ref>)` */ readonly primitive: binaryen.ExpressionRef /* v128 */,
-		/** @return `(struct.get $Value $composite <ref>)` */ readonly composite: binaryen.ExpressionRef /* (ref null $Composite) */,
-	} {
-		const {mod: {wasm}, reftypeNull} = this.vm;
-		return {
-			get tag()       { return wasm.struct.get_u (FIELD.TAG,       ref, binaryen.Type.i32); },
-			get primitive() { return wasm.struct.get   (FIELD.PRIMITIVE, ref, binaryen.Type.v128); },
-			get composite() { return wasm.struct.get   (FIELD.COMPOSITE, ref, reftypeNull.Composite); },
-		};
-	}
-
 	/**
-	 * Extracts a `$Value`’s `$composite` field and returns a `(ref.cast)` to the given reference type.
-	 * This method does not test the value’s `$tag` field — it assumes its `$composite` field is filled.
 	 * @param value   the expression to cast
 	 * @param reftype the type to cast to
-	 * @return        `(ref.cast (struct.get $Value $composite <value>) <reftype>)`
+	 * @return        `(ref.cast <value> <reftype>)`
 	 * @deprecated    use `Value#as*` or `wasm.ref.cast()`
 	 */
 	public cast(value: binaryen.ExpressionRef /* (ref $Value) */, reftype: binaryen.Type): binaryen.ExpressionRef /* <reftype> */ {
-		return this.vm.mod.wasm.ref.cast(this.field(value).composite, reftype);
+		return this.vm.mod.wasm.ref.cast(value, reftype);
 	}
 
-	/** Creates a new Value struct storing the given reference in its composite slot. @deprecated TODO: after untagging $Value, use `(struct.new $Value)` (or a subtype) directly */
-	public newComposite(composite: binaryen.ExpressionRef /* (ref $Composite) */): binaryen.ExpressionRef /* (ref $Value) */ {
+	/** Creates a new Value struct. @deprecated use `(struct.new $Value)` (or a subtype) directly */
+	public newComposite(composite: binaryen.ExpressionRef /* (ref Value) */): binaryen.ExpressionRef /* (ref $Value) */ {
 		return this.vm.mod.wasm.call('Value.new-composite', [composite], this.vm.reftype.Value);
 	}
 
-	/** Whether the value is primitive (tag == 1). */
-	public isPrimitive(value: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* i32 */ {
+	/** Whether the value contains primitive data (`v128`). @deprecated use `(ref.test (ref $Cpl-Primitive))` directly */
+	private isPrimitive(value: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* i32 */ {
 		return this.vm.mod.wasm.call('Value.is-primitive', [value], binaryen.Type.i32);
 	}
 
@@ -184,17 +159,17 @@ export class Value implements HasFuncData {
 		return this.vm.mod.wasm.call('Value.as-map', [value], this.vm.reftype.Map);
 	}
 
-	/** Returns the value as a Data. */
-	public asData(value: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Data) */ {
+	/** Returns the value as a Data. @deprecated use `(ref.cast (ref $Data))` directly */
+	private asData(value: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Data) */ {
 		return this.vm.mod.wasm.call('Value.as-data', [value], this.vm.reftype.Data);
 	}
 
-	/** Returns the value as an Object. */
-	public asObject(value: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Object) */ {
+	/** Returns the value as an Object. @deprecated use `(ref.cast (ref $Object))` directly */
+	private asObject(value: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Object) */ {
 		return this.vm.mod.wasm.call('Value.as-object', [value], this.vm.reftype.Object);
 	}
 
-	/** Returns the value as a Class. */
+	/** Returns the value as a Class. @deprecated use `(ref.cast (ref $Class))` directly */
 	public asClass(value: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Class) */ {
 		return this.vm.mod.wasm.call('Value.as-class', [value], this.vm.reftype.Class);
 	}
