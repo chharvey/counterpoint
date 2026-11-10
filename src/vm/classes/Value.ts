@@ -47,16 +47,6 @@ export class Value implements HasFuncData {
 	/** The Counterpoint `true`  value. */ public get TRUE():  binaryen.ExpressionRef /* (ref $Value) */ { return this.vm.mod.wasm.global.get('Value.TRUE',  this.vm.reftype.Value); }
 
 
-	/**
-	 * @param value   the expression to cast
-	 * @param reftype the type to cast to
-	 * @return        `(ref.cast <value> <reftype>)`
-	 * @deprecated    use `Value#as*` or `wasm.ref.cast()`
-	 */
-	public cast(value: binaryen.ExpressionRef /* (ref $Value) */, reftype: binaryen.Type): binaryen.ExpressionRef /* <reftype> */ {
-		return this.vm.mod.wasm.ref.cast(value, reftype);
-	}
-
 	/** Converts this value (assuming it’s primitive and boolean) to i32. */
 	public boolToI32(value: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* i32 */ {
 		return this.vm.mod.wasm.call('Value.bool-to-i32', [value], binaryen.Type.i32);

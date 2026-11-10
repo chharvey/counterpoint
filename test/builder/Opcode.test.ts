@@ -1672,17 +1672,17 @@ test.suite('Opcode', () => {
 
 			test.test('ExcpNew', () => {
 				const cg = new CodeGenerator();
-				const {vm: {reftype, Value}} = cg;
+				const {mod: {wasm}, vm: {reftype}} = cg;
 				const actual = new OP.ExcpNew(new OP.Const(new VALUE.String('hello')));
-				const expected: binaryen.ExpressionRef /* (ref $Exception) */ = cg.codegenException(Value.cast(genConst(cg, 'hello'), reftype.CplString));
+				const expected: binaryen.ExpressionRef /* (ref $Exception) */ = cg.codegenException(wasm.ref.cast(genConst(cg, 'hello'), reftype.CplString));
 				return assertEqualBins([
 					actual,
 					new OP.ExcpNew(new OP.Const(new VALUE.String('world')), actual),
 				].map((opcode) => opcode.codegen(cg)), [
 					expected,
 					cg.codegenException(
-						Value.cast(genConst(cg, 'world'), reftype.CplString),
-						Value.cast(expected, reftype.Exception),
+						wasm.ref.cast(genConst(cg, 'world'), reftype.CplString),
+						wasm.ref.cast(expected, reftype.Exception),
 					),
 				]);
 			});
@@ -1700,14 +1700,14 @@ test.suite('Opcode', () => {
 
 			test.test('ResultNew', () => {
 				const cg = new CodeGenerator();
-				const {vm: {reftype, Value}} = cg;
+				const {mod: {wasm}, vm: {reftype}} = cg;
 				const excp = new OP.ExcpNew(new OP.Const(new VALUE.String('message')));
 				const value = new OP.Const(new VALUE.Integer(42n));
 				return assertEqualBins([
 					new OP.ResultNew(false, TYPE.INT, TYPE.EXCP, excp),
 					new OP.ResultNew(true,  TYPE.INT, TYPE.EXCP, value),
 				].map((opcode) => opcode.codegen(cg)), [
-					cg.codegenResult(false, Value.cast(excp.codegen(cg), reftype.Exception)),
+					cg.codegenResult(false, wasm.ref.cast(excp.codegen(cg), reftype.Exception)),
 					cg.codegenResult(true, value.codegen(cg)),
 				]);
 			});
@@ -2090,11 +2090,11 @@ test.suite('Opcode', () => {
 						y~!;
 						z~!;
 					}`);
-					const {reftype, op, Value} = cg.vm;
-					const excp: binaryen.ExpressionRef /* (ref $Exception) */ = cg.codegenException(Value.cast(genConst(cg, '42'), reftype.CplString));
+					const {reftype, op} = cg.vm;
+					const excp: binaryen.ExpressionRef /* (ref $Exception) */ = cg.codegenException(wasm.ref.cast(genConst(cg, '42'), reftype.CplString));
 					return assertEqualBins(builder.instructions.map((instr) => instr.codegen(cg)), [
 						wasm.local.set(0, excp),
-						wasm.local.set(1, cg.codegenResult(false, Value.cast(wasm.local.get(0, binaryen.getExpressionType(excp)), reftype.Exception))), // HACK: issue with struct literals having “exact” types prevents passing `reftype.Exception` to `local.get()`
+						wasm.local.set(1, cg.codegenResult(false, wasm.ref.cast(wasm.local.get(0, binaryen.getExpressionType(excp)), reftype.Exception))), // HACK: issue with struct literals having “exact” types prevents passing `reftype.Exception` to `local.get()`
 						wasm.local.set(2, cg.codegenResult(true, genConst(cg, 42n, 'nat'))),
 						wasm.local.set(3, cg.codegenResult(true, genConst(cg, 4.2))),
 						...[1, 2, 3].map((i) => wasm.drop(op.unwrapResult(wasm.local.get(i, reftype.Value)))),

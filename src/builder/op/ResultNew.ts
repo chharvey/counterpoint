@@ -51,7 +51,7 @@ export class ResultNew extends Value {
 	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
 		let argument: binaryen.ExpressionRef /* (ref $Value) */ = this.argument.codegen(cg);
 		if (!this.isOk) {
-			argument /* (ref $Exception) */ = cg.vm.Value.cast(argument, cg.vm.reftype.Exception);
+			argument /* (ref $Exception) */ = cg.vm.mod.wasm.ref.cast(argument, cg.vm.reftype.Exception);
 		}
 		return cg.codegenResult(this.isOk, argument);
 	}
