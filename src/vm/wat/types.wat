@@ -49,14 +49,6 @@
 		(field $array (mut (ref $MapArray)))
 	))
 
-	;; abstract root of all non-primitives. the type of `$Value.$composite`
-	(type $Composite (sub (struct
-		;; pointer to the constructor class
-		(field $class (ref null $Class))
-		;; each instance has a set of fields
-		(field $fields (ref null $Dict))
-	)))
-
 
 
 

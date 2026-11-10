@@ -28,7 +28,6 @@ type TypeKey = (
 	| 'List'
 	| 'Dict'
 	| 'Map'
-	| 'Composite'
 	| 'Value'
 	| 'Data'
 	| 'Object'
@@ -45,7 +44,7 @@ type TypeKey = (
 type HeaptypeRegistry = Readonly<Record<TypeKey, binaryen.HeapType>>;
 type ReftypeRegistry  = Readonly<Record<TypeKey, binaryen.Type>>;
 
-type ReftypeNullRegistry = Readonly<Record<TypeKey & ('Property' | 'Case' | 'Composite' | 'Value' | 'Class' | 'Exception'), binaryen.Type>>;
+type ReftypeNullRegistry = Readonly<Record<TypeKey & ('Property' | 'Case' | 'Value' | 'Class' | 'Exception'), binaryen.Type>>;
 
 
 
@@ -99,7 +98,6 @@ const TYPES: {
 	const i_list:          number = tb.getSize(); tb.grow(1);
 	const i_dict:          number = tb.getSize(); tb.grow(1);
 	const i_map:           number = tb.getSize(); tb.grow(1);
-	const i_composite:     number = tb.getSize(); tb.grow(1);
 	const i_value:         number = tb.getSize(); tb.grow(1);
 	const i_data:          number = tb.getSize(); tb.grow(1);
 	const i_object:        number = tb.getSize(); tb.grow(1);
@@ -193,15 +191,6 @@ const TYPES: {
 		/* $size */  make_struct_field(binaryen.Type.i32, true),
 		/* $array */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_map_array), false), true),
 	]);
-
-	const fields_composite = [
-		/* $class */  make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_class), true)),
-		/* $fields */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_dict),  true)),
-	];
-
-	/* (type $Composite ...) */
-	tb.setStructType(i_composite, fields_composite);
-	tb.setOpen(i_composite);
 
 	/** The fields of the `$Value` struct type. */
 	const fields_value = [
@@ -335,7 +324,6 @@ const TYPES: {
 			List:      heaptypes[i_list],
 			Dict:      heaptypes[i_dict],
 			Map:       heaptypes[i_map],
-			Composite: heaptypes[i_composite],
 			Value:     heaptypes[i_value],
 			Data:      heaptypes[i_data],
 			Object:    heaptypes[i_object],
@@ -359,7 +347,6 @@ const TYPES: {
 			List:      binaryen.getTypeFromHeapType(heaptypes[i_list],       false),
 			Dict:      binaryen.getTypeFromHeapType(heaptypes[i_dict],       false),
 			Map:       binaryen.getTypeFromHeapType(heaptypes[i_map],        false),
-			Composite: binaryen.getTypeFromHeapType(heaptypes[i_composite],  false),
 			Value:     binaryen.getTypeFromHeapType(heaptypes[i_value],      false),
 			Data:      binaryen.getTypeFromHeapType(heaptypes[i_data],       false),
 			Object:    binaryen.getTypeFromHeapType(heaptypes[i_object],     false),
@@ -374,7 +361,6 @@ const TYPES: {
 		reftypeNullRegistry: {
 			Property:  binaryen.getTypeFromHeapType(heaptypes[i_property],  true), // only used as the fields of `$DictArray`
 			Case:      binaryen.getTypeFromHeapType(heaptypes[i_case],      true), // only used as the fields of `$MapArray`
-			Composite: binaryen.getTypeFromHeapType(heaptypes[i_composite], true), // only used as the fields of `$Value`
 			Value:     binaryen.getTypeFromHeapType(heaptypes[i_value],     true), // only used as the fields of `$ListArray` and `$Maybe`
 			Class:     binaryen.getTypeFromHeapType(heaptypes[i_class],     true), // only used as the fields of `$Class`
 			Exception: binaryen.getTypeFromHeapType(heaptypes[i_exception], true), // only used as the fields of `$Exception` and `$Result`
