@@ -37,6 +37,7 @@
 	(if (ref.test (ref $Cpl-String) (local.get $composite)) (then (return                         (call $Value.as-string  (local.get $value)))))
 	(if (ref.test (ref $Cpl-Tuple)  (local.get $composite)) (then (return_call $!Tuple.stringify  (call $Value.as-tuple   (local.get $value)))))
 	(if (ref.test (ref $Cpl-Record) (local.get $composite)) (then (return_call $!Record.stringify (call $Value.as-record  (local.get $value)))))
+	(if (ref.test (ref $Data)       (local.get $composite)) (then (return_call $!Data.stringify   (ref.cast (ref $Data)   (local.get $composite)))))
 	(if (ref.test (ref $Object)     (local.get $composite)) (then (return_call $!Object.stringify (ref.cast (ref $Object) (local.get $composite)))))
 	(unreachable)
 )
@@ -169,18 +170,22 @@
 	(local.get $internal)
 )
 ;; stringify an f64 in base ten
-(func $!f64.stringify (param $float f64) (result (ref $String))
+(func $!f64.stringify (param f64) (result (ref $String))
 	(unreachable) ;; TODO:
 )
 ;; stringify a $Tuple
-(func $!Tuple.stringify (param $tuple (ref $Tuple)) (result (ref $String))
+(func $!Tuple.stringify (param (ref $Tuple)) (result (ref $String))
 	(unreachable) ;; TODO:
 )
 ;; stringify a $Record
-(func $!Record.stringify (param $record (ref $Record)) (result (ref $String))
+(func $!Record.stringify (param (ref $Record)) (result (ref $String))
+	(unreachable) ;; TODO:
+)
+;; stringify a $Data
+(func $!Data.stringify (param (ref $Data)) (result (ref $String))
 	(unreachable) ;; TODO:
 )
 ;; stringify an $Object
-(func $!Object.stringify (param $object (ref $Object)) (result (ref $String))
+(func $!Object.stringify (param (ref $Object)) (result (ref $String))
 	(unreachable) ;; TODO:
 )

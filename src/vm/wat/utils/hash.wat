@@ -14,6 +14,7 @@
 	(if (ref.test (ref $Cpl-String)    (local.get $composite)) (then (return_call $!String.hash (call $Value.as-string    (local.get $value)))))
 	(if (ref.test (ref $Cpl-Tuple)     (local.get $composite)) (then (return_call $!Tuple.hash  (call $Value.as-tuple     (local.get $value)))))
 	(if (ref.test (ref $Cpl-Record)    (local.get $composite)) (then (return_call $!Record.hash (call $Value.as-record    (local.get $value)))))
+	(if (ref.test (ref $Data)          (local.get $composite)) (then (return_call $!Data.hash   (ref.cast (ref $Data)     (local.get $composite)))))
 	(if (ref.test (ref $Object)        (local.get $composite)) (then (return_call $!Object.hash (ref.cast (ref $Object)   (local.get $composite)))))
 	(unreachable)
 )
@@ -98,7 +99,7 @@
 ;; ```
 ;; [SEED, ...$tuple.values()].reduce((a, b) => (a xor hash(b)) * PRIME);
 ;; ```
-(func $!Tuple.hash (param $tuple (ref $Tuple)) (result i64)
+(func $!Tuple.hash (param (ref $Tuple)) (result i64)
 	(local $result i64)
 	(local $i      i32)
 
@@ -131,7 +132,7 @@
 ;; ```
 ;; [SEED, ...$record.entries()].reduce((a, b) => a xor hash(b)) * PRIME;
 ;; ```
-(func $!Record.hash (param $record (ref $Record)) (result i64)
+(func $!Record.hash (param (ref $Record)) (result i64)
 	(local $result i64)
 	(local $i      i32)
 
@@ -154,9 +155,17 @@
 
 
 
+;; hash a $Data.
+;; Applies to all compound data values.
+(func $!Data.hash (param (ref $Data)) (result i64)
+	(unreachable) ;; TODO:
+)
+
+
+
 ;; hash an $Object.
 ;; Applies to all reference Objects.
 ;; Returns its id.
-(func $!Object.hash (param $obj (ref $Object)) (result i64)
-	(struct.get $Object $id (local.get $obj))
+(func $!Object.hash (param (ref $Object)) (result i64)
+	(struct.get $Object $id (local.get 0))
 )
