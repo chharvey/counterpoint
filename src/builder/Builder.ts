@@ -2,7 +2,10 @@ import * as assert from 'node:assert';
 import * as binaryen from 'binaryen.ts';
 import * as xjs from 'extrajs';
 import type {CodeGenerator} from '../index.ts';
-import {runOnceMethod} from '../lib/index.ts';
+import {
+	memoizeMethod,
+	runOnceMethod,
+} from '../lib/index.ts';
 import type {TYPE} from '../typer/index.ts';
 import type {SymbolSchemaVar} from '../validator/index.ts';
 import {
@@ -114,6 +117,7 @@ export class Builder {
 		return this.#blocks[0]?.interpret(interp);
 	}
 
+	@memoizeMethod
 	public codegen(cg: CodeGenerator): binaryen.ExpressionRef {
 		assert.ok(!this.currentBlock, 'Should not codegen Builder with active block set. Try calling `Builder#terminateBlock` first.');
 		const relooper = new binaryen.Relooper(cg.mod);
