@@ -4,10 +4,10 @@ Codegen((NULL.CONST null))  := (global.get $Value.NULL);
 Codegen((BOOL.CONST false)) := (global.get $Value.FALSE);
 Codegen((BOOL.CONST true))  := (global.get $Value.TRUE);
 
-Codegen((SYM.CONST   `v`)) := (call $Value.new-primitive (call $Vect.new-nat   (i64.const `v.id`)));
-Codegen((INT.CONST   `v`)) := (call $Value.new-primitive (call $Vect.new-int   (i64.const `v.data`)));
-Codegen((NAT.CONST   `v`)) := (call $Value.new-primitive (call $Vect.new-nat   (i64.const `v.data`)));
-Codegen((FLOAT.CONST `v`)) := (call $Value.new-primitive (call $Vect.new-float (i64.const `v.data`)));
+Codegen((SYM.CONST   `v`)) := (call $Value.from-nat   (call $Vect.new-nat   (i64.const `v.id`)));
+Codegen((INT.CONST   `v`)) := (call $Value.from-int   (call $Vect.new-int   (i64.const `v.data`)));
+Codegen((NAT.CONST   `v`)) := (call $Value.from-nat   (call $Vect.new-nat   (i64.const `v.data`)));
+Codegen((FLOAT.CONST `v`)) := (call $Value.from-float (call $Vect.new-float (f64.const `v.data`)));
 
 Codegen((STR.CONST `v`)) := (call $Value.from-string
 	(array.new_fixed $String `v.data.map("(i32.const `v.data[i]`)")`)
@@ -254,22 +254,22 @@ Codegen((NOT `v`)) := (call $op:not      `Codegen(v)`);
 Codegen((EMP `v`)) := (call $op:is-empty `Codegen(v)`);
 Codegen((NEG `v`)) := (call $op:negate   `Codegen(v)`);
 
-Codegen((LIST.COUNT `obj`)) := (call $Value.new-primitive
+Codegen((LIST.COUNT `obj`)) := (call $Value.from-nat
 	(call $Vect.new-nat
 		(i64.extend_i32_u (call $List.count (call $Value.as-list `Codegen(obj)`)))
 	)
 );
-Codegen((DICT.COUNT `obj`)) := (call $Value.new-primitive
+Codegen((DICT.COUNT `obj`)) := (call $Value.from-nat
 	(call $Vect.new-nat
 		(i64.extend_i32_u (call $Dict.count (call $Value.as-dict `Codegen(obj)`)))
 	)
 );
-Codegen((SET.COUNT `obj`)) := (call $Value.new-primitive
+Codegen((SET.COUNT `obj`)) := (call $Value.from-nat
 	(call $Vect.new-nat
 		(i64.extend_i32_u (call $Map.count (call $Value.as-map `Codegen(obj)`)))
 	)
 );
-Codegen((MAP.COUNT `obj`)) := (call $Value.new-primitive
+Codegen((MAP.COUNT `obj`)) := (call $Value.from-nat
 	(call $Vect.new-nat
 		(i64.extend_i32_u (call $Map.count (call $Value.as-map `Codegen(obj)`)))
 	)

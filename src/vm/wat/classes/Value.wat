@@ -28,29 +28,6 @@
 
 
 
-(func $Value.new-primitive (export "Value#newPrimitive") (param $primitive v128) (result (ref $Value))
-	(if (call $Vect.is-null  (local.get $primitive)) (then (return (global.get $Value.NULL))))
-	(if (call $Vect.is-false (local.get $primitive)) (then (return (global.get $Value.FALSE))))
-	(if (call $Vect.is-true  (local.get $primitive)) (then (return (global.get $Value.TRUE))))
-
-	(struct.new $Value
-		(i32.const 1)
-		(local.get $primitive)
-		(struct.new $Cpl-Primitive
-			(block $class (result (ref $Class))
-				(if (call $Vect.is-int   (local.get $primitive)) (then (br $class (global.get $Class.INTEGER))))
-				(if (call $Vect.is-nat   (local.get $primitive)) (then (br $class (global.get $Class.NATURAL))))
-				(if (call $Vect.is-float (local.get $primitive)) (then (br $class (global.get $Class.FLOAT))))
-				(unreachable)
-			)
-			(ref.null $Dict)
-			(local.get $primitive)
-		)
-	)
-)
-
-
-
 (func $Value.new-composite (export "Value#newComposite") (param $composite (ref $Composite)) (result (ref $Value))
 	(struct.new $Value
 		(i32.const 2)
@@ -84,6 +61,42 @@
 		(local.get $bool)
 		(then (global.get $Value.TRUE))
 		(else (global.get $Value.FALSE))
+	)
+)
+
+
+
+(func $Value.from-int (export "Value#fromInt") (param v128) (result (ref $Value))
+	(struct.new $Value
+		(i32.const 1)
+		(local.get 0)
+		(struct.new $Cpl-Primitive
+			(global.get $Class.INTEGER)
+			(ref.null $Dict)
+			(local.get 0)
+		)
+	)
+)
+(func $Value.from-nat (export "Value#fromNat") (param v128) (result (ref $Value))
+	(struct.new $Value
+		(i32.const 1)
+		(local.get 0)
+		(struct.new $Cpl-Primitive
+			(global.get $Class.NATURAL)
+			(ref.null $Dict)
+			(local.get 0)
+		)
+	)
+)
+(func $Value.from-float (export "Value#fromFloat") (param v128) (result (ref $Value))
+	(struct.new $Value
+		(i32.const 1)
+		(local.get 0)
+		(struct.new $Cpl-Primitive
+			(global.get $Class.FLOAT)
+			(ref.null $Dict)
+			(local.get 0)
+		)
 	)
 )
 

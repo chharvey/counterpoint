@@ -2016,7 +2016,7 @@ test.suite('Opcode', () => {
 					const unop = new OP.Unop(OP.OpCode.LIST_COUNT, list, TYPE.NAT);
 					return assertEqualBins(
 						unop.codegen(cg),
-						Value.newPrimitive(Vect.newNat(wasm.i64.extend_i32_u(List.count(Value.asList(list.codegen(cg)))))),
+						Value.fromNat(Vect.newNat(wasm.i64.extend_i32_u(List.count(Value.asList(list.codegen(cg)))))),
 					);
 				});
 				test.test('DICT.COUNT', () => {
@@ -2031,7 +2031,7 @@ test.suite('Opcode', () => {
 					const unop = new OP.Unop(OP.OpCode.DICT_COUNT, dict, TYPE.NAT);
 					return assertEqualBins(
 						unop.codegen(cg),
-						Value.newPrimitive(Vect.newNat(wasm.i64.extend_i32_u(Dict.count(Value.asDict(dict.codegen(cg)))))),
+						Value.fromNat(Vect.newNat(wasm.i64.extend_i32_u(Dict.count(Value.asDict(dict.codegen(cg)))))),
 					);
 				});
 				test.test('SET.COUNT', () => {
@@ -2046,7 +2046,7 @@ test.suite('Opcode', () => {
 					const unop = new OP.Unop(OP.OpCode.SET_COUNT, set, TYPE.NAT);
 					return assertEqualBins(
 						unop.codegen(cg),
-						Value.newPrimitive(Vect.newNat(wasm.i64.extend_i32_u(VmMap.count(Value.asMap(set.codegen(cg)))))),
+						Value.fromNat(Vect.newNat(wasm.i64.extend_i32_u(VmMap.count(Value.asMap(set.codegen(cg)))))),
 					);
 				});
 				test.test('MAP.COUNT', () => {
@@ -2061,7 +2061,7 @@ test.suite('Opcode', () => {
 					const unop = new OP.Unop(OP.OpCode.MAP_COUNT, map, TYPE.NAT);
 					return assertEqualBins(
 						unop.codegen(cg),
-						Value.newPrimitive(Vect.newNat(wasm.i64.extend_i32_u(VmMap.count(Value.asMap(map.codegen(cg)))))),
+						Value.fromNat(Vect.newNat(wasm.i64.extend_i32_u(VmMap.count(Value.asMap(map.codegen(cg)))))),
 					);
 				});
 				test.test('MAYBE.UNWRAP', () => {

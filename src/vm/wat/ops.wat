@@ -1,55 +1,31 @@
 (func $op:to-int (export "op::toInt") (param $value (ref $Value)) (result (ref $Value))
 	(local $primitive v128)
 	(local.set $primitive (call $Value.as-primitive (local.get $value)))
-
-	(call $Value.new-primitive (if (result v128)
-		(call $Vect.is-int (local.get $primitive))
-		(then (local.get $primitive))
-		(else (if (result v128)
-			(call $Vect.is-nat (local.get $primitive))
-			(then (call $Vect.new-int (call $Vect.nat-to-int (local.get $primitive))))
-			(else (if (result v128)
-				(call $Vect.is-float (local.get $primitive))
-				(then (call $Vect.new-int (call $Vect.float-to-int (local.get $primitive))))
-				(else (unreachable))
-			))
-		))
+	(return_call $Value.from-int (block $int (result v128)
+		(if (call $Vect.is-int   (local.get $primitive)) (then (br $int (local.get $primitive))))
+		(if (call $Vect.is-nat   (local.get $primitive)) (then (br $int (call $Vect.new-int (call $Vect.nat-to-int   (local.get $primitive))))))
+		(if (call $Vect.is-float (local.get $primitive)) (then (br $int (call $Vect.new-int (call $Vect.float-to-int (local.get $primitive))))))
+		(unreachable)
 	))
 )
 (func $op:to-nat (export "op::toNat") (param $value (ref $Value)) (result (ref $Value))
 	(local $primitive v128)
 	(local.set $primitive (call $Value.as-primitive (local.get $value)))
-
-	(call $Value.new-primitive (if (result v128)
-		(call $Vect.is-int (local.get $primitive))
-		(then (call $Vect.new-nat (call $Vect.int-to-nat (local.get $primitive))))
-		(else (if (result v128)
-			(call $Vect.is-nat (local.get $primitive))
-			(then (local.get $primitive))
-			(else (if (result v128)
-				(call $Vect.is-float (local.get $primitive))
-				(then (call $Vect.new-nat (call $Vect.float-to-nat (local.get $primitive))))
-				(else (unreachable))
-			))
-		))
+	(return_call $Value.from-nat (block $nat (result v128)
+		(if (call $Vect.is-int   (local.get $primitive)) (then (br $nat (call $Vect.new-nat (call $Vect.int-to-nat (local.get $primitive))))))
+		(if (call $Vect.is-nat   (local.get $primitive)) (then (br $nat (local.get $primitive))))
+		(if (call $Vect.is-float (local.get $primitive)) (then (br $nat (call $Vect.new-nat (call $Vect.float-to-nat (local.get $primitive))))))
+		(unreachable)
 	))
 )
 (func $op:to-float (export "op::toFloat") (param $value (ref $Value)) (result (ref $Value))
 	(local $primitive v128)
 	(local.set $primitive (call $Value.as-primitive (local.get $value)))
-
-	(call $Value.new-primitive (if (result v128)
-		(call $Vect.is-int (local.get $primitive))
-		(then (call $Vect.new-float (call $Vect.int-to-float (local.get $primitive))))
-		(else (if (result v128)
-			(call $Vect.is-nat (local.get $primitive))
-			(then (call $Vect.new-float (call $Vect.nat-to-float (local.get $primitive))))
-			(else (if (result v128)
-				(call $Vect.is-float (local.get $primitive))
-				(then (local.get $primitive))
-				(else (unreachable))
-			))
-		))
+	(return_call $Value.from-float (block $float (result v128)
+		(if (call $Vect.is-int   (local.get $primitive)) (then (br $float (call $Vect.new-float (call $Vect.int-to-float (local.get $primitive))))))
+		(if (call $Vect.is-nat   (local.get $primitive)) (then (br $float (call $Vect.new-float (call $Vect.nat-to-float (local.get $primitive))))))
+		(if (call $Vect.is-float (local.get $primitive)) (then (br $float (local.get $primitive))))
+		(unreachable)
 	))
 )
 (func $op:to-str (export "op::toStr") (param $value (ref $Value)) (result (ref $Value))
@@ -106,16 +82,9 @@
 (func $op:negate (export "op::negate") (param $value (ref $Value)) (result (ref $Value))
 	(local $primitive v128)
 	(local.set $primitive (call $Value.as-primitive (local.get $value)))
-
-	(call $Value.new-primitive (if (result v128)
-		(call $Vect.is-int (local.get $primitive))
-		(then (call $Vect.new-int (i64.sub (i64.const 0) (call $Vect.as-int (local.get $primitive))))) ;; `-n == 0 - n`
-		(else (if (result v128)
-			(call $Vect.is-float (local.get $primitive))
-			(then (call $Vect.new-float (f64.neg (call $Vect.as-float (local.get $primitive)))))
-			(else (unreachable))
-		))
-	))
+	(if (call $Vect.is-int   (local.get $primitive)) (then (return_call $Value.from-int   (call $Vect.new-int   (i64.sub (i64.const 0) (call $Vect.as-int (local.get $primitive))))))) ;; `-n == 0 - n`
+	(if (call $Vect.is-float (local.get $primitive)) (then (return_call $Value.from-float (call $Vect.new-float (f64.neg (call $Vect.as-float (local.get $primitive)))))))
+	(unreachable)
 )
 
 
@@ -399,19 +368,19 @@
 
 
 (func $op:int-add (export "op::intAdd") (param (ref $Value) (ref $Value)) (result (ref $Value))
-	(call $Value.new-primitive (call $Vect.new-int (i64.add
+	(return_call $Value.from-int (call $Vect.new-int (i64.add
 		(call $Vect.as-int (call $Value.as-primitive (local.get 0)))
 		(call $Vect.as-int (call $Value.as-primitive (local.get 1)))
 	)))
 )
 (func $op:nat-add (export "op::natAdd") (param (ref $Value) (ref $Value)) (result (ref $Value))
-	(call $Value.new-primitive (call $Vect.new-nat (i64.add
+	(return_call $Value.from-nat (call $Vect.new-nat (i64.add
 		(call $Vect.as-nat (call $Value.as-primitive (local.get 0)))
 		(call $Vect.as-nat (call $Value.as-primitive (local.get 1)))
 	)))
 )
 (func $op:float-add (export "op::floatAdd") (param (ref $Value) (ref $Value)) (result (ref $Value))
-	(call $Value.new-primitive (call $Vect.new-float (f64.add
+	(return_call $Value.from-float (call $Vect.new-float (f64.add
 		(call $Vect.as-float (call $Value.as-primitive (local.get 0)))
 		(call $Vect.as-float (call $Value.as-primitive (local.get 1)))
 	)))
@@ -420,7 +389,7 @@
 
 
 (func $op:int-sub (export "op::intSub") (param (ref $Value) (ref $Value)) (result (ref $Value))
-	(call $Value.new-primitive (call $Vect.new-int (i64.sub
+	(return_call $Value.from-int (call $Vect.new-int (i64.sub
 		(call $Vect.as-int (call $Value.as-primitive (local.get 0)))
 		(call $Vect.as-int (call $Value.as-primitive (local.get 1)))
 	)))
@@ -431,14 +400,14 @@
 	(local.set $nat0 (call $Vect.as-nat (call $Value.as-primitive (local.get 0))))
 	(local.set $nat1 (call $Vect.as-nat (call $Value.as-primitive (local.get 1))))
 
-	(call $Value.new-primitive (call $Vect.new-nat (if (result i64)
+	(return_call $Value.from-nat (call $Vect.new-nat (if (result i64)
 		(i64.lt_u (local.get $nat0) (local.get $nat1))
 		(then (i64.const 0))
 		(else (i64.sub (local.get $nat0) (local.get $nat1)))
 	)))
 )
 (func $op:float-sub (export "op::floatSub") (param (ref $Value) (ref $Value)) (result (ref $Value))
-	(call $Value.new-primitive (call $Vect.new-float (f64.sub
+	(return_call $Value.from-float (call $Vect.new-float (f64.sub
 		(call $Vect.as-float (call $Value.as-primitive (local.get 0)))
 		(call $Vect.as-float (call $Value.as-primitive (local.get 1)))
 	)))
@@ -447,19 +416,19 @@
 
 
 (func $op:int-mul (export "op::intMul") (param (ref $Value) (ref $Value)) (result (ref $Value))
-	(call $Value.new-primitive (call $Vect.new-int (i64.mul
+	(return_call $Value.from-int (call $Vect.new-int (i64.mul
 		(call $Vect.as-int (call $Value.as-primitive (local.get 0)))
 		(call $Vect.as-int (call $Value.as-primitive (local.get 1)))
 	)))
 )
 (func $op:nat-mul (export "op::natMul") (param (ref $Value) (ref $Value)) (result (ref $Value))
-	(call $Value.new-primitive (call $Vect.new-nat (i64.mul
+	(return_call $Value.from-nat (call $Vect.new-nat (i64.mul
 		(call $Vect.as-nat (call $Value.as-primitive (local.get 0)))
 		(call $Vect.as-nat (call $Value.as-primitive (local.get 1)))
 	)))
 )
 (func $op:float-mul (export "op::floatMul") (param (ref $Value) (ref $Value)) (result (ref $Value))
-	(call $Value.new-primitive (call $Vect.new-float (f64.mul
+	(return_call $Value.from-float (call $Vect.new-float (f64.mul
 		(call $Vect.as-float (call $Value.as-primitive (local.get 0)))
 		(call $Vect.as-float (call $Value.as-primitive (local.get 1)))
 	)))
@@ -468,19 +437,19 @@
 
 
 (func $op:int-div (export "op::intDiv") (param (ref $Value) (ref $Value)) (result (ref $Value))
-	(call $Value.new-primitive (call $Vect.new-int (i64.div_s
+	(return_call $Value.from-int (call $Vect.new-int (i64.div_s
 		(call $Vect.as-int (call $Value.as-primitive (local.get 0)))
 		(call $Vect.as-int (call $Value.as-primitive (local.get 1)))
 	)))
 )
 (func $op:nat-div (export "op::natDiv") (param (ref $Value) (ref $Value)) (result (ref $Value))
-	(call $Value.new-primitive (call $Vect.new-nat (i64.div_u
+	(return_call $Value.from-nat (call $Vect.new-nat (i64.div_u
 		(call $Vect.as-nat (call $Value.as-primitive (local.get 0)))
 		(call $Vect.as-nat (call $Value.as-primitive (local.get 1)))
 	)))
 )
 (func $op:float-div (export "op::floatDiv") (param (ref $Value) (ref $Value)) (result (ref $Value))
-	(call $Value.new-primitive (call $Vect.new-float (f64.div
+	(return_call $Value.from-float (call $Vect.new-float (f64.div
 		(call $Vect.as-float (call $Value.as-primitive (local.get 0)))
 		(call $Vect.as-float (call $Value.as-primitive (local.get 1)))
 	)))
@@ -489,19 +458,19 @@
 
 
 (func $op:int-exp (export "op::intExp") (param (ref $Value) (ref $Value)) (result (ref $Value))
-	(call $Value.new-primitive (call $Vect.new-int (call $!i64.exp
+	(return_call $Value.from-int (call $Vect.new-int (call $!i64.exp
 		(call $Vect.as-int (call $Value.as-primitive (local.get 0)))
 		(call $Vect.as-int (call $Value.as-primitive (local.get 1)))
 	)))
 )
 (func $op:nat-exp (export "op::natExp") (param (ref $Value) (ref $Value)) (result (ref $Value))
-	(call $Value.new-primitive (call $Vect.new-nat (call $!i64.exp
+	(return_call $Value.from-nat (call $Vect.new-nat (call $!i64.exp
 		(call $Vect.as-nat (call $Value.as-primitive (local.get 0)))
 		(call $Vect.as-nat (call $Value.as-primitive (local.get 1)))
 	)))
 )
 (func $op:float-exp (export "op::floatExp") (param (ref $Value) (ref $Value)) (result (ref $Value))
-	(call $Value.new-primitive (call $Vect.new-float (unreachable
+	(return_call $Value.from-float (call $Vect.new-float (unreachable
 		(call $Vect.as-float (call $Value.as-primitive (local.get 0)))
 		(call $Vect.as-float (call $Value.as-primitive (local.get 1)))
 	)))

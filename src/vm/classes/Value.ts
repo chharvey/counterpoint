@@ -27,12 +27,14 @@ export class Value implements HasFuncData {
 	public get funcImportDataMap(): ReadonlyMap<string, FuncImportData> {
 		const {reftype} = this.vm;
 		return new Map<string, FuncImportData>([
-			['Value#newPrimitive', {name: 'Value.new-primitive', param: binaryen.Type.v128,  result: reftype.Value}],
 			['Value#newComposite', {name: 'Value.new-composite', param: reftype.Composite,   result: reftype.Value}],
 			['Value#isPrimitive',  {name: 'Value.is-primitive',  param: reftype.Value,       result: binaryen.Type.i32}],
 			['Value#isComposite',  {name: 'Value.is-composite',  param: reftype.Value,       result: binaryen.Type.i32}],
 			['Value#boolToI32',    {name: 'Value.bool-to-i32',   param: reftype.Value,       result: binaryen.Type.i32}],
 			['Value#boolFromI32',  {name: 'Value.bool-from-i32', param: binaryen.Type.i32,   result: reftype.Value}],
+			['Value#fromInt',      {name: 'Value.from-int',      param: binaryen.Type.v128,  result: reftype.Value}],
+			['Value#fromNat',      {name: 'Value.from-nat',      param: binaryen.Type.v128,  result: reftype.Value}],
+			['Value#fromFloat',    {name: 'Value.from-float',    param: binaryen.Type.v128,  result: reftype.Value}],
 			['Value#fromString',   {name: 'Value.from-string',   param: reftype.String,      result: reftype.Value}],
 			['Value#fromTuple',    {name: 'Value.from-tuple',    param: reftype.Tuple,       result: reftype.Value}],
 			['Value#fromRecord',   {name: 'Value.from-record',   param: reftype.Record,      result: reftype.Value}],
@@ -83,11 +85,6 @@ export class Value implements HasFuncData {
 		return this.vm.mod.wasm.ref.cast(this.field(value).composite, reftype);
 	}
 
-	/** Creates a new Value struct storing the given v128 in its primitive slot. */
-	public newPrimitive(primitive: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* (ref $Value) */ {
-		return this.vm.mod.wasm.call('Value.new-primitive', [primitive], this.vm.reftype.Value);
-	}
-
 	/** Creates a new Value struct storing the given reference in its composite slot. */
 	public newComposite(composite: binaryen.ExpressionRef /* (ref $Composite) */): binaryen.ExpressionRef /* (ref $Value) */ {
 		return this.vm.mod.wasm.call('Value.new-composite', [composite], this.vm.reftype.Value);
@@ -111,6 +108,21 @@ export class Value implements HasFuncData {
 	/** Converts an i32 value to a $Value with a boolean primitive. */
 	public boolFromI32(bool: binaryen.ExpressionRef /* i32 */): binaryen.ExpressionRef /* (ref $Value) */ {
 		return this.vm.mod.wasm.call('Value.bool-from-i32', [bool], this.vm.reftype.Value);
+	}
+
+	/** Creates a new value holding the given v128 as an Integer. */
+	public fromInt(vect: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* (ref $Value) */ {
+		return this.vm.mod.wasm.call('Value.from-int', [vect], this.vm.reftype.Value);
+	}
+
+	/** Creates a new value holding the given v128 as a Natural. */
+	public fromNat(vect: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* (ref $Value) */ {
+		return this.vm.mod.wasm.call('Value.from-nat', [vect], this.vm.reftype.Value);
+	}
+
+	/** Creates a new value holding the given v128 as a Float. */
+	public fromFloat(vect: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* (ref $Value) */ {
+		return this.vm.mod.wasm.call('Value.from-float', [vect], this.vm.reftype.Value);
 	}
 
 	/** Creates a new value holding the given String. */

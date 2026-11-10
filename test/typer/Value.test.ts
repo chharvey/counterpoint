@@ -364,7 +364,7 @@ test.suite('Value', () => {
 			const {vm: {Vect, Value}, mod: {wasm}} = cg;
 			return assertEqualBins(
 				new VALUE.Symbol(0x100n, 'hello').codegen(cg),
-				Value.newPrimitive(Vect.newNat(wasm.i64.const(0x100n))),
+				Value.fromNat(Vect.newNat(wasm.i64.const(0x100n))),
 			);
 		});
 
@@ -388,7 +388,7 @@ test.suite('Value', () => {
 			const {vm: {Vect, Value}, mod: {wasm}} = cg;
 			return assertEqualBins(
 				data.map((x) => new VALUE.Integer(x).codegen(cg)),
-				data.map((x) => Value.newPrimitive(Vect.newInt(wasm.i64.const(x)))),
+				data.map((x) => Value.fromInt(Vect.newInt(wasm.i64.const(x)))),
 			);
 		});
 
@@ -404,7 +404,7 @@ test.suite('Value', () => {
 			const {vm: {Vect, Value}, mod: {wasm}} = cg;
 			return assertEqualBins(
 				data.map((x) => new VALUE.Natural(x).codegen(cg)),
-				data.map((x) => Value.newPrimitive(Vect.newNat(wasm.i64.const(x)))),
+				data.map((x) => Value.fromNat(Vect.newNat(wasm.i64.const(x)))),
 			);
 		});
 
@@ -422,7 +422,7 @@ test.suite('Value', () => {
 				const {vm: {Vect, Value}, mod: {wasm}} = cg;
 				return assertEqualBins(
 					data.map((x) => new VALUE.Float(x).codegen(cg)),
-					data.map((x) => Value.newPrimitive(Vect.newFloat(wasm.f64.const(x)))),
+					data.map((x) => Value.fromFloat(Vect.newFloat(wasm.f64.const(x)))),
 				);
 			});
 			test.test('builds `0.0` and `-0.0` differently.', () => {
@@ -430,7 +430,7 @@ test.suite('Value', () => {
 				const {vm: {Vect, Value}, mod: {wasm}} = cg;
 				return assertEqualBins(
 					[0.0, -0.0].map((x) => new VALUE.Float(x).codegen(cg)),
-					[wasm.f64.const(0.0), wasm.f64.ceil(wasm.f64.const(-0.5))].map((c) => Value.newPrimitive(Vect.newFloat(c))),
+					[wasm.f64.const(0.0), wasm.f64.ceil(wasm.f64.const(-0.5))].map((c) => Value.fromFloat(Vect.newFloat(c))),
 				);
 			});
 		});
