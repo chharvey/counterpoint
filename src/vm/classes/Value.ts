@@ -85,7 +85,7 @@ export class Value implements HasFuncData {
 		return this.vm.mod.wasm.ref.cast(this.field(value).composite, reftype);
 	}
 
-	/** Creates a new Value struct storing the given reference in its composite slot. */
+	/** Creates a new Value struct storing the given reference in its composite slot. @deprecated TODO: after untagging $Value, use `(struct.new $Value)` (or a subtype) directly */
 	public newComposite(composite: binaryen.ExpressionRef /* (ref $Composite) */): binaryen.ExpressionRef /* (ref $Value) */ {
 		return this.vm.mod.wasm.call('Value.new-composite', [composite], this.vm.reftype.Value);
 	}

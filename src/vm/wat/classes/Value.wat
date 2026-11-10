@@ -103,52 +103,76 @@
 
 
 (func $Value.from-string (export "Value#fromString") (param (ref $String)) (result (ref $Value))
-	(return_call $Value.new-composite (struct.new $Cpl-String
-		(global.get $Class.STRING)
-		(ref.null $Dict)
-		(local.get 0)
-	))
+	(struct.new $Value
+		(i32.const 2)
+		(global.get $Vect.VOID)
+		(struct.new $Cpl-String
+			(global.get $Class.STRING)
+			(ref.null $Dict)
+			(local.get 0)
+		)
+	)
 )
 (func $Value.from-tuple (export "Value#fromTuple") (param (ref $Tuple)) (result (ref $Value))
-	(return_call $Value.new-composite (struct.new $Cpl-Tuple
-		(global.get $Class.DATA)
-		(ref.null $Dict)
-		(local.get 0)
-	))
+	(struct.new $Value
+		(i32.const 2)
+		(global.get $Vect.VOID)
+		(struct.new $Cpl-Tuple
+			(global.get $Class.DATA)
+			(ref.null $Dict)
+			(local.get 0)
+		)
+	)
 )
 (func $Value.from-record (export "Value#fromRecord") (param (ref $Record)) (result (ref $Value))
-	(return_call $Value.new-composite (struct.new $Cpl-Record
-		(global.get $Class.DATA)
-		(ref.null $Dict)
-		(local.get 0)
-	))
+	(struct.new $Value
+		(i32.const 2)
+		(global.get $Vect.VOID)
+		(struct.new $Cpl-Record
+			(global.get $Class.DATA)
+			(ref.null $Dict)
+			(local.get 0)
+		)
+	)
 )
 
 
 
 (func $Value.from-list (export "Value#fromList") (param (ref $List)) (result (ref $Value))
-	(return_call $Value.new-composite (struct.new $Cpl-List
-		(call $Object.ctr-plus-plus)
-		(global.get $Class.LIST)
-		(ref.null $Dict)
-		(local.get 0)
-	))
+	(struct.new $Value
+		(i32.const 2)
+		(global.get $Vect.VOID)
+		(struct.new $Cpl-List
+			(call $Object.ctr-plus-plus)
+			(global.get $Class.LIST)
+			(ref.null $Dict)
+			(local.get 0)
+		)
+	)
 )
 (func $Value.from-dict (export "Value#fromDict") (param (ref $Dict)) (result (ref $Value))
-	(return_call $Value.new-composite (struct.new $Cpl-Dict
-		(call $Object.ctr-plus-plus)
-		(global.get $Class.DICT)
-		(ref.null $Dict)
-		(local.get 0)
-	))
+	(struct.new $Value
+		(i32.const 2)
+		(global.get $Vect.VOID)
+		(struct.new $Cpl-Dict
+			(call $Object.ctr-plus-plus)
+			(global.get $Class.DICT)
+			(ref.null $Dict)
+			(local.get 0)
+		)
+	)
 )
 (func $Value.from-map (export "Value#fromMap") (param (ref $Map)) (result (ref $Value))
-	(return_call $Value.new-composite (struct.new $Cpl-Map
-		(call $Object.ctr-plus-plus)
-		(global.get $Class.MAP)
-		(ref.null $Dict)
-		(local.get 0)
-	))
+	(struct.new $Value
+		(i32.const 2)
+		(global.get $Vect.VOID)
+		(struct.new $Cpl-Map
+			(call $Object.ctr-plus-plus)
+			(global.get $Class.MAP)
+			(ref.null $Dict)
+			(local.get 0)
+		)
+	)
 )
 
 

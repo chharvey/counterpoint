@@ -16,25 +16,23 @@ Codegen((STR.CONST `v`)) := (call $Value.from-string
 Codegen((GET `id ::= CoreLibName`)) := (call $Value.new-composite (global.get ‹index›));
 Codegen((GET `id`)) := (local.get ‹index›);
 
-Codegen((STR.TEMPLATE `strings`)) := (call $Value.new-composite
-	(block (result (ref $Cpl-String))
-		`strings.map("(local.set $str_`i` (call $Value.as-string `Codegen(strings[i])`))")`
-		(local.set $internal
-			(array.new_default $String `strings.map("(array.len (local.get $str_`i`))").reduce("(i32.add `a` `b`)")`)
-		)
-		(local.set $offset (i32.const 0))
-		`strings.flatMap([
-			"(array.copy
-				(local.get $internal)
-				(local.get $offset)
-				(local.get $str_`i`)
-				(i32.const 0)
-				(array.len (local.get $str_`i`))
-			)",
-			"(local.set $offset (i32.add (local.get $offset) (array.len (local.get $str_`i`))))",
-		]).slice(0, -1)`
-		(struct.new $Cpl-String (local.get $internal))
+Codegen((STR.TEMPLATE `strings`)) := (block (result (ref $Value))
+	`strings.map("(local.set $str_`i` (call $Value.as-string `Codegen(strings[i])`))")`
+	(local.set $internal
+		(array.new_default $String `strings.map("(array.len (local.get $str_`i`))").reduce("(i32.add `a` `b`)")`)
 	)
+	(local.set $offset (i32.const 0))
+	`strings.flatMap([
+		"(array.copy
+			(local.get $internal)
+			(local.get $offset)
+			(local.get $str_`i`)
+			(i32.const 0)
+			(array.len (local.get $str_`i`))
+		)",
+		"(local.set $offset (i32.add (local.get $offset) (array.len (local.get $str_`i`))))",
+	]).slice(0, -1)`
+	(call $Value.from-string (local.get $internal))
 );
 
 Codegen((TUPLE.NEW)) := (call $Value.from-tuple
