@@ -194,8 +194,13 @@ const TYPES: {
 		/* $array */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_map_array), false), true),
 	]);
 
+	const fields_composite = [
+		/* $class */  make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_class), true)),
+		/* $fields */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_dict),  true)),
+	];
+
 	/* (type $Composite ...) */
-	tb.setStructType(i_composite, []);
+	tb.setStructType(i_composite, fields_composite);
 	tb.setOpen(i_composite);
 
 	/* (type $Value ...) */
@@ -206,8 +211,7 @@ const TYPES: {
 	]);
 
 	const fields_data = [
-		/* $class */  make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_class), false)),
-		/* $fields */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_dict),  false)),
+		...fields_composite,
 	];
 
 	/* (type $Data ...) */
@@ -216,9 +220,8 @@ const TYPES: {
 	tb.setOpen(i_data);
 
 	const fields_object = [
-		/* $id */     make_struct_field(binaryen.Type.i64),
-		/* $class */  make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_class), true)),
-		/* $fields */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_dict),  false)),
+		...fields_composite,
+		/* $id */ make_struct_field(binaryen.Type.i64),
 	];
 
 	/* (type $Object ...) */

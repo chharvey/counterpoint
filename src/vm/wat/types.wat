@@ -50,7 +50,12 @@
 	))
 
 	;; abstract root of all non-primitives. the type of `$Value.$composite`
-	(type $Composite (sub (struct)))
+	(type $Composite (sub (struct
+		;; pointer to the constructor class
+		(field $class (ref null $Class))
+		;; each instance has a set of fields
+		(field $fields (ref null $Dict))
+	)))
 
 
 
@@ -65,24 +70,28 @@
 	))
 
 	(type $Data (sub $Composite (struct
-		;; pointer to the constructor class
-		(field $class (ref $Class))
-		;; each instance has a set of fields
+		;; --- inherited ---
+		(field $class (ref null $Class))
 		(field $fields (ref null $Dict))
 	)))
 	(type $Object (sub $Composite (struct
+		;; --- inherited ---
+		(field $class (ref null $Class))
+		(field $fields (ref null $Dict))
+
+		;; --- own ---
 		;; unique id for hashing
 		(field $id i64)
-		;; pointer to the constructor class
-		(field $class (ref null $Class))
-		;; each instance has a set of fields
-		(field $fields (ref null $Dict))
 	)))
 	(type $Class (sub final $Object (struct
 		;; --- inherited ---
-		(field $id i64)
-		(field $class (ref null $Class)) ;; (if null, it means this field should refer to its containing struct)
+		(field $class (ref null $Class)) ;; if null, it means this object points to itself
 		(field $fields (ref null $Dict))
+		(field $id i64)
+
+		;; TODO: ;; --- own ---
+		;; TODO: ;; the parent class that this class extends
+		;; TODO: (field $super (ref null $Class))
 	)))
 
 
@@ -98,7 +107,7 @@
 	;; precursor to the Counterpoint classes `Null`, `Boolean`, `Symbol`, `Integer`, `Natural`, `Float`
 	(type $Cpl-Primitive (sub final $Data (struct
 		;; --- inherited ---
-		(field $class (ref $Class))
+		(field $class (ref null $Class))
 		(field $fields (ref null $Dict))
 
 		;; --- own ---
@@ -108,7 +117,7 @@
 	;; precursor to the Counterpoint `String` class
 	(type $Cpl-String (sub final $Data (struct
 		;; --- inherited ---
-		(field $class (ref $Class))
+		(field $class (ref null $Class))
 		(field $fields (ref null $Dict))
 
 		;; --- own ---
@@ -117,7 +126,7 @@
 	)))
 	(type $Cpl-Tuple (sub final $Data (struct
 		;; --- inherited ---
-		(field $class (ref $Class))
+		(field $class (ref null $Class))
 		(field $fields (ref null $Dict))
 
 		;; --- own ---
@@ -126,7 +135,7 @@
 	)))
 	(type $Cpl-Record (sub final $Data (struct
 		;; --- inherited ---
-		(field $class (ref $Class))
+		(field $class (ref null $Class))
 		(field $fields (ref null $Dict))
 
 		;; --- own ---
@@ -139,9 +148,9 @@
 	;; precursor to the Counterpoint `List` class
 	(type $Cpl-List (sub final $Object (struct
 		;; --- inherited ---
-		(field $id i64)
 		(field $class (ref null $Class))
 		(field $fields (ref null $Dict))
+		(field $id i64)
 
 		;; --- own ---
 		;; the stored value
@@ -150,9 +159,9 @@
 	;; precursor to the Counterpoint `Dict` class
 	(type $Cpl-Dict (sub final $Object (struct
 		;; --- inherited ---
-		(field $id i64)
 		(field $class (ref null $Class))
 		(field $fields (ref null $Dict))
+		(field $id i64)
 
 		;; --- own ---
 		;; the stored value
@@ -161,9 +170,9 @@
 	;; precursor to the Counterpoint `Map` class
 	(type $Cpl-Map (sub final $Object (struct
 		;; --- inherited ---
-		(field $id i64)
 		(field $class (ref null $Class))
 		(field $fields (ref null $Dict))
+		(field $id i64)
 
 		;; --- own ---
 		;; the stored value
@@ -172,9 +181,9 @@
 	;; precursor to the Counterpoint `Exception` class
 	(type $Exception (sub final $Object (struct
 		;; --- inherited ---
-		(field $id i64)
 		(field $class (ref null $Class))
 		(field $fields (ref null $Dict))
+		(field $id i64)
 
 		;; --- own ---
 		;; the error message
@@ -185,9 +194,9 @@
 	;; precursor to the Counterpoint `Maybe` class
 	(type $Maybe (sub final $Object (struct
 		;; --- inherited ---
-		(field $id i64)
 		(field $class (ref null $Class))
 		(field $fields (ref null $Dict))
+		(field $id i64)
 
 		;; --- own ---
 		;; the potentially held value
@@ -196,9 +205,9 @@
 	;; precursor to the Counterpoint `Result` class
 	(type $Result (sub final $Object (struct
 		;; --- inherited ---
-		(field $id i64)
 		(field $class (ref null $Class))
 		(field $fields (ref null $Dict))
+		(field $id i64)
 
 		;; --- own ---
 		;; the success value
@@ -209,9 +218,9 @@
 	;; precursor to the Counterpoint `Function` class
 	(type $Function (sub final $Object (struct
 		;; --- inherited ---
-		(field $id i64)
 		(field $class (ref null $Class))
 		(field $fields (ref null $Dict))
+		(field $id i64)
 
 		;; --- own ---
 		;; number of functional parameters

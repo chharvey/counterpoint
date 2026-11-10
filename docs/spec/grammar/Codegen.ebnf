@@ -118,43 +118,34 @@ Codegen((MAP.NEW `pairs`)) := (call $Value.from-map
 );
 
 Codegen((OBJECT.NEW `false` `class`)) := (call $Value.new-composite (struct.new $Object
-	(call $Object.ctr-plus-plus)
 	(ref.cast (ref $Class) (struct.get $Value $composite `Codegen(class)`))
-	(struct.new $Dict
-		(i32.const 0)
-		(array.new_default $DictArray (i32.const 8))
-	)
+	(ref.null $Dict)
+	(call $Object.ctr-plus-plus)
 ));
 Codegen((OBJECT.NEW `true` `class`)) := (call $Value.new-composite (struct.new $Class
-	(call $Object.ctr-plus-plus)
 	(ref.cast (ref $Class) (struct.get $Value $composite `Codegen(class)`))
-	(struct.new $Dict
-		(i32.const 0)
-		(array.new_default $DictArray (i32.const 8))
-	)
+	(ref.null $Dict)
+	(call $Object.ctr-plus-plus)
 ));
 Codegen((OBJECT.NEW `true`)) := (call $Value.new-composite (struct.new $Class
-	(call $Object.ctr-plus-plus)
 	(ref.null $Class)
-	(struct.new $Dict
-		(i32.const 0)
-		(array.new_default $DictArray (i32.const 8))
-	)
+	(ref.null $Dict)
+	(call $Object.ctr-plus-plus)
 ));
 
 Codegen((EXCP.NEW `message`)) := (call $Value.new-newComposite
 	(struct.new $Exception
-		(call $Object.ctr-plus-plus)
 		(ref.null $Class)
 		(ref.null $Dict)
+		(call $Object.ctr-plus-plus)
 		(ref.cast (ref $Cpl-String) (struct.get $Value $composite `Codegen(message)`))
 	)
 );
 Codegen((EXCP.NEW `message` `cause`)) := (call $Value.new-newComposite
 	(struct.new $Exception
-		(call $Object.ctr-plus-plus)
 		(ref.null $Class)
 		(ref.null $Dict)
+		(call $Object.ctr-plus-plus)
 		(ref.cast (ref $Cpl-String) (struct.get $Value $composite `Codegen(message)`))
 		(ref.cast (ref $Exception)  (struct.get $Value $composite `Codegen(cause)`))
 	)
@@ -162,12 +153,16 @@ Codegen((EXCP.NEW `message` `cause`)) := (call $Value.new-newComposite
 
 Codegen((MAYBE.NEW)) := (call $Value.new-composite
 	(struct.new $Maybe
+		(ref.null $Class)
+		(ref.null $Dict)
 		(call $Object.ctr-plus-plus)
 		(ref.null $Value)
 	)
 );
 Codegen((MAYBE.NEW `value`)) := (call $Value.new-composite
 	(struct.new $Maybe
+		(ref.null $Class)
+		(ref.null $Dict)
 		(call $Object.ctr-plus-plus)
 		`Codegen(value)`
 	)
@@ -175,6 +170,8 @@ Codegen((MAYBE.NEW `value`)) := (call $Value.new-composite
 
 Codegen((RESULT.NEW nil `excp`)) := (call $Value.new-composite
 	(struct.new $Result
+		(ref.null $Class)
+		(ref.null $Dict)
 		(call $Object.ctr-plus-plus)
 		(ref.null $Value)
 		(ref.cast (ref $Exception) (struct.get $Value $composite `Codegen(excp)`))
@@ -182,6 +179,8 @@ Codegen((RESULT.NEW nil `excp`)) := (call $Value.new-composite
 );
 Codegen((RESULT.NEW `value` nil)) := (call $Value.new-composite
 	(struct.new $Result
+		(ref.null $Class)
+		(ref.null $Dict)
 		(call $Object.ctr-plus-plus)
 		`Codegen(value)`
 		(ref.null $Exception)
@@ -345,6 +344,8 @@ Codegen((EQ `v0` `v1`)) := (call $op:eq `Codegen(v0)` `Codegen(v1)`);
 
 Codegen((LAMBDA `name` `arity` `source`)) := (call $Value.new-composite
 	(struct.new $Function
+		(ref.null $Class)
+		(ref.null $Dict)
 		(call $Object.ctr-plus-plus)
 		(i32.const `arity`)
 	)

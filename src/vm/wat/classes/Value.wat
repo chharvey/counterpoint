@@ -137,9 +137,9 @@
 		(i32.const 2)
 		(global.get $Vect.VOID)
 		(struct.new $Cpl-List
-			(call $Object.ctr-plus-plus)
 			(global.get $Class.LIST)
 			(ref.null $Dict)
+			(call $Object.ctr-plus-plus)
 			(local.get 0)
 		)
 	)
@@ -149,9 +149,9 @@
 		(i32.const 2)
 		(global.get $Vect.VOID)
 		(struct.new $Cpl-Dict
-			(call $Object.ctr-plus-plus)
 			(global.get $Class.DICT)
 			(ref.null $Dict)
+			(call $Object.ctr-plus-plus)
 			(local.get 0)
 		)
 	)
@@ -161,9 +161,9 @@
 		(i32.const 2)
 		(global.get $Vect.VOID)
 		(struct.new $Cpl-Map
-			(call $Object.ctr-plus-plus)
 			(global.get $Class.MAP)
 			(ref.null $Dict)
+			(call $Object.ctr-plus-plus)
 			(local.get 0)
 		)
 	)
