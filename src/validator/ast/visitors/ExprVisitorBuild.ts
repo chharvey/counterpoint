@@ -116,10 +116,11 @@ export class ExprVisitorBuild extends EXPR.ExprVisitor<OP.Value> {
 			return OP.conditional_expression(
 				this.builder,
 				typ,
-				() => new OP.Instance(OP.OpCode.INSTANCEOF, CoreLibName.NONE, base_value),
+				() => new OP.Unop(OP.OpCode.NONE_IS, base_value, TYPE.BOOL),
 				() => new OP.MaybeNew(typ.typearg),
 				() => new OP.MaybeNew(typ.typearg, this.#buildUnwrappedGet(
 					expr,
+					// TODO: `base_value.type` should always be `Maybe` once expression access is removed. put the assertion underneath `typ`
 					base_value.type instanceof TYPE.Maybe ? new OP.Unop(OP.OpCode.MAYBE_UNWRAP, base_value, base_value.type.typearg).asTac(this.builder) : base_value,
 					typ.typearg,
 				).asTac(this.builder)),
@@ -130,7 +131,7 @@ export class ExprVisitorBuild extends EXPR.ExprVisitor<OP.Value> {
 			return OP.conditional_expression(
 				this.builder,
 				typ,
-				() => new OP.Instance(OP.OpCode.INSTANCEOF, CoreLibName.FAIL, base_value),
+				() => new OP.Unop(OP.OpCode.FAIL_IS, base_value, TYPE.BOOL),
 				() => new OP.ResultNew(false, typ.typeargSuccess, typ.typeargFailure, new OP.Unop(OP.OpCode.RESULT_EXTRACT, base_value, (base_value.type as TYPE.Result).typeargFailure).asTac(this.builder)),
 				() => new OP.ResultNew(true,  typ.typeargSuccess, typ.typeargFailure, this.#buildUnwrappedGet(
 					expr,

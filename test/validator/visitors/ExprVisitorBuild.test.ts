@@ -420,7 +420,7 @@ test.suite('ExprVisitorBuild#visit', () => {
 				return xjs.String.dedent`
 					${''}
 						(DECL <Maybe> ${return_name})
-						(GOTO.IF (INSTANCEOF None (GET ${base_name})) "${block_then}" "${block_else}")
+						(GOTO.IF (NONE.IS (GET ${base_name})) "${block_then}" "${block_else}")
 					"${block_then}":
 						(SET ${return_name} (MAYBE.NEW))
 						(GOTO "${block_endif}")
@@ -675,7 +675,7 @@ test.suite('ExprVisitorBuild#visit', () => {
 				return xjs.String.dedent`
 					${''}
 						(DECL <Result> ${return_name})
-						(GOTO.IF (INSTANCEOF Fail (GET ${base_name})) "${block_then}" "${block_else}")
+						(GOTO.IF (FAIL.IS (GET ${base_name})) "${block_then}" "${block_else}")
 					"${block_then}":
 						(DECL <Exception> ${excp_name} (RESULT.EXTRACT (GET ${base_name})))
 						(SET ${return_name} (RESULT.NEW nil (GET ${excp_name})))

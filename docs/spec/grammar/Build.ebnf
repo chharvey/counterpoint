@@ -249,7 +249,7 @@ Build(SemanticExpressionAccess[kind=NORMAL] ::= SemanticExpression__0[type: TYPE
 Build(SemanticExpressionAccess[kind=MAYBE] ::= SemanticExpression__0 (SemanticIndex | SemanticKey | SemanticExpression__1)) := [
 	(DECL ‹type› $base `Build(SemanticExpression__0)`)
 	(DECL <Maybe> $returned)
-	(GOTO.IF (INSTANCEOF "None" (GET $base)) "then" "else")
+	(GOTO.IF (NONE.IS (GET $base)) "then" "else")
 	"then":
 	(SET $returned (MAYBE.NEW))
 	(GOTO "endif")
@@ -262,7 +262,7 @@ Build(SemanticExpressionAccess[kind=MAYBE] ::= SemanticExpression__0 (SemanticIn
 Build(SemanticExpressionAccess[kind=RESULT] ::= SemanticExpression__0 (SemanticIndex | SemanticKey | SemanticExpression__1)) := [
 	(DECL ‹type› $base `Build(SemanticExpression__0)`)
 	(DECL <Maybe> $returned)
-	(GOTO.IF (INSTANCEOF "Fail" (GET $base)) "then" "else")
+	(GOTO.IF (FAIL.IS (GET $base)) "then" "else")
 	"then":
 	(SET $returned (RESULT.NEW nil (RESULT.EXTRACT (GET $base))))
 	(GOTO "endif")
