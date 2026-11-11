@@ -36,6 +36,8 @@ export type OpCodeUn = (
 	| OpCode.SET_COUNT
 	| OpCode.MAP_COUNT
 
+	| OpCode.NONE_IS
+	| OpCode.FAIL_IS
 	| OpCode.MAYBE_UNWRAP
 	| OpCode.RESULT_UNWRAP
 	| OpCode.RESULT_EXTRACT
@@ -116,6 +118,8 @@ export class Unop extends Value {
 			case OpCode.SET_COUNT:  { return new VALUE.Natural((operand as VALUE.Set).count); }
 			case OpCode.MAP_COUNT:  { return new VALUE.Natural((operand as VALUE.Map).count); }
 
+			case OpCode.NONE_IS:        { return VALUE.Boolean.fromBoolean(operand instanceof VALUE.Maybe && operand.isNone); }
+			case OpCode.FAIL_IS:        { return VALUE.Boolean.fromBoolean(operand instanceof VALUE.Result && !operand.isOk); }
 			case OpCode.MAYBE_UNWRAP:   { return (operand as VALUE.Maybe).value ?? assert.fail(new TypeError('Unwrapped a None value.')); }
 			case OpCode.RESULT_UNWRAP:  { return  (operand as VALUE.Result).isOk ? (operand as VALUE.Result).argument : assert.fail(new TypeError('Unwrapped a Fail value.')); }
 			case OpCode.RESULT_EXTRACT: { return !(operand as VALUE.Result).isOk ? (operand as VALUE.Result).argument : assert.fail(new TypeError('Extracted from an Ok value.')); }
@@ -142,6 +146,8 @@ export class Unop extends Value {
 			case OpCode.SET_COUNT:  { return VmValue.fromNat(Vect.newNat(wasm.i64.extend_i32_u(VmMap.count(VmValue.asMap (code))))); }
 			case OpCode.MAP_COUNT:  { return VmValue.fromNat(Vect.newNat(wasm.i64.extend_i32_u(VmMap.count(VmValue.asMap (code))))); }
 
+			case OpCode.NONE_IS:        { return cg.vm.op.isNone(code); }
+			case OpCode.FAIL_IS:        { return cg.vm.op.isFail(code); }
 			case OpCode.MAYBE_UNWRAP:   { return op.unwrapMaybe(code); }
 			case OpCode.RESULT_UNWRAP:  { return op.unwrapResult(code); }
 			case OpCode.RESULT_EXTRACT: { return op.extractResult(code); }

@@ -75,6 +75,8 @@ DICT.COUNT([Value]) -> Natural;
 SET.COUNT([Value])  -> Natural;
 MAP.COUNT([Value])  -> Natural;
 
+NONE.IS       ([Value]) -> Boolean;
+FAIL.IS       ([Value]) -> Boolean;
 MAYBE.UNWRAP  ([Value]) -> Value;
 RESULT.UNWRAP ([Value]) -> Value;
 RESULT.EXTRACT([Value]) -> Exception;

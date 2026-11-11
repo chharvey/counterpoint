@@ -501,6 +501,39 @@ test.suite('Opcode', () => {
 					builder.instructions.forEach((instr) => instr.interpret(interp));
 					return assert_equal_values(interp.drops, repeat(new VALUE.Natural(3n), 4));
 				});
+				test.suite('instance of None/Fail.', () => {
+					([OP.OpCode.NONE_IS, OP.OpCode.FAIL_IS] as const).forEach((operator, i) => {
+						test.test(`[operator=${OP.OpCode[operator]}]`, () => {
+							const {stmts, builder} = setupScript(`{
+								val mut a?: str;
+								val mut b?: str;
+								set b = "hello";
+								val c: str? = None.<str>();
+								val d: str? = Some.<str>("world");
+								val e: int! = Fail.<int>(Exception.("message"));
+								val f: int! = Ok.<int>(42);
+								a;
+								b;
+								c;
+								d;
+								e;
+								f;
+							}`, {codegen: false});
+							const expr_visitor = new AST.ExprVisitorBuild(builder);
+							const interp       = new Interpreter();
+							builder.instructions.slice(0, 8).map((instr) => instr.interpret(interp)); // instr index 5 is the decl for the Exception argument
+							// there exists no syntax for “is None”/“is Fail”, so constructing it manually
+							return assert_equal_values(stmts.slice(7).map((stmt) => new OP.Unop(
+								operator,
+								expr_visitor.visit((stmt as AST.STMT.StatementExpression).expr!) as OP.Get,
+								TYPE.BOOL,
+							).interpret(interp)), [
+								[VALUE.TRUE, VALUE.FALSE, VALUE.TRUE, ...repeat(VALUE.FALSE, 3)],
+								[...repeat(VALUE.FALSE, 4), VALUE.TRUE, VALUE.FALSE],
+							][i]);
+						});
+					});
+				});
 				test.suite('[operator=MAYBE_UNWRAP]', () => {
 					test.test('throws when operand is a None.', () => {
 						const instrs: readonly OP.Instruction[] = setupScript(`{
@@ -2063,6 +2096,35 @@ test.suite('Opcode', () => {
 						unop.codegen(cg),
 						Value.fromNat(Vect.newNat(wasm.i64.extend_i32_u(VmMap.count(Value.asMap(map.codegen(cg)))))),
 					);
+				});
+				test.suite('instance of None/Fail.', () => {
+					([OP.OpCode.NONE_IS, OP.OpCode.FAIL_IS] as const).forEach((operator, i) => {
+						test.test(`[operator=${OP.OpCode[operator]}]`, () => {
+							const {stmts, builder, cg, wasm} = setupScript(`{
+								val mut a?: str;
+								val mut b?: str;
+								set b = "hello";
+								val c: str? = None.<str>();
+								val d: str? = Some.<str>("world");
+								val e: int! = Fail.<int>(Exception.("message"));
+								val f: int! = Ok.<int>(42);
+								a;
+								b;
+								c;
+								d;
+								e;
+								f;
+							}`);
+							const {reftype, op} = cg.vm;
+							const expr_visitor = new AST.ExprVisitorBuild(builder);
+							// there exists no syntax for “is None”/“is Fail”, so constructing it manually
+							return assertEqualBins(stmts.slice(7).map((stmt) => new OP.Unop(
+								operator,
+								expr_visitor.visit((stmt as AST.STMT.StatementExpression).expr!) as OP.Get,
+								TYPE.BOOL,
+							).codegen(cg)), [0, 1, 2, 3, 5, 6].map((j) => [op.isNone, op.isFail][i](wasm.local.get(j, reftype.Value)))); // local index 4 is the decl for the Exception argument
+						});
+					});
 				});
 				test.test('MAYBE.UNWRAP', () => {
 					const {builder, cg, wasm} = setupScript(`{

@@ -310,6 +310,21 @@ Natural! Interpret((MAP.COUNT `obj`)) :=
 	3. *Return:* `Natural(obj.count)`.
 ;
 
+Value! Interpret((NONE.IS `v`)) :=
+	1. *If* `v` is an instance of `Maybe` *and* `v` lacks a value:
+		1. *Return:* `true`.
+	2. *Else:*
+		1. *Return:* `false`.
+;
+
+Value! Interpret((FAIL.IS `v`)) :=
+	1. *If* `v` is an instance of `Result` *and* `v` has a failure reason:
+		1. *Return:* `true`.
+		1. *If* `v` has a failure reason:
+	2. *Else:*
+		1. *Return:* `false`.
+;
+
 Value! Interpret((MAYBE.UNWRAP `obj`)) :=
 	1. *Set* `obj` to *Unwrap:* `Interpret(obj)`.
 	2. *Assert:* `obj` is instance of `Maybe`.
