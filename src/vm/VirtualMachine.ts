@@ -29,9 +29,16 @@ type TypeKey = (
 	| 'Dict'
 	| 'Map'
 	| 'Value'
+	| 'Data'
 	| 'Object'
 	| 'Class'
+	| 'CplPrimitive'
 	| 'CplString'
+	| 'CplTuple'
+	| 'CplRecord'
+	| 'CplList'
+	| 'CplDict'
+	| 'CplMap'
 	| 'Exception'
 	| 'Maybe'
 	| 'Result'
@@ -312,47 +319,61 @@ const TYPES: {
 
 	return {
 		heaptypeRegistry: {
-			Property:  heaptypes[i_property],
-			Case:      heaptypes[i_case],
-			String:    heaptypes[i_string],
-			Tuple:     heaptypes[i_tuple],
-			Record:    heaptypes[i_record],
-			ListArray: heaptypes[i_list_array],
-			DictArray: heaptypes[i_dict_array],
-			MapArray:  heaptypes[i_map_array],
-			List:      heaptypes[i_list],
-			Dict:      heaptypes[i_dict],
-			Map:       heaptypes[i_map],
-			Value:     heaptypes[i_value],
-			Object:    heaptypes[i_object],
-			Class:     heaptypes[i_class],
-			CplString: heaptypes[i_cpl_string],
-			Exception: heaptypes[i_exception],
-			Maybe:     heaptypes[i_maybe],
-			Result:    heaptypes[i_result],
-			Function:  heaptypes[i_function],
+			Property:     heaptypes[i_property],
+			Case:         heaptypes[i_case],
+			String:       heaptypes[i_string],
+			Tuple:        heaptypes[i_tuple],
+			Record:       heaptypes[i_record],
+			ListArray:    heaptypes[i_list_array],
+			DictArray:    heaptypes[i_dict_array],
+			MapArray:     heaptypes[i_map_array],
+			List:         heaptypes[i_list],
+			Dict:         heaptypes[i_dict],
+			Map:          heaptypes[i_map],
+			Value:        heaptypes[i_value],
+			Data:         heaptypes[i_data],
+			Object:       heaptypes[i_object],
+			Class:        heaptypes[i_class],
+			CplPrimitive: heaptypes[i_cpl_primitive],
+			CplString:    heaptypes[i_cpl_string],
+			CplTuple:     heaptypes[i_cpl_tuple],
+			CplRecord:    heaptypes[i_cpl_record],
+			CplList:      heaptypes[i_cpl_list],
+			CplDict:      heaptypes[i_cpl_dict],
+			CplMap:       heaptypes[i_cpl_map],
+			Exception:    heaptypes[i_exception],
+			Maybe:        heaptypes[i_maybe],
+			Result:       heaptypes[i_result],
+			Function:     heaptypes[i_function],
 		},
 
 		reftypeRegistry: {
-			Property:  binaryen.getTypeFromHeapType(heaptypes[i_property],   false),
-			Case:      binaryen.getTypeFromHeapType(heaptypes[i_case],       false),
-			String:    binaryen.getTypeFromHeapType(heaptypes[i_string],     false),
-			Tuple:     binaryen.getTypeFromHeapType(heaptypes[i_tuple],      false),
-			Record:    binaryen.getTypeFromHeapType(heaptypes[i_record],     false),
-			ListArray: binaryen.getTypeFromHeapType(heaptypes[i_list_array], false),
-			DictArray: binaryen.getTypeFromHeapType(heaptypes[i_dict_array], false),
-			MapArray:  binaryen.getTypeFromHeapType(heaptypes[i_map_array],  false),
-			List:      binaryen.getTypeFromHeapType(heaptypes[i_list],       false),
-			Dict:      binaryen.getTypeFromHeapType(heaptypes[i_dict],       false),
-			Map:       binaryen.getTypeFromHeapType(heaptypes[i_map],        false),
-			Value:     binaryen.getTypeFromHeapType(heaptypes[i_value],      false),
-			Object:    binaryen.getTypeFromHeapType(heaptypes[i_object],     false),
-			Class:     binaryen.getTypeFromHeapType(heaptypes[i_class],      false),
-			CplString: binaryen.getTypeFromHeapType(heaptypes[i_cpl_string], false),
-			Exception: binaryen.getTypeFromHeapType(heaptypes[i_exception],  false),
-			Maybe:     binaryen.getTypeFromHeapType(heaptypes[i_maybe],      false),
-			Result:    binaryen.getTypeFromHeapType(heaptypes[i_result],     false),
-			Function:  binaryen.getTypeFromHeapType(heaptypes[i_function],   false),
+			Property:     binaryen.getTypeFromHeapType(heaptypes[i_property],      false),
+			Case:         binaryen.getTypeFromHeapType(heaptypes[i_case],          false),
+			String:       binaryen.getTypeFromHeapType(heaptypes[i_string],        false),
+			Tuple:        binaryen.getTypeFromHeapType(heaptypes[i_tuple],         false),
+			Record:       binaryen.getTypeFromHeapType(heaptypes[i_record],        false),
+			ListArray:    binaryen.getTypeFromHeapType(heaptypes[i_list_array],    false),
+			DictArray:    binaryen.getTypeFromHeapType(heaptypes[i_dict_array],    false),
+			MapArray:     binaryen.getTypeFromHeapType(heaptypes[i_map_array],     false),
+			List:         binaryen.getTypeFromHeapType(heaptypes[i_list],          false),
+			Dict:         binaryen.getTypeFromHeapType(heaptypes[i_dict],          false),
+			Map:          binaryen.getTypeFromHeapType(heaptypes[i_map],           false),
+			Value:        binaryen.getTypeFromHeapType(heaptypes[i_value],         false),
+			Data:         binaryen.getTypeFromHeapType(heaptypes[i_data],          false),
+			Object:       binaryen.getTypeFromHeapType(heaptypes[i_object],        false),
+			Class:        binaryen.getTypeFromHeapType(heaptypes[i_class],         false),
+			CplPrimitive: binaryen.getTypeFromHeapType(heaptypes[i_cpl_primitive], false),
+			CplString:    binaryen.getTypeFromHeapType(heaptypes[i_cpl_string],    false),
+			CplTuple:     binaryen.getTypeFromHeapType(heaptypes[i_cpl_tuple],     false),
+			CplRecord:    binaryen.getTypeFromHeapType(heaptypes[i_cpl_record],    false),
+			CplList:      binaryen.getTypeFromHeapType(heaptypes[i_cpl_list],      false),
+			CplDict:      binaryen.getTypeFromHeapType(heaptypes[i_cpl_dict],      false),
+			CplMap:       binaryen.getTypeFromHeapType(heaptypes[i_cpl_map],       false),
+			Exception:    binaryen.getTypeFromHeapType(heaptypes[i_exception],     false),
+			Maybe:        binaryen.getTypeFromHeapType(heaptypes[i_maybe],         false),
+			Result:       binaryen.getTypeFromHeapType(heaptypes[i_result],        false),
+			Function:     binaryen.getTypeFromHeapType(heaptypes[i_function],      false),
 		},
 
 		reftypeNullRegistry: {
