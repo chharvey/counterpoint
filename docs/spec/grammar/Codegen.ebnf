@@ -329,6 +329,7 @@ Codegen((GE `v0` `v1`)) := (call $op:ge `Codegen(v0)` `Codegen(v1)`);
 
 Codegen((ID `v0` `v1`)) := (call $op:id `Codegen(v0)` `Codegen(v1)`);
 Codegen((EQ `v0` `v1`)) := (call $op:eq `Codegen(v0)` `Codegen(v1)`);
+Codegen((IS `v0` `v1`)) := (call $op:is `Codegen(v0)` `Codegen(v1)`);
 
 Codegen((LAMBDA `name` `arity` `source`)) := (struct.new $Function
 	(global.get $Class.FUNCTION)

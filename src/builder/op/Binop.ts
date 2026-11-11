@@ -169,7 +169,7 @@ export class Binop extends Value {
 
 			case OpCode.ID: { return cg.vm.op.id(code0, code1); }
 			case OpCode.EQ: { return cg.vm.op.eq(code0, code1); }
-			case OpCode.IS: { throw new Error('`is` operator codegen not yet supported.'); }
+			case OpCode.IS: { return cg.vm.op.is(code0, code1); }
 		}
 	}
 

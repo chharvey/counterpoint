@@ -107,6 +107,16 @@
 
 
 
+(func $Value.is-instance-of (param $value (ref $Value)) (param $class (ref $Class)) (result i32)
+	(ref.eq (struct.get $Value $class (local.get $value)) (local.get $class))
+	;; Warning: This only returns whether the value is a *direct instance* of the class,
+	;; but not if it is an instance of an ancestor.
+	;; TODO: Need to walk up the class’ `$super` fields, checking every step
+	;; until returning true or until null is reached.
+)
+
+
+
 (func $Value.as-primitive (export "Value#asPrimitive") (param (ref $Value)) (result v128)          (struct.get $Cpl-Primitive $bits   (ref.cast (ref $Cpl-Primitive) (local.get 0))))
 (func $Value.as-string    (export "Value#asString")    (param (ref $Value)) (result (ref $String)) (struct.get $Cpl-String    $string (ref.cast (ref $Cpl-String)    (local.get 0))))
 (func $Value.as-tuple     (export "Value#asTuple")     (param (ref $Value)) (result (ref $Tuple))  (struct.get $Cpl-Tuple     $tuple  (ref.cast (ref $Cpl-Tuple)     (local.get 0))))

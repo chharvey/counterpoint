@@ -82,6 +82,7 @@ export function ops(vm: VirtualMachine) {
 					['op::ge',            {name: 'op:ge',             param: binary_params,  result: reftype.Value}],
 					['op::id',            {name: 'op:id',             param: binary_params,  result: reftype.Value}],
 					['op::eq',            {name: 'op:eq',             param: binary_params,  result: reftype.Value}],
+					['op::is',            {name: 'op:is',             param: binary_params,  result: reftype.Value}],
 				]);
 			}
 			return func_import_memo;
@@ -421,6 +422,11 @@ export function ops(vm: VirtualMachine) {
 		/** Are the arguments ‘equal’ per the Counterpoint definition? */
 		eq: (param0: binaryen.ExpressionRef /* (ref $Value) */, param1: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
 			vm.mod.wasm.call('op:eq', [param0, param1], vm.reftype.Value)
+		),
+
+		/** Is the first argument an instance of the second argument? */
+		is: (param0: binaryen.ExpressionRef /* (ref $Value) */, param1: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
+			vm.mod.wasm.call('op:is', [param0, param1], vm.reftype.Value)
 		),
 	} as const;
 }

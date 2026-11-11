@@ -2121,33 +2121,6 @@ test.suite('Opcode', () => {
 			});
 
 			test.suite('Instance', () => {
-				test.test.todo('INSTANCEOF', () => {
-					const {builder, cg, wasm} = setupScript(`{
-						${CORE_LIB_NAMES.slice(2, -1).map((classname) => `null is ${classname};`).join('\n')};
-					}`);
-					const operand: binaryen.ExpressionRef = genConst(cg);
-					return assertEqualBins(builder.instructions.map((instr) => instr.codegen(cg)), [
-						cg.vm.op.isInt(operand),
-						cg.vm.op.isInt(operand),
-						cg.vm.op.isNat(operand),
-						cg.vm.op.isFloat(operand),
-						cg.vm.op.isString(operand),
-						cg.vm.op.isObject(operand),
-						cg.vm.op.isList(operand),
-						cg.vm.op.isDict(operand),
-						cg.vm.op.isMap(operand),
-						cg.vm.op.isMap(operand),
-						cg.vm.op.isException(operand),
-						cg.vm.op.isMaybe(operand),
-						cg.vm.op.isNone(operand),
-						cg.vm.op.isSome(operand),
-						cg.vm.op.isResult(operand),
-						cg.vm.op.isFail(operand),
-						cg.vm.op.isOk(operand),
-						cg.vm.op.isFunction(operand),
-						// TODO: cg.vm.op.isClass(operand),
-					].map((expr) => wasm.drop(expr)));
-				});
 				test.test('CAST', () => {
 					const {builder, cg, wasm} = setupScript(`{
 						${CORE_LIB_NAMES.slice(0, -1).map((classname) => `null as <anything> as ${classname};`).join('\n')};
@@ -2179,7 +2152,7 @@ test.suite('Opcode', () => {
 				});
 			});
 
-			test.test('Binop returns custom WASM functions.', () => {
+			test.test('Binop: custom WASM arithmetic/comparative functions.', () => {
 				const {stmts, builder, cg} = setupScript(`{
 					2 + 3;
 					2 - 3;
@@ -2238,6 +2211,38 @@ test.suite('Opcode', () => {
 						cg.vm.op.eq(genConst(cg, 2.0), genConst(cg, 3n)),
 					],
 				);
+			});
+			test.suite('Binop', () => {
+				test.test('[operator=IS]', () => {
+					const {builder, cg, wasm} = setupScript(`{
+						${CORE_LIB_NAMES.map((classname) => `null is ${classname};`).join('\n')};
+					}`);
+					const {vm: {op, Class: VmClass}} = cg;
+					const operand: binaryen.ExpressionRef = genConst(cg);
+					return assertEqualBins(builder.instructions.map((instr) => instr.codegen(cg)), [
+						VmClass.NULL,
+						VmClass.BOOLEAN,
+						VmClass.SYMBOL,
+						VmClass.INTEGER,
+						VmClass.NATURAL,
+						VmClass.FLOAT,
+						VmClass.STRING,
+						VmClass.OBJECT,
+						VmClass.LIST,
+						VmClass.DICT,
+						VmClass.SET,
+						VmClass.MAP,
+						VmClass.EXCEPTION,
+						VmClass.MAYBE,
+						VmClass.NONE,
+						VmClass.SOME,
+						VmClass.RESULT,
+						VmClass.FAIL,
+						VmClass.OK,
+						VmClass.FUNCTION,
+						VmClass.CLASS,
+					].map((klass) => wasm.drop(op.is(operand, klass))));
+				});
 			});
 
 			test.test('OpFunction', () => {

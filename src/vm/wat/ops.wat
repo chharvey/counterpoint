@@ -1384,6 +1384,15 @@
 
 
 
+(func $op:is (export "op::is") (type $Value.relop) (param (ref $Value) (ref $Value)) (result (ref $Value))
+	(return_call $Value.bool-from-i32 (call $Value.is-instance-of
+		(local.get 0)
+		(ref.cast (ref $Class) (local.get 1))
+	))
+)
+
+
+
 ;; wraps opcodes so they can be referenced dynamically
 (func $!i64.eq   (type $i64.relop) (i64.eq   (local.get 0) (local.get 1)))
 (func $!i64.lt_s (type $i64.relop) (i64.lt_s (local.get 0) (local.get 1)))
