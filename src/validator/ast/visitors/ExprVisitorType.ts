@@ -368,7 +368,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 		let cast_type: TYPE.Type | undefined;
 		if (expr.operand1 instanceof EXPR.Variable) {
 			const symbol = expr.validator.getSymbol(expr.operand1.id) as SymbolSchemaClass;
-			cast_type = symbol.classSignature.supertype;
+			cast_type = symbol.classSignature.instanceType;
 		}
 		switch (expr.operator) {
 			case Operator.IS: {

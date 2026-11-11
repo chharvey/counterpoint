@@ -80,7 +80,7 @@ export class Get extends ValueTac {
 				case CoreLibName.FUNCTION:  { native_class = VALUE.Function;  break; }
 				case CoreLibName.CLASS:     { native_class = VALUE.Class;     break; }
 			}
-			this.#interpretedValue ??= new VALUE.Class(this.target.classSignature.supertype, native_class);
+			this.#interpretedValue ??= new VALUE.Class(this.target.classSignature.instanceType, native_class);
 			return this.#interpretedValue;
 		}
 		return interp.getLocalValue(this.target) ?? assert.fail(new ReferenceError(`Local variable \`${this.#targetName}\` must be set first!`));
