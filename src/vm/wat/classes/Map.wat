@@ -2,20 +2,20 @@
 	;; the return value, the number of live elements.
 	(local $count i32)
 	;; the Map’s internal array.
-	(local $internal (ref $MapInternal))
+	(local $internal (ref $MapArray))
 	;; index of iteration.
 	(local $i i32)
 	;; object of iteration.
 	(local $case (ref null $Case))
 
 	(local.set $count    (i32.const 0))
-	(local.set $internal (struct.get $Map $internal (local.get $map)))
+	(local.set $internal (struct.get $Map $array (local.get $map)))
 
 	(block $exit
 		(local.set $i (i32.const 0))
 		(loop $repeat
 			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $internal))))
-			(local.set $case (array.get $MapInternal (local.get $internal) (local.get $i)))
+			(local.set $case (array.get $MapArray (local.get $internal) (local.get $i)))
 			;; if the case is “live”, increment the count
 			(if
 				(i32.and
@@ -35,7 +35,7 @@
 
 (func $Map.find (export "Map#find") (param $map (ref $Map)) (param $ant (ref $Value)) (result i32 (ref null $Case))
 	;; the given Map’s internal array.
-	(local $internal (ref $MapInternal))
+	(local $internal (ref $MapArray))
 	;; the length of the array. constant.
 	(local $ARRLEN i32)
 	;; index of the array to retrieve from. increments on each loop until an entry or null is found.
@@ -49,14 +49,14 @@
 	(local $tombidx  i32)
 	(local $tombcase (ref null $Case))
 
-	(local.set $internal (struct.get $Map $internal (local.get $map)))
+	(local.set $internal (struct.get $Map $array (local.get $map)))
 	(local.set $ARRLEN   (array.len (local.get $internal)))
 	(local.set $index    (call $util:mod (i32.wrap_i64 (call $Value.hash (local.get $ant))) (local.get $ARRLEN))) ;; will trap if ARRLEN == 0
 	(local.set $tombidx  (i32.const -1))
 	(local.set $tombcase (ref.null $Case))
 
 	(loop $repeat
-		(local.set $case (array.get $MapInternal (local.get $internal) (local.get $index)))
+		(local.set $case (array.get $MapArray (local.get $internal) (local.get $index)))
 		;; if the current case is null, the key is definitely not in the Map.
 		;; if we’ve passed a tombstone, return it and its index.
 		;; otherwise, return the current null case and its index.
@@ -91,18 +91,18 @@
 
 (func $Map.adjust-capacity (export "Map#adjustCapacity") (param $map (ref $Map)) (param $capacity i32)
 	;; the given Map’s original internal array.
-	(local $orig (ref $MapInternal))
+	(local $orig (ref $MapArray))
 	;; copy of the Map’s entries, to be used as the Map’s new internal array.
-	(local $copy (ref $MapInternal))
+	(local $copy (ref $MapArray))
 	;; index of iteration over original array.
 	(local $i i32)
 	;; case at index $i in original array.
 	(local $case (ref null $Case))
 
-	(local.set $orig (struct.get $Map $internal (local.get $map)))
-	(local.set $copy (array.new_default $MapInternal (local.get $capacity)))
+	(local.set $orig (struct.get $Map $array (local.get $map)))
+	(local.set $copy (array.new_default $MapArray (local.get $capacity)))
 
-	(struct.set $Map $internal (local.get $map) (local.get $copy))
+	(struct.set $Map $array (local.get $map) (local.get $copy))
 
 	;; we can’t perform a simple `(array.copy)` because hashing could be different
 	;; reset the size, incrementing on iteration
@@ -111,7 +111,7 @@
 		(local.set $i (i32.const 0))
 		(loop $repeat
 			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $orig))))
-			(local.set $case (array.get $MapInternal (local.get $orig) (local.get $i)))
+			(local.set $case (array.get $MapArray (local.get $orig) (local.get $i)))
 			;; if the case is “live”, put it in the copy and increment the size
 			(if
 				(i32.and
@@ -119,7 +119,7 @@
 					(i32.eqz (ref.eq (local.get $case) (global.get $Case.TOMBSTONE)))
 				)
 				(then
-					(array.set $MapInternal
+					(array.set $MapArray
 						(local.get $copy)
 						(drop (call $Map.find (local.get $map) (struct.get $Case $ant (local.get $case))))
 						(local.get $case)
@@ -168,7 +168,7 @@
 		(then
 			(local.set $new-capacity (call $util:capacity-needed (i32.add (struct.get $Map $size (local.get $map)) (i32.const 1))))
 			(if
-				(i32.lt_u (array.len (struct.get $Map $internal (local.get $map))) (local.get $new-capacity))
+				(i32.lt_u (array.len (struct.get $Map $array (local.get $map))) (local.get $new-capacity))
 				(then
 					(call $Map.adjust-capacity (local.get $map) (local.get $new-capacity))
 					;; if adjusting the array, local index pointer needs to be reset
@@ -179,8 +179,8 @@
 			(struct.set $Map $size (local.get $map) (i32.add (struct.get $Map $size (local.get $map)) (i32.const 1)))
 		)
 	)
-	(array.set $MapInternal
-		(struct.get $Map $internal (local.get $map))
+	(array.set $MapArray
+		(struct.get $Map $array (local.get $map))
 		(local.get $index)
 		(struct.new $Case
 			(local.get $ant)
@@ -210,8 +210,8 @@
 	)
 
 	;; replace the case with a tombstone
-	(array.set $MapInternal
-		(struct.get $Map $internal (local.get $map))
+	(array.set $MapArray
+		(struct.get $Map $array (local.get $map))
 		(local.get $index)
 		(global.get $Case.TOMBSTONE)
 	)
@@ -223,14 +223,14 @@
 
 
 (func $Map.copy-from-map (export "Dict#copyFromMap") (param $dest (ref $Map)) (param $src (ref $Map))
-	(local $dest-internal (ref $MapInternal))
-	(local $src-internal  (ref $MapInternal))
+	(local $dest-internal (ref $MapArray))
+	(local $src-internal  (ref $MapArray))
 
-	(local.set $dest-internal (struct.get $Map $internal (local.get $dest)))
-	(local.set $src-internal  (struct.get $Map $internal (local.get $src)))
+	(local.set $dest-internal (struct.get $Map $array (local.get $dest)))
+	(local.set $src-internal  (struct.get $Map $array (local.get $src)))
 
 	(call $Map.adjust-capacity (local.get $dest) (array.len (local.get $src-internal)))
-	(array.copy $MapInternal $MapInternal
+	(array.copy $MapArray $MapArray
 		(local.get $dest-internal)
 		(i32.const 0)
 		(local.get $src-internal)
@@ -242,17 +242,14 @@
 
 
 (func $Map.fill-set-from-tuple (export "Map#fillSetFromTuple") (param $dest (ref $Map)) (param $src (ref $Tuple))
-	(local $src-internal (ref $TupleInternal))
-	(local $i            i32)
-	(local $item         (ref $Value))
-
-	(local.set $src-internal (struct.get $Tuple $internal (local.get $src)))
+	(local $i    i32)
+	(local $item (ref $Value))
 
 	(block $exit
 		(local.set $i (i32.const 0))
 		(loop $repeat
-			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $src-internal))))
-			(local.set $item (array.get $TupleInternal (local.get $src-internal) (local.get $i)))
+			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $src))))
+			(local.set $item (array.get $Tuple (local.get $src) (local.get $i)))
 			(call $Map.set (local.get $dest) (local.get $item) (global.get $Value.NULL))
 			(local.set $i (i32.add (local.get $i) (i32.const 1)))
 			(br $repeat)
@@ -260,17 +257,17 @@
 	)
 )
 (func $Map.fill-set-from-list (export "Map#fillSetFromList") (param $dest (ref $Map)) (param $src (ref $List))
-	(local $src-internal (ref $ListInternal))
+	(local $src-internal (ref $ListArray))
 	(local $i            i32)
 	(local $item         (ref null $Value))
 
-	(local.set $src-internal (struct.get $List $internal (local.get $src)))
+	(local.set $src-internal (struct.get $List $array (local.get $src)))
 
 	(block $exit
 		(local.set $i (i32.const 0))
 		(loop $repeat
 			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $src-internal))))
-			(local.set $item (array.get $ListInternal (local.get $src-internal) (local.get $i)))
+			(local.set $item (array.get $ListArray (local.get $src-internal) (local.get $i)))
 			(if
 				(i32.eqz (ref.is_null (local.get $item)))
 				(then (call $Map.set (local.get $dest) (ref.as_non_null (local.get $item)) (global.get $Value.NULL)))
@@ -284,19 +281,16 @@
 
 
 (func $Map.fill-from-tuple (export "Map#fillFromTuple") (param $dest (ref $Map)) (param $src (ref $Tuple))
-	(local $src-internal (ref $TupleInternal))
-	(local $i            i32)
-	(local $item         (ref $Value))
-
-	(local.set $src-internal (struct.get $Tuple $internal (local.get $src)))
+	(local $i    i32)
+	(local $item (ref $Value))
 
 	(block $exit
 		(local.set $i (i32.const 0))
 		(loop $repeat
-			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $src-internal))))
-			(local.set $item (array.get $TupleInternal (local.get $src-internal) (local.get $i)))
+			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $src))))
+			(local.set $item (array.get $Tuple (local.get $src) (local.get $i)))
 			(call $Map.set (local.get $dest) (call $Case.from-tuple
-				(struct.get $Tuple $internal (ref.cast (ref $Tuple) (struct.get $Value $composite (local.get $item))))
+				(call $Value.as-tuple (local.get $item))
 			))
 			(local.set $i (i32.add (local.get $i) (i32.const 1)))
 			(br $repeat)
@@ -304,21 +298,21 @@
 	)
 )
 (func $Map.fill-from-list (export "Map#fillFromList") (param $dest (ref $Map)) (param $src (ref $List))
-	(local $src-internal (ref $ListInternal))
+	(local $src-internal (ref $ListArray))
 	(local $i            i32)
 	(local $item         (ref null $Value))
 
-	(local.set $src-internal (struct.get $List $internal (local.get $src)))
+	(local.set $src-internal (struct.get $List $array (local.get $src)))
 
 	(block $exit
 		(local.set $i (i32.const 0))
 		(loop $repeat
 			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $src-internal))))
-			(local.set $item (array.get $ListInternal (local.get $src-internal) (local.get $i)))
+			(local.set $item (array.get $ListArray (local.get $src-internal) (local.get $i)))
 			(if
 				(i32.eqz (ref.is_null (local.get $item)))
 				(then (call $Map.set (local.get $dest) (call $Case.from-tuple
-					(struct.get $Tuple $internal (ref.cast (ref $Tuple) (struct.get $Value $composite (local.get $item))))
+					(call $Value.as-tuple (ref.as_non_null (local.get $item)))
 				)))
 			)
 			(local.set $i (i32.add (local.get $i) (i32.const 1)))
@@ -327,21 +321,21 @@
 	)
 )
 (func $Map.fill-from-set (export "Map#fillFromSet") (param $dest (ref $Map)) (param $src (ref $Map))
-	(local $src-internal (ref $MapInternal))
+	(local $src-internal (ref $MapArray))
 	(local $i            i32)
 	(local $item         (ref null $Case))
 
-	(local.set $src-internal (struct.get $Map $internal (local.get $src)))
+	(local.set $src-internal (struct.get $Map $array (local.get $src)))
 
 	(block $exit
 		(local.set $i (i32.const 0))
 		(loop $repeat
 			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $src-internal))))
-			(local.set $item (array.get $MapInternal (local.get $src-internal) (local.get $i)))
+			(local.set $item (array.get $MapArray (local.get $src-internal) (local.get $i)))
 			(if
 				(i32.eqz (ref.is_null (local.get $item)))
 				(then (call $Map.set (local.get $dest) (call $Case.from-tuple
-					(struct.get $Tuple $internal (ref.cast (ref $Tuple) (struct.get $Value $composite (struct.get $Case $ant (local.get $item)))))
+					(call $Value.as-tuple (struct.get $Case $ant (local.get $item)))
 				)))
 			)
 			(local.set $i (i32.add (local.get $i) (i32.const 1)))

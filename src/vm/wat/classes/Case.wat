@@ -5,7 +5,7 @@
 
 
 
-(func $Case.from-tuple (param (ref $TupleInternal)) (result (ref $Value) (ref $Value))
-	(array.get $TupleInternal (local.get 0) (i32.const 0))
-	(array.get $TupleInternal (local.get 0) (i32.const 1))
+(func $Case.from-tuple (param (ref $Tuple)) (result (ref $Value) (ref $Value))
+	(array.get $Tuple (local.get 0) (i32.const 0))
+	(array.get $Tuple (local.get 0) (i32.const 1))
 )

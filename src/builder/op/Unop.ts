@@ -131,16 +131,16 @@ export class Unop extends Value {
 			case OpCode.INT_FROM:   { return op.toInt(code); }
 			case OpCode.NAT_FROM:   { return op.toNat(code); }
 			case OpCode.FLOAT_FROM: { return op.toFloat(code); }
-			case OpCode.STR_FROM:   { return VmValue.newComposite(VmValue.stringify(code)); }
+			case OpCode.STR_FROM:   { return op.toStr(code); }
 
 			case OpCode.NOT: { return op.not(code); }
 			case OpCode.EMP: { return op.isEmpty(code); }
 			case OpCode.NEG: { return op.negate(code); }
 
-			case OpCode.LIST_COUNT: { return VmValue.newPrimitive(Vect.newNat(wasm.i64.extend_i32_u(List .count(VmValue.asList(code))))); }
-			case OpCode.DICT_COUNT: { return VmValue.newPrimitive(Vect.newNat(wasm.i64.extend_i32_u(Dict .count(VmValue.asDict(code))))); }
-			case OpCode.SET_COUNT:  { return VmValue.newPrimitive(Vect.newNat(wasm.i64.extend_i32_u(VmMap.count(VmValue.asMap (code))))); }
-			case OpCode.MAP_COUNT:  { return VmValue.newPrimitive(Vect.newNat(wasm.i64.extend_i32_u(VmMap.count(VmValue.asMap (code))))); }
+			case OpCode.LIST_COUNT: { return VmValue.fromNat(Vect.newNat(wasm.i64.extend_i32_u(List .count(VmValue.asList(code))))); }
+			case OpCode.DICT_COUNT: { return VmValue.fromNat(Vect.newNat(wasm.i64.extend_i32_u(Dict .count(VmValue.asDict(code))))); }
+			case OpCode.SET_COUNT:  { return VmValue.fromNat(Vect.newNat(wasm.i64.extend_i32_u(VmMap.count(VmValue.asMap (code))))); }
+			case OpCode.MAP_COUNT:  { return VmValue.fromNat(Vect.newNat(wasm.i64.extend_i32_u(VmMap.count(VmValue.asMap (code))))); }
 
 			case OpCode.MAYBE_UNWRAP:   { return op.unwrapMaybe(code); }
 			case OpCode.RESULT_UNWRAP:  { return op.unwrapResult(code); }

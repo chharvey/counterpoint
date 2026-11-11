@@ -71,7 +71,7 @@ export class ObjectNew extends Value {
 
 	@memoizeMethod
 	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
-		const class_: binaryen.ExpressionRef /* (ref $Class) */ | undefined = this.class_ && cg.vm.Value.asClass(this.class_.codegen(cg));
-		return cg.vm.Value.newComposite(this.isClass ? cg.codegenClass(class_) : cg.codegenObject(class_!));
+		const class_: binaryen.ExpressionRef /* (ref $Class) */ | undefined = this.class_ && cg.mod.wasm.ref.cast(this.class_.codegen(cg), cg.vm.reftype.Class);
+		return this.isClass ? cg.codegenClass(class_) : cg.codegenObject(class_!);
 	}
 }

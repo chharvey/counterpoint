@@ -46,7 +46,7 @@ function insert_entry(array: Array<binaryen.ExpressionRef | undefined>, index: n
 export class CodeGenerator {
 	/**
 	 * Load Factor for arrays.
-	 * The number of items (including tombstones) in a `$ListInternal`/`$DictInternal`
+	 * The number of items (including tombstones) in a `$ListArray`/`$DictArray`
 	 * must not exceed this factor as a multiple of array length.
 	 */
 	static readonly #LOAD_FACTOR = 7 / 8;
@@ -276,7 +276,7 @@ export class CodeGenerator {
 	 * @return      `(array.new_fixed $String <...items>)`
 	 */
 	public codegenString(units: readonly (binaryen.ExpressionRef /* i32 */)[] = []): binaryen.ExpressionRef /* (ref $String) */ {
-		return this.mod.wasm.struct.new([this.mod.wasm.array.new_fixed(this.vm.heaptype.StringInternal, units)], this.vm.heaptype.String);
+		return this.mod.wasm.array.new_fixed(this.vm.heaptype.String, units);
 	}
 
 	/**
@@ -285,7 +285,7 @@ export class CodeGenerator {
 	 * @return      `(array.new_fixed $Tuple <...items>)`
 	 */
 	public codegenTuple(items: readonly (binaryen.ExpressionRef /* (ref $Value) */)[] = []): binaryen.ExpressionRef /* (ref $Tuple) */ {
-		return this.mod.wasm.struct.new([this.mod.wasm.array.new_fixed(this.vm.heaptype.TupleInternal, items)], this.vm.heaptype.Tuple);
+		return this.mod.wasm.array.new_fixed(this.vm.heaptype.Tuple, items);
 	}
 
 	/**
@@ -297,14 +297,14 @@ export class CodeGenerator {
 	public codegenRecord(props: ReadonlyMap<bigint, binaryen.ExpressionRef /* (ref $Property) */> = new Map()): binaryen.ExpressionRef /* (ref $Record) */ {
 		const entries = new Array<binaryen.ExpressionRef | undefined>(props.size);
 		props.forEach((code, id) => insert_entry(entries, Number(id) % entries.length, code));
-		return this.mod.wasm.struct.new([this.mod.wasm.array.new_fixed(this.vm.heaptype.RecordInternal, entries as binaryen.ExpressionRef[])], this.vm.heaptype.Record);
+		return this.mod.wasm.array.new_fixed(this.vm.heaptype.Record, entries as binaryen.ExpressionRef[]);
 	}
 
 	/**
 	 * Return a new `$List` from items.
 	 * This method automatically populates blank slots with the WASM expression `(ref.null $Value)`.
 	 * @param items items in the array; must be of type `(ref $Value)`
-	 * @return      `(struct.new $List <count> (array.new_fixed $ListInternal <...items>))`
+	 * @return      `(struct.new $List <count> (array.new_fixed $ListArray <...items>))`
 	 */
 	public codegenList(items: readonly (binaryen.ExpressionRef /* (ref $Value) */)[] = []): binaryen.ExpressionRef /* (ref $List) */ {
 		const {vm: {heaptype}, mod: {wasm}} = this;
@@ -318,7 +318,7 @@ export class CodeGenerator {
 		);
 		return wasm.struct.new([
 			wasm.i32.const(items.length),
-			wasm.array.new_fixed(heaptype.ListInternal, entries),
+			wasm.array.new_fixed(heaptype.ListArray, entries),
 		], heaptype.List);
 	}
 
@@ -327,7 +327,7 @@ export class CodeGenerator {
 	 * This method automatically hashes the property keys and inserts them at the correct indices,
 	 * as well as populates blank slots with the WASM expression `(ref.null $Property)`.
 	 * @param props key–value pairs whose keys are key ids (`bigint`s) and whose values (of type `(ref $Property)`) are items in the array
-	 * @return      `(struct.new $Dict <count> (array.new_fixed $DictInternal <...props>))`
+	 * @return      `(struct.new $Dict <count> (array.new_fixed $DictArray <...props>))`
 	 */
 	public codegenDict(props: ReadonlyMap<bigint, binaryen.ExpressionRef /* (ref $Property) */> = new Map()): binaryen.ExpressionRef /* (ref $Dict) */ {
 		const {vm: {heaptype}, mod: {wasm}} = this;
@@ -340,7 +340,7 @@ export class CodeGenerator {
 		return wasm.struct.new([
 			wasm.i32.const(props.size),
 			wasm.array.new_fixed(
-				heaptype.DictInternal,
+				heaptype.DictArray,
 				entries.map((entry) => entry ?? wasm.ref.null(heaptype.Property)),
 			),
 		], heaptype.Dict);
@@ -351,7 +351,7 @@ export class CodeGenerator {
 	 * It uses a `$Map` implementation, where the cases consist of item–`null` pairs (the Counterpoint `null` value).
 	 * This method automatically populates blank slots with the WASM expression `(ref.null $Case)`.
 	 * @param items items to be used as antecedents in the array of cases; must be of type `(ref null $Value)`
-	 * @return      `(struct.new $Map <count> (array.new_fixed $MapInternal <...cases>))`
+	 * @return      `(struct.new $Map <count> (array.new_fixed $MapArray <...cases>))`
 	 */
 	public codegenSet(items: readonly (binaryen.ExpressionRef /* (ref $Value) */)[] = []): binaryen.ExpressionRef /* (ref $Map) */ {
 		return this.codegenMap(new Map(items.map((item) => [item, this.vm.Value.NULL])));
@@ -362,7 +362,7 @@ export class CodeGenerator {
 	 * This method automatically hashes the case antecedents and inserts them at the correct indices,
 	 * as well as populates blank slots with the WASM expression `(ref.null $Case)`.
 	 * @param props antecedent–consequent pairs of values (of type `(ref $Value)`) in the array
-	 * @return      `(struct.new $Map <count> (array.new_fixed $MapInternal <...cases>))`
+	 * @return      `(struct.new $Map <count> (array.new_fixed $MapArray <...cases>))`
 	 */
 	public codegenMap(cases: ReadonlyMap<binaryen.ExpressionRef /* (ref $Value) */, binaryen.ExpressionRef /* (ref $Value) */> = new Map()): binaryen.ExpressionRef /* (ref $Map) */ {
 		const {vm: {heaptype, reftype, Map: VmMap}, mod: {wasm}} = this;
@@ -372,7 +372,7 @@ export class CodeGenerator {
 		}
 		const map_obj = wasm.struct.new([
 			wasm.i32.const(cases.size),
-			wasm.array.new_default(heaptype.MapInternal, wasm.i32.const(capacity)),
+			wasm.array.new_default(heaptype.MapArray, wasm.i32.const(capacity)),
 		], heaptype.Map);
 		if (!cases.size) {
 			return map_obj;
@@ -393,9 +393,9 @@ export class CodeGenerator {
 	public codegenObject(class_: binaryen.ExpressionRef /* (ref $Class) */): binaryen.ExpressionRef /* (ref $Object) */ {
 		const {vm: {heaptype, Object: VmObject}, mod: {wasm}} = this;
 		return wasm.struct.new([
-			VmObject.ctrPlusPlus(),
 			class_,
 			wasm.ref.null(heaptype.Dict),
+			VmObject.ctrPlusPlus(),
 		], heaptype.Object);
 	}
 
@@ -407,9 +407,9 @@ export class CodeGenerator {
 	public codegenClass(class_?: binaryen.ExpressionRef /* (ref $Class) */): binaryen.ExpressionRef /* (ref $Class) */ {
 		const {vm: {heaptype, Object: VmObject}, mod: {wasm}} = this;
 		return wasm.struct.new([
-			VmObject.ctrPlusPlus(),
 			class_ ?? wasm.ref.null(heaptype.Class),
 			wasm.ref.null(heaptype.Dict),
+			VmObject.ctrPlusPlus(),
 		], heaptype.Class);
 	}
 
@@ -419,12 +419,12 @@ export class CodeGenerator {
 	 * @param value   the optional cause; if not given, `(ref.null $Exception)` is used
 	 * @return        `(struct.new $Exception <message> <cause?>)`
 	 */
-	public codegenException(message: binaryen.ExpressionRef /* (ref $String) */, cause?: binaryen.ExpressionRef /* (ref $Exception) */): binaryen.ExpressionRef /* (ref $Exception) */ {
-		const {vm: {heaptype, Object: VmObject}, mod: {wasm}} = this;
+	public codegenException(message: binaryen.ExpressionRef /* (ref $Cpl-String) */, cause?: binaryen.ExpressionRef /* (ref $Exception) */): binaryen.ExpressionRef /* (ref $Exception) */ {
+		const {vm: {heaptype, Object: VmObject, Class: VmClass}, mod: {wasm}} = this;
 		return wasm.struct.new([
-			VmObject.ctrPlusPlus(),
-			wasm.ref.null(heaptype.Class),
+			VmClass.EXCEPTION,
 			wasm.ref.null(heaptype.Dict),
+			VmObject.ctrPlusPlus(),
 			message,
 			cause ?? wasm.ref.null(heaptype.Exception),
 		], heaptype.Exception);
@@ -436,12 +436,17 @@ export class CodeGenerator {
 	 * @return      `(struct.new $Maybe <value?>)`
 	 */
 	public codegenMaybe(value?: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Maybe) */ {
-		const {vm: {heaptype, Object: VmObject}, mod: {wasm}} = this;
-		return wasm.struct.new([
-			VmObject.ctrPlusPlus(),
-			wasm.ref.null(heaptype.Class),
+		const {vm: {heaptype, Object: VmObject, Class: VmClass}, mod: {wasm}} = this;
+		return value === undefined ? wasm.struct.new([
+			VmClass.NONE,
 			wasm.ref.null(heaptype.Dict),
-			value ?? wasm.ref.null(heaptype.Value),
+			VmObject.ctrPlusPlus(),
+			wasm.ref.null(heaptype.Value),
+		], heaptype.Maybe) : wasm.struct.new([
+			VmClass.SOME,
+			wasm.ref.null(heaptype.Dict),
+			VmObject.ctrPlusPlus(),
+			value,
 		], heaptype.Maybe);
 	}
 
@@ -454,17 +459,17 @@ export class CodeGenerator {
 	 * @return         `(struct.new $Result <value?> <reason?>)`
 	 */
 	public codegenResult(is_ok: boolean, argument: binaryen.ExpressionRef /* (ref $Value) | (ref $Exception) */): binaryen.ExpressionRef /* (ref $Result) */ {
-		const {vm: {heaptype, Object: VmObject}, mod: {wasm}} = this;
+		const {vm: {heaptype, Object: VmObject, Class: VmClass}, mod: {wasm}} = this;
 		return wasm.struct.new(is_ok ? [
-			VmObject.ctrPlusPlus(),
-			wasm.ref.null(heaptype.Class),
+			VmClass.OK,
 			wasm.ref.null(heaptype.Dict),
+			VmObject.ctrPlusPlus(),
 			argument,
 			wasm.ref.null(heaptype.Exception),
 		] : [
-			VmObject.ctrPlusPlus(),
-			wasm.ref.null(heaptype.Class),
+			VmClass.FAIL,
 			wasm.ref.null(heaptype.Dict),
+			VmObject.ctrPlusPlus(),
 			wasm.ref.null(heaptype.Value),
 			argument,
 		], heaptype.Result);
@@ -476,11 +481,11 @@ export class CodeGenerator {
 	 * @return      `(struct.new $Function <arity>)`
 	 */
 	public codegenFunction(arity: bigint): binaryen.ExpressionRef /* (ref $Function) */ {
-		const {vm: {heaptype, Object: VmObject}, mod: {wasm}} = this;
+		const {vm: {heaptype, Object: VmObject, Class: VmClass}, mod: {wasm}} = this;
 		return wasm.struct.new([
-			VmObject.ctrPlusPlus(),
-			wasm.ref.null(heaptype.Class),
+			VmClass.FUNCTION,
 			wasm.ref.null(heaptype.Dict),
+			VmObject.ctrPlusPlus(),
 			wasm.i32.const(Number(arity)),
 		], heaptype.Function);
 	}
@@ -502,12 +507,10 @@ export class CodeGenerator {
 			this.vm.Value    .funcImportDataMap,
 			this.vm.Property .funcImportDataMap,
 			this.vm.Case     .funcImportDataMap,
+			this.vm.Record   .funcImportDataMap,
 			this.vm.List     .funcImportDataMap,
 			this.vm.Dict     .funcImportDataMap,
 			this.vm.Map      .funcImportDataMap,
-			this.vm.String   .funcImportDataMap,
-			this.vm.Tuple    .funcImportDataMap,
-			this.vm.Record   .funcImportDataMap,
 			this.vm.Object   .funcImportDataMap,
 		].forEach((datamap) => datamap.forEach((data, export_name) => (
 			this.mod.imports.addFunction(data.name, extern_mod_name, export_name, data.param, data.result)
