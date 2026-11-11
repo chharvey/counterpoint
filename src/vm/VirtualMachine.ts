@@ -29,7 +29,6 @@ type TypeKey = (
 	| 'Dict'
 	| 'Map'
 	| 'Value'
-	| 'Data'
 	| 'Object'
 	| 'Class'
 	| 'CplString'
@@ -325,7 +324,6 @@ const TYPES: {
 			Dict:      heaptypes[i_dict],
 			Map:       heaptypes[i_map],
 			Value:     heaptypes[i_value],
-			Data:      heaptypes[i_data],
 			Object:    heaptypes[i_object],
 			Class:     heaptypes[i_class],
 			CplString: heaptypes[i_cpl_string],
@@ -348,7 +346,6 @@ const TYPES: {
 			Dict:      binaryen.getTypeFromHeapType(heaptypes[i_dict],       false),
 			Map:       binaryen.getTypeFromHeapType(heaptypes[i_map],        false),
 			Value:     binaryen.getTypeFromHeapType(heaptypes[i_value],      false),
-			Data:      binaryen.getTypeFromHeapType(heaptypes[i_data],       false),
 			Object:    binaryen.getTypeFromHeapType(heaptypes[i_object],     false),
 			Class:     binaryen.getTypeFromHeapType(heaptypes[i_class],      false),
 			CplString: binaryen.getTypeFromHeapType(heaptypes[i_cpl_string], false),

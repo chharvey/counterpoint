@@ -350,7 +350,7 @@ test.suite('CodeGenerator', () => {
 					cg.vm.Object.ctrPlusPlus(),
 					wasm.ref.null(cg.vm.heaptype.Value),
 					excp,
-				], cg.vm.heaptype.Maybe),
+				], cg.vm.heaptype.Result),
 			);
 			return assertEqualBins(
 				cg.codegenResult(true, value),
@@ -360,7 +360,7 @@ test.suite('CodeGenerator', () => {
 					cg.vm.Object.ctrPlusPlus(),
 					value,
 					wasm.ref.null(cg.vm.heaptype.Exception),
-				], cg.vm.heaptype.Maybe),
+				], cg.vm.heaptype.Result),
 			);
 		});
 
