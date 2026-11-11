@@ -99,7 +99,6 @@ export enum OpCode {
 	RESULT_UNWRAP,
 	RESULT_EXTRACT,
 
-	INSTANCEOF,
 	CAST,
 
 	INT_ADD,

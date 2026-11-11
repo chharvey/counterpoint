@@ -266,25 +266,6 @@ Codegen((MAYBE.UNWRAP   `obj`)) := (call $op:unwrap-maybe   `Codegen(obj)`);
 Codegen((RESULT.UNWRAP  `obj`)) := (call $op:unwrap-result  `Codegen(obj)`);
 Codegen((RESULT.EXTRACT `obj`)) := (call $op:extract-result `Codegen(obj)`);
 
-Codegen((INSTANCEOF "Symbol"    `v`)) := (call $op:is-int       `Codegen(v)`);
-Codegen((INSTANCEOF "Integer"   `v`)) := (call $op:is-int       `Codegen(v)`);
-Codegen((INSTANCEOF "Natural"   `v`)) := (call $op:is-nat       `Codegen(v)`);
-Codegen((INSTANCEOF "Float"     `v`)) := (call $op:is-float     `Codegen(v)`);
-Codegen((INSTANCEOF "String"    `v`)) := (call $op:is-string    `Codegen(v)`);
-Codegen((INSTANCEOF "Object"    `v`)) := (call $op:is-object    `Codegen(v)`);
-Codegen((INSTANCEOF "List"      `v`)) := (call $op:is-cpl-list  `Codegen(v)`);
-Codegen((INSTANCEOF "Dict"      `v`)) := (call $op:is-cpl-dict  `Codegen(v)`);
-Codegen((INSTANCEOF "Set"       `v`)) := (call $op:is-cpl-map   `Codegen(v)`);
-Codegen((INSTANCEOF "Map"       `v`)) := (call $op:is-cpl-map   `Codegen(v)`);
-Codegen((INSTANCEOF "Exception" `v`)) := (call $op:is-exception `Codegen(v)`);
-Codegen((INSTANCEOF "Maybe"     `v`)) := (call $op:is-maybe     `Codegen(v)`);
-Codegen((INSTANCEOF "None"      `v`)) := (call $op:is-none      `Codegen(v)`);
-Codegen((INSTANCEOF "Some"      `v`)) := (call $op:is-some      `Codegen(v)`);
-Codegen((INSTANCEOF "Result"    `v`)) := (call $op:is-result    `Codegen(v)`);
-Codegen((INSTANCEOF "Fail"      `v`)) := (call $op:is-fail      `Codegen(v)`);
-Codegen((INSTANCEOF "Ok"        `v`)) := (call $op:is-ok        `Codegen(v)`);
-Codegen((INSTANCEOF "Function"  `v`)) := (call $op:is-function  `Codegen(v)`);
-
 Codegen((CAST "Null"      `v`)) := (call $op:as-null      `Codegen(v)`);
 Codegen((CAST "Boolean"   `v`)) := (call $op:as-bool      `Codegen(v)`);
 Codegen((CAST "Symbol"    `v`)) := (call $op:as-int       `Codegen(v)`);

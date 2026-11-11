@@ -81,8 +81,7 @@ MAYBE.UNWRAP  ([Value]) -> Value;
 RESULT.UNWRAP ([Value]) -> Value;
 RESULT.EXTRACT([Value]) -> Exception;
 
-INSTANCEOF(native-enum [Value]) -> Boolean;
-CAST      (native-enum [Value]) -> Value;
+CAST(native-enum [Value]) -> Value;
 
 INT.ADD([Integer Integer]) -> Integer;
 INT.SUB([Integer Integer]) -> Integer;
