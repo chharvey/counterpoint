@@ -4,7 +4,7 @@ import * as xjs from 'extrajs';
 import {
 	VALUE,
 	TYPE,
-	INTRINSICS,
+	CORE_LIB_NAMES,
 	Validator,
 	AST,
 	SymbolSchemaType,
@@ -68,6 +68,15 @@ test.suite('Expression', () => {
 
 	test.suite('#type', () => {
 		test.suite('Variable', () => {
+			test.test('all core lib class references are of type `Class`.', () => {
+				const {stmts} = setupScript(`{
+					${CORE_LIB_NAMES.join(';')};
+				}`, {build: false}); // assert does not throw
+				assertEqualTypes(
+					stmts.map((stmt) => VISITOR.visit((stmt as AST.STMT.StatementExpression).expr!)),
+					repeat(TYPE.CLASS, CORE_LIB_NAMES.length),
+				);
+			});
 			test.test('wraps in `Maybe` when accessed variable is uninitialized.', () => {
 				const {stmts} = setupScript(`{
 					val mut w:  int = 42;
@@ -314,9 +323,9 @@ test.suite('Expression', () => {
 
 	test.suite('Variable', () => {
 		test.suite('#varCheck', () => {
-			test.test('allows intrinsic class references.', () => {
+			test.test('allows core lib class references.', () => {
 				setupScript(`{
-					${INTRINSICS.join(';')};
+					${CORE_LIB_NAMES.join(';')};
 				}`, {typeCheck: false}); // assert does not throw
 			});
 			test.test('throws if the validator does not contain a record for the identifier.', () => {

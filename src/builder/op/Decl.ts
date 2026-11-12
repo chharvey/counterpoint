@@ -12,11 +12,40 @@ import type {
 	Builder,
 } from '../Builder.ts';
 import type {Interpreter} from '../Interpreter.ts';
-import {ast_type_name} from './utils-public.ts';
-import {stringify_type_name} from './utils-private.ts';
+import {
+	TypeName,
+	ast_type_name,
+} from './utils-public.ts';
 import {OpCode} from './Opcode.ts';
 import {Instruction} from './Instruction.ts';
 import type {Value} from './Value.ts';
+
+
+
+function stringify_type_name(typename: TypeName): string | undefined {
+	return new Map<TypeName, string>([
+		[TypeName.NOTHING,   'nothing'],
+		[TypeName.NULL,      'null'],
+		[TypeName.BOOL,      'bool'],
+		[TypeName.SYM,       'sym'],
+		[TypeName.INT,       'int'],
+		[TypeName.NAT,       'nat'],
+		[TypeName.FLOAT,     'float'],
+		[TypeName.STR,       'str'],
+		[TypeName.TUPLE,     'tuple'],
+		[TypeName.RECORD,    'record'],
+		[TypeName.LIST,      'List'],
+		[TypeName.DICT,      'Dict'],
+		[TypeName.SET,       'Set'],
+		[TypeName.MAP,       'Map'],
+		[TypeName.OBJECT,    'Object'],
+		[TypeName.CLASS,     'Class'],
+		[TypeName.EXCEPTION, 'Exception'],
+		[TypeName.MAYBE,     'Maybe'],
+		[TypeName.RESULT,    'Result'],
+		[TypeName.ANYTHING,  'anything'],
+	]).get(typename);
+}
 
 
 
@@ -47,7 +76,7 @@ export class Decl extends Instruction {
 		return super.toString(
 			`<${stringify_type_name(ast_type_name(this.targetType))}>`,
 			this.target instanceof SymbolSchemaVar ? this.target.source : this.target.name,
-			...(this.value ? [this.value] : []),
+			this.value ?? '',
 		);
 	}
 

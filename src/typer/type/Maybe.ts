@@ -63,6 +63,11 @@ export class None extends Maybe {
 		return `None[${this.typearg}]`;
 	}
 
+	@instanceOf(() => VALUE.None)
+	public override includes(v: VALUE.Value): boolean {
+		return v.toType().isSubtypeOf(this);
+	}
+
 	public override isSubtypeOf(t: Type): boolean {
 		// eslint-disable-next-line @typescript-eslint/no-use-before-define
 		return !(t instanceof Some) && super.isSubtypeOf(t);
@@ -84,6 +89,11 @@ export class None extends Maybe {
 export class Some extends Maybe {
 	public override toString(): string {
 		return `Some[${this.typearg}]`;
+	}
+
+	@instanceOf(() => VALUE.Some)
+	public override includes(v: VALUE.Value): boolean {
+		return v.toType().isSubtypeOf(this);
 	}
 
 	public override isSubtypeOf(t: Type): boolean {

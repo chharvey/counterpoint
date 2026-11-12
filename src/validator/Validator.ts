@@ -9,7 +9,7 @@ import {
 	Punctuator,
 	type Keyword,
 	KEYWORDS,
-	INTRINSICS,
+	CORE_LIB_NAMES,
 } from '../parser/index.ts';
 import {
 	type SymbolSchema,
@@ -210,8 +210,8 @@ export class Validator {
 	/** The minimum allowed cooked value of a reserved keyword token. */
 	private static readonly MIN_VALUE_KEYWORD = 0x40n;
 
-	/** The minimum allowed cooked value of an intrinsic identifier token. */
-	private static readonly MIN_VALUE_INTRINSIC = 0x80n;
+	/** The minimum allowed cooked value of a built-in identifier token. */
+	private static readonly MIN_VALUE_CORE_LIB = 0x80n;
 
 	/** The minimum allowed cooked value of a user-defined identifier token. */
 	private static readonly MIN_VALUE_IDENTIFIER = 0x100n;
@@ -230,7 +230,7 @@ export class Validator {
 	public static unhashIdentifierId(i: bigint): string {
 		return (
 			i >= Validator.MIN_VALUE_IDENTIFIER ? [...this.#hashStringMemo].filter(([_, value]) => value === i - Validator.MIN_VALUE_IDENTIFIER).map(([key]) => key).join() :
-			i >= Validator.MIN_VALUE_INTRINSIC  ? INTRINSICS[Number(i - Validator.MIN_VALUE_INTRINSIC)] :
+			i >= Validator.MIN_VALUE_CORE_LIB   ? CORE_LIB_NAMES[Number(i - Validator.MIN_VALUE_CORE_LIB)] :
 			i >= Validator.MIN_VALUE_KEYWORD    ? KEYWORDS[Number(i - Validator.MIN_VALUE_KEYWORD)] :
 			''
 		) || '';
@@ -238,11 +238,11 @@ export class Validator {
 
 	/** Compute the ID of the name of a key. */
 	public static keyId(name: string): bigint {
-		const keywords   = KEYWORDS   as readonly string[];
-		const intrinsics = INTRINSICS as readonly string[];
+		const keywords       = KEYWORDS       as readonly string[];
+		const core_lib_names = CORE_LIB_NAMES as readonly string[];
 		return (
-			keywords   .includes(name) ? Validator.MIN_VALUE_KEYWORD   + BigInt(keywords   .indexOf(name)) :
-			intrinsics .includes(name) ? Validator.MIN_VALUE_INTRINSIC + BigInt(intrinsics .indexOf(name)) :
+			keywords       .includes(name) ? Validator.MIN_VALUE_KEYWORD  + BigInt(keywords   .indexOf(name)) :
+			core_lib_names .includes(name) ? Validator.MIN_VALUE_CORE_LIB + BigInt(core_lib_names .indexOf(name)) :
 			Validator.MIN_VALUE_IDENTIFIER + Validator.#hashString(name)
 		);
 	}
@@ -269,8 +269,8 @@ export class Validator {
 		if ((KEYWORDS as readonly string[]).includes(source)) {
 			throw new RangeError(`Keyword ${source} is not a valid identifier.`);
 		}
-		if ((INTRINSICS as readonly string[]).includes(source)) {
-			return Validator.MIN_VALUE_INTRINSIC + BigInt((INTRINSICS as readonly string[]).indexOf(source));
+		if ((CORE_LIB_NAMES as readonly string[]).includes(source)) {
+			return Validator.MIN_VALUE_CORE_LIB + BigInt((CORE_LIB_NAMES as readonly string[]).indexOf(source));
 		}
 		return Validator.MIN_VALUE_IDENTIFIER + Validator.#hashString(source);
 	}
@@ -363,7 +363,7 @@ export class Validator {
 		private readonly parent?: Validator,
 	) {
 		if (!this.parent) {
-			xjs.Array.forEachAggregated(INTRINSICS, (name) => {
+			xjs.Array.forEachAggregated(CORE_LIB_NAMES, (name) => {
 				if (!CLASS_API.has(name)) {
 					throw new ReferenceError(`Class API is missing a definition for ${name}.`);
 				}

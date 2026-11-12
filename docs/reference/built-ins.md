@@ -35,3 +35,15 @@ Integer conversion to and from natural numbers does not change bitwise represent
 Any (signed) integer value between *-(2^63)* and *-1* is just added mathematically to *2^64* to get its (unsigned) natural interpretation
 (that is, underflow occurs).
 Conversely, natural numbers *2^63* or larger are reinterpreted as negative integers by subtracting *2^64* from their value (overflow occurs).
+
+
+
+## Stringification
+The `String` class constructor can be used as a stringification operator,
+returning a textual representation of the given value.
+For the `str` type, no conversion is done and the argument is returned.
+For numeric types, their value is represented in decimal format (base ten) by default,
+but an additional radix argument may be supplied.
+For collections, their entries are stringified and comma-separated.
+For compound data values, their public fields are stringified and comma-separated.
+For other `Object` instances, a default string format is returned but it may be overridden with a hook.

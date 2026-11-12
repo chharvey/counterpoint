@@ -1,40 +1,44 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as binaryen from 'binaryen.ts';
+import {utils} from './ad-hoc/utils.ts';
+import {ops} from './ad-hoc/ops.ts';
 import {Vect} from './classes/Vect.ts';
-import {Value} from './classes/Value.ts';
 import {Property} from './classes/Property.ts';
 import {Case} from './classes/Case.ts';
+import {Record as VmRecord} from './classes/Record.ts';
 import {List} from './classes/List.ts';
 import {Dict} from './classes/Dict.ts';
 import {Map as VmMap} from './classes/Map.ts';
-import {String as VmString} from './classes/String.ts';
-import {Tuple as VmTuple} from './classes/Tuple.ts';
-import {Record as VmRecord} from './classes/Record.ts';
+import {Value} from './classes/Value.ts';
 import {Object as VmObject} from './classes/Object.ts';
-import {utils} from './ad-hoc/utils.ts';
-import {ops} from './ad-hoc/ops.ts';
+import {Class as VmClass} from './classes/Class.ts';
 
 
 
 type TypeKey = (
-	| 'Value'
 	| 'Property'
 	| 'Case'
-	| 'ListInternal'
-	| 'DictInternal'
-	| 'MapInternal'
-	| 'List'
-	| 'Dict'
-	| 'Map'
-	| 'Composite'
-	| 'StringInternal'
-	| 'TupleInternal'
-	| 'RecordInternal'
 	| 'String'
 	| 'Tuple'
 	| 'Record'
+	| 'ListArray'
+	| 'DictArray'
+	| 'MapArray'
+	| 'List'
+	| 'Dict'
+	| 'Map'
+	| 'Value'
+	| 'Data'
 	| 'Object'
+	| 'Class'
+	| 'CplPrimitive'
+	| 'CplString'
+	| 'CplTuple'
+	| 'CplRecord'
+	| 'CplList'
+	| 'CplDict'
+	| 'CplMap'
 	| 'Exception'
 	| 'Maybe'
 	| 'Result'
@@ -46,31 +50,45 @@ type TypeKey = (
 type HeaptypeRegistry = Readonly<Record<TypeKey, binaryen.HeapType>>;
 type ReftypeRegistry  = Readonly<Record<TypeKey, binaryen.Type>>;
 
-type ReftypeNullRegistry = Readonly<Record<TypeKey & ('Value' | 'Property' | 'Case' | 'Composite' | 'Exception'), binaryen.Type>>;
+type ReftypeNullRegistry = Readonly<Record<TypeKey & ('Property' | 'Case' | 'Value' | 'Class' | 'Exception'), binaryen.Type>>;
 
 
 
 /**
  * Create a new struct field for a `TypeBuilder`.
- * @param typ        the field type
- * @param packedType one of `'notPacked' | 'i8' | 'i16'` @default `'notPacked'`
- * @param mutable    Can the field be reassigned?        @default `false`
+ * @param type_        the field type
+ * @param mutable    Can the field be reassigned? @default `false`
+ * @param packedType whether the type is packed   @default `binaryen.PackedType.notPacked`
  */
-function TypeBuilder_makeField(typ: binaryen.Type, packedType: 'notPacked' | 'i8' | 'i16' = 'notPacked', mutable: boolean = false): {
+function make_struct_field(
+	type_:      binaryen.Type,
+	mutable:    boolean = false,
+	packedType: binaryen.PackedType = binaryen.PackedType.notPacked,
+): {
 	type:       binaryen.Type,
-	packedType: binaryen.PackedType,
 	mutable:    boolean,
+	packedType: binaryen.PackedType,
 } {
 	return {
-		type:       typ,
-		packedType: binaryen.PackedType[packedType],
 		mutable,
+		packedType,
+		type: type_,
 	};
 }
 
 
 
-const MODULE_TEXT: string = await fs.promises.readFile(path.join(import.meta.dirname, '../../dist/vm/module.wat'), 'utf8');
+const WASM_MODULE = binaryen.parseText(
+	await fs.promises.readFile(path.join(import.meta.dirname, '../../dist/vm/module.wat'), 'utf8'),
+	(0
+		| binaryen.Feature.NontrappingFPToInt
+		| binaryen.Feature.SIMD128
+		| binaryen.Feature.TailCall
+		| binaryen.Feature.ReferenceTypes
+		| binaryen.Feature.Multivalue
+		| binaryen.Feature.GC
+	),
+);
 
 /**
  * An object of registries for all the common types.
@@ -85,276 +103,294 @@ const TYPES: {
 } = (() => {
 	const tb = new binaryen.TypeBuilder();
 
-	const i_composite: number = tb.getSize();
-	tb.grow(1);
-
-	/* (type $Value ...) */
-	const i_value: number = tb.getSize();
-	tb.grow(1);
-	tb.setStructType(i_value, [
-		/* $tag */       TypeBuilder_makeField(binaryen.Type.i32, 'i8'),
-		/* $primitive */ TypeBuilder_makeField(binaryen.Type.v128),
-		/* $composite */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_composite), true)),
-	]);
+	const i_property:      number = tb.getSize(); tb.grow(1);
+	const i_case:          number = tb.getSize(); tb.grow(1);
+	const i_string:        number = tb.getSize(); tb.grow(1);
+	const i_tuple:         number = tb.getSize(); tb.grow(1);
+	const i_record:        number = tb.getSize(); tb.grow(1);
+	const i_list_array:    number = tb.getSize(); tb.grow(1);
+	const i_dict_array:    number = tb.getSize(); tb.grow(1);
+	const i_map_array:     number = tb.getSize(); tb.grow(1);
+	const i_list:          number = tb.getSize(); tb.grow(1);
+	const i_dict:          number = tb.getSize(); tb.grow(1);
+	const i_map:           number = tb.getSize(); tb.grow(1);
+	const i_value:         number = tb.getSize(); tb.grow(1);
+	const i_data:          number = tb.getSize(); tb.grow(1);
+	const i_object:        number = tb.getSize(); tb.grow(1);
+	const i_class:         number = tb.getSize(); tb.grow(1);
+	const i_cpl_primitive: number = tb.getSize(); tb.grow(1);
+	const i_cpl_string:    number = tb.getSize(); tb.grow(1);
+	const i_cpl_tuple:     number = tb.getSize(); tb.grow(1);
+	const i_cpl_record:    number = tb.getSize(); tb.grow(1);
+	const i_cpl_list:      number = tb.getSize(); tb.grow(1);
+	const i_cpl_dict:      number = tb.getSize(); tb.grow(1);
+	const i_cpl_map:       number = tb.getSize(); tb.grow(1);
+	const i_exception:     number = tb.getSize(); tb.grow(1);
+	const i_maybe:         number = tb.getSize(); tb.grow(1);
+	const i_result:        number = tb.getSize(); tb.grow(1);
+	const i_function:      number = tb.getSize(); tb.grow(1);
 
 	/* (type $Property ...) */
-	const i_property: number = tb.getSize();
-	tb.grow(1);
 	tb.setStructType(i_property, [
-		/* $key */ TypeBuilder_makeField(binaryen.Type.i64),
-		/* $val */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_value), false)),
+		/* $key */ make_struct_field(binaryen.Type.i64),
+		/* $val */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_value), false)),
 	]);
 
 	/* (type $Case ...) */
-	const i_case: number = tb.getSize();
-	tb.grow(1);
 	tb.setStructType(i_case, [
-		/* $ant */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_value), false)),
-		/* $con */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_value), false)),
+		/* $ant */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_value), false)),
+		/* $con */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_value), false)),
 	]);
 
-	/* (type $ListInternal ...) */
-	const i_list_internal: number = tb.getSize();
-	tb.grow(1);
+	/* (type $String ...) */
 	tb.setArrayType(
-		i_list_internal,
+		i_string,
+		binaryen.Type.i32,
+		binaryen.PackedType.i8,
+		true,
+	);
+
+	/* (type $Tuple ...) */
+	tb.setArrayType(
+		i_tuple,
+		tb.getTempRefType(tb.getTempHeapType(i_value), false),
+		binaryen.PackedType.notPacked,
+		false,
+	);
+
+	/* (type $Record ...) */
+	tb.setArrayType(
+		i_record,
+		tb.getTempRefType(tb.getTempHeapType(i_property), false),
+		binaryen.PackedType.notPacked,
+		false,
+	);
+
+	/* (type $ListArray ...) */
+	tb.setArrayType(
+		i_list_array,
 		tb.getTempRefType(tb.getTempHeapType(i_value), true),
 		binaryen.PackedType.notPacked,
 		true,
 	);
 
-	/* (type $DictInternal ...) */
-	const i_dict_internal: number = tb.getSize();
-	tb.grow(1);
+	/* (type $DictArray ...) */
 	tb.setArrayType(
-		i_dict_internal,
+		i_dict_array,
 		tb.getTempRefType(tb.getTempHeapType(i_property), true),
 		binaryen.PackedType.notPacked,
 		true,
 	);
 
-	/* (type $MapInternal ...) */
-	const i_map_internal: number = tb.getSize();
-	tb.grow(1);
+	/* (type $MapArray ...) */
 	tb.setArrayType(
-		i_map_internal,
+		i_map_array,
 		tb.getTempRefType(tb.getTempHeapType(i_case), true),
 		binaryen.PackedType.notPacked,
 		true,
 	);
 
 	/* (type $List ...) */
-	const i_list: number = tb.getSize();
-	tb.grow(1);
 	tb.setStructType(i_list, [
-		/* $size */     TypeBuilder_makeField(binaryen.Type.i32, 'notPacked', true),
-		/* $internal */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_list_internal), false), 'notPacked', true),
+		/* $size */  make_struct_field(binaryen.Type.i32, true),
+		/* $array */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_list_array), false), true),
 	]);
 
 	/* (type $Dict ...) */
-	const i_dict: number = tb.getSize();
-	tb.grow(1);
 	tb.setStructType(i_dict, [
-		/* $size */     TypeBuilder_makeField(binaryen.Type.i32, 'notPacked', true),
-		/* $internal */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_dict_internal), false), 'notPacked', true),
+		/* $size */  make_struct_field(binaryen.Type.i32, true),
+		/* $array */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_dict_array), false), true),
 	]);
 
 	/* (type $Map ...) */
-	const i_map: number = tb.getSize();
-	tb.grow(1);
 	tb.setStructType(i_map, [
-		/* $size */     TypeBuilder_makeField(binaryen.Type.i32, 'notPacked', true),
-		/* $internal */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_map_internal), false), 'notPacked', true),
+		/* $size */  make_struct_field(binaryen.Type.i32, true),
+		/* $array */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_map_array), false), true),
 	]);
 
-	/* (type $Composite ...) */
-	tb.setStructType(i_composite, []);
-	tb.setOpen(i_composite);
+	/** The fields of the `$Value` struct type. */
+	const fields_value = [
+		/* $class */  make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_class), true)),
+		/* $fields */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_dict),  true)),
+	];
 
-	/* (type $StringInternal ...) */
-	const i_string_internal: number = tb.getSize();
-	tb.grow(1);
-	tb.setArrayType(
-		i_string_internal,
-		binaryen.Type.i32,
-		binaryen.PackedType.i8,
-		true,
-	);
+	/* (type $Value ...) */
+	tb.setStructType(i_value, fields_value);
+	tb.setOpen(i_value);
 
-	/* (type $TupleInternal ...) */
-	const i_tuple_internal: number = tb.getSize();
-	tb.grow(1);
-	tb.setArrayType(
-		i_tuple_internal,
-		tb.getTempRefType(tb.getTempHeapType(i_value), false),
-		binaryen.PackedType.notPacked,
-		false,
-	);
+	/** The fields of the `$Data` struct type. */
+	const fields_data = [
+		...fields_value,
+	];
 
-	/* (type $RecordInternal ...) */
-	const i_record_internal: number = tb.getSize();
-	tb.grow(1);
-	tb.setArrayType(
-		i_record_internal,
-		tb.getTempRefType(tb.getTempHeapType(i_property), false),
-		binaryen.PackedType.notPacked,
-		false,
-	);
+	/* (type $Data ...) */
+	tb.setStructType(i_data, fields_data);
+	tb.setSubType(i_data, tb.getTempHeapType(i_value));
+	tb.setOpen(i_data);
 
-	/* (type $String ...) */
-	const i_string: number = tb.getSize();
-	tb.grow(1);
-	tb.setStructType(i_string, [
-		/* $internal */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_string_internal), false)),
-	]);
-	tb.setSubType(i_string, tb.getTempHeapType(i_composite));
-
-	/* (type $Tuple ...) */
-	const i_tuple: number = tb.getSize();
-	tb.grow(1);
-	tb.setStructType(i_tuple, [
-		/* $internal */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_tuple_internal), false)),
-	]);
-	tb.setSubType(i_tuple, tb.getTempHeapType(i_composite));
-
-	/* (type $Record ...) */
-	const i_record: number = tb.getSize();
-	tb.grow(1);
-	tb.setStructType(i_record, [
-		/* $internal */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_record_internal), false)),
-	]);
-	tb.setSubType(i_record, tb.getTempHeapType(i_composite));
+	/** The fields of the `$Object` struct type. */
+	const fields_object = [
+		...fields_value,
+		/* $id */ make_struct_field(binaryen.Type.i64),
+	];
 
 	/* (type $Object ...) */
-	const i_object: number = tb.getSize();
-	tb.grow(1);
-	tb.setStructType(i_object, [
-		/* $id */ TypeBuilder_makeField(binaryen.Type.i64),
-	]);
-	tb.setSubType(i_object, tb.getTempHeapType(i_composite));
+	tb.setStructType(i_object, fields_object);
+	tb.setSubType(i_object, tb.getTempHeapType(i_value));
 	tb.setOpen(i_object);
 
-	/* (type $CplList ...) */
-	const i_cpl_list: number = tb.getSize();
-	tb.grow(1);
+	/* (type $Class ...) */
+	tb.setStructType(i_class, [
+		...fields_object,
+	]);
+	tb.setSubType(i_class, tb.getTempHeapType(i_object));
+
+	/* (type $Cpl-Primitive ...) */
+	tb.setStructType(i_cpl_primitive, [
+		...fields_data,
+		/* $bits */ make_struct_field(binaryen.Type.v128),
+	]);
+	tb.setSubType(i_cpl_primitive, tb.getTempHeapType(i_data));
+
+	/* (type $Cpl-String ...) */
+	tb.setStructType(i_cpl_string, [
+		...fields_data,
+		/* $string */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_string), false)),
+	]);
+	tb.setSubType(i_cpl_string, tb.getTempHeapType(i_data));
+
+	/* (type $Cpl-Tuple ...) */
+	tb.setStructType(i_cpl_tuple, [
+		...fields_data,
+		/* $tuple */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_tuple), false)),
+	]);
+	tb.setSubType(i_cpl_tuple, tb.getTempHeapType(i_data));
+
+	/* (type $Cpl-Record ...) */
+	tb.setStructType(i_cpl_record, [
+		...fields_data,
+		/* $record */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_record), false)),
+	]);
+	tb.setSubType(i_cpl_record, tb.getTempHeapType(i_data));
+
+	/* (type $Cpl-List ...) */
 	tb.setStructType(i_cpl_list, [
-		/* $id */   TypeBuilder_makeField(binaryen.Type.i64),
-		/* $list */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_list), false)),
+		...fields_object,
+		/* $list */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_list), false)),
 	]);
 	tb.setSubType(i_cpl_list, tb.getTempHeapType(i_object));
 
-	/* (type $CplDict ...) */
-	const i_cpl_dict: number = tb.getSize();
-	tb.grow(1);
+	/* (type $Cpl-Dict ...) */
 	tb.setStructType(i_cpl_dict, [
-		/* $id */   TypeBuilder_makeField(binaryen.Type.i64),
-		/* $dict */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_dict), false)),
+		...fields_object,
+		/* $dict */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_dict), false)),
 	]);
 	tb.setSubType(i_cpl_dict, tb.getTempHeapType(i_object));
 
-	/* (type $CplMap ...) */
-	const i_cpl_map: number = tb.getSize();
-	tb.grow(1);
+	/* (type $Cpl-Map ...) */
 	tb.setStructType(i_cpl_map, [
-		/* $id */  TypeBuilder_makeField(binaryen.Type.i64),
-		/* $map */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_map), false)),
+		...fields_object,
+		/* $map */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_map), false)),
 	]);
 	tb.setSubType(i_cpl_map, tb.getTempHeapType(i_object));
 
 	/* (type $Exception ...) */
-	const i_exception: number = tb.getSize();
-	tb.grow(1);
 	tb.setStructType(i_exception, [
-		/* $id */      TypeBuilder_makeField(binaryen.Type.i64),
-		/* $message */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_string),    false)),
-		/* $cause */   TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_exception), true)),
+		...fields_object,
+		/* $message */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_cpl_string), false)),
+		/* $cause */   make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_exception),  true)),
 	]);
 	tb.setSubType(i_exception, tb.getTempHeapType(i_object));
 
 	/* (type $Maybe ...) */
-	const i_maybe: number = tb.getSize();
-	tb.grow(1);
 	tb.setStructType(i_maybe, [
-		/* $id */    TypeBuilder_makeField(binaryen.Type.i64),
-		/* $value */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_value), true)),
+		...fields_object,
+		/* $value */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_value), true)),
 	]);
 	tb.setSubType(i_maybe, tb.getTempHeapType(i_object));
 
 	/* (type $Result ...) */
-	const i_result: number = tb.getSize();
-	tb.grow(1);
 	tb.setStructType(i_result, [
-		/* $id */     TypeBuilder_makeField(binaryen.Type.i64),
-		/* $value */  TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_value),     true)),
-		/* $reason */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_exception), true)),
+		...fields_object,
+		/* $value */  make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_value),     true)),
+		/* $reason */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_exception), true)),
 	]);
 	tb.setSubType(i_result, tb.getTempHeapType(i_object));
 
 	/* (type $Function ...) */
-	const i_function: number = tb.getSize();
-	tb.grow(1);
 	tb.setStructType(i_function, [
-		/* $id */    TypeBuilder_makeField(binaryen.Type.i64),
-		/* $arity */ TypeBuilder_makeField(binaryen.Type.i32, 'notPacked', true),
+		...fields_object,
+		/* $arity */ make_struct_field(binaryen.Type.i32, true),
 	]);
 	tb.setSubType(i_function, tb.getTempHeapType(i_object));
 
+	tb.createRecGroup(0, tb.getSize());
 	const heaptypes: readonly binaryen.HeapType[] = tb.buildAndDispose();
 
 	return {
 		heaptypeRegistry: {
-			Value:          heaptypes[i_value],
-			Property:       heaptypes[i_property],
-			Case:           heaptypes[i_case],
-			ListInternal:   heaptypes[i_list_internal],
-			DictInternal:   heaptypes[i_dict_internal],
-			MapInternal:    heaptypes[i_map_internal],
-			List:           heaptypes[i_list],
-			Dict:           heaptypes[i_dict],
-			Map:            heaptypes[i_map],
-			Composite:      heaptypes[i_composite],
-			StringInternal: heaptypes[i_string_internal],
-			TupleInternal:  heaptypes[i_tuple_internal],
-			RecordInternal: heaptypes[i_record_internal],
-			String:         heaptypes[i_string],
-			Tuple:          heaptypes[i_tuple],
-			Record:         heaptypes[i_record],
-			Object:         heaptypes[i_object],
-			Exception:      heaptypes[i_exception],
-			Maybe:          heaptypes[i_maybe],
-			Result:         heaptypes[i_result],
-			Function:       heaptypes[i_function],
+			Property:     heaptypes[i_property],
+			Case:         heaptypes[i_case],
+			String:       heaptypes[i_string],
+			Tuple:        heaptypes[i_tuple],
+			Record:       heaptypes[i_record],
+			ListArray:    heaptypes[i_list_array],
+			DictArray:    heaptypes[i_dict_array],
+			MapArray:     heaptypes[i_map_array],
+			List:         heaptypes[i_list],
+			Dict:         heaptypes[i_dict],
+			Map:          heaptypes[i_map],
+			Value:        heaptypes[i_value],
+			Data:         heaptypes[i_data],
+			Object:       heaptypes[i_object],
+			Class:        heaptypes[i_class],
+			CplPrimitive: heaptypes[i_cpl_primitive],
+			CplString:    heaptypes[i_cpl_string],
+			CplTuple:     heaptypes[i_cpl_tuple],
+			CplRecord:    heaptypes[i_cpl_record],
+			CplList:      heaptypes[i_cpl_list],
+			CplDict:      heaptypes[i_cpl_dict],
+			CplMap:       heaptypes[i_cpl_map],
+			Exception:    heaptypes[i_exception],
+			Maybe:        heaptypes[i_maybe],
+			Result:       heaptypes[i_result],
+			Function:     heaptypes[i_function],
 		},
 
 		reftypeRegistry: {
-			Value:          binaryen.getTypeFromHeapType(heaptypes[i_value],           false),
-			Property:       binaryen.getTypeFromHeapType(heaptypes[i_property],        false),
-			Case:           binaryen.getTypeFromHeapType(heaptypes[i_case],            false),
-			ListInternal:   binaryen.getTypeFromHeapType(heaptypes[i_list_internal],   false),
-			DictInternal:   binaryen.getTypeFromHeapType(heaptypes[i_dict_internal],   false),
-			MapInternal:    binaryen.getTypeFromHeapType(heaptypes[i_map_internal],    false),
-			List:           binaryen.getTypeFromHeapType(heaptypes[i_list],            false),
-			Dict:           binaryen.getTypeFromHeapType(heaptypes[i_dict],            false),
-			Map:            binaryen.getTypeFromHeapType(heaptypes[i_map],             false),
-			Composite:      binaryen.getTypeFromHeapType(heaptypes[i_composite],       false),
-			StringInternal: binaryen.getTypeFromHeapType(heaptypes[i_string_internal], false),
-			TupleInternal:  binaryen.getTypeFromHeapType(heaptypes[i_tuple_internal],  false),
-			RecordInternal: binaryen.getTypeFromHeapType(heaptypes[i_record_internal], false),
-			String:         binaryen.getTypeFromHeapType(heaptypes[i_string],          false),
-			Tuple:          binaryen.getTypeFromHeapType(heaptypes[i_tuple],           false),
-			Record:         binaryen.getTypeFromHeapType(heaptypes[i_record],          false),
-			Object:         binaryen.getTypeFromHeapType(heaptypes[i_object],          false),
-			Exception:      binaryen.getTypeFromHeapType(heaptypes[i_exception],       false),
-			Maybe:          binaryen.getTypeFromHeapType(heaptypes[i_maybe],           false),
-			Result:         binaryen.getTypeFromHeapType(heaptypes[i_result],          false),
-			Function:       binaryen.getTypeFromHeapType(heaptypes[i_function],        false),
+			Property:     binaryen.getTypeFromHeapType(heaptypes[i_property],      false),
+			Case:         binaryen.getTypeFromHeapType(heaptypes[i_case],          false),
+			String:       binaryen.getTypeFromHeapType(heaptypes[i_string],        false),
+			Tuple:        binaryen.getTypeFromHeapType(heaptypes[i_tuple],         false),
+			Record:       binaryen.getTypeFromHeapType(heaptypes[i_record],        false),
+			ListArray:    binaryen.getTypeFromHeapType(heaptypes[i_list_array],    false),
+			DictArray:    binaryen.getTypeFromHeapType(heaptypes[i_dict_array],    false),
+			MapArray:     binaryen.getTypeFromHeapType(heaptypes[i_map_array],     false),
+			List:         binaryen.getTypeFromHeapType(heaptypes[i_list],          false),
+			Dict:         binaryen.getTypeFromHeapType(heaptypes[i_dict],          false),
+			Map:          binaryen.getTypeFromHeapType(heaptypes[i_map],           false),
+			Value:        binaryen.getTypeFromHeapType(heaptypes[i_value],         false),
+			Data:         binaryen.getTypeFromHeapType(heaptypes[i_data],          false),
+			Object:       binaryen.getTypeFromHeapType(heaptypes[i_object],        false),
+			Class:        binaryen.getTypeFromHeapType(heaptypes[i_class],         false),
+			CplPrimitive: binaryen.getTypeFromHeapType(heaptypes[i_cpl_primitive], false),
+			CplString:    binaryen.getTypeFromHeapType(heaptypes[i_cpl_string],    false),
+			CplTuple:     binaryen.getTypeFromHeapType(heaptypes[i_cpl_tuple],     false),
+			CplRecord:    binaryen.getTypeFromHeapType(heaptypes[i_cpl_record],    false),
+			CplList:      binaryen.getTypeFromHeapType(heaptypes[i_cpl_list],      false),
+			CplDict:      binaryen.getTypeFromHeapType(heaptypes[i_cpl_dict],      false),
+			CplMap:       binaryen.getTypeFromHeapType(heaptypes[i_cpl_map],       false),
+			Exception:    binaryen.getTypeFromHeapType(heaptypes[i_exception],     false),
+			Maybe:        binaryen.getTypeFromHeapType(heaptypes[i_maybe],         false),
+			Result:       binaryen.getTypeFromHeapType(heaptypes[i_result],        false),
+			Function:     binaryen.getTypeFromHeapType(heaptypes[i_function],      false),
 		},
 
 		reftypeNullRegistry: {
-			Value:     binaryen.getTypeFromHeapType(heaptypes[i_value],     true), // only used as the fields of `$ListInternal` and `$Maybe`
-			Property:  binaryen.getTypeFromHeapType(heaptypes[i_property],  true), // only used as the fields of `$DictInternal`
-			Case:      binaryen.getTypeFromHeapType(heaptypes[i_case],      true), // only used as the fields of `$MapInternal`
-			Composite: binaryen.getTypeFromHeapType(heaptypes[i_composite], true), // only used as the fields of `$Value`
+			Property:  binaryen.getTypeFromHeapType(heaptypes[i_property],  true), // only used as the fields of `$DictArray`
+			Case:      binaryen.getTypeFromHeapType(heaptypes[i_case],      true), // only used as the fields of `$MapArray`
+			Value:     binaryen.getTypeFromHeapType(heaptypes[i_value],     true), // only used as the fields of `$ListArray` and `$Maybe`
+			Class:     binaryen.getTypeFromHeapType(heaptypes[i_class],     true), // only used as the fields of `$Class`
 			Exception: binaryen.getTypeFromHeapType(heaptypes[i_exception], true), // only used as the fields of `$Exception` and `$Result`
 		},
 	};
@@ -364,14 +400,7 @@ const TYPES: {
 
 export class VirtualMachine {
 	/** The Binaryen module that holds static types and functions, independent of any source program. */
-	public readonly mod: binaryen.Module = binaryen.parseText(MODULE_TEXT, (0
-		| binaryen.Feature.NontrappingFPToInt
-		| binaryen.Feature.SIMD128
-		| binaryen.Feature.TailCall
-		| binaryen.Feature.ReferenceTypes
-		| binaryen.Feature.Multivalue
-		| binaryen.Feature.GC
-	));
+	public readonly mod: binaryen.Module = WASM_MODULE;
 
 	/** A lookup table for heap types created by a Binaryen TypeBuilder. */
 	public readonly heaptype: HeaptypeRegistry;
@@ -382,26 +411,21 @@ export class VirtualMachine {
 	/** A registry of reference-null types. */
 	public readonly reftypeNull: ReftypeNullRegistry;
 
-	public readonly globalImportDataMap: ReadonlyMap<string, {readonly name: string, readonly type: binaryen.Type}> = new Map([
-		['Vect#NULL',  {name: 'Vect.NULL',  type: binaryen.Type.v128}],
-		['Vect#FALSE', {name: 'Vect.FALSE', type: binaryen.Type.v128}],
-		['Vect#TRUE',  {name: 'Vect.TRUE',  type: binaryen.Type.v128}],
-	]);
+	public readonly globalImportDataMap: ReadonlyMap<string, {readonly name: string, readonly type: binaryen.Type}>;
 
 	public readonly util = utils(this);
 	public readonly op   = ops(this);
 
-	public readonly Vect      = new Vect(this);
-	public readonly Value     = new Value(this);
-	public readonly Property  = new Property(this);
-	public readonly Case      = new Case(this);
-	public readonly List      = new List(this);
-	public readonly Dict      = new Dict(this);
-	public readonly Map       = new VmMap(this);
-	public readonly String    = new VmString(this);
-	public readonly Tuple     = new VmTuple(this);
-	public readonly Record    = new VmRecord(this);
-	public readonly Object    = new VmObject(this);
+	public readonly Vect     = new Vect(this);
+	public readonly Property = new Property(this);
+	public readonly Case     = new Case(this);
+	public readonly Record   = new VmRecord(this);
+	public readonly List     = new List(this);
+	public readonly Dict     = new Dict(this);
+	public readonly Map      = new VmMap(this);
+	public readonly Value    = new Value(this);
+	public readonly Object   = new VmObject(this);
+	public readonly Class    = new VmClass(this);
 
 
 	public constructor() {
@@ -414,5 +438,36 @@ export class VirtualMachine {
 			reftypeRegistry:     this.reftype,
 			reftypeNullRegistry: this.reftypeNull,
 		} = TYPES);
+
+		this.globalImportDataMap = new Map([
+			['Property#TOMBSTONE', {name: 'Property.TOMBSTONE', type: this.reftype.Property}],
+			['Case#TOMBSTONE',     {name: 'Case.TOMBSTONE',     type: this.reftype.Case}],
+
+			['Value#NULL',  {name: 'Value.NULL',  type: this.reftype.Value}],
+			['Value#FALSE', {name: 'Value.FALSE', type: this.reftype.Value}],
+			['Value#TRUE',  {name: 'Value.TRUE',  type: this.reftype.Value}],
+
+			['Class#CLASS',     {name: 'Class.CLASS',     type: this.reftype.Class}],
+			['Class#NULL',      {name: 'Class.NULL',      type: this.reftype.Class}],
+			['Class#BOOLEAN',   {name: 'Class.BOOLEAN',   type: this.reftype.Class}],
+			['Class#SYMBOL',    {name: 'Class.SYMBOL',    type: this.reftype.Class}],
+			['Class#INTEGER',   {name: 'Class.INTEGER',   type: this.reftype.Class}],
+			['Class#NATURAL',   {name: 'Class.NATURAL',   type: this.reftype.Class}],
+			['Class#FLOAT',     {name: 'Class.FLOAT',     type: this.reftype.Class}],
+			['Class#STRING',    {name: 'Class.STRING',    type: this.reftype.Class}],
+			['Class#OBJECT',    {name: 'Class.OBJECT',    type: this.reftype.Class}],
+			['Class#LIST',      {name: 'Class.LIST',      type: this.reftype.Class}],
+			['Class#DICT',      {name: 'Class.DICT',      type: this.reftype.Class}],
+			['Class#SET',       {name: 'Class.SET',       type: this.reftype.Class}],
+			['Class#MAP',       {name: 'Class.MAP',       type: this.reftype.Class}],
+			['Class#EXCEPTION', {name: 'Class.EXCEPTION', type: this.reftype.Class}],
+			['Class#MAYBE',     {name: 'Class.MAYBE',     type: this.reftype.Class}],
+			['Class#NONE',      {name: 'Class.NONE',      type: this.reftype.Class}],
+			['Class#SOME',      {name: 'Class.SOME',      type: this.reftype.Class}],
+			['Class#RESULT',    {name: 'Class.RESULT',    type: this.reftype.Class}],
+			['Class#FAIL',      {name: 'Class.FAIL',      type: this.reftype.Class}],
+			['Class#OK',        {name: 'Class.OK',        type: this.reftype.Class}],
+			['Class#FUNCTION',  {name: 'Class.FUNCTION',  type: this.reftype.Class}],
+		]);
 	}
 }

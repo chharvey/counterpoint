@@ -15,7 +15,7 @@ import {
 	VALUE,
 	TYPE,
 } from '../../typer/index.ts';
-import {IntrinsicName} from '../../parser/index.ts';
+import {CoreLibName} from '../../parser/index.ts';
 import {
 	Operator,
 	Validator,
@@ -61,28 +61,28 @@ export function check_unique_keys(keys: readonly Key[]): void {
 
 /** Callable type interfaces that have generic parameters. */
 export type CallableInterfaceName = (
-	| IntrinsicName.LIST
-	| IntrinsicName.DICT
-	| IntrinsicName.SET
-	| IntrinsicName.MAP
-	| IntrinsicName.MAYBE
-	| IntrinsicName.NONE
-	| IntrinsicName.SOME
-	| IntrinsicName.RESULT
-	| IntrinsicName.FAIL
-	| IntrinsicName.OK
+	| CoreLibName.LIST
+	| CoreLibName.DICT
+	| CoreLibName.SET
+	| CoreLibName.MAP
+	| CoreLibName.MAYBE
+	| CoreLibName.NONE
+	| CoreLibName.SOME
+	| CoreLibName.RESULT
+	| CoreLibName.FAIL
+	| CoreLibName.OK
 );
 const CALLABLE_INTERFACES: readonly string[] = [
-	IntrinsicName.LIST,
-	IntrinsicName.DICT,
-	IntrinsicName.SET,
-	IntrinsicName.MAP,
-	IntrinsicName.MAYBE,
-	IntrinsicName.NONE,
-	IntrinsicName.SOME,
-	IntrinsicName.RESULT,
-	IntrinsicName.FAIL,
-	IntrinsicName.OK,
+	CoreLibName.LIST,
+	CoreLibName.DICT,
+	CoreLibName.SET,
+	CoreLibName.MAP,
+	CoreLibName.MAYBE,
+	CoreLibName.NONE,
+	CoreLibName.SOME,
+	CoreLibName.RESULT,
+	CoreLibName.FAIL,
+	CoreLibName.OK,
 ];
 export function validate_callable_interface_name(source: string): asserts source is CallableInterfaceName {
 	if (!CALLABLE_INTERFACES.includes(source)) {
@@ -92,20 +92,20 @@ export function validate_callable_interface_name(source: string): asserts source
 
 /** Callable classes that have value parameters. */
 export type CallableClassName = (
-	| IntrinsicName.BOOLEAN
-	| IntrinsicName.INTEGER
-	| IntrinsicName.NATURAL
-	| IntrinsicName.FLOAT
-	| IntrinsicName.STRING
-	| IntrinsicName.LIST
-	| IntrinsicName.DICT
-	| IntrinsicName.SET
-	| IntrinsicName.MAP
-	| IntrinsicName.EXCEPTION
-	| IntrinsicName.NONE
-	| IntrinsicName.SOME
-	| IntrinsicName.FAIL
-	| IntrinsicName.OK
+	| CoreLibName.BOOLEAN
+	| CoreLibName.INTEGER
+	| CoreLibName.NATURAL
+	| CoreLibName.FLOAT
+	| CoreLibName.STRING
+	| CoreLibName.LIST
+	| CoreLibName.DICT
+	| CoreLibName.SET
+	| CoreLibName.MAP
+	| CoreLibName.EXCEPTION
+	| CoreLibName.NONE
+	| CoreLibName.SOME
+	| CoreLibName.FAIL
+	| CoreLibName.OK
 );
 
 
@@ -250,27 +250,27 @@ export type ConstructorSchema = {
  * ```
  */
 export const CLASS_API = new Map<CallableInterfaceName | CallableClassName, ConstructorSchema>([
-	[IntrinsicName.BOOLEAN, {
+	[CoreLibName.BOOLEAN, {
 		overloads:  [{positional: [{type: () => TYPE.ANYTHING}]}],
 		returnType: () => TYPE.BOOL,
 	}],
-	[IntrinsicName.INTEGER, {
+	[CoreLibName.INTEGER, {
 		overloads:  [{positional: [{type: () => TYPE.NUMBER}]}],
 		returnType: () => TYPE.INT,
 	}],
-	[IntrinsicName.NATURAL, {
+	[CoreLibName.NATURAL, {
 		overloads:  [{positional: [{type: () => TYPE.NUMBER}]}],
 		returnType: () => TYPE.NAT,
 	}],
-	[IntrinsicName.FLOAT, {
+	[CoreLibName.FLOAT, {
 		overloads:  [{positional: [{type: () => TYPE.NUMBER}]}],
 		returnType: () => TYPE.FLOAT,
 	}],
-	[IntrinsicName.STRING, {
+	[CoreLibName.STRING, {
 		overloads:  [{positional: [{type: () => TYPE.ANYTHING}]}],
 		returnType: () => TYPE.STR,
 	}],
-	[IntrinsicName.LIST, {
+	[CoreLibName.LIST, {
 		genericParams: {positional: [{readonlyVariance: 'covariant', mutableVariance: 'invariant'}]},
 		overloads:     [
 			{},
@@ -279,7 +279,7 @@ export const CLASS_API = new Map<CallableInterfaceName | CallableClassName, Cons
 		],
 		returnType: (generic_params) => new TYPE.List(generic_params[0]),
 	}],
-	[IntrinsicName.DICT, {
+	[CoreLibName.DICT, {
 		genericParams: {positional: [{readonlyVariance: 'covariant', mutableVariance: 'invariant'}]},
 		overloads:     [
 			{},
@@ -290,7 +290,7 @@ export const CLASS_API = new Map<CallableInterfaceName | CallableClassName, Cons
 		],
 		returnType: (generic_params) => new TYPE.Dict(generic_params[0]),
 	}],
-	[IntrinsicName.SET, {
+	[CoreLibName.SET, {
 		genericParams: {positional: [{readonlyVariance: 'covariant', mutableVariance: 'invariant'}]},
 		overloads:     [
 			{},
@@ -299,7 +299,7 @@ export const CLASS_API = new Map<CallableInterfaceName | CallableClassName, Cons
 		],
 		returnType: (generic_params) => new TYPE.Set(generic_params[0]),
 	}],
-	[IntrinsicName.MAP, {
+	[CoreLibName.MAP, {
 		genericParams: {
 			positional: [
 				{readonlyVariance: 'covariant', mutableVariance: 'invariant'},
@@ -314,36 +314,36 @@ export const CLASS_API = new Map<CallableInterfaceName | CallableClassName, Cons
 		],
 		returnType: (generic_params) => new TYPE.Map(generic_params[0], generic_params[1]),
 	}],
-	[IntrinsicName.EXCEPTION, {
+	[CoreLibName.EXCEPTION, {
 		overloads:  [{positional: [{type: () => TYPE.STR}, {optional: true, type: () => TYPE.EXCP}]}],
 		returnType: () => TYPE.EXCP,
 	}],
-	[IntrinsicName.MAYBE, {
+	[CoreLibName.MAYBE, {
 		genericParams: {positional: [{readonlyVariance: 'covariant'}]},
 		overloads:     [],
 		returnType:    (generic_params) => new TYPE.Maybe(generic_params[0]),
 	}],
-	[IntrinsicName.NONE, {
+	[CoreLibName.NONE, {
 		genericParams: {positional: [{readonlyVariance: 'covariant'}]},
 		overloads:     [{}],
 		returnType:    (generic_params) => new TYPE.None(generic_params[0]),
 	}],
-	[IntrinsicName.SOME, {
+	[CoreLibName.SOME, {
 		genericParams: {positional: [{readonlyVariance: 'covariant'}]},
 		overloads:     [{positional: [{type: (generic_params) => generic_params[0]}]}],
 		returnType:    (generic_params) => new TYPE.Some(generic_params[0]),
 	}],
-	[IntrinsicName.RESULT, {
+	[CoreLibName.RESULT, {
 		genericParams: {positional: [{readonlyVariance: 'covariant'}, {readonlyVariance: 'covariant', constraint: {direction: 'narrows', type: () => TYPE.EXCP}, default: () => TYPE.EXCP}]},
 		overloads:     [],
 		returnType:    (generic_params) => new TYPE.Result(generic_params[0], generic_params[1]),
 	}],
-	[IntrinsicName.FAIL, {
+	[CoreLibName.FAIL, {
 		genericParams: {positional: [{readonlyVariance: 'covariant'}, {readonlyVariance: 'covariant', constraint: {direction: 'narrows', type: () => TYPE.EXCP}, default: () => TYPE.EXCP}]},
 		overloads:     [{positional: [{type: (generic_params) => generic_params[1]}]}],
 		returnType:    (generic_params) => new TYPE.Fail(generic_params[0], generic_params[1]),
 	}],
-	[IntrinsicName.OK, {
+	[CoreLibName.OK, {
 		genericParams: {positional: [{readonlyVariance: 'covariant'}, {readonlyVariance: 'covariant', constraint: {direction: 'narrows', type: () => TYPE.EXCP}, default: () => TYPE.EXCP}]},
 		overloads:     [{positional: [{type: (generic_params) => generic_params[0]}]}],
 		returnType:    (generic_params) => new TYPE.Ok(generic_params[0], generic_params[1]),

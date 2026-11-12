@@ -74,6 +74,11 @@ export class Fail extends Result {
 		return `Fail[${this.typeargSuccess}, ${this.typeargFailure}]`;
 	}
 
+	@instanceOf(() => VALUE.Fail)
+	public override includes(v: VALUE.Value): boolean {
+		return v.toType().isSubtypeOf(this);
+	}
+
 	public override isSubtypeOf(t: Type): boolean {
 		// eslint-disable-next-line @typescript-eslint/no-use-before-define
 		return !(t instanceof Ok) && super.isSubtypeOf(t);
@@ -95,6 +100,11 @@ export class Fail extends Result {
 export class Ok extends Result {
 	public override toString(): string {
 		return `Ok[${this.typeargSuccess}, ${this.typeargFailure}]`;
+	}
+
+	@instanceOf(() => VALUE.Ok)
+	public override includes(v: VALUE.Value): boolean {
+		return v.toType().isSubtypeOf(this);
 	}
 
 	public override isSubtypeOf(t: Type): boolean {

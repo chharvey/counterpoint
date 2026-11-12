@@ -14,44 +14,73 @@ import type {Exception} from './Exception.ts';
 
 /**
  * A `Result` repesents a success or failure.
- * @final
+ * Known subclasses:
+ * - Fail
+ * - Ok
  */
-export class Result<T extends Value = Value> extends Value {
-	private readonly successType: TYPE.Type = TYPE.ANYTHING;
-	private readonly failureType: TYPE.Type = TYPE.EXCP;
+export abstract class Result extends Value {
+}
 
 
+
+export class Fail extends Result {
 	public constructor(
-		public readonly isOk:     boolean,
-		public readonly argument: T | Exception,
+		private readonly successType: TYPE.Type,
+		public  readonly reason:      Exception,
 	) {
 		super();
-		if (isOk) {
-			this.successType = argument.toType();
-		} else {
-			this.failureType = argument.toType();
-		}
 	}
 
 
 	public override toString(): string {
-		return `<Result instance ${(0x00).toString(16)}>`; // TODO: interpreter object ids
+		return `<Fail instance ${(0x00).toString(16)}>`; // TODO: interpreter object ids
 	}
 
 	@strictEqual
 	@identical
 	@memoizeBinOp(true, true)
-	@instanceOf(() => Result)
+	@instanceOf(() => Fail)
 	public override equal(value: Value): boolean {
-		const result = value as Result;
-		return this.isOk === result.isOk && this.argument.equal(result.argument);
+		return this.reason.equal((value as Fail).reason);
 	}
 
 	/**
 	 * @inheritdoc
-	 * Returns a TYPE.Result whose type argument is the type of this Maybe’s value (defaulting to `anything`).
+	 * Returns a TYPE.Fail with the given success type argument and whose failure type argument is the type of this Fail’s reason.
 	 */
 	public override toType(): TYPE.Result {
-		return new TYPE.Result(this.successType, this.failureType);
+		return new TYPE.Fail(this.successType, this.reason.toType());
+	}
+}
+
+
+
+export class Ok<T extends Value = Value> extends Result {
+	public constructor(
+		public  readonly value:       T,
+		private readonly failureType: TYPE.Type = TYPE.EXCP,
+	) {
+		super();
+	}
+
+
+	public override toString(): string {
+		return `<Ok instance ${(0x00).toString(16)}>`; // TODO: interpreter object ids
+	}
+
+	@strictEqual
+	@identical
+	@memoizeBinOp(true, true)
+	@instanceOf(() => Ok)
+	public override equal(value: Value): boolean {
+		return this.value.equal((value as Ok).value);
+	}
+
+	/**
+	 * @inheritdoc
+	 * Returns a TYPE.Fail with the given success type argument and whose failure type argument is the type of this Fail’s reason.
+	 */
+	public override toType(): TYPE.Result {
+		return new TYPE.Ok(this.value.toType(), this.failureType);
 	}
 }
