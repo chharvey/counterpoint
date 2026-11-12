@@ -352,14 +352,6 @@ Exception! Interpret((RESULT.EXTRACT `obj`)) :=
 		1. *Return:* the failure reason contained in `obj`.
 ;
 
-Value! Interpret((CAST `src` `v`)) :=
-	1. *Let* `is_instance` be the result of performing `Interpret((INSTANCEOF `src` `v`))`.
-	2. *If* `is_instance` is `true`:
-		1. *Return:* `v`.
-	3. *Else:*
-		1. *Throw:* a new Error "Invalid cast to `src`.".
-;
-
 Integer! Interpret((INT.ADD `v0` `v1`)) :=
 	1. *Set* `v0` to *Unwrap:* `Interpret(v0)`;
 	2. *Set* `v1` to *Unwrap:* `Interpret(v1)`;

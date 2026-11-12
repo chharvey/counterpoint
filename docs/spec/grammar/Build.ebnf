@@ -81,8 +81,6 @@ MAYBE.UNWRAP  ([Value]) -> Value;
 RESULT.UNWRAP ([Value]) -> Value;
 RESULT.EXTRACT([Value]) -> Exception;
 
-CAST(native-enum [Value]) -> Value;
-
 INT.ADD([Integer Integer]) -> Integer;
 INT.SUB([Integer Integer]) -> Integer;
 INT.MUL([Integer Integer]) -> Integer;

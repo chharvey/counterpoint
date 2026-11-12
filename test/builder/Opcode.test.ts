@@ -608,86 +608,6 @@ test.suite('Opcode', () => {
 				});
 			});
 
-			test.suite('Instance', () => {
-				const srcs: readonly string[] = extract_lines`
-					null
-					false
-					true
-					0
-					42
-					0.0
-					-0.0
-					4.2e+1
-					+0
-					+42
-					""
-					"hello"
-					()
-					(42,)
-					(a= 42)
-					[]
-					[42]
-					[a= 42]
-					{}
-					{42}
-					{41 -> 42}
-				`;
-				let expecteds: readonly VALUE.Value[];
-				test.before(() => {
-					const builder      = new Builder();
-					const interp       = new Interpreter();
-					const expr_visitor = new AST.ExprVisitorBuild(builder);
-					srcs.forEach((src) => builder.pushInstruction(new OP.Drop(expr_visitor.visit(AST.EXPR.Expression.fromSource(src)).asTac(builder))));
-					builder.instructions.forEach((instr) => instr.interpret(interp));
-					expecteds = interp.drops;
-				});
-				test.suite('CAST', () => {
-					([
-						CoreLibName.NULL,
-						CoreLibName.BOOLEAN,
-						CoreLibName.SYMBOL,
-						CoreLibName.INTEGER,
-						CoreLibName.NATURAL,
-						CoreLibName.FLOAT,
-						CoreLibName.STRING,
-						CoreLibName.OBJECT,
-						CoreLibName.LIST,
-						CoreLibName.DICT,
-						CoreLibName.SET,
-						CoreLibName.MAP,
-						CoreLibName.EXCEPTION,
-						CoreLibName.MAYBE,
-						CoreLibName.NONE,
-						CoreLibName.SOME,
-					] as const).forEach((name) => {
-						test.test(name, () => {
-							const builder      = new Builder();
-							const interp       = new Interpreter();
-							const expr_visitor = new AST.ExprVisitorBuild(builder);
-							srcs.forEach((src) => builder.pushInstruction(new OP.Drop(new OP.Instance(
-								OP.OpCode.CAST,
-								name,
-								expr_visitor.visit(AST.EXPR.Expression.fromSource(src)).asTac(builder),
-							))));
-							let i: number = -1;
-							return builder.instructions.forEach((instr) => {
-								if (instr instanceof OP.Drop) {
-									i++;
-								}
-								try {
-									instr.interpret(interp);
-								} catch (err) {
-									return assert.deepStrictEqual(err, new Error(`Invalid cast to ${name}.`));
-								}
-								if (instr instanceof OP.Drop) {
-									return assert_equal_values(interp.drops.at(-1)!, expecteds[i]);
-								}
-							});
-						});
-					});
-				});
-			});
-
 			test.suite('Binop', () => {
 				function interpret_binops(tested: readonly string[]): VALUE.Value[] {
 					return interpret_extracted_drops(`{
@@ -2072,38 +1992,6 @@ test.suite('Opcode', () => {
 						expr_visitor.visit((stmts[i] as AST.STMT.StatementExpression).expr!) as OP.Get,
 						TYPE.EXCP,
 					).codegen(cg)), [1, 2, 3].map((i) => op.extractResult(wasm.local.get(i, reftype.Value))));
-				});
-			});
-
-			test.suite.skip('Instance', () => {
-				test.test('CAST', () => {
-					const {builder, cg, wasm} = setupScript(`{
-						${CORE_LIB_NAMES.slice(0, -1).map((classname) => `null as <anything> as ${classname};`).join('\n')};
-					}`);
-					const operand: binaryen.ExpressionRef = genConst(cg);
-					return assertEqualBins(builder.instructions.filter((instr) => instr instanceof OP.Drop).map((instr) => instr.codegen(cg)), [
-						cg.vm.op.asNull(operand),
-						cg.vm.op.asBool(operand),
-						cg.vm.op.asInt(operand),
-						cg.vm.op.asInt(operand),
-						cg.vm.op.asNat(operand),
-						cg.vm.op.asFloat(operand),
-						cg.vm.op.asString(operand),
-						cg.vm.op.asObject(operand),
-						cg.vm.op.asList(operand),
-						cg.vm.op.asDict(operand),
-						cg.vm.op.asMap(operand),
-						cg.vm.op.asMap(operand),
-						cg.vm.op.asException(operand),
-						cg.vm.op.asMaybe(operand),
-						cg.vm.op.asNone(operand),
-						cg.vm.op.asSome(operand),
-						cg.vm.op.asResult(operand),
-						cg.vm.op.asFail(operand),
-						cg.vm.op.asOk(operand),
-						cg.vm.op.asFunction(operand),
-						// TODO: cg.vm.op.asClass(operand),
-					].map((expr) => wasm.drop(expr)));
 				});
 			});
 
