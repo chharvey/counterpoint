@@ -89,6 +89,23 @@
 
 
 
+(func $op:is-none (export "op::isNone") (param $value (ref $Value)) (result (ref $Value))
+	(return_call $Value.bool-from-i32 (if (result i32) ;; `(i32.and)` doesn’t short-circuit, so using conditional
+		(ref.test (ref $Maybe) (local.get $value))
+		(then (ref.is_null (struct.get $Maybe $value (ref.cast (ref $Maybe) (local.get $value)))))
+		(else (i32.const 0))
+	))
+)
+(func $op:is-fail (export "op::isFail") (param $value (ref $Value)) (result (ref $Value))
+	(return_call $Value.bool-from-i32 (if (result i32) ;; `(i32.and)` doesn’t short-circuit, so using conditional
+		(ref.test (ref $Result) (local.get $value))
+		(then (ref.is_null (struct.get $Result $value (ref.cast (ref $Result) (local.get $value)))))
+		(else (i32.const 0))
+	))
+)
+
+
+
 (func $op:unwrap-maybe (export "op::unwrapMaybe") (param $value (ref $Value)) (result (ref $Value))
 	(local $mval (ref null $Value))
 	(local.set $mval (struct.get $Maybe $value (ref.cast (ref $Maybe) (local.get $value))))
@@ -115,23 +132,6 @@
 		(then (unreachable))
 		(else (ref.as_non_null (local.get $reason)))
 	)
-)
-
-
-
-(func $op:is-none (export "op::isNone") (param $value (ref $Value)) (result (ref $Value))
-	(return_call $Value.bool-from-i32 (if (result i32) ;; `(i32.and)` doesn’t short-circuit, so using conditional
-		(ref.test (ref $Maybe) (local.get $value))
-		(then (ref.is_null (struct.get $Maybe $value (ref.cast (ref $Maybe) (local.get $value)))))
-		(else (i32.const 0))
-	))
-)
-(func $op:is-fail (export "op::isFail") (param $value (ref $Value)) (result (ref $Value))
-	(return_call $Value.bool-from-i32 (if (result i32) ;; `(i32.and)` doesn’t short-circuit, so using conditional
-		(ref.test (ref $Result) (local.get $value))
-		(then (ref.is_null (struct.get $Result $value (ref.cast (ref $Result) (local.get $value)))))
-		(else (i32.const 0))
-	))
 )
 
 
