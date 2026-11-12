@@ -11,6 +11,7 @@ import {Union} from './Union.ts';
 
 /**
  * Class for constructing the `bool` type.
+ * @singleton
  * @final
  */
 class TypeBoolean extends Union {
@@ -23,7 +24,7 @@ class TypeBoolean extends Union {
 	}
 
 	@instanceOf(() => VALUE.Boolean)
-	public override includes(_: VALUE.Value): boolean {
+	public override includes(_v: VALUE.Value): boolean {
 		return true;
 	}
 }

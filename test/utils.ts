@@ -219,9 +219,9 @@ export function genConst(cg: CodeGenerator, value: bigint, tag?: 'nat'): binarye
 export function genConst(cg: CodeGenerator, value?: null | boolean | number | string): binaryen.ExpressionRef;
 export function genConst(cg: CodeGenerator, value: null | boolean | symbol | bigint | number | string = null, tag?: string): binaryen.ExpressionRef {
 	switch (value) {
-		case null:
-		case false:
-		case true:  { return cg.getConst(value); }
+		case null:  { return cg.vm.Value.NULL; }
+		case false: { return cg.vm.Value.FALSE; }
+		case true:  { return cg.vm.Value.TRUE; }
 	}
 	if (typeof value === 'string' && tag === 'sym') {
 		return new VALUE.Symbol(Validator.keyId(value), value).codegen(cg);

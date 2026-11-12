@@ -17,7 +17,10 @@ import {
 
 
 /**
- * A `Maybe` repesents presence or absence of a value.
+ * Class for constructing a `Maybe` type.
+ * Known subclasses:
+ * - None
+ * - Some
  */
 export class Maybe extends ReferenceType {
 	/**
@@ -48,7 +51,7 @@ export class Maybe extends ReferenceType {
 	}
 
 	/** @final */
-	public override mutableOf(): Type {
+	public override mutableOf(): Maybe {
 		return this;
 	}
 }

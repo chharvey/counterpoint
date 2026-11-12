@@ -62,12 +62,6 @@ test.suite('TypeCall', () => {
 				],
 			);
 		});
-		test.test('Map has a default type parameter.', () => {
-			assertEqualTypes(
-				AST.TYPE.Call.fromSource('Map.<int>').eval(),
-				new TYPE.Map(TYPE.INT, TYPE.INT),
-			);
-		});
 		test.test('throws if base is not a TypeAlias.', () => {
 			xjs.Array.forEachAggregated(extract_lines`
 				int.<str>

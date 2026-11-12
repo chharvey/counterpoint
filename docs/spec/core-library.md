@@ -1,4 +1,4 @@
-# Intrinsics
+# Core Library
 This chapter describes the objects built in to the standard “core” Counterpoint library.
 
 
@@ -77,7 +77,7 @@ All reference objects belong to the `Object` class.
 
 
 ### `Object`
-The `Object` class contains every reference object.
+All `Object` objects are reference objects.
 
 
 ### `List`
@@ -119,4 +119,10 @@ The success values and failure reasons in Results are Counterpoint Language Valu
 
 ### `Function`
 `Function` objects encapsulate parameterized Counterpoint code closed over a lexical environment
+and support the dynamic execution of that code.
+
+
+### `Class`
+`Class` objects are Classes, which construct objects.
+Classes may encapsulate parameterized Counterpoint code closed over a lexical environment
 and support the dynamic execution of that code.

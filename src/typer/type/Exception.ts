@@ -16,7 +16,8 @@ import {
 
 
 /**
- * An `Exception` is used for runtime error reporting.
+ * Class for constructing the `Exception` type.
+ * @singleton
  * @final
  */
 export class Exception extends ReferenceType {
@@ -25,7 +26,7 @@ export class Exception extends ReferenceType {
 	}
 
 	@instanceOf(() => VALUE.Exception)
-	public override includes(_: VALUE.Value): boolean {
+	public override includes(_v: VALUE.Value): boolean {
 		return true;
 	}
 
@@ -34,11 +35,11 @@ export class Exception extends ReferenceType {
 	@subtypeLaws
 	@isObjectType
 	@instanceOf(() => Exception)
-	public override isSubtypeOf(_: Type): boolean {
+	public override isSubtypeOf(_t: Type): boolean {
 		return true;
 	}
 
-	public override mutableOf(): Type {
+	public override mutableOf(): Exception {
 		return this;
 	}
 }

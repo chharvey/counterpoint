@@ -7,7 +7,10 @@ import {
 	runOnceMethod,
 } from '../lib/index.ts';
 import type {TYPE} from '../typer/index.ts';
-import type {SymbolSchemaVar} from '../validator/index.ts';
+import type {
+	SymbolSchemaVar,
+	SymbolSchemaClass,
+} from '../validator/index.ts';
 import {
 	OP,
 	type Interpreter,
@@ -16,12 +19,17 @@ import {CfgNode} from './CfgNode.ts';
 
 
 
+/** A variable internal to the Builder (not present in the AST). */
 export type Temp = {
 	readonly id:     bigint,
 	readonly name:   string,
 	readonly type:   TYPE.Type,
 	readonly value?: OP.Value,
 };
+
+
+
+export type BuilderLocalSymbol = SymbolSchemaVar | SymbolSchemaClass | Temp;
 
 
 
@@ -35,7 +43,7 @@ export class Builder {
 	#labelCounter: bigint = 0n;
 
 	/** A map containing local variable/temp statuses. */
-	readonly #locals = new Map<SymbolSchemaVar | Temp, 'declared' | 'set'>();
+	readonly #locals = new Map<BuilderLocalSymbol, 'declared' | 'set'>();
 
 	private currentBlock?: CfgNode = new CfgNode(this.newLabel());
 
@@ -72,11 +80,11 @@ export class Builder {
 		return temp;
 	}
 
-	public getLocalStatus(local: SymbolSchemaVar | Temp): 'declared' | 'set' | undefined {
+	public getLocalStatus(local: BuilderLocalSymbol): 'declared' | 'set' | undefined {
 		return this.#locals.get(local);
 	}
 
-	public setLocalStatus(local: SymbolSchemaVar | Temp, status: 'declared' | 'set'): void {
+	public setLocalStatus(local: BuilderLocalSymbol, status: 'declared' | 'set'): void {
 		this.#locals.set(local, status);
 	}
 

@@ -1,3 +1,4 @@
+import {equal_nullish_values} from '../../lib/index.ts';
 import {TYPE} from '../index.ts';
 import {
 	strictEqual,
@@ -35,15 +36,12 @@ export class Exception extends Value {
 	@instanceOf(() => Exception)
 	public override equal(value: Value): boolean {
 		const exception = value as Exception;
-		return this.message.equal(exception.message) && (
-			this.cause && exception.cause ? this.cause.equal(exception.cause) : !this.cause && !exception.cause
+		return (
+			this.message.equal(exception.message) &&
+			equal_nullish_values(this.cause, exception.cause, (a, b) => a.equal(b))
 		);
 	}
 
-	/**
-	 * @inheritdoc
-	 * Returns a TYPE.Maybe whose type argument is the type of this Maybe’s value (defaulting to `anything`).
-	 */
 	public override toType(): TYPE.Exception {
 		return TYPE.EXCP;
 	}

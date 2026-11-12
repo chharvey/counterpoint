@@ -22,5 +22,6 @@ export * from './Maybe.ts';
 export * from './Result.ts';
 
 export * from './Function.ts';
+export * from './Class.ts';
 
 export * from './exports.ts';

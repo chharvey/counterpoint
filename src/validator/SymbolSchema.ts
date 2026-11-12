@@ -1,4 +1,7 @@
-import {TYPE} from '../typer/index.ts';
+import {
+	TYPE,
+	type ClassSignature,
+} from '../typer/index.ts';
 import type {Serializable} from '../parser/index.ts';
 
 
@@ -14,6 +17,10 @@ export enum SymbolKind {
 
 
 export abstract class SymbolSchema {
+	/** Does this symbol persist across lexical boundaries? */
+	public readonly persists: boolean = false;
+
+
 	public constructor(
 		/** The unique identifier of the symbol, the cooked value of the token. */
 		public readonly id: bigint,
@@ -30,6 +37,9 @@ export abstract class SymbolSchema {
 
 
 export class SymbolSchemaType extends SymbolSchema {
+	/** Types persist because they are erased before compilation. */
+	public override readonly persists = true;
+
 	/** The assessed value of the symbol. */
 	public typevalue: TYPE.Type = TYPE.ANYTHING;
 
@@ -72,11 +82,28 @@ export class SymbolSchemaVar extends SymbolSchema {
 
 /** The symbol of a declared function. */
 export class SymbolSchemaFunc extends SymbolSchema {
+	/** Function declarations persist because they are not objects at runtime. */
+	public override readonly persists = true;
+
 	/** The declared function types (one per overload). */
-	public readonly types: TYPE.Type[] = [];
+	public readonly types: TYPE.Function[] = [];
 
 
 	public constructor(id: bigint, node: Serializable) {
 		super(id, node.line_index, node.col_index, node.source);
+	}
+}
+
+
+
+/** The symbol of a declared class. */
+export class SymbolSchemaClass extends SymbolSchema {
+	public constructor(
+		id: bigint,
+		classname: string,
+		/** The declared class’s call signature type. */
+		public readonly classSignature: ClassSignature,
+	) {
+		super(id, 0, 0, classname);
 	}
 }

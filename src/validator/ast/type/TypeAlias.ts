@@ -12,7 +12,7 @@ import {
 	CONFIG_DEFAULT,
 } from '../../../core/index.ts';
 import {TYPE} from '../../../typer/index.ts';
-import {IntrinsicName} from '../../../parser/index.ts';
+import {CoreLibName} from '../../../parser/index.ts';
 import {
 	SymbolKind,
 	type SymbolSchema,
@@ -41,8 +41,13 @@ export class TypeAlias extends Type {
 
 
 	public override varCheck(): void {
-		// NOTE: ignore var-checking `this` for now if source is an intrinsic identifier, as semantics is determined by syntax.
-		if (this.source === IntrinsicName.OBJECT || this.source === IntrinsicName.EXCEPTION) {
+		// NOTE: ignore var-checking `this` for now if source is a built-in identifier, as semantics is determined by syntax.
+		if (([
+			CoreLibName.OBJECT,
+			CoreLibName.EXCEPTION,
+			CoreLibName.FUNCTION,
+			CoreLibName.CLASS,
+		] as readonly string[]).includes(this.source)) {
 			return;
 		}
 		if (!this.validator.hasSymbol(this.id)) {
@@ -56,11 +61,14 @@ export class TypeAlias extends Type {
 
 	@memoizeMethod
 	public override eval(): TYPE.Type {
-		if (this.source === IntrinsicName.OBJECT) {
+		if (this.source === CoreLibName.OBJECT) {
 			return TYPE.OBJ;
 		}
-		if (this.source === IntrinsicName.EXCEPTION) {
+		if (this.source === CoreLibName.EXCEPTION) {
 			return TYPE.EXCP;
+		}
+		if (this.source === CoreLibName.CLASS) {
+			return TYPE.CLASS;
 		}
 		assert.ok(this.validator.hasSymbol(this.id), `Expected ${this.source} (${this.id}) to be in the symbol table.`);
 		const symbol: SymbolSchema = this.validator.getSymbol(this.id)!;

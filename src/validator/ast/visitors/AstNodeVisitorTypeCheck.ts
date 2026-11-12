@@ -124,16 +124,9 @@ export class AstNodeVisitorTypeCheck extends AstNodeVisitor<void> {
 		this.#exprVisitorType.visit(expr);
 	}
 
-	public override visitExprClaim          (expr: EXPR.Claim):          void { return this.visitExpression(expr); }
-	public override visitOperationExprUnary (expr: EXPR.OperationUnary): void { return this.visitExpression(expr); }
-
-	public override visitOperationExprBinaryCast(expr: EXPR.OperationBinaryCast): void {
-		// NOTE: ignore type-checking `this.operand1` for now, as semantics is determined by syntax.
-		// (`this.operand1.source` must be an `IntrinsicName`)
-		this.visit(expr.operand0);
-		this.#exprVisitorType.visit(expr);
-	}
-
+	public override visitExprClaim                      (expr: EXPR.Claim):                      void { return this.visitExpression(expr); }
+	public override visitOperationExprUnary             (expr: EXPR.OperationUnary):             void { return this.visitExpression(expr); }
+	public override visitOperationExprBinaryCast        (expr: EXPR.OperationBinaryCast):        void { return this.visitExpression(expr); }
 	public override visitOperationExprBinaryArithmetic  (expr: EXPR.OperationBinaryArithmetic):  void { return this.visitExpression(expr); }
 	public override visitOperationExprBinaryComparative (expr: EXPR.OperationBinaryComparative): void { return this.visitExpression(expr); }
 	public override visitOperationExprBinaryEquality    (expr: EXPR.OperationBinaryEquality):    void { return this.visitExpression(expr); }
@@ -185,7 +178,7 @@ export class AstNodeVisitorTypeCheck extends AstNodeVisitor<void> {
 		if (stmt.identifier) {
 			assert.ok(stmt.validator.hasSymbol(stmt.id!), `The validator symbol table should include ${stmt.id}.`);
 			const schema = stmt.validator.getSymbol(stmt.id!) as SymbolSchemaFunc;
-			if (schema.types.find((t) => fn_type === t || t instanceof TYPE.Function && fn_type.isMoreSpecificThan(t) && t.isMoreSpecificThan(fn_type))) {
+			if (schema.types.find((t) => fn_type === t || fn_type.isMoreSpecificThan(t) && t.isMoreSpecificThan(fn_type))) {
 				// if there exists an identically-typed overload, as static dispatch won’t know which one to choose
 				throw new TypeErrorAmbiguousOverload(stmt);
 			} else {

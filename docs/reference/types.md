@@ -1210,3 +1210,10 @@ Some functions do not even complete execution, either because their author speci
 or because something broke internally.
 
 Functions are explored in-depth in the [Functions](./functions.md) chapter.
+
+
+### Classes
+Classes are callable objects that construct new objects. The objects a class constructs
+are said to be “instances” of that class and share the same shape that the class defines.
+
+Classes are explored in-depth in the [Classes] (link pending) chapter.

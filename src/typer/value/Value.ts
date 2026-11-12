@@ -27,10 +27,13 @@ export function identical(
  * Known subclasses:
  * - Primitive
  * - Collection
+ * - Data
+ * - ValueObject
  * - Exception
  * - Maybe
  * - Result
  * - ValueFunction
+ * - ValueClass
  */
 export abstract class Value {
 	/** Whether this value is of a reference type or a value type. */

@@ -1,31 +1,5 @@
 import * as binaryen from 'binaryen.ts';
 import type {CodeGenerator} from '../../index.ts';
-import {TypeName} from './utils-public.ts';
-
-
-
-export function stringify_type_name(typename: TypeName): string | undefined {
-	return new Map<TypeName, string>([
-		[TypeName.TRAP,      'nothing'],
-		[TypeName.NULL,      'null'],
-		[TypeName.BOOL,      'bool'],
-		[TypeName.SYM,       'sym'],
-		[TypeName.INT,       'int'],
-		[TypeName.NAT,       'nat'],
-		[TypeName.FLOAT,     'float'],
-		[TypeName.STR,       'str'],
-		[TypeName.TUPLE,     'tuple'],
-		[TypeName.RECORD,    'record'],
-		[TypeName.LIST,      'List'],
-		[TypeName.DICT,      'Dict'],
-		[TypeName.SET,       'Set'],
-		[TypeName.MAP,       'Map'],
-		[TypeName.EXCEPTION, 'Exception'],
-		[TypeName.MAYBE,     'Maybe'],
-		[TypeName.RESULT,    'Result'],
-		[TypeName.ANY,       'anything'],
-	]).get(typename);
-}
 
 
 
@@ -36,12 +10,13 @@ export function stringify_type_name(typename: TypeName): string | undefined {
  * @param cg
  * @param args  the args to drop first
  * @param final the final expression/statement
+ * @deprecated
  */
 export function drop_then(
 	cg:    CodeGenerator,
 	args:  readonly binaryen.ExpressionRef[],
 	final: binaryen.ExpressionRef | boolean,
 ): binaryen.ExpressionRef {
-	const last_item: binaryen.ExpressionRef = typeof final === 'number' ? final : final ? cg.vm.Vect.TRUE : cg.vm.Vect.FALSE;
+	const last_item: binaryen.ExpressionRef = typeof final === 'number' ? final : final ? cg.vm.Value.TRUE : cg.vm.Value.FALSE;
 	return cg.mod.wasm.block(null, [...args.map((arg) => cg.mod.wasm.drop(arg)), last_item], binaryen.getExpressionType(last_item));
 }

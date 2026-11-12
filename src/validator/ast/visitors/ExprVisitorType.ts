@@ -12,11 +12,12 @@ import {
 	type EntryType,
 	TYPE,
 } from '../../../typer/index.ts';
-import {IntrinsicName} from '../../../parser/index.ts';
+import {CoreLibName} from '../../../parser/index.ts';
 import {
 	type SymbolSchema,
 	SymbolSchemaVar,
 	SymbolSchemaFunc,
+	SymbolSchemaClass,
 } from '../../index.ts';
 import {Operator} from '../../Operator.ts';
 import {
@@ -73,9 +74,11 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 		const symbol: SymbolSchema = expr.validator.getSymbol(expr.id)!;
 		if (symbol instanceof SymbolSchemaVar) {
 			return symbol.isUninitialized ? new TYPE.Maybe(symbol.type) : symbol.type;
-		} else {
-			assert_instanceof(symbol, SymbolSchemaFunc);
+		} else if (symbol instanceof SymbolSchemaFunc) {
 			return TYPE.Intersection.all(...symbol.types);
+		} else {
+			assert_instanceof(symbol, SymbolSchemaClass);
+			return TYPE.CLASS;
 		}
 	}
 
@@ -213,7 +216,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 				throw err.errors[0];
 			}
 			switch (expr.base.source as CallableClassName) {
-				case IntrinsicName.LIST: {
+				case CoreLibName.LIST: {
 					// If function overload checking failed, `arg` is either a tuple literal or an expression with a tuple type.
 					const itemtype: TYPE.Type  = expr.typeargs[0].eval();
 					const arg:      EXPR.Expression = expr.exprargs[0];
@@ -232,7 +235,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 					}
 					break;
 				}
-				case IntrinsicName.DICT: {
+				case CoreLibName.DICT: {
 					// If function overload checking failed, `arg` is either a tuple/record literal or an expression with a tuple/record type.
 					const valuetype: TYPE.Type  = expr.typeargs[0].eval();
 					const entrytype: TYPE.Tuple = TYPE.Tuple.fromTypes([TYPE.SYM, valuetype]);
@@ -259,7 +262,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 					}
 					break;
 				}
-				case IntrinsicName.SET: {
+				case CoreLibName.SET: {
 					// If function overload checking failed, `arg` is either a tuple literal or an expression with a tuple type.
 					const eltype: TYPE.Type  = expr.typeargs[0].eval();
 					const arg:    EXPR.Expression = expr.exprargs[0];
@@ -278,7 +281,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 					}
 					break;
 				}
-				case IntrinsicName.MAP: {
+				case CoreLibName.MAP: {
 					// If function overload checking failed, `arg` is either a tuple literal or an expression with a tuple type.
 					const anttype:   TYPE.Type  = expr.typeargs[0].eval();
 					const contype:   TYPE.Type  = expr.typeargs[1]?.eval() ?? anttype;
@@ -355,49 +358,33 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 
 	@memoizeExpressionType
 	public override visitOperationBinaryCast(expr: EXPR.OperationBinaryCast): TYPE.Type {
-		const t0: TYPE.Type = this.visit(expr.operand0);
-		if (t0.isBottomType) {
+		const [t0, t1]: readonly TYPE.Type[] = expr.children.map((operand) => this.visit(operand));
+		if (t0.isBottomType || t1.isBottomType) {
 			return TYPE.NOTHING;
 		}
-		const t1: TYPE.Type = new Map<IntrinsicName, TYPE.Type>([
-			[IntrinsicName.NULL,      TYPE.NULL],
-			[IntrinsicName.BOOLEAN,   TYPE.BOOL],
-			[IntrinsicName.SYMBOL,    TYPE.SYM],
-			[IntrinsicName.INTEGER,   TYPE.INT],
-			[IntrinsicName.NATURAL,   TYPE.NAT],
-			[IntrinsicName.FLOAT,     TYPE.FLOAT],
-			[IntrinsicName.STRING,    TYPE.STR],
-			[IntrinsicName.OBJECT,    TYPE.OBJ],
-			[IntrinsicName.LIST,      new TYPE.List(TYPE.ANYTHING)],
-			[IntrinsicName.DICT,      new TYPE.Dict(TYPE.ANYTHING)],
-			[IntrinsicName.SET,       new TYPE.Set(TYPE.ANYTHING)],
-			[IntrinsicName.MAP,       new TYPE.Map(TYPE.ANYTHING, TYPE.ANYTHING)],
-			[IntrinsicName.EXCEPTION, TYPE.EXCP],
-			[IntrinsicName.MAYBE,     new TYPE.Maybe(TYPE.ANYTHING)],
-			[IntrinsicName.NONE,      new TYPE.None(TYPE.ANYTHING)],
-			[IntrinsicName.SOME,      new TYPE.Some(TYPE.ANYTHING)],
-			[IntrinsicName.RESULT,    new TYPE.Result(TYPE.ANYTHING)],
-			[IntrinsicName.FAIL,      new TYPE.Fail(TYPE.ANYTHING)],
-			[IntrinsicName.OK,        new TYPE.Ok(TYPE.ANYTHING)],
-			[IntrinsicName.FUNCTION,  new TYPE.Function(undefined, undefined, TYPE.ANYTHING)],
-		]).get(expr.operand1.source as IntrinsicName)!;
+		if (!t1.isSubtypeOf(TYPE.CLASS)) {
+			throw new TypeErrorInvalidOperation(expr);
+		}
+		let cast_type: TYPE.Type | undefined;
+		if (expr.operand1 instanceof EXPR.Variable) {
+			const symbol = expr.validator.getSymbol(expr.operand1.id) as SymbolSchemaClass;
+			cast_type = symbol.classSignature.instanceType;
+		}
 		switch (expr.operator) {
 			case Operator.IS: {
 				return TYPE.BOOL;
 			}
 			case Operator.CAST: {
-				if (t1.isSubtypeOf(t0)) {
-					return t1;
-				} else {
-					throw new TypeErrorNotNarrow(t1, t0, expr.line_index, expr.col_index);
+				if (cast_type && !cast_type.isSubtypeOf(t0)) {
+					throw new TypeErrorNotNarrow(cast_type, t0, expr.line_index, expr.col_index);
 				}
+				return cast_type ?? t0;
 			}
 			case Operator.CAST_MAYBE: {
-				if (t1.isSubtypeOf(t0)) {
-					return new TYPE.Maybe(t1);
-				} else {
-					throw new TypeErrorNotNarrow(t1, t0, expr.line_index, expr.col_index);
+				if (cast_type && !cast_type.isSubtypeOf(t0)) {
+					throw new TypeErrorNotNarrow(cast_type, t0, expr.line_index, expr.col_index);
 				}
+				return new TYPE.Maybe(cast_type ?? t0);
 			}
 		}
 	}
@@ -542,8 +529,8 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 	#checkFunctionArgs(call: EXPR.Call, constructor_schema: ConstructorSchema, resolved_generic_args: readonly TYPE.Type[]): void {
 		if (!constructor_schema.overloads.length) {
 			throw new TypeErrorNotCallable(
-				call.base.source === IntrinsicName.MAYBE ? new TYPE.Maybe(resolved_generic_args[0]) :
-				call.base.source === IntrinsicName.RESULT ? new TYPE.Result(resolved_generic_args[0], resolved_generic_args[1]) :
+				call.base.source === CoreLibName.MAYBE  ? new TYPE.Maybe  (resolved_generic_args[0]) :
+				call.base.source === CoreLibName.RESULT ? new TYPE.Result (resolved_generic_args[0], resolved_generic_args[1]) :
 				this.visit(call.base),
 				call.base,
 			);

@@ -9,8 +9,8 @@ import {Value} from './Value.ts';
  */
 class ValueFunction extends Value {
 	public constructor(
-		private readonly type:   TYPE.Function,
-		private readonly source: string,
+		private readonly functionType: TYPE.Function,
+		private readonly source:       string,
 	) {
 		super();
 	}
@@ -21,7 +21,7 @@ class ValueFunction extends Value {
 	}
 
 	public override toType(): TYPE.Function {
-		return this.type;
+		return this.functionType;
 	}
 }
 export {ValueFunction as Function};

@@ -21,10 +21,12 @@ export * from './Dict.ts';
 export * from './Set.ts';
 export * from './Map.ts';
 
+export * from './Object.ts';
 export * from './Exception.ts';
 export * from './Maybe.ts';
 export * from './Result.ts';
 
 export * from './Function.ts';
+export * from './Class.ts';
 
 export * from './exports.ts';

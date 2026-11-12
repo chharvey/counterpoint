@@ -118,7 +118,7 @@ class VmMap implements HasFuncData {
 
 	/**
 	 * Get a Map consequent given an antecedent.
-	 * If there is no consequent at the given antecedent, Counterpoint’s `null` value is returned.
+	 * If there is no consequent at the given antecedent, a trap occurs.
 	 */
 	public get(map: binaryen.ExpressionRef /* (ref $Map) */, ant: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ {
 		return this.vm.mod.wasm.call('Map.get', [map, ant], this.vm.reftype.Value);
@@ -135,7 +135,7 @@ class VmMap implements HasFuncData {
 	/**
 	 * Delete a Map Case with the given antecedent.
 	 * If a Case with the given antecedent exists, it is removed and its consequent is returned;
-	 * otherwise null is returned and the Map is not mutated.
+	 * otherwise `(ref.null $Value)` is returned and the Map is not mutated.
 	 * This method removes the Case first (if found), then reallocates if necessary.
 	 */
 	public delete(map: binaryen.ExpressionRef /* (ref $Map) */, ant: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref null $Value) */ {
@@ -150,14 +150,14 @@ class VmMap implements HasFuncData {
 	}
 
 	/**
-	 * Fill the destination Map (as a Set) with cases from the source Tuple.
+	 * Fill the destination Map (as a Set) with items from the source Tuple.
 	 */
 	public fillSetFromTuple(dest: binaryen.ExpressionRef /* (ref $Map) */, src: binaryen.ExpressionRef /* (ref $Tuple) */): binaryen.ExpressionRef /* void */ {
 		return this.vm.mod.wasm.call('Map.fill-set-from-tuple', [dest, src], binaryen.Type.none);
 	}
 
 	/**
-	 * Fill the destination Map (as a Set) with cases from the source List.
+	 * Fill the destination Map (as a Set) with items from the source List.
 	 */
 	public fillSetFromList(dest: binaryen.ExpressionRef /* (ref $Map) */, src: binaryen.ExpressionRef /* (ref $List) */): binaryen.ExpressionRef /* void */ {
 		return this.vm.mod.wasm.call('Map.fill-set-from-list', [dest, src], binaryen.Type.none);

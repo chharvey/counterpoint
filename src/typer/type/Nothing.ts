@@ -3,13 +3,13 @@ import {
 	strictEqual,
 	memoizeBinOp,
 } from '../utils-private.ts';
-import type * as VALUE from '../value/index.ts';
 import {Type} from './Type.ts';
 
 
 
 /**
  * Class for constructing the Bottom Type, the type containing no values.
+ * @singleton
  * @final
  */
 export class Nothing extends Type {
@@ -25,7 +25,7 @@ export class Nothing extends Type {
 		return Keyword.NOTHING;
 	}
 
-	public override includes(_: VALUE.Value): boolean {
+	public override includes(): boolean {
 		return false;
 	}
 

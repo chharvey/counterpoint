@@ -8,10 +8,6 @@ import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
-import {
-	SymbolSchemaType,
-	SymbolSchemaFunc,
-} from '../index.ts';
 import {Validator} from '../Validator.ts';
 import type {SyntaxNodeFamily} from '../utils-private.ts';
 import {
@@ -66,9 +62,7 @@ export class Block extends AstNode {
 		if (is_func_block) {
 			this.parent!.validator.getAllSymbols().forEach((symb) => {
 				// add all implicitly-captured symbols to the function block
-				if (symb instanceof SymbolSchemaType || symb instanceof SymbolSchemaFunc) { // TODO: add a property of SymbolSchema
-					v.addSymbol(symb);
-				}
+				symb.persists && v.addSymbol(symb);
 			});
 		}
 		return v;

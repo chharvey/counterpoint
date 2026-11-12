@@ -28,7 +28,7 @@ export class MaybeNew extends Value {
 
 
 	public override toString(): string {
-		return super.toString(...(this.value ? [this.value.toString()] : []));
+		return super.toString(this.value ?? '');
 	}
 
 	@runOnceMethod
@@ -43,6 +43,6 @@ export class MaybeNew extends Value {
 
 	@memoizeMethod
 	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
-		return cg.vm.Value.newComposite(cg.codegenMaybe(this.value?.codegen(cg)));
+		return cg.codegenMaybe(this.value?.codegen(cg));
 	}
 }

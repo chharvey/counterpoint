@@ -1,3 +1,4 @@
+import {equal_nullish_values} from '../../lib/index.ts';
 import {TYPE} from '../index.ts';
 import {
 	strictEqual,
@@ -16,21 +17,16 @@ import {
  * @final
  */
 export class Maybe<T extends Value = Value> extends Value {
-	private readonly type:   TYPE.Type;
-	public  readonly value?: T;
+	private readonly typearg: TYPE.Type;
+	public  readonly value?:  T;
 
 
 	public constructor(value_or_type: T | TYPE.Type) {
 		super();
-		this.type = value_or_type instanceof Value ? value_or_type.toType() : value_or_type;
+		this.typearg = value_or_type instanceof Value ? value_or_type.toType() : value_or_type;
 		if (value_or_type instanceof Value) {
 			this.value = value_or_type;
 		}
-	}
-
-	/** @implements Value */
-	public override get isEmpty(): boolean {
-		return !this.value;
 	}
 
 	public get isNone(): boolean {
@@ -48,10 +44,7 @@ export class Maybe<T extends Value = Value> extends Value {
 	@instanceOf(() => Maybe)
 	public override equal(value: Value): boolean {
 		const maybe = value as Maybe;
-		return (
-			this.isNone && maybe.isNone ||
-			!!this.value && !!maybe.value && this.value.equal(maybe.value)
-		);
+		return equal_nullish_values(this.value, maybe.value, (a, b) => a.equal(b));
 	}
 
 	/**
@@ -59,6 +52,6 @@ export class Maybe<T extends Value = Value> extends Value {
 	 * Returns a TYPE.Maybe whose type argument is the type of this Maybe’s value (defaulting to `anything`).
 	 */
 	public override toType(): TYPE.Maybe {
-		return new TYPE.Maybe(this.type);
+		return new TYPE.Maybe(this.typearg);
 	}
 }
