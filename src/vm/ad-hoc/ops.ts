@@ -25,24 +25,8 @@ export function ops(vm: VirtualMachine) {
 					['op::unwrapMaybe',   {name: 'op:unwrap-maybe',   param: reftype.Value,  result: reftype.Value}],
 					['op::unwrapResult',  {name: 'op:unwrap-result',  param: reftype.Value,  result: reftype.Value}],
 					['op::extractResult', {name: 'op:extract-result', param: reftype.Value,  result: reftype.Exception}],
-					['op::isInt',         {name: 'op:is-int',         param: reftype.Value,  result: reftype.Value}],
-					['op::isNat',         {name: 'op:is-nat',         param: reftype.Value,  result: reftype.Value}],
-					['op::isFloat',       {name: 'op:is-float',       param: reftype.Value,  result: reftype.Value}],
-					['op::isString',      {name: 'op:is-string',      param: reftype.Value,  result: reftype.Value}],
-					['op::isTuple',       {name: 'op:is-tuple',       param: reftype.Value,  result: reftype.Value}],
-					['op::isRecord',      {name: 'op:is-record',      param: reftype.Value,  result: reftype.Value}],
-					['op::isObject',      {name: 'op:is-object',      param: reftype.Value,  result: reftype.Value}],
-					['op::isList',        {name: 'op:is-list',        param: reftype.Value,  result: reftype.Value}],
-					['op::isDict',        {name: 'op:is-dict',        param: reftype.Value,  result: reftype.Value}],
-					['op::isMap',         {name: 'op:is-map',         param: reftype.Value,  result: reftype.Value}],
-					['op::isException',   {name: 'op:is-exception',   param: reftype.Value,  result: reftype.Value}],
-					['op::isMaybe',       {name: 'op:is-maybe',       param: reftype.Value,  result: reftype.Value}],
 					['op::isNone',        {name: 'op:is-none',        param: reftype.Value,  result: reftype.Value}],
-					['op::isSome',        {name: 'op:is-some',        param: reftype.Value,  result: reftype.Value}],
-					['op::isResult',      {name: 'op:is-result',      param: reftype.Value,  result: reftype.Value}],
 					['op::isFail',        {name: 'op:is-fail',        param: reftype.Value,  result: reftype.Value}],
-					['op::isOk',          {name: 'op:is-ok',          param: reftype.Value,  result: reftype.Value}],
-					['op::isFunction',    {name: 'op:is-function',    param: reftype.Value,  result: reftype.Value}],
 					['op::asNull',        {name: 'op:as-null',        param: reftype.Value,  result: reftype.Value}],
 					['op::asBool',        {name: 'op:as-bool',        param: reftype.Value,  result: reftype.Value}],
 					['op::asInt',         {name: 'op:as-int',         param: reftype.Value,  result: reftype.Value}],
@@ -139,94 +123,14 @@ export function ops(vm: VirtualMachine) {
 			vm.mod.wasm.call('op:extract-result', [param0], vm.reftype.Exception)
 		),
 
-		/** Is the value a primitive holding an int? */
-		isInt: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
-			vm.mod.wasm.call('op:is-int', [param0], vm.reftype.Value)
-		),
-
-		/** Is the value a primitive holding a nat? */
-		isNat: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
-			vm.mod.wasm.call('op:is-nat', [param0], vm.reftype.Value)
-		),
-
-		/** Is the value a primitive holding a float? */
-		isFloat: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
-			vm.mod.wasm.call('op:is-float', [param0], vm.reftype.Value)
-		),
-
-		/** Is the value a composite `String` type? @deprecated replace with definition */
-		isString: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
-			vm.mod.wasm.call('op:is-string', [param0], vm.reftype.Value)
-		),
-
-		/** Is the value a composite `Tuple` type? @deprecated replace with definition */
-		isTuple: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
-			vm.mod.wasm.call('op:is-tuple', [param0], vm.reftype.Value)
-		),
-
-		/** Is the value a composite `Record` type? @deprecated replace with definition */
-		isRecord: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
-			vm.mod.wasm.call('op:is-record', [param0], vm.reftype.Value)
-		),
-
-		/** Is the value a composite `Object` type? @deprecated replace with definition */
-		isObject: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
-			vm.mod.wasm.call('op:is-object', [param0], vm.reftype.Value)
-		),
-
-		/** Is the value a composite `List` type? @deprecated replace with definition */
-		isList: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
-			vm.mod.wasm.call('op:is-list', [param0], vm.reftype.Value)
-		),
-
-		/** Is the value a composite `Dict` type? @deprecated replace with definition */
-		isDict: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
-			vm.mod.wasm.call('op:is-dict', [param0], vm.reftype.Value)
-		),
-
-		/** Is the value a composite `Map` type? @deprecated replace with definition */
-		isMap: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
-			vm.mod.wasm.call('op:is-map', [param0], vm.reftype.Value)
-		),
-
-		/** Is the value a composite `Exception` type? @deprecated replace with definition */
-		isException: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
-			vm.mod.wasm.call('op:is-exception', [param0], vm.reftype.Value)
-		),
-
-		/** Is the value a composite `Maybe` type? @deprecated replace with definition */
-		isMaybe: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
-			vm.mod.wasm.call('op:is-maybe', [param0], vm.reftype.Value)
-		),
-
 		/** Is the value a composite `Maybe` type with a null value? */
 		isNone: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
 			vm.mod.wasm.call('op:is-none', [param0], vm.reftype.Value)
 		),
 
-		/** Is the value a composite `Maybe` type with a non-null value? */
-		isSome: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
-			vm.mod.wasm.call('op:is-some', [param0], vm.reftype.Value)
-		),
-
-		/** Is the value a composite `Result` type? @deprecated replace with definition */
-		isResult: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
-			vm.mod.wasm.call('op:is-result', [param0], vm.reftype.Value)
-		),
-
 		/** Is the value a composite `Result` type with a failure reason? */
 		isFail: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
 			vm.mod.wasm.call('op:is-fail', [param0], vm.reftype.Value)
-		),
-
-		/** Is the value a composite `Result` type with a success value? */
-		isOk: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
-			vm.mod.wasm.call('op:is-ok', [param0], vm.reftype.Value)
-		),
-
-		/** Is the value a composite `Function` type? @deprecated replace with definition */
-		isFunction: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
-			vm.mod.wasm.call('op:is-function', [param0], vm.reftype.Value)
 		),
 
 		/** Cast the value to type `null`. */
