@@ -54,16 +54,16 @@ type ConstructorOverload = {
  * @property genericParams generic parameters for the class
  * @property overloads     a list of class constructor overload signatures
  * @property returnType    the return type of the constructor call, or type of the type call (they’re the same)
- * @property supertype     the root type of all return types.
- * 	if non-generic, `supertype` amd `returnType` are the same;
- * 	if generic, `supertype` is the type to which all generic invocations are assignable
+ * @property instanceType  the root type of all return types.
+ * 	if non-generic, `instanceType` amd `returnType` are the same;
+ * 	if generic, `instanceType` is the type to which all generic invocations are assignable
  * 	(e.g. `List[anything]` is the supertype of all generic `List[‹T›]` types)
  */
 export type ClassSignature = {
 	readonly genericParams?: GenericParams,
 	readonly overloads?:     (generic_params: GenericArgs) => readonly ConstructorOverload[],
 	readonly returnType:     (generic_params: GenericArgs) => TYPE.Type,
-	readonly supertype:      TYPE.Type,
+	readonly instanceType:   TYPE.Type,
 };
 
 
@@ -87,42 +87,42 @@ const VARIANCE = {
  */
 export const CLASS_API = new Map<CoreLibName, ClassSignature>([
 	[CoreLibName.NULL, {
-		returnType: () => TYPE.NULL,
-		supertype:  TYPE.NULL,
+		returnType:   () => TYPE.NULL,
+		instanceType: TYPE.NULL,
 	}],
 	[CoreLibName.BOOLEAN, {
-		overloads:  () => [{positional: new TYPE.Tuple([{type: TYPE.ANYTHING, optional: true}])}],
-		returnType: () => TYPE.BOOL,
-		supertype:  TYPE.BOOL,
+		overloads:    () => [{positional: new TYPE.Tuple([{type: TYPE.ANYTHING, optional: true}])}],
+		returnType:   () => TYPE.BOOL,
+		instanceType: TYPE.BOOL,
 	}],
 	[CoreLibName.SYMBOL, {
-		overloads:  () => [{positional: new TYPE.Tuple([{type: TYPE.SYM, optional: false}])}],
-		returnType: () => TYPE.SYM,
-		supertype:  TYPE.SYM,
+		overloads:    () => [{positional: new TYPE.Tuple([{type: TYPE.SYM, optional: false}])}],
+		returnType:   () => TYPE.SYM,
+		instanceType: TYPE.SYM,
 	}],
 	[CoreLibName.INTEGER, {
-		overloads:  () => [{positional: new TYPE.Tuple([{type: TYPE.NUMBER, optional: true}])}],
-		returnType: () => TYPE.INT,
-		supertype:  TYPE.INT,
+		overloads:    () => [{positional: new TYPE.Tuple([{type: TYPE.NUMBER, optional: true}])}],
+		returnType:   () => TYPE.INT,
+		instanceType: TYPE.INT,
 	}],
 	[CoreLibName.NATURAL, {
-		overloads:  () => [{positional: new TYPE.Tuple([{type: TYPE.NUMBER, optional: true}])}],
-		returnType: () => TYPE.NAT,
-		supertype:  TYPE.NAT,
+		overloads:    () => [{positional: new TYPE.Tuple([{type: TYPE.NUMBER, optional: true}])}],
+		returnType:   () => TYPE.NAT,
+		instanceType: TYPE.NAT,
 	}],
 	[CoreLibName.FLOAT, {
-		overloads:  () => [{positional: new TYPE.Tuple([{type: TYPE.NUMBER, optional: true}])}],
-		returnType: () => TYPE.FLOAT,
-		supertype:  TYPE.FLOAT,
+		overloads:    () => [{positional: new TYPE.Tuple([{type: TYPE.NUMBER, optional: true}])}],
+		returnType:   () => TYPE.FLOAT,
+		instanceType: TYPE.FLOAT,
 	}],
 	[CoreLibName.STRING, {
-		overloads:  () => [{positional: new TYPE.Tuple([{type: TYPE.ANYTHING, optional: true}])}],
-		returnType: () => TYPE.STR,
-		supertype:  TYPE.STR,
+		overloads:    () => [{positional: new TYPE.Tuple([{type: TYPE.ANYTHING, optional: true}])}],
+		returnType:   () => TYPE.STR,
+		instanceType: TYPE.STR,
 	}],
 	[CoreLibName.OBJECT, {
-		returnType: () => TYPE.OBJ,
-		supertype:  TYPE.OBJ,
+		returnType:   () => TYPE.OBJ,
+		instanceType: TYPE.OBJ,
 	}],
 	[CoreLibName.LIST, {
 		genericParams: {positional: [VARIANCE['out(in)']]},
@@ -131,8 +131,8 @@ export const CLASS_API = new Map<CoreLibName, ClassSignature>([
 			{positional: TYPE.Tuple.fromTypes([new TYPE.List(t)])},
 			{positional: TYPE.Tuple.fromTypes([new TYPE.Set(t)])},
 		],
-		returnType: ({positional: [t]}) => new TYPE.List(t, true),
-		supertype:  new TYPE.List(TYPE.ANYTHING),
+		returnType:   ({positional: [t]}) => new TYPE.List(t, true),
+		instanceType: new TYPE.List(TYPE.ANYTHING),
 	}],
 	[CoreLibName.DICT, {
 		genericParams: {positional: [VARIANCE['out(in)']]},
@@ -143,8 +143,8 @@ export const CLASS_API = new Map<CoreLibName, ClassSignature>([
 			{positional: TYPE.Tuple.fromTypes([new TYPE.Set(TYPE.Tuple.fromTypes([TYPE.SYM, t]))])},
 			{positional: TYPE.Tuple.fromTypes([new TYPE.Map(TYPE.SYM, t)])},
 		],
-		returnType: ({positional: [t]}) => new TYPE.Dict(t, true),
-		supertype:  new TYPE.Dict(TYPE.ANYTHING),
+		returnType:   ({positional: [t]}) => new TYPE.Dict(t, true),
+		instanceType: new TYPE.Dict(TYPE.ANYTHING),
 	}],
 	[CoreLibName.SET, {
 		genericParams: {positional: [VARIANCE['out(in)']]},
@@ -153,8 +153,8 @@ export const CLASS_API = new Map<CoreLibName, ClassSignature>([
 			{positional: TYPE.Tuple.fromTypes([new TYPE.List(t)])},
 			{positional: TYPE.Tuple.fromTypes([new TYPE.Set(t)])},
 		],
-		returnType: ({positional: [t]}) => new TYPE.Set(t, true),
-		supertype:  new TYPE.Set(TYPE.ANYTHING),
+		returnType:   ({positional: [t]}) => new TYPE.Set(t, true),
+		instanceType: new TYPE.Set(TYPE.ANYTHING),
 	}],
 	[CoreLibName.MAP, {
 		genericParams: {
@@ -169,59 +169,59 @@ export const CLASS_API = new Map<CoreLibName, ClassSignature>([
 			{positional: TYPE.Tuple.fromTypes([new TYPE.Set  (TYPE.Tuple.fromTypes([k, v]))])},
 			{positional: TYPE.Tuple.fromTypes([new TYPE.Map  (k, v)])},
 		],
-		returnType: ({positional: [k, v]}) => new TYPE.Map(k, v, true),
-		supertype:  new TYPE.Map(TYPE.ANYTHING, TYPE.ANYTHING),
+		returnType:   ({positional: [k, v]}) => new TYPE.Map(k, v, true),
+		instanceType: new TYPE.Map(TYPE.ANYTHING, TYPE.ANYTHING),
 	}],
 	[CoreLibName.EXCEPTION, {
-		overloads:  () => [{positional: new TYPE.Tuple([{type: TYPE.STR, optional: false}, {type: TYPE.EXCP, optional: true}])}],
-		returnType: () => TYPE.EXCP,
-		supertype:  TYPE.EXCP,
+		overloads:    () => [{positional: new TYPE.Tuple([{type: TYPE.STR, optional: false}, {type: TYPE.EXCP, optional: true}])}],
+		returnType:   () => TYPE.EXCP,
+		instanceType: TYPE.EXCP,
 	}],
 	[CoreLibName.MAYBE, {
 		genericParams: {positional: [VARIANCE.out]},
 		returnType:    ({positional: [t]}) => new TYPE.Maybe(t),
-		supertype:     new TYPE.Maybe(TYPE.ANYTHING),
+		instanceType:  new TYPE.Maybe(TYPE.ANYTHING),
 	}],
 	[CoreLibName.NONE, {
 		genericParams: {positional: [VARIANCE.out]},
 		overloads:     () => [{}],
 		returnType:    ({positional: [t]}) => new TYPE.None(t),
-		supertype:     new TYPE.None(TYPE.ANYTHING),
+		instanceType:  new TYPE.None(TYPE.ANYTHING),
 	}],
 	[CoreLibName.SOME, {
 		genericParams: {positional: [VARIANCE.out]},
 		overloads:     ({positional: [t]}) => [{positional: TYPE.Tuple.fromTypes([t])}],
 		returnType:    ({positional: [t]}) => new TYPE.Some(t),
-		supertype:     new TYPE.Some(TYPE.ANYTHING),
+		instanceType:  new TYPE.Some(TYPE.ANYTHING),
 	}],
 	[CoreLibName.RESULT, {
 		genericParams: {positional: [VARIANCE.out, {...VARIANCE.out, constraint: ['narrows', TYPE.EXCP], default: TYPE.EXCP}]},
 		returnType:    ({positional: [t, e]}) => new TYPE.Result(t, e),
-		supertype:     new TYPE.Result(TYPE.ANYTHING),
+		instanceType:  new TYPE.Result(TYPE.ANYTHING),
 	}],
 	[CoreLibName.FAIL, {
 		genericParams: {positional: [VARIANCE.out, {...VARIANCE.out, constraint: ['narrows', TYPE.EXCP], default: TYPE.EXCP}]},
 		overloads:     ({positional: [_, e]}) => [{positional: TYPE.Tuple.fromTypes([e])}],
 		returnType:    ({positional: [t, e]}) => new TYPE.Fail(t, e),
-		supertype:     new TYPE.Fail(TYPE.ANYTHING),
+		instanceType:  new TYPE.Fail(TYPE.ANYTHING),
 	}],
 	[CoreLibName.OK, {
 		genericParams: {positional: [VARIANCE.out, {...VARIANCE.out, constraint: ['narrows', TYPE.EXCP], default: TYPE.EXCP}]},
 		overloads:     ({positional: [t]})    => [{positional: TYPE.Tuple.fromTypes([t])}],
 		returnType:    ({positional: [t, e]}) => new TYPE.Ok(t, e),
-		supertype:     new TYPE.Ok(TYPE.ANYTHING),
+		instanceType:  new TYPE.Ok(TYPE.ANYTHING),
 	}],
 	[CoreLibName.FUNCTION, {
-		returnType: () => TYPE.FUNCTION,
-		supertype:  TYPE.FUNCTION,
+		returnType:   () => TYPE.FUNCTION,
+		instanceType: TYPE.FUNCTION,
 	}],
 	[CoreLibName.CLASS, {
-		returnType: () => TYPE.CLASS,
-		supertype:  TYPE.CLASS,
+		returnType:   () => TYPE.CLASS,
+		instanceType: TYPE.CLASS,
 	}],
 ]);
 
 
 
-/** The class named `Class` — its instances are classes, and it is an instance of itself (argument omitted). */
+/** The class named `Class` — its instances are classes, and it is an instance of itself (argument omitted). @deprecated */
 export const CLASS_CLASS = new VALUE.Class(TYPE.CLASS);

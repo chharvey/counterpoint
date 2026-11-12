@@ -310,6 +310,21 @@ Natural! Interpret((MAP.COUNT `obj`)) :=
 	3. *Return:* `Natural(obj.count)`.
 ;
 
+Value! Interpret((NONE.IS `v`)) :=
+	1. *If* `v` is an instance of `Maybe` *and* `v` lacks a value:
+		1. *Return:* `true`.
+	2. *Else:*
+		1. *Return:* `false`.
+;
+
+Value! Interpret((FAIL.IS `v`)) :=
+	1. *If* `v` is an instance of `Result` *and* `v` has a failure reason:
+		1. *Return:* `true`.
+		1. *If* `v` has a failure reason:
+	2. *Else:*
+		1. *Return:* `false`.
+;
+
 Value! Interpret((MAYBE.UNWRAP `obj`)) :=
 	1. *Set* `obj` to *Unwrap:* `Interpret(obj)`.
 	2. *Assert:* `obj` is instance of `Maybe`.
@@ -335,56 +350,6 @@ Exception! Interpret((RESULT.EXTRACT `obj`)) :=
 		1. *Throw:* a new Error "Extracted from an Ok value.".
 	4. *Else:*
 		1. *Return:* the failure reason contained in `obj`.
-;
-
-Boolean! Interpret((INSTANCEOF `src` `v`)) :=
-	1. *Set* `v` to *Unwrap:* `Interpret(v)`;
-	2. *If* any of the following conditions is `true`:
-		- `src` is "Symbol"    *and* `v` is an instance of `Symbol`
-		- `src` is "Integer"   *and* `v` is an instance of `Integer`
-		- `src` is "Natural"   *and* `v` is an instance of `Natural`
-		- `src` is "Float"     *and* `v` is an instance of `Float`
-		- `src` is "String"    *and* `v` is an instance of `String`
-		- `src` is "Object"    *and* `v` is an instance of `Object`
-		- `src` is "List"      *and* `v` is an instance of `List`
-		- `src` is "Dict"      *and* `v` is an instance of `Dict`
-		- `src` is "Set"       *and* `v` is an instance of `Set`
-		- `src` is "Map"       *and* `v` is an instance of `Map`
-		- `src` is "Exception" *and* `v` is an instance of `Exception`
-		- `src` is "Maybe"     *and* `v` is an instance of `Maybe`
-		- `src` is "Result"    *and* `v` is an instance of `Result`
-		- `src` is "Function"  *and* `v` is an instance of `Function`
-		1. *Return:* `true`.
-	3. *Else If* `src` is "None" *and* `v` is an instance of `Maybe`:
-		1. *If* `v` has a value:
-			1. *Return:* `false`.
-		2. *Else:*
-			1. *Return:* `true`.
-	4. *Else If* `src` is "Some" *and* `v` is an instance of `Maybe`:
-		1. *If* `v` has a value:
-			1. *Return:* `true`.
-		2. *Else:*
-			1. *Return:* `false`.
-	5. *Else If* `src` is "Fail" *and* `v` is an instance of `Result`:
-		1. *If* `v` has a failure reason:
-			1. *Return:* `true`.
-		2. *Else:*
-			1. *Return:* `false`.
-	6. *Else If* `src` is "Ok" *and* `v` is an instance of `Result`:
-		1. *If* `v` has a success value:
-			1. *Return:* `true`.
-		2. *Else:*
-			1. *Return:* `false`.
-	7. *Else*:
-		1. *Return:* `false`.
-;
-
-Value! Interpret((CAST `src` `v`)) :=
-	1. *Let* `is_instance` be the result of performing `Interpret((INSTANCEOF `src` `v`))`.
-	2. *If* `is_instance` is `true`:
-		1. *Return:* `v`.
-	3. *Else:*
-		1. *Throw:* a new Error "Invalid cast to `src`.".
 ;
 
 Integer! Interpret((INT.ADD `v0` `v1`)) :=
@@ -516,6 +481,16 @@ Boolean! Interpret((EQ `v0` `v1`)) :=
 	1. *Set* `v0` to *Unwrap:* `Interpret(v0)`;
 	2. *Set* `v1` to *Unwrap:* `Interpret(v1)`;
 	3. *Return:* `Equal(v0, v1)`.
+;
+
+Boolean! Interpret((IS `v0` `v1`)) :=
+	1. *Set* `v0` to *Unwrap:* `Interpret(v0)`;
+	2. *Set* `v1` to *Unwrap:* `Interpret(v1)`;
+	3. *Assert:* `v1` is a class.
+	4. *If* `v0` is an instance of `v1`:
+		1. *Return:* `true`.
+	5. *Else:*
+		1. *Return:* `false`.
 ;
 
 Function! Interpret((LAMBDA `name` `arity` `source`)) :=

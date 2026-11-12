@@ -117,28 +117,28 @@ export class CollectionDynamicGet extends Value {
 			case TypeName.LIST: {
 				return List.get(
 					VmValue.asList(collection),
-					wasm.i32.wrap_i64(Vect.asInt(VmValue.field(accessor).primitive)),
+					wasm.i32.wrap_i64(Vect.asInt(VmValue.asPrimitive(accessor))),
 				);
 			}
 			case TypeName.DICT: {
 				return Dict.get(
 					VmValue.asDict(collection),
-					Vect.asNat(VmValue.field(accessor).primitive),
+					Vect.asNat(VmValue.asPrimitive(accessor)),
 				);
 			}
 			case TypeName.SET: {
-				const maybe_case: Local = cg.newLocal(wasm.tuple.extract(VmMap.find(
+				const nullish_case: Local = cg.newLocal(wasm.tuple.extract(VmMap.find(
 					VmValue.asMap(collection),
 					accessor,
 				), 1));
 
 				return wasm.block(null, [
-					maybe_case.set(),
+					nullish_case.set(),
 					// if `(ref.null $Case)` or a tombstone is returned, return Counterpoint `false`; else return `true`
 					wasm.if(
 						wasm.i32.or(
-							wasm.ref.is_null(maybe_case.get()),
-							Case.isTombstone(maybe_case.get()),
+							wasm.ref.is_null(nullish_case.get()),
+							wasm.ref.eq(nullish_case.get(), Case.TOMBSTONE),
 						),
 						VmValue.FALSE,
 						VmValue.TRUE,

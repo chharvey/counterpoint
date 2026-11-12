@@ -28,7 +28,6 @@ import {
 	CollectionDynamicGet,
 	Call,
 	Unop,
-	Instance,
 	Binop,
 	Function as OpFunction,
 	Decl,
@@ -59,7 +58,6 @@ export abstract class ValueVisitor<T> {
 	public visitCollectionDynamicGet (val: CollectionDynamicGet): T { return this.defaultVisit(val); }
 	public visitCall                 (val: Call):                 T { return this.defaultVisit(val); }
 	public visitUnop                 (val: Unop):                 T { return this.defaultVisit(val); }
-	public visitInstance             (val: Instance):             T { return this.defaultVisit(val); }
 	public visitBinop                (val: Binop):                T { return this.defaultVisit(val); }
 	public visitFunction             (val: OpFunction):           T { return this.defaultVisit(val); }
 	/* eslint-enable @stylistic/space-before-function-paren */
@@ -86,7 +84,6 @@ export abstract class ValueVisitor<T> {
 			case CollectionDynamicGet: { return this.visitCollectionDynamicGet (val as CollectionDynamicGet); }
 			case Call:                 { return this.visitCall                 (val as Call); }
 			case Unop:                 { return this.visitUnop                 (val as Unop); }
-			case Instance:             { return this.visitInstance             (val as Instance); }
 			case Binop:                { return this.visitBinop                (val as Binop); }
 			case OpFunction:           { return this.visitFunction             (val as OpFunction); }
 
@@ -116,7 +113,6 @@ export abstract class ValueVisitor<T> {
  * - CollectionDynamicGet
  * - Call
  * - Unop
- * - Instance
  * - Binop
  * - Phi
  * - OpFunction

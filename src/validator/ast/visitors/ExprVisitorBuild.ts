@@ -116,10 +116,11 @@ export class ExprVisitorBuild extends EXPR.ExprVisitor<OP.Value> {
 			return OP.conditional_expression(
 				this.builder,
 				typ,
-				() => new OP.Instance(OP.OpCode.INSTANCEOF, CoreLibName.NONE, base_value),
+				() => new OP.Unop(OP.OpCode.NONE_IS, base_value, TYPE.BOOL),
 				() => new OP.MaybeNew(typ.typearg),
 				() => new OP.MaybeNew(typ.typearg, this.#buildUnwrappedGet(
 					expr,
+					// TODO: `base_value.type` should always be `Maybe` once expression access is removed. put the assertion underneath `typ`
 					base_value.type instanceof TYPE.Maybe ? new OP.Unop(OP.OpCode.MAYBE_UNWRAP, base_value, base_value.type.typearg).asTac(this.builder) : base_value,
 					typ.typearg,
 				).asTac(this.builder)),
@@ -130,7 +131,7 @@ export class ExprVisitorBuild extends EXPR.ExprVisitor<OP.Value> {
 			return OP.conditional_expression(
 				this.builder,
 				typ,
-				() => new OP.Instance(OP.OpCode.INSTANCEOF, CoreLibName.FAIL, base_value),
+				() => new OP.Unop(OP.OpCode.FAIL_IS, base_value, TYPE.BOOL),
 				() => new OP.ResultNew(false, typ.typeargSuccess, typ.typeargFailure, new OP.Unop(OP.OpCode.RESULT_EXTRACT, base_value, (base_value.type as TYPE.Result).typeargFailure).asTac(this.builder)),
 				() => new OP.ResultNew(true,  typ.typeargSuccess, typ.typeargFailure, this.#buildUnwrappedGet(
 					expr,
@@ -229,32 +230,20 @@ export class ExprVisitorBuild extends EXPR.ExprVisitor<OP.Value> {
 
 	@memoizePerNode
 	public override visitOperationBinaryCast(expr: EXPR.OperationBinaryCast): OP.Value {
-		const op0: OP.ValueTac = this.visit(expr.operand0).asTac(this.builder);
-		const op1_source = expr.operand1.source as CoreLibName;
-		const is_instance = (): OP.Value => {
-			switch (op1_source) {
-				case CoreLibName.NULL: {
-					return new OP.Binop(OP.OpCode.ID, op0, new OP.Const(VALUE.NULL), TYPE.BOOL);
-				}
-				case CoreLibName.BOOLEAN: {
-					const left: OP.ValueTac = new OP.Binop(OP.OpCode.ID, op0, new OP.Const(VALUE.FALSE), TYPE.BOOL).asTac(this.builder);
-					return OP.conditional_expression(
-						this.builder,
-						TYPE.BOOL,
-						() => left,
-						() => left,
-						() => new OP.Binop(OP.OpCode.ID, op0, new OP.Const(VALUE.TRUE), TYPE.BOOL),
-					);
-				}
-			}
-			return new OP.Instance(OP.OpCode.INSTANCEOF, op1_source, op0);
-		};
+		const [v0, v1] = [this.visit(expr.operand0).asTac(this.builder), this.visit(expr.operand1).asTac(this.builder)];
+		const is_instance = (): OP.Value => new OP.Binop(OP.OpCode.IS, v0, v1, TYPE.BOOL);
 		switch (expr.operator) {
 			case Operator.IS: {
 				return is_instance();
 			}
 			case Operator.CAST: {
-				return new OP.Instance(OP.OpCode.CAST, op1_source, op0);
+				return OP.conditional_expression(
+					this.builder,
+					expr.type.union(v0.type), // allow invalid type-casting; in that case condition will be false anyway
+					is_instance,
+					() => v0,
+					() => new OP.Trap(),
+				);
 			}
 			case Operator.CAST_MAYBE: {
 				const expr_type = expr.type as TYPE.Maybe;
@@ -262,7 +251,7 @@ export class ExprVisitorBuild extends EXPR.ExprVisitor<OP.Value> {
 					this.builder,
 					expr_type,
 					is_instance,
-					() => new OP.MaybeNew(expr_type.typearg, new OP.Instance(OP.OpCode.CAST, op1_source, op0)),
+					() => new OP.MaybeNew(expr_type.typearg, v0),
 					() => new OP.MaybeNew(expr_type.typearg),
 				);
 			}

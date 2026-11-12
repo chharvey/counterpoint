@@ -19,6 +19,7 @@ import type {Class as ValueClass} from './Class.ts';
  *
  * Note: Use this class for constructing user-defined objects,
  * i.e. not instances of the built-in `List`, `Dict`, etc.
+ * @deprecated
  */
 class ValueObject extends Value {
 	private readonly fields = new Dict<Value>();

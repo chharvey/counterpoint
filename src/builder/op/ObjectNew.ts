@@ -21,6 +21,7 @@ import type {ValueTac} from './ValueTac.ts';
 
 /**
  * Create a new reference Object.
+ * @deprecated
  */
 export class ObjectNew extends Value {
 	/**
@@ -57,10 +58,11 @@ export class ObjectNew extends Value {
 		return this.class_?.validate(builder);
 	}
 
-	public override interpret(interp: Interpreter): VALUE.Object {
+	public override interpret(interp: Interpreter): VALUE.Value {
 		const class_: VALUE.Value | undefined = this.class_?.interpret(interp);
 		if (class_) {
 			assert_instanceof(class_, VALUE.Class);
+			// @ts-expect-error --- deprecated usage
 			return this.isClass ? new VALUE.Class(TYPE.OBJ, class_) : new VALUE.Object(0n, class_);
 		} else {
 			return CLASS_CLASS;
@@ -69,7 +71,7 @@ export class ObjectNew extends Value {
 
 	@memoizeMethod
 	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
-		const class_: binaryen.ExpressionRef /* (ref $Class) */ | undefined = this.class_ && cg.vm.Value.asClass(this.class_.codegen(cg));
-		return cg.vm.Value.newComposite(this.isClass ? cg.codegenClass(class_) : cg.codegenObject(class_!));
+		const class_: binaryen.ExpressionRef /* (ref $Class) */ | undefined = this.class_ && cg.mod.wasm.ref.cast(this.class_.codegen(cg), cg.vm.reftype.Class);
+		return this.isClass ? cg.codegenClass(class_) : cg.codegenObject(class_!);
 	}
 }

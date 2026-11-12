@@ -18,48 +18,15 @@ export function ops(vm: VirtualMachine) {
 					['op::toInt',         {name: 'op:to-int',         param: reftype.Value,  result: reftype.Value}],
 					['op::toNat',         {name: 'op:to-nat',         param: reftype.Value,  result: reftype.Value}],
 					['op::toFloat',       {name: 'op:to-float',       param: reftype.Value,  result: reftype.Value}],
+					['op::toStr',         {name: 'op:to-str',         param: reftype.Value,  result: reftype.Value}],
 					['op::not',           {name: 'op:not',            param: reftype.Value,  result: reftype.Value}],
 					['op::isEmpty',       {name: 'op:is-empty',       param: reftype.Value,  result: reftype.Value}],
 					['op::negate',        {name: 'op:negate',         param: reftype.Value,  result: reftype.Value}],
+					['op::isNone',        {name: 'op:is-none',        param: reftype.Value,  result: reftype.Value}],
+					['op::isFail',        {name: 'op:is-fail',        param: reftype.Value,  result: reftype.Value}],
 					['op::unwrapMaybe',   {name: 'op:unwrap-maybe',   param: reftype.Value,  result: reftype.Value}],
 					['op::unwrapResult',  {name: 'op:unwrap-result',  param: reftype.Value,  result: reftype.Value}],
-					['op::extractResult', {name: 'op:extract-result', param: reftype.Value,  result: reftype.Value}],
-					['op::isInt',         {name: 'op:is-int',         param: reftype.Value,  result: reftype.Value}],
-					['op::isNat',         {name: 'op:is-nat',         param: reftype.Value,  result: reftype.Value}],
-					['op::isFloat',       {name: 'op:is-float',       param: reftype.Value,  result: reftype.Value}],
-					['op::isString',      {name: 'op:is-string',      param: reftype.Value,  result: reftype.Value}],
-					['op::isTuple',       {name: 'op:is-tuple',       param: reftype.Value,  result: reftype.Value}],
-					['op::isRecord',      {name: 'op:is-record',      param: reftype.Value,  result: reftype.Value}],
-					['op::isObject',      {name: 'op:is-object',      param: reftype.Value,  result: reftype.Value}],
-					['op::isCplList',     {name: 'op:is-cpl-list',    param: reftype.Value,  result: reftype.Value}],
-					['op::isCplDict',     {name: 'op:is-cpl-dict',    param: reftype.Value,  result: reftype.Value}],
-					['op::isCplMap',      {name: 'op:is-cpl-map',     param: reftype.Value,  result: reftype.Value}],
-					['op::isException',   {name: 'op:is-exception',   param: reftype.Value,  result: reftype.Value}],
-					['op::isMaybe',       {name: 'op:is-maybe',       param: reftype.Value,  result: reftype.Value}],
-					['op::isNone',        {name: 'op:is-none',        param: reftype.Value,  result: reftype.Value}],
-					['op::isSome',        {name: 'op:is-some',        param: reftype.Value,  result: reftype.Value}],
-					['op::isResult',      {name: 'op:is-result',      param: reftype.Value,  result: reftype.Value}],
-					['op::isFail',        {name: 'op:is-fail',        param: reftype.Value,  result: reftype.Value}],
-					['op::isOk',          {name: 'op:is-ok',          param: reftype.Value,  result: reftype.Value}],
-					['op::isFunction',    {name: 'op:is-function',    param: reftype.Value,  result: reftype.Value}],
-					['op::asNull',        {name: 'op:as-null',        param: reftype.Value,  result: reftype.Value}],
-					['op::asBool',        {name: 'op:as-bool',        param: reftype.Value,  result: reftype.Value}],
-					['op::asInt',         {name: 'op:as-int',         param: reftype.Value,  result: reftype.Value}],
-					['op::asNat',         {name: 'op:as-nat',         param: reftype.Value,  result: reftype.Value}],
-					['op::asFloat',       {name: 'op:as-float',       param: reftype.Value,  result: reftype.Value}],
-					['op::asString',      {name: 'op:as-string',      param: reftype.Value,  result: reftype.Value}],
-					['op::asObject',      {name: 'op:as-object',      param: reftype.Value,  result: reftype.Value}],
-					['op::asCplList',     {name: 'op:as-cpllist',     param: reftype.Value,  result: reftype.Value}],
-					['op::asCplDict',     {name: 'op:as-cpl-dict',    param: reftype.Value,  result: reftype.Value}],
-					['op::asCplMap',      {name: 'op:as-cpl-map',     param: reftype.Value,  result: reftype.Value}],
-					['op::asException',   {name: 'op:as-exception',   param: reftype.Value,  result: reftype.Value}],
-					['op::asMaybe',       {name: 'op:as-maybe',       param: reftype.Value,  result: reftype.Value}],
-					['op::asNone',        {name: 'op:as-none',        param: reftype.Value,  result: reftype.Value}],
-					['op::asSome',        {name: 'op:as-some',        param: reftype.Value,  result: reftype.Value}],
-					['op::asResult',      {name: 'op:as-result',      param: reftype.Value,  result: reftype.Value}],
-					['op::asFail',        {name: 'op:as-fail',        param: reftype.Value,  result: reftype.Value}],
-					['op::asOk',          {name: 'op:as-ok',          param: reftype.Value,  result: reftype.Value}],
-					['op::asFunction',    {name: 'op:as-function',    param: reftype.Value,  result: reftype.Value}],
+					['op::extractResult', {name: 'op:extract-result', param: reftype.Value,  result: reftype.Exception}],
 					['op::intAdd',        {name: 'op:int-add',        param: binary_params,  result: reftype.Value}],
 					['op::natAdd',        {name: 'op:nat-add',        param: binary_params,  result: reftype.Value}],
 					['op::floatAdd',      {name: 'op:float-add',      param: binary_params,  result: reftype.Value}],
@@ -81,6 +48,7 @@ export function ops(vm: VirtualMachine) {
 					['op::ge',            {name: 'op:ge',             param: binary_params,  result: reftype.Value}],
 					['op::id',            {name: 'op:id',             param: binary_params,  result: reftype.Value}],
 					['op::eq',            {name: 'op:eq',             param: binary_params,  result: reftype.Value}],
+					['op::is',            {name: 'op:is',             param: binary_params,  result: reftype.Value}],
 				]);
 			}
 			return func_import_memo;
@@ -102,6 +70,11 @@ export function ops(vm: VirtualMachine) {
 			vm.mod.wasm.call('op:to-float', [param0], vm.reftype.Value)
 		),
 
+		/** Cast the argument to type `str`. */
+		toStr: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
+			vm.mod.wasm.call('op:to-str', [param0], vm.reftype.Value)
+		),
+
 		/** Is the value falsy? */
 		not: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
 			vm.mod.wasm.call('op:not', [param0], vm.reftype.Value)
@@ -117,6 +90,16 @@ export function ops(vm: VirtualMachine) {
 			vm.mod.wasm.call('op:negate', [param0], vm.reftype.Value)
 		),
 
+		/** Is the value a composite `Maybe` type with a null value? */
+		isNone: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
+			vm.mod.wasm.call('op:is-none', [param0], vm.reftype.Value)
+		),
+
+		/** Is the value a composite `Result` type with a failure reason? */
+		isFail: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
+			vm.mod.wasm.call('op:is-fail', [param0], vm.reftype.Value)
+		),
+
 		/** Return the value of the given `Maybe` if it exists, else trap. */
 		unwrapMaybe: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
 			vm.mod.wasm.call('op:unwrap-maybe', [param0], vm.reftype.Value)
@@ -128,188 +111,8 @@ export function ops(vm: VirtualMachine) {
 		),
 
 		/** Return the failure reason of the given `Result` if it exists, else trap. */
-		extractResult: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
-			vm.mod.wasm.call('op:extract-result', [param0], vm.reftype.Value)
-		),
-
-		/** Is the value a primitive holding an int? */
-		isInt: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
-			vm.mod.wasm.call('op:is-int', [param0], vm.reftype.Value)
-		),
-
-		/** Is the value a primitive holding a nat? */
-		isNat: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
-			vm.mod.wasm.call('op:is-nat', [param0], vm.reftype.Value)
-		),
-
-		/** Is the value a primitive holding a float? */
-		isFloat: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
-			vm.mod.wasm.call('op:is-float', [param0], vm.reftype.Value)
-		),
-
-		/** Is the value a composite `String` type? */
-		isString: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
-			vm.mod.wasm.call('op:is-string', [param0], vm.reftype.Value)
-		),
-
-		/** Is the value a composite `Tuple` type? */
-		isTuple: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
-			vm.mod.wasm.call('op:is-tuple', [param0], vm.reftype.Value)
-		),
-
-		/** Is the value a composite `Record` type? */
-		isRecord: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
-			vm.mod.wasm.call('op:is-record', [param0], vm.reftype.Value)
-		),
-
-		/** Is the value a composite `Object` type? */
-		isObject: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
-			vm.mod.wasm.call('op:is-object', [param0], vm.reftype.Value)
-		),
-
-		/** Is the value a composite `CplList` type? */
-		isCplList: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
-			vm.mod.wasm.call('op:is-cpl-list', [param0], vm.reftype.Value)
-		),
-
-		/** Is the value a composite `CplDict` type? */
-		isCplDict: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
-			vm.mod.wasm.call('op:is-cpl-dict', [param0], vm.reftype.Value)
-		),
-
-		/** Is the value a composite `CplMap` type? */
-		isCplMap: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
-			vm.mod.wasm.call('op:is-cpl-map', [param0], vm.reftype.Value)
-		),
-
-		/** Is the value a composite `Exception` type? */
-		isException: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
-			vm.mod.wasm.call('op:is-exception', [param0], vm.reftype.Value)
-		),
-
-		/** Is the value a composite `Maybe` type? */
-		isMaybe: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
-			vm.mod.wasm.call('op:is-maybe', [param0], vm.reftype.Value)
-		),
-
-		/** Is the value a composite `Maybe` type with a null value? */
-		isNone: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
-			vm.mod.wasm.call('op:is-none', [param0], vm.reftype.Value)
-		),
-
-		/** Is the value a composite `Maybe` type with a non-null value? */
-		isSome: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
-			vm.mod.wasm.call('op:is-some', [param0], vm.reftype.Value)
-		),
-
-		/** Is the value a composite `Result` type? */
-		isResult: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
-			vm.mod.wasm.call('op:is-result', [param0], vm.reftype.Value)
-		),
-
-		/** Is the value a composite `Result` type with a failure reason? */
-		isFail: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
-			vm.mod.wasm.call('op:is-fail', [param0], vm.reftype.Value)
-		),
-
-		/** Is the value a composite `Result` type with a success value? */
-		isOk: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
-			vm.mod.wasm.call('op:is-ok', [param0], vm.reftype.Value)
-		),
-
-		/** Is the value a composite `Function` type? */
-		isFunction: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
-			vm.mod.wasm.call('op:is-function', [param0], vm.reftype.Value)
-		),
-
-		/** Cast the value to type `null`. */
-		asNull: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
-			vm.mod.wasm.call('op:as-null', [param0], vm.reftype.Value)
-		),
-
-		/** Cast the value to type `bool`. */
-		asBool: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
-			vm.mod.wasm.call('op:as-bool', [param0], vm.reftype.Value)
-		),
-
-		/** Cast the value to type `int`. */
-		asInt: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
-			vm.mod.wasm.call('op:as-int', [param0], vm.reftype.Value)
-		),
-
-		/** Cast the value to type `nat`. */
-		asNat: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
-			vm.mod.wasm.call('op:as-nat', [param0], vm.reftype.Value)
-		),
-
-		/** Cast the value to type `float`. */
-		asFloat: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
-			vm.mod.wasm.call('op:as-float', [param0], vm.reftype.Value)
-		),
-
-		/** Cast the value to type `String`. */
-		asString: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
-			vm.mod.wasm.call('op:as-string', [param0], vm.reftype.Value)
-		),
-
-		/** Cast the value to type `Object`. */
-		asObject: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
-			vm.mod.wasm.call('op:as-object', [param0], vm.reftype.Value)
-		),
-
-		/** Cast the value to type `CplList`. */
-		asCplList: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
-			vm.mod.wasm.call('op:as-cpl-list', [param0], vm.reftype.Value)
-		),
-
-		/** Cast the value to type `CplDict`. */
-		asCplDict: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
-			vm.mod.wasm.call('op:as-cpl-dict', [param0], vm.reftype.Value)
-		),
-
-		/** Cast the value to type `CplMap`. */
-		asCplMap: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
-			vm.mod.wasm.call('op:as-cpl-map', [param0], vm.reftype.Value)
-		),
-
-		/** Cast the value to type `Exception`. */
-		asException: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
-			vm.mod.wasm.call('op:as-exception', [param0], vm.reftype.Value)
-		),
-
-		/** Cast the value to type `Maybe`. */
-		asMaybe: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
-			vm.mod.wasm.call('op:as-maybe', [param0], vm.reftype.Value)
-		),
-
-		/** Cast the value to type `None`. */
-		asNone: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
-			vm.mod.wasm.call('op:as-none', [param0], vm.reftype.Value)
-		),
-
-		/** Cast the value to type `Some`. */
-		asSome: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
-			vm.mod.wasm.call('op:as-some', [param0], vm.reftype.Value)
-		),
-
-		/** Cast the value to type `Result`. */
-		asResult: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
-			vm.mod.wasm.call('op:as-result', [param0], vm.reftype.Value)
-		),
-
-		/** Cast the value to type `Fail`. */
-		asFail: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
-			vm.mod.wasm.call('op:as-fail', [param0], vm.reftype.Value)
-		),
-
-		/** Cast the value to type `Ok`. */
-		asOk: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
-			vm.mod.wasm.call('op:as-ok', [param0], vm.reftype.Value)
-		),
-
-		/** Cast the value to type `Function`. */
-		asFunction: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
-			vm.mod.wasm.call('op:as-function', [param0], vm.reftype.Value)
+		extractResult: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Exception) */ => (
+			vm.mod.wasm.call('op:extract-result', [param0], vm.reftype.Exception)
 		),
 
 		/** Adds two `int`s. */
@@ -415,6 +218,11 @@ export function ops(vm: VirtualMachine) {
 		/** Are the arguments ‘equal’ per the Counterpoint definition? */
 		eq: (param0: binaryen.ExpressionRef /* (ref $Value) */, param1: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
 			vm.mod.wasm.call('op:eq', [param0, param1], vm.reftype.Value)
+		),
+
+		/** Is the first argument an instance of the second argument? */
+		is: (param0: binaryen.ExpressionRef /* (ref $Value) */, param1: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
+			vm.mod.wasm.call('op:is', [param0, param1], vm.reftype.Value)
 		),
 	} as const;
 }

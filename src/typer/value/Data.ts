@@ -16,7 +16,8 @@ import type {Class as ValueClass} from './Class.ts';
  * Represents a general instance of a Counterpoint “data class”
  * (which are pass-by-value and have no identity).
  */
-export class Data extends Value {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+class Data extends Value {
 	private readonly fields = new Dict<Value>();
 
 

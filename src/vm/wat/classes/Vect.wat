@@ -5,31 +5,31 @@
 
 
 
-(func $Vect.new-int (export "Vect#newInt") (param $int i64) (result v128)
+(func $Vect.new-int (export "Vect#newInt") (param i64) (result v128)
 	(i64x2.replace_lane 1
 		(i16x8.replace_lane 3
 			(global.get $Vect.VOID)
 			(i32.const 0x18)
 		)
-		(local.get $int)
+		(local.get 0)
 	)
 )
-(func $Vect.new-nat (export "Vect#newNat") (param $nat i64) (result v128)
+(func $Vect.new-nat (export "Vect#newNat") (param i64) (result v128)
 	(i64x2.replace_lane 1
 		(i16x8.replace_lane 3
 			(global.get $Vect.VOID)
 			(i32.const 0x28)
 		)
-		(local.get $nat)
+		(local.get 0)
 	)
 )
-(func $Vect.new-float (export "Vect#newFloat") (param $float f64) (result v128)
+(func $Vect.new-float (export "Vect#newFloat") (param f64) (result v128)
 	(f64x2.replace_lane 1
 		(i16x8.replace_lane 3
 			(global.get $Vect.VOID)
 			(i32.const 0x48)
 		)
-		(local.get $float)
+		(local.get 0)
 	)
 )
 
