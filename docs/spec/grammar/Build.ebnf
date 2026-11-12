@@ -341,16 +341,26 @@ Build(SemanticExpressionOperation[operator=IS] ::= SemanticExpression "Boolean")
 	return (GET $returned).
 ];
 Build(SemanticExpressionOperation[operator=IS] ::= SemanticExpression__0 SemanticExpression__1[type: Class])
-	:= (IS `Build(SemanticExpression__1)` `Build(SemanticExpression__0)`);
+	:= (IS `Build(SemanticExpression__0)` `Build(SemanticExpression__1)`);
 
-Build(SemanticExpressionOperation[operator=CAST] ::= SemanticExpression__0 SemanticExpression__1[type: Class])
-	:= (CAST `SemanticExpression__1.source` `Build(SemanticExpression__0)`);
+Build(SemanticExpressionOperation[operator=CAST] ::= SemanticExpression__0 SemanticExpression__1[type: Class]) := [
+	(DECL ‹type› $returned)
+	(GOTO.IF (IS `Build(SemanticExpression__0)` `Build(SemanticExpression__1)`) "then" "else")
+	"then":
+	(SET $returned `Build(SemanticExpression__0)`)
+	(GOTO "endif")
+	"else":
+	(SET $returned (TRAP))
+	(GOTO "endif")
+	"endif":
+	return (GET $returned).
+];
 
 Build(SemanticExpressionOperation[operator=MAYBE] ::= SemanticExpression__0 SemanticExpression__1[type: Class]) := [
 	(DECL <Maybe> $returned)
-	(GOTO.IF `Build(SemanticExpressionOperation[operator=IS])` "then" "else")
+	(GOTO.IF (IS `Build(SemanticExpression__0)` `Build(SemanticExpression__1)`) "then" "else")
 	"then":
-	(SET $returned (MAYBE.NEW (CAST `SemanticExpression__1.source` `Build(SemanticExpression__0)`)))
+	(SET $returned (MAYBE.NEW `Build(SemanticExpression__0)`))
 	(GOTO "endif")
 	"else":
 	(SET $returned (MAYBE.NEW))

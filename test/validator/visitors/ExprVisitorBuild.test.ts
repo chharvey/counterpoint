@@ -1506,6 +1506,36 @@ test.suite('ExprVisitorBuild#visit', () => {
 
 
 	test.suite('OperationBinaryCast', () => {
+		/**
+		 * Output for casting.
+		 * @param return_type if 'Maybe' is given, adjusts output to maybe-casting (`as?` operator)
+		 */
+		function cast_output(
+			block_n:     number,
+			return_type: string,
+			left_op:     string,
+			right_op:    string,
+			return_n:    number,
+		): string {
+			const block_then:  string  = `block-${block_n}`;
+			const block_else:  string  = `block-${block_n + 1}`;
+			const block_endif: string  = `block-${block_n + 2}`;
+			const return_name: string  = `$${return_n}`;
+			const maybe_cast:  boolean = return_type === 'Maybe';
+			return xjs.String.dedent`
+				${''}
+					(DECL <${return_type}> ${return_name})
+					(GOTO.IF (IS (GET ${left_op}) (GET ${right_op})) "${block_then}" "${block_else}")
+				"${block_then}":
+					(SET ${return_name} ${maybe_cast ? `(MAYBE.NEW (GET ${left_op}))` : `(GET ${left_op})`})
+					(GOTO "${block_endif}")
+				"${block_else}":
+					(SET ${return_name} ${maybe_cast ? '(MAYBE.NEW)' : '(TRAP)'})
+					(GOTO "${block_endif}")
+				"${block_endif}":
+					(DROP (GET ${return_name}))
+			`.trim();
+		}
 		test.test('[operator=IS]', () => {
 			assert.strictEqual(setupScript(`{
 				val n: null = null;
@@ -1524,7 +1554,8 @@ test.suite('ExprVisitorBuild#visit', () => {
 			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
 					(DECL <null> n (NULL.CONST null))
-					${CORE_LIB_NAMES.map((t) => `(DROP (CAST ${t} (GET n)))`).join('\n\t')}
+					${cast_output(1, 'null', 'n', 'Null', 0)}
+					${CORE_LIB_NAMES.slice(1).map((t, i) => cast_output(3 * (i + 1) + 1, 'anything', 'n', t, i + 1)).join('\n\t')}
 					(ENDPROGRAM)
 			`.trim());
 		});
@@ -1535,25 +1566,7 @@ test.suite('ExprVisitorBuild#visit', () => {
 			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
 					(DECL <null> n (NULL.CONST null))
-					${CORE_LIB_NAMES.map((t, i) => {
-						const block_then:  string = `block-${3 * i + 1}`;
-						const block_else:  string = `block-${3 * i + 2}`;
-						const block_endif: string = `block-${3 * i + 3}`;
-						const return_name: string = `$${i}`;
-						return xjs.String.dedent`
-							${''}
-								(DECL <Maybe> ${return_name})
-								(GOTO.IF (IS (GET n) (GET ${t})) "${block_then}" "${block_else}")
-							"${block_then}":
-								(SET ${return_name} (MAYBE.NEW (CAST ${t} (GET n))))
-								(GOTO "${block_endif}")
-							"${block_else}":
-								(SET ${return_name} (MAYBE.NEW))
-								(GOTO "${block_endif}")
-							"${block_endif}":
-								(DROP (GET ${return_name}))
-						`.trim();
-					}).join('\n\t').trim()}
+					${CORE_LIB_NAMES.map((t, i) => cast_output(3 * i + 1, 'Maybe', 'n', t, i)).join('\n\t').trim()}
 					(ENDPROGRAM)
 			`.trim());
 		});

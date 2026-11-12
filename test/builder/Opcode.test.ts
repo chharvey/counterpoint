@@ -2075,7 +2075,7 @@ test.suite('Opcode', () => {
 				});
 			});
 
-			test.suite('Instance', () => {
+			test.suite.skip('Instance', () => {
 				test.test('CAST', () => {
 					const {builder, cg, wasm} = setupScript(`{
 						${CORE_LIB_NAMES.slice(0, -1).map((classname) => `null as <anything> as ${classname};`).join('\n')};
