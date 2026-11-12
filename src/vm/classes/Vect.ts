@@ -146,17 +146,17 @@ export class Vect implements HasFuncData {
 		return this.vm.mod.wasm.call(`Vect.is-${tag}`, [vect], binaryen.Type.i32);
 	}
 
-	/** Whether the value is intended to be interpreted as a signed integer. */
+	/** Whether the value is intended to be interpreted as a signed integer. @deprecated */
 	public isInt(vect: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* i32 */ {
 		return this.vm.mod.wasm.call('Vect.is-int', [vect], binaryen.Type.i32);
 	}
 
-	/** Whether the value is intended to be interpreted as an unsigned integer. */
+	/** Whether the value is intended to be interpreted as an unsigned integer. @deprecated */
 	public isNat(vect: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* i32 */ {
 		return this.vm.mod.wasm.call('Vect.is-nat', [vect], binaryen.Type.i32);
 	}
 
-	/** Whether the value is intended to be interpreted as a float. */
+	/** Whether the value is intended to be interpreted as a float. @deprecated */
 	public isFloat(vect: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* i32 */ {
 		return this.vm.mod.wasm.call('Vect.is-float', [vect], binaryen.Type.i32);
 	}
@@ -171,7 +171,7 @@ export class Vect implements HasFuncData {
 		return this.vm.mod.wasm.call('Vect.as-nat', [vect], binaryen.Type.i64);
 	}
 
-	/** The value as interpreted as a float. */
+	/** The value as interpreted as a float. @deprecated */
 	public asFloat(vect: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* f64 */ {
 		return this.vm.mod.wasm.call('Vect.as-float', [vect], binaryen.Type.f64);
 	}
