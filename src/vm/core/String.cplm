@@ -1,8 +1,6 @@
-from "cplvm" import (
-	'::op::isTuple',
-	'::op::isRecord',
-);
-from "./Object.cplm" import type (Object);
+from "core/vm" import ('op::toStr');
+from "./Object" import type (Object);
+from "./Exception" import (Exception);
 
 
 
@@ -18,13 +16,7 @@ public class String {
 	public new (refobj: Object) {
 		this(refobj.'%%toString%%'());
 	}
-	public new (arg: anything) { % catch-all for all other value objects (tuples, records, etc)
-		if '::op::isTuple'(arg) as :bool: then {
-			% loop through tuple internal array and stringify each value
-			panic "TODO: not yet supported";
-		} else if '::op::isRecord'(arg) as :bool: then {
-			% loop through record internal array and stringify each property
-			panic "TODO: not yet supported";
-		};
+	public new (arg: anything) {
+		return 'op::toStr'(arg) as :str:;
 	}
 }

@@ -4,7 +4,7 @@ import * as xjs from 'extrajs';
 import {
 	VALUE,
 	TYPE,
-	INTRINSICS,
+	CORE_LIB_NAMES,
 	Validator,
 	AST,
 	SymbolSchemaType,
@@ -68,6 +68,15 @@ test.suite('Expression', () => {
 
 	test.suite('#type', () => {
 		test.suite('Variable', () => {
+			test.test('all core lib class references are of type `Class`.', () => {
+				const {stmts} = setupScript(`{
+					${CORE_LIB_NAMES.join(';')};
+				}`, {build: false}); // assert does not throw
+				assertEqualTypes(
+					stmts.map((stmt) => VISITOR.visit((stmt as AST.STMT.StatementExpression).expr!)),
+					repeat(TYPE.CLASS, CORE_LIB_NAMES.length),
+				);
+			});
 			test.test('wraps in `Maybe` when accessed variable is uninitialized.', () => {
 				const {stmts} = setupScript(`{
 					val mut w:  int = 42;
@@ -94,7 +103,7 @@ test.suite('Expression', () => {
 			});
 			test.test('allows claiming to a type alias.', () => {
 				const claim: AST.EXPR.Claim = AST.EXPR.Claim.fromSource('"Alice" as <Name>');
-				const id: bigint = Validator.cookTokenIdentifier('Name');
+				const id: bigint = Validator.keyId('Name');
 				claim.validator.addSymbol(new SymbolSchemaType(id, claim.claimed_type));
 				(claim.validator.getSymbol(id) as SymbolSchemaType).typevalue = TYPE.STR;
 				return assert.strictEqual(VISITOR.visit(claim), TYPE.STR);
@@ -104,7 +113,7 @@ test.suite('Expression', () => {
 			});
 			test.test('allows claiming a `nothing` expression even though types are disjoint.', () => {
 				const claim: AST.EXPR.Claim = AST.EXPR.Claim.fromSource('n as <int>');
-				const id: bigint = Validator.cookTokenIdentifier('n');
+				const id: bigint = Validator.keyId('n');
 				claim.validator.addSymbol(new SymbolSchemaVar(id, claim.operand, false, false));
 				(claim.validator.getSymbol(id) as SymbolSchemaVar).type = TYPE.NOTHING;
 				return assert.strictEqual(VISITOR.visit(claim), TYPE.INT);
@@ -217,8 +226,8 @@ test.suite('Expression', () => {
 						TYPE.INT,
 						TYPE.FLOAT.union(TYPE.NULL),
 					]), TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>([
-						[Validator.cookTokenIdentifier('c'),     TYPE.BOOL],
-						[Validator.cookTokenIdentifier('delta'), TYPE.NAT],
+						[Validator.keyId('c'),     TYPE.BOOL],
+						[Validator.keyId('delta'), TYPE.NAT],
 					]))),
 					new TYPE.Function(undefined, undefined, TYPE.INT.union(TYPE.FLOAT)),
 				]);
@@ -268,7 +277,7 @@ test.suite('Expression', () => {
 					new VALUE.Symbol(0x52n, 'then'),
 					new VALUE.Symbol(0x46n, 'str'),
 					new VALUE.Symbol(0x49n, 'false'),
-					new VALUE.Symbol(Validator.cookTokenIdentifier('foobar'), 'foobar'),
+					new VALUE.Symbol(Validator.keyId('foobar'), 'foobar'),
 				]);
 			});
 			test.test('computes int values.', () => {
@@ -314,9 +323,9 @@ test.suite('Expression', () => {
 
 	test.suite('Variable', () => {
 		test.suite('#varCheck', () => {
-			test.test('allows intrinsic class references.', () => {
+			test.test('allows core lib class references.', () => {
 				setupScript(`{
-					${INTRINSICS.join(';')};
+					${CORE_LIB_NAMES.join(';')};
 				}`, {typeCheck: false}); // assert does not throw
 			});
 			test.test('throws if the validator does not contain a record for the identifier.', () => {
@@ -425,18 +434,18 @@ test.suite('Expression', () => {
 					assert.partialDeepStrictEqual(
 						goal.block!.validator.getAllSymbols(),
 						new Map([
-							[Validator.cookTokenIdentifier('T'), {source: 'T'}],
-							[Validator.cookTokenIdentifier('U'), {source: 'U'}],
-							[Validator.cookTokenIdentifier('f'), {source: 'f'}],
+							[Validator.keyId('T'), {source: 'T'}],
+							[Validator.keyId('U'), {source: 'U'}],
+							[Validator.keyId('f'), {source: 'f'}],
 						]),
 					);
 					return assertEqualTypes(
 						(stmts[1] as AST.STMT.DeclarationType).assigned.eval(),
 						TYPE.Record.fromTypes(new Map([
-							[Validator.cookTokenIdentifier('a'), TYPE.BOOL],
-							[Validator.cookTokenIdentifier('b'), TYPE.Record.fromTypes(new Map([[Validator.cookTokenIdentifier('z'), TYPE.INT]]))],
-							[Validator.cookTokenIdentifier('c'), TYPE.STR],
-							[Validator.cookTokenIdentifier('d'), TYPE.Record.fromTypes(new Map([[Validator.cookTokenIdentifier('y'), TYPE.FLOAT]]))],
+							[Validator.keyId('a'), TYPE.BOOL],
+							[Validator.keyId('b'), TYPE.Record.fromTypes(new Map([[Validator.keyId('z'), TYPE.INT]]))],
+							[Validator.keyId('c'), TYPE.STR],
+							[Validator.keyId('d'), TYPE.Record.fromTypes(new Map([[Validator.keyId('y'), TYPE.FLOAT]]))],
 						])),
 					);
 				});

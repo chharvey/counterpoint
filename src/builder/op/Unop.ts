@@ -1,5 +1,5 @@
 import * as assert from 'node:assert';
-import * as binaryen from 'binaryen.ts';
+import type * as binaryen from 'binaryen.ts';
 import type {CodeGenerator} from '../../index.ts';
 import {
 	assert_instanceof,
@@ -36,6 +36,8 @@ export type OpCodeUn = (
 	| OpCode.SET_COUNT
 	| OpCode.MAP_COUNT
 
+	| OpCode.NONE_IS
+	| OpCode.FAIL_IS
 	| OpCode.MAYBE_UNWRAP
 	| OpCode.RESULT_UNWRAP
 	| OpCode.RESULT_EXTRACT
@@ -116,32 +118,36 @@ export class Unop extends Value {
 			case OpCode.SET_COUNT:  { return new VALUE.Natural((operand as VALUE.Set).count); }
 			case OpCode.MAP_COUNT:  { return new VALUE.Natural((operand as VALUE.Map).count); }
 
-			case OpCode.MAYBE_UNWRAP:   { return (operand as VALUE.Maybe).value ?? assert.fail(new TypeError('Unwrapped a None value.')); }
-			case OpCode.RESULT_UNWRAP:  { return  (operand as VALUE.Result).isOk ? (operand as VALUE.Result).argument : assert.fail(new TypeError('Unwrapped a Fail value.')); }
-			case OpCode.RESULT_EXTRACT: { return !(operand as VALUE.Result).isOk ? (operand as VALUE.Result).argument : assert.fail(new TypeError('Extracted from an Ok value.')); }
+			case OpCode.NONE_IS:        { return VALUE.Boolean.fromBoolean(operand instanceof VALUE.None); }
+			case OpCode.FAIL_IS:        { return VALUE.Boolean.fromBoolean(operand instanceof VALUE.Fail); }
+			case OpCode.MAYBE_UNWRAP:   { return operand instanceof VALUE.Some ? operand.value  : assert.fail(new TypeError('Unwrapped a None value.')); }
+			case OpCode.RESULT_UNWRAP:  { return operand instanceof VALUE.Ok   ? operand.value  : assert.fail(new TypeError('Unwrapped a Fail value.')); }
+			case OpCode.RESULT_EXTRACT: { return operand instanceof VALUE.Fail ? operand.reason : assert.fail(new TypeError('Extracted from an Ok value.')); }
 		}
 	}
 
 	@memoizeMethod
 	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
-		const {vm: {reftype, op, Vect, Value: VmValue, List, Dict, Map: VmMap}, mod: {wasm}} = cg;
+		const {vm: {op, Vect, Value: VmValue, List, Dict, Map: VmMap}, mod: {wasm}} = cg;
 		const code: binaryen.ExpressionRef = this.operand.codegen(cg);
 		switch (this.operator) {
 			case OpCode.BOOL_FROM:  { return op.not(op.not(code)); }
 			case OpCode.INT_FROM:   { return op.toInt(code); }
 			case OpCode.NAT_FROM:   { return op.toNat(code); }
 			case OpCode.FLOAT_FROM: { return op.toFloat(code); }
-			case OpCode.STR_FROM:   { return VmValue.newComposite(VmValue.stringify(code)); }
+			case OpCode.STR_FROM:   { return op.toStr(code); }
 
 			case OpCode.NOT: { return op.not(code); }
 			case OpCode.EMP: { return op.isEmpty(code); }
 			case OpCode.NEG: { return op.negate(code); }
 
-			case OpCode.LIST_COUNT: { return VmValue.newPrimitive(Vect.newNat(wasm.i64.extend_i32_u(List .count(VmValue.cast(code, reftype.List))))); }
-			case OpCode.DICT_COUNT: { return VmValue.newPrimitive(Vect.newNat(wasm.i64.extend_i32_u(Dict .count(VmValue.cast(code, reftype.Dict))))); }
-			case OpCode.SET_COUNT:  { return VmValue.newPrimitive(Vect.newNat(wasm.i64.extend_i32_u(VmMap.count(VmValue.cast(code, reftype.Map))))); }
-			case OpCode.MAP_COUNT:  { return VmValue.newPrimitive(Vect.newNat(wasm.i64.extend_i32_u(VmMap.count(VmValue.cast(code, reftype.Map))))); }
+			case OpCode.LIST_COUNT: { return VmValue.fromNat(Vect.newNat(wasm.i64.extend_i32_u(List .count(VmValue.asList(code))))); }
+			case OpCode.DICT_COUNT: { return VmValue.fromNat(Vect.newNat(wasm.i64.extend_i32_u(Dict .count(VmValue.asDict(code))))); }
+			case OpCode.SET_COUNT:  { return VmValue.fromNat(Vect.newNat(wasm.i64.extend_i32_u(VmMap.count(VmValue.asMap (code))))); }
+			case OpCode.MAP_COUNT:  { return VmValue.fromNat(Vect.newNat(wasm.i64.extend_i32_u(VmMap.count(VmValue.asMap (code))))); }
 
+			case OpCode.NONE_IS:        { return cg.vm.op.isNone(code); }
+			case OpCode.FAIL_IS:        { return cg.vm.op.isFail(code); }
 			case OpCode.MAYBE_UNWRAP:   { return op.unwrapMaybe(code); }
 			case OpCode.RESULT_UNWRAP:  { return op.unwrapResult(code); }
 			case OpCode.RESULT_EXTRACT: { return op.extractResult(code); }
@@ -160,19 +166,19 @@ export class Unop extends Value {
 			if (t0.isDefinitelyFalsy) {
 				return wasm.block(null, [
 					wasm.drop(arg0),
-					Vect.TRUE,
-				], binaryen.Type.v128);
+					cg.vm.Value.TRUE,
+				], cg.vm.reftype.Value);
 			} else if (t0.isDefinitelyTruthy) {
 				return wasm.block(null, [
 					wasm.drop(arg0),
-					Vect.FALSE,
-				], binaryen.Type.v128);
+					cg.vm.Value.FALSE,
+				], cg.vm.reftype.Value);
 			}
 		} else if (this.operator === Operator.EMP && t0.isDefinitelyFalsy) {
 			return wasm.block(null, [
 				wasm.drop(arg0),
-				Vect.TRUE,
-			], binaryen.Type.v128);
+				cg.vm.Value.TRUE,
+			], cg.vm.reftype.Value);
 		}
 		return 0;
 	}

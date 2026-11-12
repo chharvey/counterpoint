@@ -10,6 +10,7 @@ function rel_path(arg) {
 
 const inputs = Promise.all([
 	'types.wat',
+	'globals.wat',
 	'utils/mod.wat',
 	'utils/capacity-needed.wat',
 	'utils/compare-numbers.wat',
@@ -17,14 +18,15 @@ const inputs = Promise.all([
 	'utils/hash.wat',
 	'ops.wat',
 	'classes/Vect.wat',
-	'classes/Value.wat',
 	'classes/Property.wat',
 	'classes/Case.wat',
 	'classes/Record.wat',
-	'classes/Object.wat',
 	'classes/List.wat',
 	'classes/Dict.wat',
 	'classes/Map.wat',
+	'classes/Value.wat',
+	'classes/Object.wat',
+	'classes/Class.wat',
 ].map((filename) => fs.promises.readFile(rel_path(`../src/vm/wat/${filename}`), 'utf8')));
 
 const concatpath = rel_path('../dist/vm/module.wat');

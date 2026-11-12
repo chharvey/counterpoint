@@ -6,6 +6,7 @@ import {
 	NanErrorDivZero,
 } from '../../index.ts';
 import {
+	assert_instanceof,
 	memoizeMethod,
 	runOnceMethod,
 } from '../../lib/index.ts';
@@ -49,6 +50,7 @@ export type OpCodeBin = (
 
 	| OpCode.ID
 	| OpCode.EQ
+	| OpCode.IS
 );
 
 
@@ -71,7 +73,7 @@ export class Binop extends Value {
 	@runOnceMethod
 	public override validate(builder: Builder): void {
 		const operands = [this.operand0, this.operand1] as const;
-		return xjs.Array.forEachAggregated(operands, (arg) => {
+		xjs.Array.forEachAggregated(operands, (arg) => {
 			arg.validate(builder);
 			switch (this.operator) {
 				case OpCode.INT_ADD: { return assert.ok(arg.type.isSubtypeOf(TYPE.INT)); }
@@ -98,6 +100,9 @@ export class Binop extends Value {
 				case OpCode.GE: { return assert.ok(arg.type.isSubtypeOf(TYPE.NUMBER)); }
 			}
 		});
+		if (this.operator === OpCode.IS) {
+			assert.ok(operands[1].type.isSubtypeOf(TYPE.CLASS));
+		}
 	}
 
 	public override interpret(interp: Interpreter): VALUE.Value {
@@ -128,6 +133,10 @@ export class Binop extends Value {
 
 			case OpCode.ID: { return VALUE.Boolean.fromBoolean(operand0.identical(operand1)); }
 			case OpCode.EQ: { return VALUE.Boolean.fromBoolean(operand0.equal(operand1)); }
+			case OpCode.IS: {
+				assert_instanceof(operand1, VALUE.Class);
+				return VALUE.Boolean.fromBoolean(operand0 instanceof operand1.nativeClass);
+			}
 		}
 	}
 
@@ -160,6 +169,7 @@ export class Binop extends Value {
 
 			case OpCode.ID: { return cg.vm.op.id(code0, code1); }
 			case OpCode.EQ: { return cg.vm.op.eq(code0, code1); }
+			case OpCode.IS: { return cg.vm.op.is(code0, code1); }
 		}
 	}
 
@@ -238,8 +248,8 @@ export class Binop extends Value {
 			return wasm.block(null, [
 				wasm.drop(arg0),
 				wasm.drop(arg1),
-				cg.vm.Vect.FALSE,
-			], binaryen.Type.v128);
+				cg.vm.Value.FALSE,
+			], cg.vm.reftype.Value);
 		}
 
 		// Operator Logical

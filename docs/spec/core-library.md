@@ -1,4 +1,4 @@
-# Intrinsics
+# Core Library
 This chapter describes the objects built in to the standard “core” Counterpoint library.
 
 

@@ -1,0 +1,39 @@
+from "core/vm" import ('op::isTuple');
+from "./Object" import await (Object);
+from "./Exception" import (Exception);
+
+
+
+%%%
+A List is a variable-size ordered collection of indexed items that allows duplicates.
+This class implements a List using an underlying array.
+
+@typeparam T : the type of items in this List
+%%%
+public class open List[out(in) T] extends Object {
+	public new () {
+		super();
+	}
+	public new (list: List[T]) {
+		panic Exception("TODO: not yet supported");
+	}
+	public new ('set': Set[T]) {
+		panic Exception("TODO: not yet supported");
+	}
+	public new (());
+	public new ((T,));
+	public new ((T, T));
+	%%
+	public new (());
+	public new ((T,));
+	public new ((T, T));
+	public new ((T, T, T));
+	public new (anything); % any tuple type with items of type `T`
+	%%
+	public new (arg: anything) {
+		if 'op::isTuple'(arg) as :bool: then {
+			panic Exception("TODO: not yet supported");
+		};
+		panic Exception("Value cannot be converted to a List.");
+	}
+}

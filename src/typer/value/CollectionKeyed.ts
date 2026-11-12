@@ -12,7 +12,7 @@ import {Collection} from './Collection.ts';
  * - Dict
  */
 export abstract class CollectionKeyed<T extends Value = Value> extends Collection {
-	protected static samenessDfn<T extends Value = Value>(
+	public static samenessDfn<T extends Value = Value>(
 		a:          CollectionKeyed<T>,
 		b:          CollectionKeyed<T>,
 		comparator: (a: T, b: T) => boolean,

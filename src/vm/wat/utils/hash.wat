@@ -6,23 +6,12 @@
 
 ;; ## Main Hash Function ##
 (func $Value.hash (param $value (ref $Value)) (result i64)
-	(local $composite (ref null $Composite))
-
-	(local.set $composite (struct.get $Value $composite (local.get $value)))
-
-	(if
-		(call $Value.is-primitive (local.get $value))
-		(then (return_call $!v128.hash (struct.get $Value $primitive (local.get $value))))
-	)
-	(if
-		(call $Value.is-composite (local.get $value))
-		(then
-			(if (ref.test (ref $String) (local.get $composite)) (then (return_call $!String.hash (ref.cast (ref $String) (local.get $composite)))))
-			(if (ref.test (ref $Tuple)  (local.get $composite)) (then (return_call $!Tuple.hash  (ref.cast (ref $Tuple)  (local.get $composite)))))
-			(if (ref.test (ref $Record) (local.get $composite)) (then (return_call $!Record.hash (ref.cast (ref $Record) (local.get $composite)))))
-			(if (ref.test (ref $Object) (local.get $composite)) (then (return_call $!Object.hash (ref.cast (ref $Object) (local.get $composite)))))
-		)
-	)
+	(if (ref.test (ref $Cpl-Primitive) (local.get $value)) (then (return_call $!v128.hash   (call $Value.as-primitive (local.get $value)))))
+	(if (ref.test (ref $Cpl-String)    (local.get $value)) (then (return_call $!String.hash (call $Value.as-string    (local.get $value)))))
+	(if (ref.test (ref $Cpl-Tuple)     (local.get $value)) (then (return_call $!Tuple.hash  (call $Value.as-tuple     (local.get $value)))))
+	(if (ref.test (ref $Cpl-Record)    (local.get $value)) (then (return_call $!Record.hash (call $Value.as-record    (local.get $value)))))
+	(if (ref.test (ref $Data)          (local.get $value)) (then (return_call $!Data.hash   (ref.cast (ref $Data)     (local.get $value)))))
+	(if (ref.test (ref $Object)        (local.get $value)) (then (return_call $!Object.hash (ref.cast (ref $Object)   (local.get $value)))))
 	(unreachable)
 )
 
@@ -76,22 +65,20 @@
 ;; ```
 ;; [SEED, ...$string.codeunits].reduce((a, b) => (a xor i64.extend_i32_u(b)) * PRIME);
 ;; ```
-(func $!String.hash (param $string (ref $String)) (result i64)
-	(local $internal (ref $StringInternal))
-	(local $result   i64)
-	(local $i        i32)
+(func $!String.hash (param (ref $String)) (result i64)
+	(local $result i64)
+	(local $i      i32)
 
-	(local.set $internal (struct.get $String $internal (local.get $string)))
-	(local.set $result   (global.get $SEED))
+	(local.set $result (global.get $SEED))
 
 	(block $exit
 		(local.set $i (i32.const 0))
 		(loop $repeat
-			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $internal))))
+			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get 0))))
 			(local.set $result (i64.mul
 				(i64.xor
 					(local.get $result)
-					(i64.extend_i32_u (array.get_u $StringInternal (local.get $internal) (local.get $i)))
+					(i64.extend_i32_u (array.get_u $String (local.get 0) (local.get $i)))
 				)
 				(global.get $PRIME)
 			))
@@ -108,22 +95,20 @@
 ;; ```
 ;; [SEED, ...$tuple.values()].reduce((a, b) => (a xor hash(b)) * PRIME);
 ;; ```
-(func $!Tuple.hash (param $tuple (ref $Tuple)) (result i64)
-	(local $internal (ref $TupleInternal))
-	(local $result   i64)
-	(local $i        i32)
+(func $!Tuple.hash (param (ref $Tuple)) (result i64)
+	(local $result i64)
+	(local $i      i32)
 
-	(local.set $internal (struct.get $Tuple $internal (local.get $tuple)))
-	(local.set $result   (global.get $SEED))
+	(local.set $result (global.get $SEED))
 
 	(block $exit
 		(local.set $i (i32.const 0))
 		(loop $repeat
-			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $internal))))
+			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get 0))))
 			(local.set $result (i64.mul
 				(i64.xor
 					(local.get $result)
-					(call $Value.hash (array.get $TupleInternal (local.get $internal) (local.get $i)))
+					(call $Value.hash (array.get $Tuple (local.get 0) (local.get $i)))
 				)
 				(global.get $PRIME)
 			))
@@ -143,21 +128,19 @@
 ;; ```
 ;; [SEED, ...$record.entries()].reduce((a, b) => a xor hash(b)) * PRIME;
 ;; ```
-(func $!Record.hash (param $record (ref $Record)) (result i64)
-	(local $internal (ref $RecordInternal))
-	(local $result   i64)
-	(local $i        i32)
+(func $!Record.hash (param (ref $Record)) (result i64)
+	(local $result i64)
+	(local $i      i32)
 
-	(local.set $internal (struct.get $Record $internal (local.get $record)))
-	(local.set $result   (global.get $SEED))
+	(local.set $result (global.get $SEED))
 
 	(block $exit
 		(local.set $i (i32.const 0))
 		(loop $repeat
-			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $internal))))
+			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get 0))))
 			(local.set $result (i64.xor
 				(local.get $result)
-				(call $!Property.hash (array.get $RecordInternal (local.get $internal) (local.get $i)))
+				(call $!Property.hash (array.get $Record (local.get 0) (local.get $i)))
 			))
 			(local.set $i (i32.add (local.get $i) (i32.const 1)))
 			(br $repeat)
@@ -168,9 +151,17 @@
 
 
 
+;; hash a $Data.
+;; Applies to all compound data values.
+(func $!Data.hash (param (ref $Data)) (result i64)
+	(unreachable) ;; TODO:
+)
+
+
+
 ;; hash an $Object.
-;; Applies to all Objects, including Lists, Dicts, and Maps.
+;; Applies to all reference Objects.
 ;; Returns its id.
-(func $!Object.hash (param $obj (ref $Object)) (result i64)
-	(struct.get $Object $id (local.get $obj))
+(func $!Object.hash (param (ref $Object)) (result i64)
+	(struct.get $Object $id (local.get 0))
 )

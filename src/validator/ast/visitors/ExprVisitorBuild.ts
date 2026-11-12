@@ -9,8 +9,11 @@ import {
 	VALUE,
 	TYPE,
 } from '../../../typer/index.ts';
-import {IntrinsicName} from '../../../parser/index.ts';
-import type {SymbolSchemaVar} from '../../index.ts';
+import {CoreLibName} from '../../../parser/index.ts';
+import {
+	SymbolSchemaVar,
+	type SymbolSchemaClass,
+} from '../../index.ts';
 import {Operator} from '../../Operator.ts';
 import type {CallableClassName} from '../utils-private.ts';
 import {Index} from '../Index-.ts';
@@ -53,8 +56,8 @@ export class ExprVisitorBuild extends EXPR.ExprVisitor<OP.Value> {
 
 	@memoizePerNode
 	public override visitVariable(expr: EXPR.Variable): OP.Value {
-		const symbol = expr.validator.getSymbol(expr.id) as SymbolSchemaVar;
-		return new OP.Get(symbol, symbol.irType);
+		const symbol = expr.validator.getSymbol(expr.id) as SymbolSchemaVar | SymbolSchemaClass;
+		return new OP.Get(symbol, symbol instanceof SymbolSchemaVar ? symbol.irType : TYPE.CLASS);
 	}
 
 	@memoizePerNode
@@ -113,10 +116,11 @@ export class ExprVisitorBuild extends EXPR.ExprVisitor<OP.Value> {
 			return OP.conditional_expression(
 				this.builder,
 				typ,
-				() => new OP.Instance(OP.OpCode.INSTANCEOF, IntrinsicName.NONE, base_value),
+				() => new OP.Unop(OP.OpCode.NONE_IS, base_value, TYPE.BOOL),
 				() => new OP.MaybeNew(typ.typearg),
 				() => new OP.MaybeNew(typ.typearg, this.#buildUnwrappedGet(
 					expr,
+					// TODO: `base_value.type` should always be `Maybe` once expression access is removed. put the assertion underneath `typ`
 					base_value.type instanceof TYPE.Maybe ? new OP.Unop(OP.OpCode.MAYBE_UNWRAP, base_value, base_value.type.typearg).asTac(this.builder) : base_value,
 					typ.typearg,
 				).asTac(this.builder)),
@@ -127,7 +131,7 @@ export class ExprVisitorBuild extends EXPR.ExprVisitor<OP.Value> {
 			return OP.conditional_expression(
 				this.builder,
 				typ,
-				() => new OP.Instance(OP.OpCode.INSTANCEOF, IntrinsicName.FAIL, base_value),
+				() => new OP.Unop(OP.OpCode.FAIL_IS, base_value, TYPE.BOOL),
 				() => new OP.ResultNew(false, typ.typeargSuccess, typ.typeargFailure, new OP.Unop(OP.OpCode.RESULT_EXTRACT, base_value, (base_value.type as TYPE.Result).typeargFailure).asTac(this.builder)),
 				() => new OP.ResultNew(true,  typ.typeargSuccess, typ.typeargFailure, this.#buildUnwrappedGet(
 					expr,
@@ -155,28 +159,28 @@ export class ExprVisitorBuild extends EXPR.ExprVisitor<OP.Value> {
 
 		const base_source = expr.base.source as CallableClassName;
 		switch (base_source) {
-			case IntrinsicName.BOOLEAN:
-			case IntrinsicName.INTEGER:
-			case IntrinsicName.NATURAL:
-			case IntrinsicName.FLOAT:
-			case IntrinsicName.STRING: {
-				return new OP.Unop(new Map<IntrinsicName, OP.OpCodeUn>([
-					[IntrinsicName.BOOLEAN, OP.OpCode.BOOL_FROM],
-					[IntrinsicName.INTEGER, OP.OpCode.INT_FROM],
-					[IntrinsicName.NATURAL, OP.OpCode.NAT_FROM],
-					[IntrinsicName.FLOAT,   OP.OpCode.FLOAT_FROM],
-					[IntrinsicName.STRING,  OP.OpCode.STR_FROM],
+			case CoreLibName.BOOLEAN:
+			case CoreLibName.INTEGER:
+			case CoreLibName.NATURAL:
+			case CoreLibName.FLOAT:
+			case CoreLibName.STRING: {
+				return new OP.Unop(new Map<CoreLibName, OP.OpCodeUn>([
+					[CoreLibName.BOOLEAN, OP.OpCode.BOOL_FROM],
+					[CoreLibName.INTEGER, OP.OpCode.INT_FROM],
+					[CoreLibName.NATURAL, OP.OpCode.NAT_FROM],
+					[CoreLibName.FLOAT,   OP.OpCode.FLOAT_FROM],
+					[CoreLibName.STRING,  OP.OpCode.STR_FROM],
 				]).get(base_source)!, this.visit(expr.exprargsPosit[0]).asTac(this.builder), expr.type!);
 			}
-			case IntrinsicName.LIST:
-			case IntrinsicName.DICT:
-			case IntrinsicName.SET:
-			case IntrinsicName.MAP: {
-				const [name, ctor] = new Map<IntrinsicName, [OP.CollectionDynamicName, () => OP.Value]>([
-					[IntrinsicName.LIST, [OP.TypeName.LIST, () => new OP.CollectionLinearNew(OP.TypeName.LIST, [], expr.type!)]],
-					[IntrinsicName.SET,  [OP.TypeName.SET,  () => new OP.CollectionLinearNew(OP.TypeName.SET,  [], expr.type!)]],
-					[IntrinsicName.DICT, [OP.TypeName.DICT, () => new OP.DictNew (new Map(), expr.type!)]],
-					[IntrinsicName.MAP,  [OP.TypeName.MAP,  () => new OP.MapNew  (new Map(), expr.type!)]],
+			case CoreLibName.LIST:
+			case CoreLibName.DICT:
+			case CoreLibName.SET:
+			case CoreLibName.MAP: {
+				const [name, ctor] = new Map<CoreLibName, [OP.CollectionDynamicName, () => OP.Value]>([
+					[CoreLibName.LIST, [OP.TypeName.LIST, () => new OP.CollectionLinearNew(OP.TypeName.LIST, [], expr.type!)]],
+					[CoreLibName.SET,  [OP.TypeName.SET,  () => new OP.CollectionLinearNew(OP.TypeName.SET,  [], expr.type!)]],
+					[CoreLibName.DICT, [OP.TypeName.DICT, () => new OP.DictNew (new Map(), expr.type!)]],
+					[CoreLibName.MAP,  [OP.TypeName.MAP,  () => new OP.MapNew  (new Map(), expr.type!)]],
 				]).get(base_source)!;
 				const new_obj: OP.Value = ctor();
 				if (!expr.exprargsPosit.length) {
@@ -186,20 +190,20 @@ export class ExprVisitorBuild extends EXPR.ExprVisitor<OP.Value> {
 				this.builder.pushInstruction(new OP.CollectionDynamicCopy(name, dest, this.visit(expr.exprargsPosit[0]).asTac(this.builder)));
 				return dest;
 			}
-			case IntrinsicName.EXCEPTION: {
+			case CoreLibName.EXCEPTION: {
 				return new OP.ExcpNew(
 					this.visit(expr.exprargsPosit[0]).asTac(this.builder),
 					expr.exprargsPosit[1] ? this.visit(expr.exprargsPosit[1]).asTac(this.builder) : undefined,
 				);
 			}
-			case IntrinsicName.NONE:
-			case IntrinsicName.SOME: {
+			case CoreLibName.NONE:
+			case CoreLibName.SOME: {
 				return new OP.MaybeNew(expr.typeargs[0].eval(), expr.exprargsPosit[0] ? this.visit(expr.exprargsPosit[0]).asTac(this.builder) : undefined);
 			}
-			case IntrinsicName.FAIL:
-			case IntrinsicName.OK: {
+			case CoreLibName.FAIL:
+			case CoreLibName.OK: {
 				return new OP.ResultNew(
-					base_source === IntrinsicName.OK,
+					base_source === CoreLibName.OK,
 					expr.typeargs[0].eval(),
 					expr.typeargs[1]?.eval() ?? TYPE.EXCP,
 					this.visit(expr.exprargsPosit[0]).asTac(this.builder),
@@ -226,32 +230,20 @@ export class ExprVisitorBuild extends EXPR.ExprVisitor<OP.Value> {
 
 	@memoizePerNode
 	public override visitOperationBinaryCast(expr: EXPR.OperationBinaryCast): OP.Value {
-		const op0: OP.ValueTac = this.visit(expr.operand0).asTac(this.builder);
-		const op1_source = expr.operand1.source as IntrinsicName;
-		const is_instance = (): OP.Value => {
-			switch (op1_source) {
-				case IntrinsicName.NULL: {
-					return new OP.Binop(OP.OpCode.ID, op0, new OP.Const(VALUE.NULL), TYPE.BOOL);
-				}
-				case IntrinsicName.BOOLEAN: {
-					const left: OP.ValueTac = new OP.Binop(OP.OpCode.ID, op0, new OP.Const(VALUE.FALSE), TYPE.BOOL).asTac(this.builder);
-					return OP.conditional_expression(
-						this.builder,
-						TYPE.BOOL,
-						() => left,
-						() => left,
-						() => new OP.Binop(OP.OpCode.ID, op0, new OP.Const(VALUE.TRUE), TYPE.BOOL),
-					);
-				}
-			}
-			return new OP.Instance(OP.OpCode.INSTANCEOF, op1_source, op0);
-		};
+		const [v0, v1] = [this.visit(expr.operand0).asTac(this.builder), this.visit(expr.operand1).asTac(this.builder)];
+		const is_instance = (): OP.Value => new OP.Binop(OP.OpCode.IS, v0, v1, TYPE.BOOL);
 		switch (expr.operator) {
 			case Operator.IS: {
 				return is_instance();
 			}
 			case Operator.CAST: {
-				return new OP.Instance(OP.OpCode.CAST, op1_source, op0);
+				return OP.conditional_expression(
+					this.builder,
+					expr.type!.union(v0.type), // allow invalid type-casting; in that case condition will be false anyway
+					is_instance,
+					() => v0,
+					() => new OP.Trap(),
+				);
 			}
 			case Operator.CAST_MAYBE: {
 				const expr_type = expr.type as TYPE.Maybe;
@@ -259,7 +251,7 @@ export class ExprVisitorBuild extends EXPR.ExprVisitor<OP.Value> {
 					this.builder,
 					expr_type,
 					is_instance,
-					() => new OP.MaybeNew(expr_type.typearg, new OP.Instance(OP.OpCode.CAST, op1_source, op0)),
+					() => new OP.MaybeNew(expr_type.typearg, v0),
 					() => new OP.MaybeNew(expr_type.typearg),
 				);
 			}

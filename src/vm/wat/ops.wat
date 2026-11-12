@@ -1,67 +1,47 @@
 (func $op:to-int (export "op::toInt") (param $value (ref $Value)) (result (ref $Value))
 	(local $primitive v128)
-	(local.set $primitive (struct.get $Value $primitive (local.get $value)))
-
-	(call $Value.new-primitive (if (result v128)
-		(call $Vect.is-int (local.get $primitive))
-		(then (local.get $primitive))
-		(else (if (result v128)
-			(call $Vect.is-nat (local.get $primitive))
-			(then (call $Vect.new-int (call $Vect.nat-to-int (local.get $primitive))))
-			(else (if (result v128)
-				(call $Vect.is-float (local.get $primitive))
-				(then (call $Vect.new-int (call $Vect.float-to-int (local.get $primitive))))
-				(else (unreachable))
-			))
-		))
+	(local.set $primitive (call $Value.as-primitive (local.get $value)))
+	(return_call $Value.from-int (block $int (result v128)
+		(if (call $Vect.is-int   (local.get $primitive)) (then (br $int (local.get $primitive))))
+		(if (call $Vect.is-nat   (local.get $primitive)) (then (br $int (call $Vect.new-int (call $Vect.nat-to-int   (local.get $primitive))))))
+		(if (call $Vect.is-float (local.get $primitive)) (then (br $int (call $Vect.new-int (call $Vect.float-to-int (local.get $primitive))))))
+		(unreachable)
 	))
 )
 (func $op:to-nat (export "op::toNat") (param $value (ref $Value)) (result (ref $Value))
 	(local $primitive v128)
-	(local.set $primitive (struct.get $Value $primitive (local.get $value)))
-
-	(call $Value.new-primitive (if (result v128)
-		(call $Vect.is-int (local.get $primitive))
-		(then (call $Vect.new-nat (call $Vect.int-to-nat (local.get $primitive))))
-		(else (if (result v128)
-			(call $Vect.is-nat (local.get $primitive))
-			(then (local.get $primitive))
-			(else (if (result v128)
-				(call $Vect.is-float (local.get $primitive))
-				(then (call $Vect.new-nat (call $Vect.float-to-nat (local.get $primitive))))
-				(else (unreachable))
-			))
-		))
+	(local.set $primitive (call $Value.as-primitive (local.get $value)))
+	(return_call $Value.from-nat (block $nat (result v128)
+		(if (call $Vect.is-int   (local.get $primitive)) (then (br $nat (call $Vect.new-nat (call $Vect.int-to-nat (local.get $primitive))))))
+		(if (call $Vect.is-nat   (local.get $primitive)) (then (br $nat (local.get $primitive))))
+		(if (call $Vect.is-float (local.get $primitive)) (then (br $nat (call $Vect.new-nat (call $Vect.float-to-nat (local.get $primitive))))))
+		(unreachable)
 	))
 )
 (func $op:to-float (export "op::toFloat") (param $value (ref $Value)) (result (ref $Value))
 	(local $primitive v128)
-	(local.set $primitive (struct.get $Value $primitive (local.get $value)))
-
-	(call $Value.new-primitive (if (result v128)
-		(call $Vect.is-int (local.get $primitive))
-		(then (call $Vect.new-float (call $Vect.int-to-float (local.get $primitive))))
-		(else (if (result v128)
-			(call $Vect.is-nat (local.get $primitive))
-			(then (call $Vect.new-float (call $Vect.nat-to-float (local.get $primitive))))
-			(else (if (result v128)
-				(call $Vect.is-float (local.get $primitive))
-				(then (local.get $primitive))
-				(else (unreachable))
-			))
-		))
+	(local.set $primitive (call $Value.as-primitive (local.get $value)))
+	(return_call $Value.from-float (block $float (result v128)
+		(if (call $Vect.is-int   (local.get $primitive)) (then (br $float (call $Vect.new-float (call $Vect.int-to-float (local.get $primitive))))))
+		(if (call $Vect.is-nat   (local.get $primitive)) (then (br $float (call $Vect.new-float (call $Vect.nat-to-float (local.get $primitive))))))
+		(if (call $Vect.is-float (local.get $primitive)) (then (br $float (local.get $primitive))))
+		(unreachable)
 	))
+)
+(func $op:to-str (export "op::toStr") (param $value (ref $Value)) (result (ref $Value))
+	(return_call $Value.from-string (call $Value.stringify (local.get $value)))
 )
 
 
 
 (func $op:not (export "op::not") (param $value (ref $Value)) (result (ref $Value))
-	(call $Value.bool-from-i32 (i32.and
-		(call $Value.is-primitive (local.get $value))
-		(i32.or
-			(call $Vect.is-null  (struct.get $Value $primitive (local.get $value)))
-			(call $Vect.is-false (struct.get $Value $primitive (local.get $value)))
-		)
+	(call $Value.bool-from-i32 (if (result i32) ;; `(i32.and)` doesn’t short-circuit, so using conditional
+		(ref.test (ref $Cpl-Primitive) (local.get $value))
+		(then (i32.or
+			(call $Vect.is-null  (call $Value.as-primitive (local.get $value)))
+			(call $Vect.is-false (call $Value.as-primitive (local.get $value)))
+		))
+		(else (i32.const 0))
 	))
 )
 
@@ -69,32 +49,31 @@
 
 (func $op:is-empty (export "op::isEmpty") (param $value (ref $Value)) (result (ref $Value))
 	(local $primitive v128)
-	(local.set $primitive (struct.get $Value $primitive (local.get $value)))
+	(local.set $primitive (call $Value.as-primitive (local.get $value)))
 
 	(if (result (ref $Value))
-		(call $Value.is-primitive (local.get $value))
+		(ref.test (ref $Cpl-Primitive) (local.get $value))
 		(then (if (result (ref $Value))
 			(call $Vect.is-special (local.get $primitive))
 			(then (call $op:not (local.get $value)))
 			(else (call $Value.bool-from-i32 (call $!op:is-empty/number (local.get $primitive))))
 		))
-		(else (call $Value.bool-from-i32 (call $!op:is-empty/composite (ref.as_non_null (struct.get $Value $composite (local.get $value))))))
+		(else (call $Value.bool-from-i32 (call $!op:is-empty/composite (local.get $value))))
 	)
 )
-(func $!op:is-empty/number (param $primitive v128) (result i32)
-	(if (call $Vect.is-int   (local.get $primitive)) (then (return (i64.eqz (call $Vect.as-int (local.get $primitive))))))
-	(if (call $Vect.is-nat   (local.get $primitive)) (then (return (i64.eqz (call $Vect.as-nat (local.get $primitive))))))
-	(if (call $Vect.is-float (local.get $primitive)) (then (return (f64.eq (call $Vect.as-float (local.get $primitive)) (f64.const 0.0))))) ;; also takes care of -0.0
+(func $!op:is-empty/number (param v128) (result i32)
+	(if (call $Vect.is-int   (local.get 0)) (then (return (i64.eqz (call $Vect.as-int   (local.get 0))))))
+	(if (call $Vect.is-nat   (local.get 0)) (then (return (i64.eqz (call $Vect.as-nat   (local.get 0))))))
+	(if (call $Vect.is-float (local.get 0)) (then (return (f64.eq  (call $Vect.as-float (local.get 0)) (f64.const 0.0))))) ;; also takes care of -0.0
 	(unreachable)
 )
-(func $!op:is-empty/composite (param $composite (ref $Composite)) (result i32)
-	(if (ref.test (ref $String) (local.get $composite)) (then (return (i32.eqz     (array.len (struct.get $String $internal (ref.cast (ref $String) (local.get $composite))))))))
-	(if (ref.test (ref $Tuple)  (local.get $composite)) (then (return (i32.eqz     (array.len (struct.get $Tuple  $internal (ref.cast (ref $Tuple)  (local.get $composite))))))))
-	(if (ref.test (ref $Record) (local.get $composite)) (then (return (i32.eqz     (array.len (struct.get $Record $internal (ref.cast (ref $Record) (local.get $composite))))))))
-	(if (ref.test (ref $List)   (local.get $composite)) (then (return (i32.eqz     (struct.get $List  $size  (ref.cast (ref $List)  (local.get $composite)))))))
-	(if (ref.test (ref $Dict)   (local.get $composite)) (then (return (i32.eqz     (struct.get $Dict  $size  (ref.cast (ref $Dict)  (local.get $composite)))))))
-	(if (ref.test (ref $Map)    (local.get $composite)) (then (return (i32.eqz     (struct.get $Map   $size  (ref.cast (ref $Map)   (local.get $composite)))))))
-	(if (ref.test (ref $Maybe)  (local.get $composite)) (then (return (ref.is_null (struct.get $Maybe $value (ref.cast (ref $Maybe) (local.get $composite)))))))
+(func $!op:is-empty/composite (param (ref $Value)) (result i32)
+	(if (ref.test (ref $Cpl-String) (local.get 0)) (then (return (i32.eqz (array.len              (struct.get $Cpl-String  $string (ref.cast (ref $Cpl-String) (local.get 0))))))))
+	(if (ref.test (ref $Cpl-Tuple)  (local.get 0)) (then (return (i32.eqz (array.len              (struct.get $Cpl-Tuple   $tuple  (ref.cast (ref $Cpl-Tuple)  (local.get 0))))))))
+	(if (ref.test (ref $Cpl-Record) (local.get 0)) (then (return (i32.eqz (array.len              (struct.get $Cpl-Record  $record (ref.cast (ref $Cpl-Record) (local.get 0))))))))
+	(if (ref.test (ref $Cpl-List)   (local.get 0)) (then (return (i32.eqz (struct.get $List $size (struct.get $Cpl-List    $list   (ref.cast (ref $Cpl-List)   (local.get 0))))))))
+	(if (ref.test (ref $Cpl-Dict)   (local.get 0)) (then (return (i32.eqz (struct.get $Dict $size (struct.get $Cpl-Dict    $dict   (ref.cast (ref $Cpl-Dict)   (local.get 0))))))))
+	(if (ref.test (ref $Cpl-Map)    (local.get 0)) (then (return (i32.eqz (struct.get $Map  $size (struct.get $Cpl-Map     $map    (ref.cast (ref $Cpl-Map)    (local.get 0))))))))
 	(i32.const 0)
 )
 
@@ -102,16 +81,26 @@
 
 (func $op:negate (export "op::negate") (param $value (ref $Value)) (result (ref $Value))
 	(local $primitive v128)
-	(local.set $primitive (struct.get $Value $primitive (local.get $value)))
+	(local.set $primitive (call $Value.as-primitive (local.get $value)))
+	(if (call $Vect.is-int   (local.get $primitive)) (then (return_call $Value.from-int   (call $Vect.new-int   (i64.sub (i64.const 0) (call $Vect.as-int (local.get $primitive))))))) ;; `-n == 0 - n`
+	(if (call $Vect.is-float (local.get $primitive)) (then (return_call $Value.from-float (call $Vect.new-float (f64.neg (call $Vect.as-float (local.get $primitive)))))))
+	(unreachable)
+)
 
-	(call $Value.new-primitive (if (result v128)
-		(call $Vect.is-int (local.get $primitive))
-		(then (call $Vect.new-int (i64.sub (i64.const 0) (call $Vect.as-int (local.get $primitive))))) ;; `-n == 0 - n`
-		(else (if (result v128)
-			(call $Vect.is-float (local.get $primitive))
-			(then (call $Vect.new-float (f64.neg (call $Vect.as-float (local.get $primitive)))))
-			(else (unreachable))
-		))
+
+
+(func $op:is-none (export "op::isNone") (param $value (ref $Value)) (result (ref $Value))
+	(return_call $Value.bool-from-i32 (if (result i32) ;; `(i32.and)` doesn’t short-circuit, so using conditional
+		(ref.test (ref $Maybe) (local.get $value))
+		(then (ref.is_null (struct.get $Maybe $value (ref.cast (ref $Maybe) (local.get $value)))))
+		(else (i32.const 0))
+	))
+)
+(func $op:is-fail (export "op::isFail") (param $value (ref $Value)) (result (ref $Value))
+	(return_call $Value.bool-from-i32 (if (result i32) ;; `(i32.and)` doesn’t short-circuit, so using conditional
+		(ref.test (ref $Result) (local.get $value))
+		(then (ref.is_null (struct.get $Result $value (ref.cast (ref $Result) (local.get $value)))))
+		(else (i32.const 0))
 	))
 )
 
@@ -119,7 +108,7 @@
 
 (func $op:unwrap-maybe (export "op::unwrapMaybe") (param $value (ref $Value)) (result (ref $Value))
 	(local $mval (ref null $Value))
-	(local.set $mval (struct.get $Maybe $value (ref.cast (ref $Maybe) (struct.get $Value $composite (local.get $value)))))
+	(local.set $mval (struct.get $Maybe $value (ref.cast (ref $Maybe) (local.get $value))))
 	(if (result (ref $Value))
 		(ref.is_null (local.get $mval))
 		(then (unreachable))
@@ -128,376 +117,131 @@
 )
 (func $op:unwrap-result (export "op::unwrapResult") (param $value (ref $Value)) (result (ref $Value))
 	(local $rval (ref null $Value))
-	(local.set $rval (struct.get $Result $value (ref.cast (ref $Result) (struct.get $Value $composite (local.get $value)))))
+	(local.set $rval (struct.get $Result $value (ref.cast (ref $Result) (local.get $value))))
 	(if (result (ref $Value))
 		(ref.is_null (local.get $rval))
 		(then (unreachable))
 		(else (ref.as_non_null (local.get $rval)))
 	)
 )
-(func $op:extract-result (export "op::extractResult") (param $value (ref $Value)) (result (ref $Value))
+(func $op:extract-result (export "op::extractResult") (param $value (ref $Value)) (result (ref $Exception))
 	(local $reason (ref null $Exception))
-	(local.set $reason (struct.get $Result $reason (ref.cast (ref $Result) (struct.get $Value $composite (local.get $value)))))
-	(if
+	(local.set $reason (struct.get $Result $reason (ref.cast (ref $Result) (local.get $value))))
+	(if (result (ref $Exception))
 		(ref.is_null (local.get $reason))
 		(then (unreachable))
-		(else (return_call $Value.new-composite (ref.as_non_null (local.get $reason))))
+		(else (ref.as_non_null (local.get $reason)))
 	)
-)
-
-
-
-(func $op:is-int (export "op::isInt") (param $value (ref $Value)) (result (ref $Value))
-	(call $Value.bool-from-i32 (i32.and
-		(call $Value.is-primitive (local.get $value))
-		(call $Vect.is-int (struct.get $Value $primitive (local.get $value)))
-	))
-)
-(func $op:is-nat (export "op::isNat") (param $value (ref $Value)) (result (ref $Value))
-	(call $Value.bool-from-i32 (i32.and
-		(call $Value.is-primitive (local.get $value))
-		(call $Vect.is-nat (struct.get $Value $primitive (local.get $value)))
-	))
-)
-(func $op:is-float (export "op::isFloat") (param $value (ref $Value)) (result (ref $Value))
-	(call $Value.bool-from-i32 (i32.and
-		(call $Value.is-primitive (local.get $value))
-		(call $Vect.is-float (struct.get $Value $primitive (local.get $value)))
-	))
-)
-(func $op:is-string (export "op::isString") (param $value (ref $Value)) (result (ref $Value))
-	(call $Value.bool-from-i32 (i32.and
-		(call $Value.is-composite (local.get $value))
-		(ref.test (ref $String) (struct.get $Value $composite (local.get $value)))
-	))
-)
-(func $op:is-tuple (export "op::isTuple") (param $value (ref $Value)) (result (ref $Value))
-	(call $Value.bool-from-i32 (i32.and
-		(call $Value.is-composite (local.get $value))
-		(ref.test (ref $Tuple) (struct.get $Value $composite (local.get $value)))
-	))
-)
-(func $op:is-record (export "op::isRecord") (param $value (ref $Value)) (result (ref $Value))
-	(call $Value.bool-from-i32 (i32.and
-		(call $Value.is-composite (local.get $value))
-		(ref.test (ref $Record) (struct.get $Value $composite (local.get $value)))
-	))
-)
-(func $op:is-object (export "op::isObject") (param $value (ref $Value)) (result (ref $Value))
-	(call $Value.bool-from-i32 (i32.and
-		(call $Value.is-composite (local.get $value))
-		(ref.test (ref $Object) (struct.get $Value $composite (local.get $value)))
-	))
-)
-(func $op:is-list (export "op::isList") (param $value (ref $Value)) (result (ref $Value))
-	(call $Value.bool-from-i32 (i32.and
-		(call $Value.is-composite (local.get $value))
-		(ref.test (ref $List) (struct.get $Value $composite (local.get $value)))
-	))
-)
-(func $op:is-dict (export "op::isDict") (param $value (ref $Value)) (result (ref $Value))
-	(call $Value.bool-from-i32 (i32.and
-		(call $Value.is-composite (local.get $value))
-		(ref.test (ref $Dict) (struct.get $Value $composite (local.get $value)))
-	))
-)
-(func $op:is-map (export "op::isMap") (param $value (ref $Value)) (result (ref $Value))
-	(call $Value.bool-from-i32 (i32.and
-		(call $Value.is-composite (local.get $value))
-		(ref.test (ref $Map) (struct.get $Value $composite (local.get $value)))
-	))
-)
-(func $op:is-exception (export "op::isException") (param $value (ref $Value)) (result (ref $Value))
-	(call $Value.bool-from-i32 (i32.and
-		(call $Value.is-composite (local.get $value))
-		(ref.test (ref $Exception) (struct.get $Value $composite (local.get $value)))
-	))
-)
-(func $op:is-maybe (export "op::isMaybe") (param $value (ref $Value)) (result (ref $Value))
-	(call $Value.bool-from-i32 (i32.and
-		(call $Value.is-composite (local.get $value))
-		(ref.test (ref $Maybe) (struct.get $Value $composite (local.get $value)))
-	))
-)
-(func $op:is-none (export "op::isNone") (param $value (ref $Value)) (result (ref $Value))
-	(local $composite (ref null $Composite))
-	(local.set $composite (struct.get $Value $composite (local.get $value)))
-	(call $Value.bool-from-i32 (i32.and
-		(call $Value.is-composite (local.get $value))
-		(if (result i32) ;; `(i32.and)` doesn’t short-circuit, so using conditional
-			(ref.test (ref $Maybe) (local.get $composite))
-			(then (ref.is_null (struct.get $Maybe $value (ref.cast (ref $Maybe) (local.get $composite)))))
-			(else (i32.const 0))
-		)
-	))
-)
-(func $op:is-some (export "op::isSome") (param $value (ref $Value)) (result (ref $Value))
-	(local $composite (ref null $Composite))
-	(local.set $composite (struct.get $Value $composite (local.get $value)))
-	(call $Value.bool-from-i32 (i32.and
-		(call $Value.is-composite (local.get $value))
-		(if (result i32) ;; `(i32.and)` doesn’t short-circuit, so using conditional
-			(ref.test (ref $Maybe) (local.get $composite))
-			(then (i32.eqz (ref.is_null (struct.get $Maybe $value (ref.cast (ref $Maybe) (local.get $composite))))))
-			(else (i32.const 0))
-		)
-	))
-)
-(func $op:is-result (export "op::isResult") (param $value (ref $Value)) (result (ref $Value))
-	(call $Value.bool-from-i32 (i32.and
-		(call $Value.is-composite (local.get $value))
-		(ref.test (ref $Result) (struct.get $Value $composite (local.get $value)))
-	))
-)
-(func $op:is-fail (export "op::isFail") (param $value (ref $Value)) (result (ref $Value))
-	(local $composite (ref null $Composite))
-	(local.set $composite (struct.get $Value $composite (local.get $value)))
-	(call $Value.bool-from-i32 (i32.and
-		(call $Value.is-composite (local.get $value))
-		(if (result i32) ;; `(i32.and)` doesn’t short-circuit, so using conditional
-			(ref.test (ref $Result) (local.get $composite))
-			(then (ref.is_null (struct.get $Result $value (ref.cast (ref $Result) (local.get $composite)))))
-			(else (i32.const 0))
-		)
-	))
-)
-(func $op:is-ok (export "op::isOk") (param $value (ref $Value)) (result (ref $Value))
-	(local $composite (ref null $Composite))
-	(local.set $composite (struct.get $Value $composite (local.get $value)))
-	(call $Value.bool-from-i32 (i32.and
-		(call $Value.is-composite (local.get $value))
-		(if (result i32) ;; `(i32.and)` doesn’t short-circuit, so using conditional
-			(ref.test (ref $Result) (local.get $composite))
-			(then (ref.is_null (struct.get $Result $reason (ref.cast (ref $Result) (local.get $composite)))))
-			(else (i32.const 0))
-		)
-	))
-)
-(func $op:is-function (export "op::isFunction") (param $value (ref $Value)) (result (ref $Value))
-	(call $Value.bool-from-i32 (i32.and
-		(call $Value.is-composite (local.get $value))
-		(ref.test (ref $Function) (struct.get $Value $composite (local.get $value)))
-	))
-)
-
-
-
-(func $op:as-null (export "op::asNull") (param $value (ref $Value)) (result (ref $Value))
-	(if
-		(i32.and
-			(call $Value.is-primitive (local.get $value))
-			(call $Vect.is-null (struct.get $Value $primitive (local.get $value)))
-		)
-		(then (return (local.get $value)))
-		(else (unreachable))
-	)
-)
-(func $op:as-bool (export "op::asBool") (param $value (ref $Value)) (result (ref $Value))
-	(if
-		(i32.and
-			(call $Value.is-primitive (local.get $value))
-			(i32.or
-				(call $Vect.is-false (struct.get $Value $primitive (local.get $value)))
-				(call $Vect.is-true  (struct.get $Value $primitive (local.get $value)))
-			)
-		)
-		(then (return (local.get $value)))
-		(else (unreachable))
-	)
-)
-(func $op:as-int (export "op::asInt") (param $value (ref $Value)) (result (ref $Value))
-	(if
-		(call $Value.bool-to-i32 (call $op:is-int (local.get $value)))
-		(then (return (local.get $value)))
-		(else (unreachable))
-	)
-)
-(func $op:as-nat (export "op::asNat") (param $value (ref $Value)) (result (ref $Value))
-	(if
-		(call $Value.bool-to-i32 (call $op:is-nat (local.get $value)))
-		(then (return (local.get $value)))
-		(else (unreachable))
-	)
-)
-(func $op:as-float (export "op::asFloat") (param $value (ref $Value)) (result (ref $Value))
-	(if
-		(call $Value.bool-to-i32 (call $op:is-float (local.get $value)))
-		(then (return (local.get $value)))
-		(else (unreachable))
-	)
-)
-(func $op:as-string (export "op::asString") (param $value (ref $Value)) (result (ref $Value))
-	(return_call $Value.new-composite (ref.cast (ref $String) (struct.get $Value $composite (local.get $value))))
-)
-(func $op:as-object (export "op::asObject") (param $value (ref $Value)) (result (ref $Value))
-	(return_call $Value.new-composite (ref.cast (ref $Object) (struct.get $Value $composite (local.get $value))))
-)
-(func $op:as-list (export "op::asList") (param $value (ref $Value)) (result (ref $Value))
-	(return_call $Value.new-composite (ref.cast (ref $List) (struct.get $Value $composite (local.get $value))))
-)
-(func $op:as-dict (export "op::asDict") (param $value (ref $Value)) (result (ref $Value))
-	(return_call $Value.new-composite (ref.cast (ref $Dict) (struct.get $Value $composite (local.get $value))))
-)
-(func $op:as-map (export "op::asMap") (param $value (ref $Value)) (result (ref $Value))
-	(return_call $Value.new-composite (ref.cast (ref $Map) (struct.get $Value $composite (local.get $value))))
-)
-(func $op:as-exception (export "op::asException") (param $value (ref $Value)) (result (ref $Value))
-	(return_call $Value.new-composite (ref.cast (ref $Exception) (struct.get $Value $composite (local.get $value))))
-)
-(func $op:as-maybe (export "op::asMaybe") (param $value (ref $Value)) (result (ref $Value))
-	(return_call $Value.new-composite (ref.cast (ref $Maybe) (struct.get $Value $composite (local.get $value))))
-)
-(func $op:as-none (export "op::asNone") (param $value (ref $Value)) (result (ref $Value))
-	(local $maybe (ref $Maybe))
-	(local.set $maybe (ref.cast (ref $Maybe) (struct.get $Value $composite (local.get $value))))
-	(if
-		(ref.is_null (struct.get $Maybe $value (local.get $maybe)))
-		(then (return_call $Value.new-composite (local.get $maybe)))
-		(else (unreachable))
-	)
-)
-(func $op:as-some (export "op::asSome") (param $value (ref $Value)) (result (ref $Value))
-	(local $maybe (ref $Maybe))
-	(local.set $maybe (ref.cast (ref $Maybe) (struct.get $Value $composite (local.get $value))))
-	(if
-		(ref.is_null (struct.get $Maybe $value (local.get $maybe)))
-		(then (unreachable))
-		(else (return_call $Value.new-composite (local.get $maybe)))
-	)
-)
-(func $op:as-result (export "op::asResult") (param $value (ref $Value)) (result (ref $Value))
-	(return_call $Value.new-composite (ref.cast (ref $Result) (struct.get $Value $composite (local.get $value))))
-)
-(func $op:as-fail (export "op::asFail") (param $value (ref $Value)) (result (ref $Value))
-	(local $result (ref $Result))
-	(local.set $result (ref.cast (ref $Result) (struct.get $Value $composite (local.get $value))))
-	(if
-		(ref.is_null (struct.get $Result $value (local.get $result)))
-		(then (return_call $Value.new-composite (local.get $result)))
-		(else (unreachable))
-	)
-)
-(func $op:as-ok (export "op::asOk") (param $value (ref $Value)) (result (ref $Value))
-	(local $result (ref $Result))
-	(local.set $result (ref.cast (ref $Result) (struct.get $Value $composite (local.get $value))))
-	(if
-		(ref.is_null (struct.get $Result $reason (local.get $result)))
-		(then (return_call $Value.new-composite (local.get $result)))
-		(else (unreachable))
-	)
-)
-(func $op:as-function (export "op::asFunction") (param $value (ref $Value)) (result (ref $Value))
-	(return_call $Value.new-composite (ref.cast (ref $Function) (struct.get $Value $composite (local.get $value))))
 )
 
 
 
 (func $op:int-add (export "op::intAdd") (param (ref $Value) (ref $Value)) (result (ref $Value))
-	(call $Value.new-primitive (call $Vect.new-int (i64.add
-		(call $Vect.as-int (struct.get $Value $primitive (local.get 0)))
-		(call $Vect.as-int (struct.get $Value $primitive (local.get 1)))
+	(return_call $Value.from-int (call $Vect.new-int (i64.add
+		(call $Vect.as-int (call $Value.as-primitive (local.get 0)))
+		(call $Vect.as-int (call $Value.as-primitive (local.get 1)))
 	)))
 )
 (func $op:nat-add (export "op::natAdd") (param (ref $Value) (ref $Value)) (result (ref $Value))
-	(call $Value.new-primitive (call $Vect.new-nat (i64.add
-		(call $Vect.as-nat (struct.get $Value $primitive (local.get 0)))
-		(call $Vect.as-nat (struct.get $Value $primitive (local.get 1)))
+	(return_call $Value.from-nat (call $Vect.new-nat (i64.add
+		(call $Vect.as-nat (call $Value.as-primitive (local.get 0)))
+		(call $Vect.as-nat (call $Value.as-primitive (local.get 1)))
 	)))
 )
 (func $op:float-add (export "op::floatAdd") (param (ref $Value) (ref $Value)) (result (ref $Value))
-	(call $Value.new-primitive (call $Vect.new-float (f64.add
-		(call $Vect.as-float (struct.get $Value $primitive (local.get 0)))
-		(call $Vect.as-float (struct.get $Value $primitive (local.get 1)))
+	(return_call $Value.from-float (call $Vect.new-float (f64.add
+		(call $Vect.as-float (call $Value.as-primitive (local.get 0)))
+		(call $Vect.as-float (call $Value.as-primitive (local.get 1)))
 	)))
 )
 
 
 
 (func $op:int-sub (export "op::intSub") (param (ref $Value) (ref $Value)) (result (ref $Value))
-	(call $Value.new-primitive (call $Vect.new-int (i64.sub
-		(call $Vect.as-int (struct.get $Value $primitive (local.get 0)))
-		(call $Vect.as-int (struct.get $Value $primitive (local.get 1)))
+	(return_call $Value.from-int (call $Vect.new-int (i64.sub
+		(call $Vect.as-int (call $Value.as-primitive (local.get 0)))
+		(call $Vect.as-int (call $Value.as-primitive (local.get 1)))
 	)))
 )
 (func $op:nat-sub (export "op::natSub") (param (ref $Value) (ref $Value)) (result (ref $Value))
 	(local $nat0 i64)
 	(local $nat1 i64)
-	(local.set $nat0 (call $Vect.as-nat (struct.get $Value $primitive (local.get 0))))
-	(local.set $nat1 (call $Vect.as-nat (struct.get $Value $primitive (local.get 1))))
+	(local.set $nat0 (call $Vect.as-nat (call $Value.as-primitive (local.get 0))))
+	(local.set $nat1 (call $Vect.as-nat (call $Value.as-primitive (local.get 1))))
 
-	(call $Value.new-primitive (call $Vect.new-nat (if (result i64)
+	(return_call $Value.from-nat (call $Vect.new-nat (if (result i64)
 		(i64.lt_u (local.get $nat0) (local.get $nat1))
 		(then (i64.const 0))
 		(else (i64.sub (local.get $nat0) (local.get $nat1)))
 	)))
 )
 (func $op:float-sub (export "op::floatSub") (param (ref $Value) (ref $Value)) (result (ref $Value))
-	(call $Value.new-primitive (call $Vect.new-float (f64.sub
-		(call $Vect.as-float (struct.get $Value $primitive (local.get 0)))
-		(call $Vect.as-float (struct.get $Value $primitive (local.get 1)))
+	(return_call $Value.from-float (call $Vect.new-float (f64.sub
+		(call $Vect.as-float (call $Value.as-primitive (local.get 0)))
+		(call $Vect.as-float (call $Value.as-primitive (local.get 1)))
 	)))
 )
 
 
 
 (func $op:int-mul (export "op::intMul") (param (ref $Value) (ref $Value)) (result (ref $Value))
-	(call $Value.new-primitive (call $Vect.new-int (i64.mul
-		(call $Vect.as-int (struct.get $Value $primitive (local.get 0)))
-		(call $Vect.as-int (struct.get $Value $primitive (local.get 1)))
+	(return_call $Value.from-int (call $Vect.new-int (i64.mul
+		(call $Vect.as-int (call $Value.as-primitive (local.get 0)))
+		(call $Vect.as-int (call $Value.as-primitive (local.get 1)))
 	)))
 )
 (func $op:nat-mul (export "op::natMul") (param (ref $Value) (ref $Value)) (result (ref $Value))
-	(call $Value.new-primitive (call $Vect.new-nat (i64.mul
-		(call $Vect.as-nat (struct.get $Value $primitive (local.get 0)))
-		(call $Vect.as-nat (struct.get $Value $primitive (local.get 1)))
+	(return_call $Value.from-nat (call $Vect.new-nat (i64.mul
+		(call $Vect.as-nat (call $Value.as-primitive (local.get 0)))
+		(call $Vect.as-nat (call $Value.as-primitive (local.get 1)))
 	)))
 )
 (func $op:float-mul (export "op::floatMul") (param (ref $Value) (ref $Value)) (result (ref $Value))
-	(call $Value.new-primitive (call $Vect.new-float (f64.mul
-		(call $Vect.as-float (struct.get $Value $primitive (local.get 0)))
-		(call $Vect.as-float (struct.get $Value $primitive (local.get 1)))
+	(return_call $Value.from-float (call $Vect.new-float (f64.mul
+		(call $Vect.as-float (call $Value.as-primitive (local.get 0)))
+		(call $Vect.as-float (call $Value.as-primitive (local.get 1)))
 	)))
 )
 
 
 
 (func $op:int-div (export "op::intDiv") (param (ref $Value) (ref $Value)) (result (ref $Value))
-	(call $Value.new-primitive (call $Vect.new-int (i64.div_s
-		(call $Vect.as-int (struct.get $Value $primitive (local.get 0)))
-		(call $Vect.as-int (struct.get $Value $primitive (local.get 1)))
+	(return_call $Value.from-int (call $Vect.new-int (i64.div_s
+		(call $Vect.as-int (call $Value.as-primitive (local.get 0)))
+		(call $Vect.as-int (call $Value.as-primitive (local.get 1)))
 	)))
 )
 (func $op:nat-div (export "op::natDiv") (param (ref $Value) (ref $Value)) (result (ref $Value))
-	(call $Value.new-primitive (call $Vect.new-nat (i64.div_u
-		(call $Vect.as-nat (struct.get $Value $primitive (local.get 0)))
-		(call $Vect.as-nat (struct.get $Value $primitive (local.get 1)))
+	(return_call $Value.from-nat (call $Vect.new-nat (i64.div_u
+		(call $Vect.as-nat (call $Value.as-primitive (local.get 0)))
+		(call $Vect.as-nat (call $Value.as-primitive (local.get 1)))
 	)))
 )
 (func $op:float-div (export "op::floatDiv") (param (ref $Value) (ref $Value)) (result (ref $Value))
-	(call $Value.new-primitive (call $Vect.new-float (f64.div
-		(call $Vect.as-float (struct.get $Value $primitive (local.get 0)))
-		(call $Vect.as-float (struct.get $Value $primitive (local.get 1)))
+	(return_call $Value.from-float (call $Vect.new-float (f64.div
+		(call $Vect.as-float (call $Value.as-primitive (local.get 0)))
+		(call $Vect.as-float (call $Value.as-primitive (local.get 1)))
 	)))
 )
 
 
 
 (func $op:int-exp (export "op::intExp") (param (ref $Value) (ref $Value)) (result (ref $Value))
-	(call $Value.new-primitive (call $Vect.new-int (call $!i64.exp
-		(call $Vect.as-int (struct.get $Value $primitive (local.get 0)))
-		(call $Vect.as-int (struct.get $Value $primitive (local.get 1)))
+	(return_call $Value.from-int (call $Vect.new-int (call $!i64.exp
+		(call $Vect.as-int (call $Value.as-primitive (local.get 0)))
+		(call $Vect.as-int (call $Value.as-primitive (local.get 1)))
 	)))
 )
 (func $op:nat-exp (export "op::natExp") (param (ref $Value) (ref $Value)) (result (ref $Value))
-	(call $Value.new-primitive (call $Vect.new-nat (call $!i64.exp
-		(call $Vect.as-nat (struct.get $Value $primitive (local.get 0)))
-		(call $Vect.as-nat (struct.get $Value $primitive (local.get 1)))
+	(return_call $Value.from-nat (call $Vect.new-nat (call $!i64.exp
+		(call $Vect.as-nat (call $Value.as-primitive (local.get 0)))
+		(call $Vect.as-nat (call $Value.as-primitive (local.get 1)))
 	)))
 )
 (func $op:float-exp (export "op::floatExp") (param (ref $Value) (ref $Value)) (result (ref $Value))
-	(call $Value.new-primitive (call $Vect.new-float (unreachable
-		(call $Vect.as-float (struct.get $Value $primitive (local.get 0)))
-		(call $Vect.as-float (struct.get $Value $primitive (local.get 1)))
+	(return_call $Value.from-float (call $Vect.new-float (unreachable
+		(call $Vect.as-float (call $Value.as-primitive (local.get 0)))
+		(call $Vect.as-float (call $Value.as-primitive (local.get 1)))
 	)))
 )
 ;; # Exponent Operator for Integers
@@ -572,8 +316,8 @@
 
 (func $op:lt (export "op::lt") (param (ref $Value) (ref $Value)) (result (ref $Value))
 	(call $Value.bool-from-i32 (call $util:compare-numbers
-		(struct.get $Value $primitive (local.get 0))
-		(struct.get $Value $primitive (local.get 1))
+		(call $Value.as-primitive (local.get 0))
+		(call $Value.as-primitive (local.get 1))
 		(ref.func $!i64.lt_s)
 		(ref.func $!i64.lt_u)
 		(ref.func $!f64.lt)
@@ -582,8 +326,8 @@
 
 (func $op:gt (export "op::gt") (param (ref $Value) (ref $Value)) (result (ref $Value))
 	(call $Value.bool-from-i32 (call $util:compare-numbers
-		(struct.get $Value $primitive (local.get 0))
-		(struct.get $Value $primitive (local.get 1))
+		(call $Value.as-primitive (local.get 0))
+		(call $Value.as-primitive (local.get 1))
 		(ref.func $!i64.gt_s)
 		(ref.func $!i64.gt_u)
 		(ref.func $!f64.gt)
@@ -592,8 +336,8 @@
 
 (func $op:le (export "op::le") (param (ref $Value) (ref $Value)) (result (ref $Value))
 	(call $Value.bool-from-i32 (call $util:compare-numbers
-		(struct.get $Value $primitive (local.get 0))
-		(struct.get $Value $primitive (local.get 1))
+		(call $Value.as-primitive (local.get 0))
+		(call $Value.as-primitive (local.get 1))
 		(ref.func $!i64.le_s)
 		(ref.func $!i64.le_u)
 		(ref.func $!f64.le)
@@ -602,8 +346,8 @@
 
 (func $op:ge (export "op::ge") (param (ref $Value) (ref $Value)) (result (ref $Value))
 	(call $Value.bool-from-i32 (call $util:compare-numbers
-		(struct.get $Value $primitive (local.get 0))
-		(struct.get $Value $primitive (local.get 1))
+		(call $Value.as-primitive (local.get 0))
+		(call $Value.as-primitive (local.get 1))
 		(ref.func $!i64.ge_s)
 		(ref.func $!i64.ge_u)
 		(ref.func $!f64.ge)
@@ -612,23 +356,19 @@
 
 
 
-(func $op:id (export "op::id") (param (ref $Value) (ref $Value)) (result (ref $Value))
+(func $op:id (export "op::id") (type $Value.relop) (param (ref $Value) (ref $Value)) (result (ref $Value))
 	(local $vect0 v128)
 	(local $vect1 v128)
-	(local $ref0 (ref null $Composite))
-	(local $ref1 (ref null $Composite))
-	(local.set $vect0 (struct.get $Value $primitive (local.get 0)))
-	(local.set $vect1 (struct.get $Value $primitive (local.get 1)))
-	(local.set $ref0  (struct.get $Value $composite (local.get 0)))
-	(local.set $ref1  (struct.get $Value $composite (local.get 1)))
 
 	(call $Value.bool-from-i32 (block $exit (result i32)
 		(if
 			(i32.and
-				(call $Value.is-primitive (local.get 0))
-				(call $Value.is-primitive (local.get 1))
+				(ref.test (ref $Cpl-Primitive) (local.get 0))
+				(ref.test (ref $Cpl-Primitive) (local.get 1))
 			)
 			(then
+				(local.set $vect0 (call $Value.as-primitive (local.get 0)))
+				(local.set $vect1 (call $Value.as-primitive (local.get 1)))
 				(if
 					(i32.and
 						(call $Vect.is-special (local.get $vect0))
@@ -675,39 +415,49 @@
 		)
 		(if
 			(ref.eq
-				(local.get $ref0)
-				(local.get $ref1)
+				(local.get 0)
+				(local.get 1)
 			)
 			(then (br $exit (i32.const 1)))
 		)
 		(if
 			(i32.and
-				(ref.test (ref $String) (local.get $ref0))
-				(ref.test (ref $String) (local.get $ref1))
+				(ref.test (ref $Cpl-String) (local.get 0))
+				(ref.test (ref $Cpl-String) (local.get 1))
 			)
 			(then (br $exit (call $!String.identical
-				(ref.cast (ref $String) (local.get $ref0))
-				(ref.cast (ref $String) (local.get $ref1))
+				(call $Value.as-string (local.get 0))
+				(call $Value.as-string (local.get 1))
 			)))
 		)
 		(if
 			(i32.and
-				(ref.test (ref $Tuple) (local.get $ref0))
-				(ref.test (ref $Tuple) (local.get $ref1))
+				(ref.test (ref $Cpl-Tuple) (local.get 0))
+				(ref.test (ref $Cpl-Tuple) (local.get 1))
 			)
 			(then (br $exit (call $!Tuple.identical
-				(ref.cast (ref $Tuple) (local.get $ref0))
-				(ref.cast (ref $Tuple) (local.get $ref1))
+				(call $Value.as-tuple (local.get 0))
+				(call $Value.as-tuple (local.get 1))
 			)))
 		)
 		(if
 			(i32.and
-				(ref.test (ref $Record) (local.get $ref0))
-				(ref.test (ref $Record) (local.get $ref1))
+				(ref.test (ref $Cpl-Record) (local.get 0))
+				(ref.test (ref $Cpl-Record) (local.get 1))
 			)
 			(then (br $exit (call $!Record.identical
-				(ref.cast (ref $Record) (local.get $ref0))
-				(ref.cast (ref $Record) (local.get $ref1))
+				(call $Value.as-record (local.get 0))
+				(call $Value.as-record (local.get 1))
+			)))
+		)
+		(if
+			(i32.and
+				(ref.test (ref $Data) (local.get 0))
+				(ref.test (ref $Data) (local.get 1))
+			)
+			(then (br $exit (call $!Data.identical
+				(ref.cast (ref $Data) (local.get 0))
+				(ref.cast (ref $Data) (local.get 1))
 			)))
 		)
 		(i32.const 0)
@@ -715,27 +465,22 @@
 )
 ;; Returns whether two strings are identical by value —
 ;; whether they contain the exact same sequence of code units.
-(func $!String.identical (param $string0 (ref $String)) (param $string1 (ref $String)) (result i32)
-	(local $internal0 (ref $StringInternal))
-	(local $internal1 (ref $StringInternal))
-	(local $i         i32)
-
-	(local.set $internal0 (struct.get $String $internal (local.get $string0)))
-	(local.set $internal1 (struct.get $String $internal (local.get $string1)))
+(func $!String.identical (param (ref $String) (ref $String)) (result i32)
+	(local $i i32)
 
 	(if
-		(i32.ne (array.len (local.get $internal0)) (array.len (local.get $internal1)))
+		(i32.ne (array.len (local.get 0)) (array.len (local.get 1)))
 		(then (return (i32.const 0)))
 	)
 
 	(block $exit
 		(local.set $i (i32.const 0))
 		(loop $repeat
-			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $internal0))))
+			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get 0))))
 			(if
 				(i32.ne
-					(array.get $StringInternal (local.get $internal0) (local.get $i))
-					(array.get $StringInternal (local.get $internal1) (local.get $i))
+					(array.get $String (local.get 0) (local.get $i))
+					(array.get $String (local.get 1) (local.get $i))
 				)
 				(then (return (i32.const 0)))
 			)
@@ -747,27 +492,22 @@
 )
 ;; Returns whether two tuples are identical by value —
 ;; whether they have identical items at the same indices.
-(func $!Tuple.identical (param $tuple0 (ref $Tuple)) (param $tuple1 (ref $Tuple)) (result i32)
-	(local $internal0 (ref $TupleInternal))
-	(local $internal1 (ref $TupleInternal))
-	(local $i         i32)
-
-	(local.set $internal0 (struct.get $Tuple $internal (local.get $tuple0)))
-	(local.set $internal1 (struct.get $Tuple $internal (local.get $tuple1)))
+(func $!Tuple.identical (param (ref $Tuple) (ref $Tuple)) (result i32)
+	(local $i i32)
 
 	(if
-		(i32.ne (array.len (local.get $internal0)) (array.len (local.get $internal1)))
+		(i32.ne (array.len (local.get 0)) (array.len (local.get 1)))
 		(then (return (i32.const 0)))
 	)
 
 	(block $exit
 		(local.set $i (i32.const 0))
 		(loop $repeat
-			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $internal0))))
+			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get 0))))
 			(if
 				(i32.eqz (call $Value.bool-to-i32 (call $op:id
-					(array.get $TupleInternal (local.get $internal0) (local.get $i))
-					(array.get $TupleInternal (local.get $internal1) (local.get $i))
+					(array.get $Tuple (local.get 0) (local.get $i))
+					(array.get $Tuple (local.get 1) (local.get $i))
 				)))
 				(then (return (i32.const 0)))
 			)
@@ -779,35 +519,30 @@
 )
 ;; Returns whether two records are identical by value —
 ;; whether they have identical values at the same keys.
-(func $!Record.identical (param $record0 (ref $Record)) (param $record1 (ref $Record)) (result i32)
-	(local $internal0 (ref $RecordInternal))
-	(local $internal1 (ref $RecordInternal))
-	(local $i         i32)
-	(local $prop      (ref $Property))
-	(local $key       i64)
-
-	(local.set $internal0 (struct.get $Record $internal (local.get $record0)))
-	(local.set $internal1 (struct.get $Record $internal (local.get $record1)))
+(func $!Record.identical (param (ref $Record) (ref $Record)) (result i32)
+	(local $i    i32)
+	(local $prop (ref $Property))
+	(local $key  i64)
 
 	(if
-		(i32.ne (array.len (local.get $internal0)) (array.len (local.get $internal1)))
+		(i32.ne (array.len (local.get 0)) (array.len (local.get 1)))
 		(then (return (i32.const 0)))
 	)
 
 	(block $exit
 		(local.set $i (i32.const 0))
 		(loop $repeat
-			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $internal0))))
-			(local.set $prop (array.get $RecordInternal (local.get $internal0) (local.get $i)))
+			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get 0))))
+			(local.set $prop (array.get $Record (local.get 0) (local.get $i)))
 			(local.set $key  (struct.get $Property $key (local.get $prop)))
 			(if
-				(i32.eqz (call $Record.has-key (local.get $record1) (local.get $key)))
+				(i32.eqz (call $Record.has-key (local.get 1) (local.get $key)))
 				(then (return (i32.const 0)))
 			)
 			(if
 				(i32.eqz (call $Value.bool-to-i32 (call $op:id
 					(struct.get $Property $val (local.get $prop))
-					(call $Record.get (local.get $record1) (local.get $key))
+					(call $Record.get (local.get 1) (local.get $key))
 				)))
 				(then (return (i32.const 0)))
 			)
@@ -817,135 +552,187 @@
 	)
 	(i32.const 1)
 )
+;; Returns whether two data values are identical by value —
+;; whether they have identical constructors and field dicts that have identical properties.
+(func $!Data.identical (param (ref $Data) (ref $Data)) (result i32)
+	(local $fields0 (ref null $Dict))
+	(local $fields1 (ref null $Dict))
+	(local.set $fields0 (struct.get $Data $fields (local.get 0)))
+	(local.set $fields1 (struct.get $Data $fields (local.get 1)))
+	(i32.and
+		(ref.eq
+			(struct.get $Data $class (local.get 0))
+			(struct.get $Data $class (local.get 1))
+		)
+		(i32.or
+			(i32.and
+				(ref.is_null (local.get $fields0))
+				(ref.is_null (local.get $fields1))
+			)
+			(if (result i32) ;; `(i32.and)` doesn’t short-circuit, so using conditional
+				(i32.and
+					(i32.eqz (ref.is_null (local.get $fields0)))
+					(i32.eqz (ref.is_null (local.get $fields1)))
+				)
+				(then (call $!Dict.equal
+					(ref.as_non_null (local.get $fields0))
+					(ref.as_non_null (local.get $fields1))
+					(i32.const 1) ;; shallow-identical dicts
+				))
+				(else (i32.const 0))
+			)
+		)
+	)
+)
 
 
 
-(func $op:eq (export "op::eq") (param (ref $Value) (ref $Value)) (result (ref $Value))
+(func $op:eq (export "op::eq") (type $Value.relop) (param (ref $Value) (ref $Value)) (result (ref $Value))
 	(local $vect0 v128)
 	(local $vect1 v128)
-	(local $ref0 (ref null $Composite))
-	(local $ref1 (ref null $Composite))
 
 	;; identical values are necessarily equal
 	(if
 		(call $Value.bool-to-i32 (call $op:id (local.get 0) (local.get 1)))
-		(then (return_call $Value.new-primitive (global.get $Vect.TRUE)))
+		(then (return (global.get $Value.TRUE)))
 	)
-
-	(local.set $vect0 (struct.get $Value $primitive (local.get 0)))
-	(local.set $vect1 (struct.get $Value $primitive (local.get 1)))
-	(local.set $ref0  (struct.get $Value $composite (local.get 0)))
-	(local.set $ref1  (struct.get $Value $composite (local.get 1)))
 
 	(call $Value.bool-from-i32 (block $exit (result i32)
 		(if
 			(i32.and
-				(call $Value.is-primitive (local.get 0))
-				(call $Value.is-primitive (local.get 0))
+				(ref.test (ref $Cpl-Primitive) (local.get 0))
+				(ref.test (ref $Cpl-Primitive) (local.get 1))
 			)
-			(then (br $exit (if (result i32)
-				(i32.or
-					(call $Vect.is-special (local.get $vect0))
-					(call $Vect.is-special (local.get $vect1))
-				)
-				(then (i32.const 0))
-				(else (call $util:compare-numbers
-					(struct.get $Value $primitive (local.get 0))
-					(struct.get $Value $primitive (local.get 1))
-					(ref.func $!i64.eq)
-					(ref.func $!i64.eq)
-					(ref.func $!f64.eq)
+			(then
+				(local.set $vect0 (call $Value.as-primitive (local.get 0)))
+				(local.set $vect1 (call $Value.as-primitive (local.get 1)))
+				(br $exit (if (result i32)
+					(i32.or
+						(call $Vect.is-special (local.get $vect0))
+						(call $Vect.is-special (local.get $vect1))
+					)
+					(then (i32.const 0))
+					(else (call $util:compare-numbers
+						(local.get $vect0)
+						(local.get $vect1)
+						(ref.func $!i64.eq)
+						(ref.func $!i64.eq)
+						(ref.func $!f64.eq)
+					))
 				))
-			)))
+			)
 		)
 		(if
 			(i32.and
-				(ref.test (ref $String) (local.get $ref0))
-				(ref.test (ref $String) (local.get $ref1))
+				(ref.test (ref $Cpl-String) (local.get 0))
+				(ref.test (ref $Cpl-String) (local.get 1))
 			)
 			(then (br $exit (call $!String.equal
-				(ref.cast (ref $String) (local.get $ref0))
-				(ref.cast (ref $String) (local.get $ref1))
+				(call $Value.as-string (local.get 0))
+				(call $Value.as-string (local.get 1))
 			)))
 		)
 		(if
 			(i32.and
-				(ref.test (ref $Tuple) (local.get $ref0))
-				(ref.test (ref $Tuple) (local.get $ref1))
+				(ref.test (ref $Cpl-Tuple) (local.get 0))
+				(ref.test (ref $Cpl-Tuple) (local.get 1))
 			)
 			(then (br $exit (call $!Tuple.equal
-				(ref.cast (ref $Tuple) (local.get $ref0))
-				(ref.cast (ref $Tuple) (local.get $ref1))
+				(call $Value.as-tuple (local.get 0))
+				(call $Value.as-tuple (local.get 1))
 			)))
 		)
 		(if
 			(i32.and
-				(ref.test (ref $Record) (local.get $ref0))
-				(ref.test (ref $Record) (local.get $ref1))
+				(ref.test (ref $Cpl-Record) (local.get 0))
+				(ref.test (ref $Cpl-Record) (local.get 1))
 			)
 			(then (br $exit (call $!Record.equal
-				(ref.cast (ref $Record) (local.get $ref0))
-				(ref.cast (ref $Record) (local.get $ref1))
+				(call $Value.as-record (local.get 0))
+				(call $Value.as-record (local.get 1))
 			)))
 		)
 		(if
 			(i32.and
-				(ref.test (ref $List) (local.get $ref0))
-				(ref.test (ref $List) (local.get $ref1))
+				(ref.test (ref $Data) (local.get 0))
+				(ref.test (ref $Data) (local.get 1))
+			)
+			(then (br $exit (call $!Data.equal
+				(ref.cast (ref $Data) (local.get 0))
+				(ref.cast (ref $Data) (local.get 1))
+			)))
+		)
+		(if
+			(i32.and
+				(ref.test (ref $Cpl-List) (local.get 0))
+				(ref.test (ref $Cpl-List) (local.get 1))
 			)
 			(then (br $exit (call $!List.equal
-				(ref.cast (ref $List) (local.get $ref0))
-				(ref.cast (ref $List) (local.get $ref1))
+				(call $Value.as-list (local.get 0))
+				(call $Value.as-list (local.get 1))
+				(i32.const 0)
 			)))
 		)
 		(if
 			(i32.and
-				(ref.test (ref $Dict) (local.get $ref0))
-				(ref.test (ref $Dict) (local.get $ref1))
+				(ref.test (ref $Cpl-Dict) (local.get 0))
+				(ref.test (ref $Cpl-Dict) (local.get 1))
 			)
 			(then (br $exit (call $!Dict.equal
-				(ref.cast (ref $Dict) (local.get $ref0))
-				(ref.cast (ref $Dict) (local.get $ref1))
+				(call $Value.as-dict (local.get 0))
+				(call $Value.as-dict (local.get 1))
+				(i32.const 0)
 			)))
 		)
 		(if
 			(i32.and
-				(ref.test (ref $Map) (local.get $ref0))
-				(ref.test (ref $Map) (local.get $ref1))
+				(ref.test (ref $Cpl-Map) (local.get 0))
+				(ref.test (ref $Cpl-Map) (local.get 1))
 			)
 			(then (br $exit (call $!Map.equal
-				(ref.cast (ref $Map) (local.get $ref0))
-				(ref.cast (ref $Map) (local.get $ref1))
+				(call $Value.as-map (local.get 0))
+				(call $Value.as-map (local.get 1))
+				(i32.const 0)
 			)))
 		)
 		(if
 			(i32.and
-				(ref.test (ref $Exception) (local.get $ref0))
-				(ref.test (ref $Exception) (local.get $ref1))
+				(ref.test (ref $Exception) (local.get 0))
+				(ref.test (ref $Exception) (local.get 1))
 			)
 			(then (br $exit (call $!Exception.equal
-				(ref.cast (ref $Exception) (local.get $ref0))
-				(ref.cast (ref $Exception) (local.get $ref1))
+				(ref.cast (ref $Exception) (local.get 0))
+				(ref.cast (ref $Exception) (local.get 1))
 			)))
 		)
 		(if
 			(i32.and
-				(ref.test (ref $Maybe) (local.get $ref0))
-				(ref.test (ref $Maybe) (local.get $ref1))
+				(ref.test (ref $Maybe) (local.get 0))
+				(ref.test (ref $Maybe) (local.get 1))
 			)
 			(then (br $exit (call $!Maybe.equal
-				(ref.cast (ref $Maybe) (local.get $ref0))
-				(ref.cast (ref $Maybe) (local.get $ref1))
+				(ref.cast (ref $Maybe) (local.get 0))
+				(ref.cast (ref $Maybe) (local.get 1))
 			)))
 		)
 		(if
 			(i32.and
-				(ref.test (ref $Result) (local.get $ref0))
-				(ref.test (ref $Result) (local.get $ref1))
+				(ref.test (ref $Result) (local.get 0))
+				(ref.test (ref $Result) (local.get 1))
 			)
 			(then (br $exit (call $!Result.equal
-				(ref.cast (ref $Result) (local.get $ref0))
-				(ref.cast (ref $Result) (local.get $ref1))
+				(ref.cast (ref $Result) (local.get 0))
+				(ref.cast (ref $Result) (local.get 1))
+			)))
+		)
+		(if
+			(i32.and
+				(ref.test (ref $Object) (local.get 0))
+				(ref.test (ref $Object) (local.get 1))
+			)
+			(then (br $exit (call $!Object.equal
+				(ref.cast (ref $Object) (local.get 0))
+				(ref.cast (ref $Object) (local.get 1))
 			)))
 		)
 		(i32.const 0)
@@ -958,27 +745,22 @@
 )
 ;; Returns whether two tuples are equal —
 ;; whether they have equal items at the same indices.
-(func $!Tuple.equal (param $tuple0 (ref $Tuple)) (param $tuple1 (ref $Tuple)) (result i32)
-	(local $internal0 (ref $TupleInternal))
-	(local $internal1 (ref $TupleInternal))
-	(local $i         i32)
-
-	(local.set $internal0 (struct.get $Tuple $internal (local.get $tuple0)))
-	(local.set $internal1 (struct.get $Tuple $internal (local.get $tuple1)))
+(func $!Tuple.equal (param (ref $Tuple) (ref $Tuple)) (result i32)
+	(local $i i32)
 
 	(if
-		(i32.ne (array.len (local.get $internal0)) (array.len (local.get $internal1)))
+		(i32.ne (array.len (local.get 0)) (array.len (local.get 1)))
 		(then (return (i32.const 0)))
 	)
 
 	(block $exit
 		(local.set $i (i32.const 0))
 		(loop $repeat
-			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $internal0))))
+			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get 0))))
 			(if
-				(i32.eqz (call $Value.bool-to-i32 (call $op:eq
-					(array.get $TupleInternal (local.get $internal0) (local.get $i))
-					(array.get $TupleInternal (local.get $internal1) (local.get $i))
+				(i32.eqz (call $Value.bool-to-i32 (call $op:eq ;; TODO: use `$Value.relop` and get rid of the `.identical` version
+					(array.get $Tuple (local.get 0) (local.get $i))
+					(array.get $Tuple (local.get 1) (local.get $i))
 				)))
 				(then (return (i32.const 0)))
 			)
@@ -990,35 +772,30 @@
 )
 ;; Returns whether two records are equal —
 ;; whether they have equal values at the same keys.
-(func $!Record.equal (param $record0 (ref $Record)) (param $record1 (ref $Record)) (result i32)
-	(local $internal0 (ref $RecordInternal))
-	(local $internal1 (ref $RecordInternal))
-	(local $i         i32)
-	(local $prop      (ref $Property))
-	(local $key       i64)
-
-	(local.set $internal0 (struct.get $Record $internal (local.get $record0)))
-	(local.set $internal1 (struct.get $Record $internal (local.get $record1)))
+(func $!Record.equal (param (ref $Record) (ref $Record)) (result i32)
+	(local $i    i32)
+	(local $prop (ref $Property))
+	(local $key  i64)
 
 	(if
-		(i32.ne (array.len (local.get $internal0)) (array.len (local.get $internal1)))
+		(i32.ne (array.len (local.get 0)) (array.len (local.get 1)))
 		(then (return (i32.const 0)))
 	)
 
 	(block $exit
 		(local.set $i (i32.const 0))
 		(loop $repeat
-			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $internal0))))
-			(local.set $prop (array.get $RecordInternal (local.get $internal0) (local.get $i)))
+			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get 0))))
+			(local.set $prop (array.get $Record (local.get 0) (local.get $i)))
 			(local.set $key  (struct.get $Property $key (local.get $prop)))
 			(if
-				(i32.eqz (call $Record.has-key (local.get $record1) (local.get $key)))
+				(i32.eqz (call $Record.has-key (local.get 1) (local.get $key)))
 				(then (return (i32.const 0)))
 			)
 			(if
-				(i32.eqz (call $Value.bool-to-i32 (call $op:eq
+				(i32.eqz (call $Value.bool-to-i32 (call $op:eq ;; TODO: use `$Value.relop` and get rid of the `.identical` version
 					(struct.get $Property $val (local.get $prop))
-					(call $Record.get (local.get $record1) (local.get $key))
+					(call $Record.get (local.get 1) (local.get $key))
 				)))
 				(then (return (i32.const 0)))
 			)
@@ -1030,10 +807,11 @@
 )
 ;; Returns whether two Lists are equal —
 ;; whether they have equal items at the same indices.
-(func $!List.equal (param $list0 (ref $List)) (param $list1 (ref $List)) (result i32)
+;; provide shallow=1 to compare items shallowly (identity rather than equality).
+(func $!List.equal (param $list0 (ref $List)) (param $list1 (ref $List)) (param $shallow i32) (result i32)
 	(local $i         i32)
-	(local $internal0 (ref $ListInternal))
-	(local $internal1 (ref $ListInternal))
+	(local $internal0 (ref $ListArray))
+	(local $internal1 (ref $ListArray))
 	(local $item0     (ref null $Value))
 	(local $item1     (ref null $Value))
 
@@ -1049,15 +827,15 @@
 		(then (return (i32.const 0)))
 	)
 
-	(local.set $internal0 (struct.get $List $internal (local.get $list0)))
-	(local.set $internal1 (struct.get $List $internal (local.get $list1)))
+	(local.set $internal0 (struct.get $List $array (local.get $list0)))
+	(local.set $internal1 (struct.get $List $array (local.get $list1)))
 
 	(block $exit
 		(local.set $i (i32.const 0))
 		(loop $repeat
 			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $internal0))))
-			(local.set $item0 (array.get $ListInternal (local.get $internal0) (local.get $i)))
-			(local.set $item1 (array.get $ListInternal (local.get $internal1) (local.get $i)))
+			(local.set $item0 (array.get $ListArray (local.get $internal0) (local.get $i)))
+			(local.set $item1 (array.get $ListArray (local.get $internal1) (local.get $i)))
 
 			;; if they’re both null, we’ve reached the end of all live items; the Lists are equal; return true
 			(if
@@ -1086,9 +864,14 @@
 							(i32.eqz (ref.is_null (local.get $item0)))
 							(i32.eqz (ref.is_null (local.get $item1)))
 						)
-						(i32.eqz (call $Value.bool-to-i32 (call $op:eq
+						(i32.eqz (call $Value.bool-to-i32 (call_ref $Value.relop
 							(ref.cast (ref $Value) (local.get $item0))
 							(ref.cast (ref $Value) (local.get $item1))
+							(if (result (ref $Value.relop))
+								(local.get $shallow)
+								(then (ref.func $op:id))
+								(else (ref.func $op:eq))
+							)
 						)))
 					)
 				)
@@ -1103,10 +886,11 @@
 )
 ;; Returns whether two Dicts are equal —
 ;; whether they have equal values at the same keys.
-(func $!Dict.equal (param $dict0 (ref $Dict)) (param $dict1 (ref $Dict)) (result i32)
+;; provide shallow=1 to compare values shallowly (identity rather than equality).
+(func $!Dict.equal (param $dict0 (ref $Dict)) (param $dict1 (ref $Dict)) (param $shallow i32) (result i32)
 	(local $i         i32)
-	(local $internal0 (ref $DictInternal))
-	(local $internal1 (ref $DictInternal))
+	(local $internal0 (ref $DictArray))
+	(local $internal1 (ref $DictArray))
 	(local $prop0     (ref null $Property))
 	(local $prop1     (ref null $Property))
 	(local $key       i64)
@@ -1123,14 +907,14 @@
 		(then (return (i32.const 0)))
 	)
 
-	(local.set $internal0 (struct.get $Dict $internal (local.get $dict0)))
-	(local.set $internal1 (struct.get $Dict $internal (local.get $dict1)))
+	(local.set $internal0 (struct.get $Dict $array (local.get $dict0)))
+	(local.set $internal1 (struct.get $Dict $array (local.get $dict1)))
 
 	(block $exit
 		(local.set $i (i32.const 0))
 		(loop $repeat
 			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $internal0))))
-			(local.set $prop0 (array.get $DictInternal (local.get $internal0) (local.get $i)))
+			(local.set $prop0 (array.get $DictArray (local.get $internal0) (local.get $i)))
 			(if
 				(i32.eqz (ref.is_null (local.get $prop0)))
 				(then
@@ -1141,15 +925,20 @@
 					(if
 						(i32.or
 							(ref.is_null (local.get $prop1))
-							(call $Property.is-tombstone (local.get $prop1))
+							(ref.eq (local.get $prop1) (global.get $Property.TOMBSTONE))
 						)
 						(then (return (i32.const 0)))
 					)
 
 					(if
-						(i32.eqz (call $Value.bool-to-i32 (call $op:eq
+						(i32.eqz (call $Value.bool-to-i32 (call_ref $Value.relop
 							(struct.get $Property $val (local.get $prop0))
 							(struct.get $Property $val (local.get $prop1))
+							(if (result (ref $Value.relop))
+								(local.get $shallow)
+								(then (ref.func $op:id))
+								(else (ref.func $op:eq))
+							)
 						)))
 						(then (return (i32.const 0)))
 					)
@@ -1163,10 +952,11 @@
 )
 ;; Returns whether two Maps are equal —
 ;; whether they have equal consequents at equal antecedents.
-(func $!Map.equal (param $map0 (ref $Map)) (param $map1 (ref $Map)) (result i32)
+;; provide shallow=1 to compare antecedents and consequents shallowly (identity rather than equality).
+(func $!Map.equal (param $map0 (ref $Map)) (param $map1 (ref $Map)) (param $shallow i32) (result i32)
 	(local $i         i32)
-	(local $internal0 (ref $MapInternal))
-	(local $internal1 (ref $MapInternal))
+	(local $internal0 (ref $MapArray))
+	(local $internal1 (ref $MapArray))
 	(local $case0     (ref null $Case))
 	(local $case1     (ref null $Case))
 	(local $ant       (ref $Value))
@@ -1183,14 +973,14 @@
 		(then (return (i32.const 0)))
 	)
 
-	(local.set $internal0 (struct.get $Map $internal (local.get $map0)))
-	(local.set $internal1 (struct.get $Map $internal (local.get $map1)))
+	(local.set $internal0 (struct.get $Map $array (local.get $map0)))
+	(local.set $internal1 (struct.get $Map $array (local.get $map1)))
 
 	(block $exit
 		(local.set $i (i32.const 0))
 		(loop $repeat
 			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $internal0))))
-			(local.set $case0 (array.get $MapInternal (local.get $internal0) (local.get $i)))
+			(local.set $case0 (array.get $MapArray (local.get $internal0) (local.get $i)))
 			(if
 				(i32.eqz (ref.is_null (local.get $case0)))
 				(then
@@ -1201,15 +991,20 @@
 					(if
 						(i32.or
 							(ref.is_null (local.get $case1))
-							(call $Case.is-tombstone (local.get $case1))
+							(ref.eq (local.get $case1) (global.get $Case.TOMBSTONE))
 						)
 						(then (return (i32.const 0)))
 					)
 
 					(if
-						(i32.eqz (call $Value.bool-to-i32 (call $op:eq
+						(i32.eqz (call $Value.bool-to-i32 (call_ref $Value.relop
 							(struct.get $Case $con (local.get $case0))
 							(struct.get $Case $con (local.get $case1))
+							(if (result (ref $Value.relop))
+								(local.get $shallow)
+								(then (ref.func $op:id))
+								(else (ref.func $op:eq))
+							)
 						)))
 						(then (return (i32.const 0)))
 					)
@@ -1224,8 +1019,8 @@
 ;; Returns whether two Exceptions are equal —
 ;; whether they have equal messages and equal causes.
 (func $!Exception.equal (param $excp0 (ref $Exception)) (param $excp1 (ref $Exception)) (result i32)
-	(local $message0 (ref $String))
-	(local $message1 (ref $String))
+	(local $message0 (ref $Cpl-String))
+	(local $message1 (ref $Cpl-String))
 	(local $cause0   (ref null $Exception))
 	(local $cause1   (ref null $Exception))
 
@@ -1243,8 +1038,8 @@
 	;; if messages are unequal, return false
 	(if
 		(i32.eqz (call $!String.equal
-			(local.get $message0)
-			(local.get $message1)
+			(struct.get $Cpl-String $string (local.get $message0))
+			(struct.get $Cpl-String $string (local.get $message1))
 		))
 		(then (return (i32.const 0)))
 	)
@@ -1350,6 +1145,79 @@
 	(call $Value.bool-to-i32 (call $op:eq
 		(ref.as_non_null (local.get $value0))
 		(ref.as_non_null (local.get $value1))
+	))
+)
+;; Returns whether two data values are equal —
+;; whether they have identical constructors and equal field dicts.
+(func $!Data.equal (param (ref $Data) (ref $Data)) (result i32)
+	(local $fields0 (ref null $Dict))
+	(local $fields1 (ref null $Dict))
+	(local.set $fields0 (struct.get $Data $fields (local.get 0)))
+	(local.set $fields1 (struct.get $Data $fields (local.get 1)))
+	(i32.and
+		(ref.eq
+			(struct.get $Data $class (local.get 0))
+			(struct.get $Data $class (local.get 1))
+		)
+		(i32.or
+			(i32.and
+				(ref.is_null (local.get $fields0))
+				(ref.is_null (local.get $fields1))
+			)
+			(if (result i32) ;; `(i32.and)` doesn’t short-circuit, so using conditional
+				(i32.and
+					(i32.eqz (ref.is_null (local.get $fields0)))
+					(i32.eqz (ref.is_null (local.get $fields1)))
+				)
+				(then (call $!Dict.equal
+					(ref.as_non_null (local.get $fields0))
+					(ref.as_non_null (local.get $fields1))
+					(i32.const 0)
+				))
+				(else (i32.const 0))
+			)
+		)
+	)
+)
+;; Returns whether two Objects are equal —
+;; whether they have identical constructors and equal field dicts.
+(func $!Object.equal (param (ref $Object) (ref $Object)) (result i32)
+	(local $fields0 (ref null $Dict))
+	(local $fields1 (ref null $Dict))
+	(local.set $fields0 (struct.get $Object $fields (local.get 0)))
+	(local.set $fields1 (struct.get $Object $fields (local.get 1)))
+	(i32.and
+		(ref.eq
+			(struct.get $Object $class (local.get 0))
+			(struct.get $Object $class (local.get 1))
+		)
+		(i32.or
+			(i32.and
+				(ref.is_null (local.get $fields0))
+				(ref.is_null (local.get $fields1))
+			)
+			(if (result i32) ;; `(i32.and)` doesn’t short-circuit, so using conditional
+				(i32.and
+					(i32.eqz (ref.is_null (local.get $fields0)))
+					(i32.eqz (ref.is_null (local.get $fields1)))
+				)
+				(then (call $!Dict.equal
+					(ref.as_non_null (local.get $fields0))
+					(ref.as_non_null (local.get $fields1))
+					(i32.const 0)
+				))
+				(else (i32.const 0))
+			)
+		)
+	)
+)
+
+
+
+(func $op:is (export "op::is") (type $Value.relop) (param (ref $Value) (ref $Value)) (result (ref $Value))
+	(return_call $Value.bool-from-i32 (call $Value.is-instance-of
+		(local.get 0)
+		(ref.cast (ref $Class) (local.get 1))
 	))
 )
 

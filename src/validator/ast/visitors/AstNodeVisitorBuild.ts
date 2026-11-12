@@ -9,7 +9,14 @@ import {
 	VALUE,
 	TYPE,
 } from '../../../typer/index.ts';
-import type {SymbolSchemaVar} from '../../index.ts';
+import {
+	type CoreLibName,
+	CORE_LIB_NAMES,
+} from '../../../parser/index.ts';
+import {
+	type SymbolSchemaVar,
+	SymbolSchemaClass,
+} from '../../index.ts';
 import {
 	AstNodeVisitor,
 	type AstNode,
@@ -64,6 +71,11 @@ export class AstNodeVisitorBuild extends AstNodeVisitor<void> {
 
 	@runOncePerNode
 	public override visitGoal(node: Goal): void {
+		node.validator.getAllSymbols().values().filter((schema): schema is SymbolSchemaClass => (
+			schema instanceof SymbolSchemaClass &&
+			CORE_LIB_NAMES.includes(schema.source as CoreLibName)
+		)).forEach((schema) => this.builder.setLocalStatus(schema, 'set'));
+
 		node.block && this.visit(node.block);
 		this.builder.terminateBlock(new OP.EndProgram());
 		return this.builder.validate();

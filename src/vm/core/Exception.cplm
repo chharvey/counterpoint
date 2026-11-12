@@ -1,0 +1,15 @@
+from "./Object" import await (Object);
+
+
+
+%%%
+`Exception` objects are used for runtime error reporting.
+%%%
+public class Exception extends Object {
+	public new (
+		public readonly message: str,
+		public readonly cause?:  Exception,
+	) {
+		super();
+	}
+}

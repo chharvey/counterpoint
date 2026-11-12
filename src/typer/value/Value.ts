@@ -27,6 +27,8 @@ export function identical(
  * Known subclasses:
  * - Primitive
  * - Collection
+ * - Data
+ * - ValueObject
  * - Exception
  * - Maybe
  * - Result

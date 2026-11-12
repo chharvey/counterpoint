@@ -14,7 +14,7 @@ import {
 	type EntryType,
 	TYPE,
 } from '../../../typer/index.ts';
-import {IntrinsicName} from '../../../parser/index.ts';
+import {CoreLibName} from '../../../parser/index.ts';
 import {
 	type SymbolSchema,
 	SymbolSchemaVar,
@@ -268,7 +268,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type | null> {
 				throw err.errors[0];
 			}
 			switch (expr.base.source as CallableClassName) {
-				case IntrinsicName.LIST: {
+				case CoreLibName.LIST: {
 					// If function overload checking failed, `arg` is either a tuple literal or an expression with a tuple type.
 					const itemtype: TYPE.Type  = expr.typeargs[0].eval();
 					const arg:      EXPR.Expression = expr.exprargsPosit[0];
@@ -287,7 +287,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type | null> {
 					}
 					break;
 				}
-				case IntrinsicName.DICT: {
+				case CoreLibName.DICT: {
 					// If function overload checking failed, `arg` is either a tuple/record literal or an expression with a tuple/record type.
 					const valuetype: TYPE.Type  = expr.typeargs[0].eval();
 					const entrytype: TYPE.Tuple = TYPE.Tuple.fromTypes([TYPE.SYM, valuetype]);
@@ -314,7 +314,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type | null> {
 					}
 					break;
 				}
-				case IntrinsicName.SET: {
+				case CoreLibName.SET: {
 					// If function overload checking failed, `arg` is either a tuple literal or an expression with a tuple type.
 					const eltype: TYPE.Type  = expr.typeargs[0].eval();
 					const arg:    EXPR.Expression = expr.exprargsPosit[0];
@@ -333,7 +333,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type | null> {
 					}
 					break;
 				}
-				case IntrinsicName.MAP: {
+				case CoreLibName.MAP: {
 					// If function overload checking failed, `arg` is either a tuple literal or an expression with a tuple type.
 					const anttype:   TYPE.Type  = expr.typeargs[0].eval();
 					const contype:   TYPE.Type  = expr.typeargs[1]?.eval() ?? anttype;
@@ -420,7 +420,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type | null> {
 		let cast_type: TYPE.Type | undefined;
 		if (expr.operand1 instanceof EXPR.Variable) {
 			const symbol = expr.validator.getSymbol(expr.operand1.id) as SymbolSchemaClass;
-			cast_type = symbol.classSignature.supertype;
+			cast_type = symbol.classSignature.instanceType;
 		}
 		switch (expr.operator) {
 			case Operator.IS: {

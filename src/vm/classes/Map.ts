@@ -8,14 +8,6 @@ import type {
 
 
 
-/** Struct field constant indices. */
-const FIELD = {
-	/** `$Map.$size`     */ SIZE:     1,
-	/** `$Map.$internal` */ INTERNAL: 2,
-} as const;
-
-
-
 /** Precursor to the Counterpoint `Map` class. */
 class VmMap implements HasFuncData {
 	public constructor(private readonly vm: VirtualMachine) {}
@@ -52,26 +44,39 @@ class VmMap implements HasFuncData {
 				param:  binaryen.createType([reftype.Map, reftype.Value]),
 				result: reftypeNull.Value,
 			}],
+			['Map#copyFromMap', {
+				name:   'Map.copy-from-map',
+				param:  binaryen.createType([reftype.Map, reftype.Map]),
+				result: binaryen.Type.none,
+			}],
+			['Map#fillSetFromTuple', {
+				name:   'Map.fill-set-from-tuple',
+				param:  binaryen.createType([reftype.Map, reftype.Tuple]),
+				result: binaryen.Type.none,
+			}],
+			['Map#fillSetFromList', {
+				name:   'Map.fill-set-from-list',
+				param:  binaryen.createType([reftype.Map, reftype.List]),
+				result: binaryen.Type.none,
+			}],
+			['Map#fillFromTuple', {
+				name:   'Map.fill-from-tuple',
+				param:  binaryen.createType([reftype.Map, reftype.Tuple]),
+				result: binaryen.Type.none,
+			}],
+			['Map#fillFromList', {
+				name:   'Map.fill-from-list',
+				param:  binaryen.createType([reftype.Map, reftype.List]),
+				result: binaryen.Type.none,
+			}],
+			['Map#fillFromSet', {
+				name:   'Map.fill-from-set',
+				param:  binaryen.createType([reftype.Map, reftype.Map]),
+				result: binaryen.Type.none,
+			}],
 		]);
 	}
 
-
-	public field(ref: binaryen.ExpressionRef /* (ref null $Map) */): {
-		/** @return `(struct.get $Map $size     <ref>)` */ readonly size:     binaryen.ExpressionRef /* i32 */,
-		/** @return `(struct.get $Map $internal <ref>)` */ readonly internal: binaryen.ExpressionRef /* (ref $MapInternal) */,
-
-		/** @return `(struct.set $Map $size     <ref> <val>)` */ setSize    (val: binaryen.ExpressionRef /* i32 */):                binaryen.ExpressionRef /* void */,
-		/** @return `(struct.set $Map $internal <ref> <val>)` */ setInternal(val: binaryen.ExpressionRef /* (ref $MapInternal) */): binaryen.ExpressionRef /* void */,
-	} {
-		const {mod: {wasm}, reftype} = this.vm;
-		return {
-			get size()     { return wasm.struct.get(FIELD.SIZE,     ref, binaryen.Type.i32); },
-			get internal() { return wasm.struct.get(FIELD.INTERNAL, ref, reftype.MapInternal); },
-
-			setSize(val)     { return wasm.struct.set(FIELD.SIZE,     ref, val); },
-			setInternal(val) { return wasm.struct.set(FIELD.INTERNAL, ref, val); },
-		};
-	}
 
 	/**
 	 * Returns the number of “live” elements in the Map.
@@ -113,7 +118,7 @@ class VmMap implements HasFuncData {
 
 	/**
 	 * Get a Map consequent given an antecedent.
-	 * If there is no consequent at the given antecedent, Counterpoint’s `null` value is returned.
+	 * If there is no consequent at the given antecedent, a trap occurs.
 	 */
 	public get(map: binaryen.ExpressionRef /* (ref $Map) */, ant: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ {
 		return this.vm.mod.wasm.call('Map.get', [map, ant], this.vm.reftype.Value);
@@ -130,11 +135,53 @@ class VmMap implements HasFuncData {
 	/**
 	 * Delete a Map Case with the given antecedent.
 	 * If a Case with the given antecedent exists, it is removed and its consequent is returned;
-	 * otherwise null is returned and the Map is not mutated.
+	 * otherwise `(ref.null $Value)` is returned and the Map is not mutated.
 	 * This method removes the Case first (if found), then reallocates if necessary.
 	 */
 	public delete(map: binaryen.ExpressionRef /* (ref $Map) */, ant: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref null $Value) */ {
 		return this.vm.mod.wasm.call('Map.delete', [map, ant], this.vm.reftypeNull.Value);
+	}
+
+	/**
+	 * Copy the cases from a given source Map into the destination Map.
+	 */
+	public copyFromMap(dest: binaryen.ExpressionRef /* (ref $Map) */, src: binaryen.ExpressionRef /* (ref $Map) */): binaryen.ExpressionRef /* void */ {
+		return this.vm.mod.wasm.call('Map.copy-from-map', [dest, src], binaryen.Type.none);
+	}
+
+	/**
+	 * Fill the destination Map (as a Set) with items from the source Tuple.
+	 */
+	public fillSetFromTuple(dest: binaryen.ExpressionRef /* (ref $Map) */, src: binaryen.ExpressionRef /* (ref $Tuple) */): binaryen.ExpressionRef /* void */ {
+		return this.vm.mod.wasm.call('Map.fill-set-from-tuple', [dest, src], binaryen.Type.none);
+	}
+
+	/**
+	 * Fill the destination Map (as a Set) with items from the source List.
+	 */
+	public fillSetFromList(dest: binaryen.ExpressionRef /* (ref $Map) */, src: binaryen.ExpressionRef /* (ref $List) */): binaryen.ExpressionRef /* void */ {
+		return this.vm.mod.wasm.call('Map.fill-set-from-list', [dest, src], binaryen.Type.none);
+	}
+
+	/**
+	 * Fill the destination Map with cases from the source Tuple.
+	 */
+	public fillFromTuple(dest: binaryen.ExpressionRef /* (ref $Map) */, src: binaryen.ExpressionRef /* (ref $Tuple) */): binaryen.ExpressionRef /* void */ {
+		return this.vm.mod.wasm.call('Map.fill-from-tuple', [dest, src], binaryen.Type.none);
+	}
+
+	/**
+	 * Fill the destination Map with cases from the source List.
+	 */
+	public fillFromList(dest: binaryen.ExpressionRef /* (ref $Map) */, src: binaryen.ExpressionRef /* (ref $List) */): binaryen.ExpressionRef /* void */ {
+		return this.vm.mod.wasm.call('Map.fill-from-list', [dest, src], binaryen.Type.none);
+	}
+
+	/**
+	 * Fill the destination Map with cases from the source Map (as a Set).
+	 */
+	public fillFromSet(dest: binaryen.ExpressionRef /* (ref $Map) */, src: binaryen.ExpressionRef /* (ref $Map) */): binaryen.ExpressionRef /* void */ {
+		return this.vm.mod.wasm.call('Map.fill-from-set', [dest, src], binaryen.Type.none);
 	}
 }
 export {VmMap as Map};

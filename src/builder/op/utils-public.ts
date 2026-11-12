@@ -15,7 +15,7 @@ import {
 
 
 export enum TypeName {
-	TRAP,
+	NOTHING,
 	NULL,
 	BOOL,
 	SYM,
@@ -29,10 +29,12 @@ export enum TypeName {
 	DICT,
 	SET,
 	MAP,
+	OBJECT,
+	CLASS,
 	EXCEPTION,
 	MAYBE,
 	RESULT,
-	ANY,
+	ANYTHING,
 }
 
 
@@ -48,7 +50,7 @@ export type CollectionDynamicName = (
 
 export function ast_type_name(typ: TYPE.Type): TypeName {
 	switch (true) {
-		case typ.isBottomType:            { return TypeName.TRAP; }
+		case typ.isBottomType:            { return TypeName.NOTHING; }
 		case typ.isSubtypeOf(TYPE.NULL):  { return TypeName.NULL; }
 		case typ.isSubtypeOf(TYPE.BOOL):  { return TypeName.BOOL; }
 		case typ.isSubtypeOf(TYPE.SYM):   { return TypeName.SYM; }
@@ -56,6 +58,7 @@ export function ast_type_name(typ: TYPE.Type): TypeName {
 		case typ.isSubtypeOf(TYPE.NAT):   { return TypeName.NAT; }
 		case typ.isSubtypeOf(TYPE.FLOAT): { return TypeName.FLOAT; }
 		case typ.isSubtypeOf(TYPE.STR):   { return TypeName.STR; }
+		case typ.isSubtypeOf(TYPE.CLASS): { return TypeName.CLASS; }
 		case typ.isSubtypeOf(TYPE.EXCP):  { return TypeName.EXCEPTION; }
 
 		case typ instanceof TYPE.Tuple:  { return TypeName.TUPLE; }
@@ -66,6 +69,8 @@ export function ast_type_name(typ: TYPE.Type): TypeName {
 		case typ instanceof TYPE.Map:    { return TypeName.MAP; }
 		case typ instanceof TYPE.Maybe:  { return TypeName.MAYBE; }
 		case typ instanceof TYPE.Result: { return TypeName.RESULT; }
+
+		case typ.isSubtypeOf(TYPE.OBJ): { return TypeName.OBJECT; }
 	}
 
 	if (typ instanceof TYPE.Union || typ instanceof TYPE.Intersection) {
@@ -78,7 +83,7 @@ export function ast_type_name(typ: TYPE.Type): TypeName {
 			case typ.operands.every((op) => op instanceof TYPE.Map):    { return TypeName.MAP; }
 		}
 	}
-	return TypeName.ANY;
+	return TypeName.ANYTHING;
 }
 
 

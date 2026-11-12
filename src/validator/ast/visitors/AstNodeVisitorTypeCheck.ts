@@ -69,7 +69,7 @@ export class AstNodeVisitorTypeCheck extends AstNodeVisitor<void> {
 
 	public override visitBlock(node: Block): void {
 		this.defaultVisit(node);
-		if (!!node.parent && is_Functionlike(node.parent) && this.#astNodeVisitorCompletion.visit(node) !== CompletionKind.RETURN_OR_PANIC) {
+		if (node.parent && is_Functionlike(node.parent) && this.#astNodeVisitorCompletion.visit(node) !== CompletionKind.RETURN_OR_PANIC) {
 			throw new AssignmentErrorFunctionExit(node.parent);
 		}
 	}
@@ -127,16 +127,9 @@ export class AstNodeVisitorTypeCheck extends AstNodeVisitor<void> {
 		this.#exprVisitorType.visit(expr);
 	}
 
-	public override visitExprClaim          (expr: EXPR.Claim):          void { return this.visitExpression(expr); }
-	public override visitOperationExprUnary (expr: EXPR.OperationUnary): void { return this.visitExpression(expr); }
-
-	public override visitOperationExprBinaryCast(expr: EXPR.OperationBinaryCast): void {
-		// NOTE: ignore type-checking `this.operand1` for now, as semantics is determined by syntax.
-		// (`this.operand1.source` must be an `IntrinsicName`)
-		this.visit(expr.operand0);
-		this.#exprVisitorType.visit(expr);
-	}
-
+	public override visitExprClaim                      (expr: EXPR.Claim):                      void { return this.visitExpression(expr); }
+	public override visitOperationExprUnary             (expr: EXPR.OperationUnary):             void { return this.visitExpression(expr); }
+	public override visitOperationExprBinaryCast        (expr: EXPR.OperationBinaryCast):        void { return this.visitExpression(expr); }
 	public override visitOperationExprBinaryArithmetic  (expr: EXPR.OperationBinaryArithmetic):  void { return this.visitExpression(expr); }
 	public override visitOperationExprBinaryComparative (expr: EXPR.OperationBinaryComparative): void { return this.visitExpression(expr); }
 	public override visitOperationExprBinaryEquality    (expr: EXPR.OperationBinaryEquality):    void { return this.visitExpression(expr); }

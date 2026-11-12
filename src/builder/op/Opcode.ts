@@ -9,6 +9,7 @@ import {
 	RecordNew,
 	DictNew,
 	MapNew,
+	ObjectNew,
 	MaybeNew,
 	TupleHas,
 	RecordHas,
@@ -17,7 +18,6 @@ import {
 	CollectionDynamicGet,
 	Call,
 	Unop,
-	Instance,
 	Binop,
 	Function as OpFunction,
 	Instruction,
@@ -60,6 +60,7 @@ export enum OpCode {
 	DICT_NEW,
 	SET_NEW,
 	MAP_NEW,
+	OBJECT_NEW,
 	EXCP_NEW,
 	MAYBE_NEW,
 	RESULT_NEW,
@@ -91,12 +92,11 @@ export enum OpCode {
 	SET_COUNT,
 	MAP_COUNT,
 
+	NONE_IS,
+	FAIL_IS,
 	MAYBE_UNWRAP,
 	RESULT_UNWRAP,
 	RESULT_EXTRACT,
-
-	INSTANCEOF,
-	CAST,
 
 	INT_ADD,
 	INT_SUB,
@@ -123,6 +123,8 @@ export enum OpCode {
 
 	ID,
 	EQ,
+	IS,
+
 	/** @deprecated Phi nodes are unused for now but may be used later when we add SSA. SSA will be implemented as an IR optimization later. */
 	PHI,
 
@@ -160,6 +162,7 @@ export abstract class OpcodeVisitor<T> {
 	public visitRecordNew            (val: RecordNew):            T { return this.defaultVisit(val); }
 	public visitDictNew              (val: DictNew):              T { return this.defaultVisit(val); }
 	public visitMapNew               (val: MapNew):               T { return this.defaultVisit(val); }
+	public visitObjectNew            (val: ObjectNew):            T { return this.defaultVisit(val); }
 	public visitMaybeNew             (val: MaybeNew):             T { return this.defaultVisit(val); }
 	public visitTupleHas             (val: TupleHas):             T { return this.defaultVisit(val); }
 	public visitRecordHas            (val: RecordHas):            T { return this.defaultVisit(val); }
@@ -168,7 +171,6 @@ export abstract class OpcodeVisitor<T> {
 	public visitCollectionDynamicGet (val: CollectionDynamicGet): T { return this.defaultVisit(val); }
 	public visitCall                 (val: Call):                 T { return this.defaultVisit(val); }
 	public visitUnop                 (val: Unop):                 T { return this.defaultVisit(val); }
-	public visitInstance             (val: Instance):             T { return this.defaultVisit(val); }
 	public visitBinop                (val: Binop):                T { return this.defaultVisit(val); }
 	public visitFunction             (val: OpFunction):           T { return this.defaultVisit(val); }
 	public visitValue                (val: Value):                T { return this.defaultVisit(val); }
@@ -200,6 +202,7 @@ export abstract class OpcodeVisitor<T> {
 			case RecordNew:             { return this.visitRecordNew            (op as RecordNew); }
 			case DictNew:               { return this.visitDictNew              (op as DictNew); }
 			case MapNew:                { return this.visitMapNew               (op as MapNew); }
+			case ObjectNew:             { return this.visitObjectNew            (op as ObjectNew); }
 			case MaybeNew:              { return this.visitMaybeNew             (op as MaybeNew); }
 			case TupleHas:              { return this.visitTupleHas             (op as TupleHas); }
 			case RecordHas:             { return this.visitRecordHas            (op as RecordHas); }
@@ -208,7 +211,6 @@ export abstract class OpcodeVisitor<T> {
 			case CollectionDynamicGet:  { return this.visitCollectionDynamicGet (op as CollectionDynamicGet); }
 			case Call:                  { return this.visitCall                 (op as Call); }
 			case Unop:                  { return this.visitUnop                 (op as Unop); }
-			case Instance:              { return this.visitInstance             (op as Instance); }
 			case Binop:                 { return this.visitBinop                (op as Binop); }
 			case OpFunction:            { return this.visitFunction             (op as OpFunction); }
 			case Value:                 { return this.visitValue                (op as Value); }
@@ -244,7 +246,10 @@ export abstract class Opcode {
 
 	/** Represent this Opcode as a string for inspection. */
 	public toString(...args: readonly {toString(): string}[]): string {
-		return `(${[OpCode[this.opCode].replace(/_/, '.'), ...args].join(' ')})`;
+		return `(${[
+			OpCode[this.opCode].replace(/_/, '.'),
+			...args.filter((s) => s === 0 || s === 0n || !!s),
+		].join(' ')})`;
 	}
 
 	/** Type-validate this Opcode. Throws if invalid. */

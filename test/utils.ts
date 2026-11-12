@@ -192,7 +192,7 @@ export function typeUnit(value: string, tag?: 'sym'): TYPE.Unit<VALUE.String>;
 export function typeUnit(value: symbol | bigint | number | string, tag?: string): TYPE.Unit<VALUE.Symbol | VALUE.Integer | VALUE.Natural | VALUE.Float | VALUE.String> {
 	if (typeof value === 'string' && tag === 'sym') {
 		// TODO: Map#getOrInsertComputed
-		TYPE_UNIT_MEMO_SYM.has(value) || TYPE_UNIT_MEMO_SYM.set(value, new VALUE.Symbol(Validator.cookTokenIdentifier(value), value).toType());
+		TYPE_UNIT_MEMO_SYM.has(value) || TYPE_UNIT_MEMO_SYM.set(value, new VALUE.Symbol(Validator.keyId(value), value).toType());
 		return TYPE_UNIT_MEMO_SYM.get(value)!;
 	}
 	if (typeof value === 'bigint' && tag === 'nat') {
@@ -223,12 +223,12 @@ export function genConst(cg: CodeGenerator, value: bigint, tag?: 'nat'): binarye
 export function genConst(cg: CodeGenerator, value?: null | boolean | number | string): binaryen.ExpressionRef;
 export function genConst(cg: CodeGenerator, value: null | boolean | symbol | bigint | number | string = null, tag?: string): binaryen.ExpressionRef {
 	switch (value) {
-		case null:
-		case false:
-		case true:  { return cg.getConst(value); }
+		case null:  { return cg.vm.Value.NULL; }
+		case false: { return cg.vm.Value.FALSE; }
+		case true:  { return cg.vm.Value.TRUE; }
 	}
 	if (typeof value === 'string' && tag === 'sym') {
-		return new VALUE.Symbol(Validator.cookTokenIdentifier(value), value).codegen(cg);
+		return new VALUE.Symbol(Validator.keyId(value), value).codegen(cg);
 	}
 	if (typeof value === 'bigint' && tag === 'nat') {
 		return (

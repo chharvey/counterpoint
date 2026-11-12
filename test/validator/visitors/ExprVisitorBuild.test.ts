@@ -3,7 +3,7 @@ import * as test from 'node:test';
 import * as xjs from 'extrajs';
 import {
 	assert_instanceof,
-	INTRINSICS,
+	CORE_LIB_NAMES,
 	AST,
 	type SymbolSchema,
 	SymbolSchemaVar,
@@ -24,15 +24,47 @@ test.suite('ExprVisitorBuild#visit', () => {
 	});
 
 
-	test.test('Variable returns an OP.Get.', () => {
-		const {stmts} = setupScript(`{
-			val mut x: int = 42;
-			x;
-		}`, {codegen: false});
-		const expr = (stmts[1] as AST.STMT.StatementExpression).expr as AST.EXPR.Variable;
-		const symbol: SymbolSchema | undefined = expr.validator.getSymbol(expr.id);
-		assert_instanceof(symbol, SymbolSchemaVar);
-		return assert.deepStrictEqual(new AST.ExprVisitorBuild(new Builder()).visit(expr), new OP.Get(symbol, typeUnit(42n)));
+	test.suite('Variable', () => {
+		test.test('returns an OP.Get.', () => {
+			const {stmts} = setupScript(`{
+				val mut x: int = 42;
+				x;
+			}`, {codegen: false});
+			const expr = (stmts[1] as AST.STMT.StatementExpression).expr as AST.EXPR.Variable;
+			const symbol: SymbolSchema | undefined = expr.validator.getSymbol(expr.id);
+			assert_instanceof(symbol, SymbolSchemaVar);
+			return assert.deepStrictEqual(new AST.ExprVisitorBuild(new Builder()).visit(expr), new OP.Get(symbol, typeUnit(42n)));
+		});
+
+		test.test('gets core lib class references.', () => {
+			assert.strictEqual(setupScript(`{
+				${CORE_LIB_NAMES.join(';')};
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
+				"block-0":
+					(DROP (GET Null))
+					(DROP (GET Boolean))
+					(DROP (GET Symbol))
+					(DROP (GET Integer))
+					(DROP (GET Natural))
+					(DROP (GET Float))
+					(DROP (GET String))
+					(DROP (GET Object))
+					(DROP (GET List))
+					(DROP (GET Dict))
+					(DROP (GET Set))
+					(DROP (GET Map))
+					(DROP (GET Exception))
+					(DROP (GET Maybe))
+					(DROP (GET None))
+					(DROP (GET Some))
+					(DROP (GET Result))
+					(DROP (GET Fail))
+					(DROP (GET Ok))
+					(DROP (GET Function))
+					(DROP (GET Class))
+					(ENDPROGRAM)
+			`.trim());
+		});
 	});
 
 
@@ -388,7 +420,7 @@ test.suite('ExprVisitorBuild#visit', () => {
 				return xjs.String.dedent`
 					${''}
 						(DECL <Maybe> ${return_name})
-						(GOTO.IF (INSTANCEOF None (GET ${base_name})) "${block_then}" "${block_else}")
+						(GOTO.IF (NONE.IS (GET ${base_name})) "${block_then}" "${block_else}")
 					"${block_then}":
 						(SET ${return_name} (MAYBE.NEW))
 						(GOTO "${block_endif}")
@@ -643,7 +675,7 @@ test.suite('ExprVisitorBuild#visit', () => {
 				return xjs.String.dedent`
 					${''}
 						(DECL <Result> ${return_name})
-						(GOTO.IF (INSTANCEOF Fail (GET ${base_name})) "${block_then}" "${block_else}")
+						(GOTO.IF (FAIL.IS (GET ${base_name})) "${block_then}" "${block_else}")
 					"${block_then}":
 						(DECL <Exception> ${excp_name} (RESULT.EXTRACT (GET ${base_name})))
 						(SET ${return_name} (RESULT.NEW nil (GET ${excp_name})))
@@ -1493,174 +1525,69 @@ test.suite('ExprVisitorBuild#visit', () => {
 
 
 	test.suite('OperationBinaryCast', () => {
-		test.suite('[operator=IS]', () => {
-			test.test('"Null"', () => {
-				assert.strictEqual(setupScript(`{
-					42 is Null;
-				}`, {codegen: false}).builder.print(), xjs.String.dedent`
-					"block-0":
-						(DROP (ID (INT.CONST 42) (NULL.CONST null)))
-						(ENDPROGRAM)
-				`.trim());
-			});
-			test.test('"Boolean"', () => {
-				assert.strictEqual(setupScript(`{
-					42 is Boolean;
-				}`, {codegen: false}).builder.print(), xjs.String.dedent`
-					"block-0":
-						(DECL <bool> $0 (ID (INT.CONST 42) (BOOL.CONST false)))
-						(DECL <bool> $1)
-						(GOTO.IF (GET $0) "block-1" "block-2")
-					"block-1":
-						(SET $1 (GET $0))
-						(GOTO "block-3")
-					"block-2":
-						(SET $1 (ID (INT.CONST 42) (BOOL.CONST true)))
-						(GOTO "block-3")
-					"block-3":
-						(DROP (GET $1))
-						(ENDPROGRAM)
-				`.trim());
-			});
-			test.test('if not "Null" nor "Boolean", returns INSTANCEOF.', () => {
-				assert.strictEqual(setupScript(`{
-					val n: null = null;
-					${INTRINSICS.slice(2).map((t) => `n is ${t};`).join('\n')}
-				}`, {codegen: false}).builder.print(), xjs.String.dedent`
-					"block-0":
-						(DECL <null> n (NULL.CONST null))
-						${INTRINSICS.slice(2).map((t) => `(DROP (INSTANCEOF ${t} (GET n)))`).join('\n\t')}
-						(ENDPROGRAM)
-				`.trim());
-			});
+		/**
+		 * Output for casting.
+		 * @param return_type if 'Maybe' is given, adjusts output to maybe-casting (`as?` operator)
+		 */
+		function cast_output(
+			block_n:     number,
+			return_type: string,
+			left_op:     string,
+			right_op:    string,
+			return_n:    number,
+		): string {
+			const block_then:  string  = `block-${block_n}`;
+			const block_else:  string  = `block-${block_n + 1}`;
+			const block_endif: string  = `block-${block_n + 2}`;
+			const return_name: string  = `$${return_n}`;
+			const maybe_cast:  boolean = return_type === 'Maybe';
+			return xjs.String.dedent`
+				${''}
+					(DECL <${return_type}> ${return_name})
+					(GOTO.IF (IS (GET ${left_op}) (GET ${right_op})) "${block_then}" "${block_else}")
+				"${block_then}":
+					(SET ${return_name} ${maybe_cast ? `(MAYBE.NEW (GET ${left_op}))` : `(GET ${left_op})`})
+					(GOTO "${block_endif}")
+				"${block_else}":
+					(SET ${return_name} ${maybe_cast ? '(MAYBE.NEW)' : '(TRAP)'})
+					(GOTO "${block_endif}")
+				"${block_endif}":
+					(DROP (GET ${return_name}))
+			`.trim();
+		}
+		test.test('[operator=IS]', () => {
+			assert.strictEqual(setupScript(`{
+				val n: null = null;
+				${CORE_LIB_NAMES.map((t) => `n is ${t};`).join('\n')}
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
+				"block-0":
+					(DECL <null> n (NULL.CONST null))
+					${CORE_LIB_NAMES.map((t) => `(DROP (IS (GET n) (GET ${t})))`).join('\n\t')}
+					(ENDPROGRAM)
+			`.trim());
 		});
 		test.test('[operator=CAST]', () => {
 			assert.strictEqual(setupScript(`{
 				val n: anything = null;
-				${INTRINSICS.map((t) => `n as ${t};`).join('\n')}
+				${CORE_LIB_NAMES.map((t) => `n as ${t};`).join('\n')}
 			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
 					(DECL <null> n (NULL.CONST null))
-					${INTRINSICS.map((t) => `(DROP (CAST ${t} (GET n)))`).join('\n\t')}
+					${cast_output(1, 'null', 'n', 'Null', 0)}
+					${CORE_LIB_NAMES.slice(1).map((t, i) => cast_output(3 * (i + 1) + 1, 'anything', 'n', t, i + 1)).join('\n\t')}
 					(ENDPROGRAM)
 			`.trim());
 		});
-		test.suite('[operator=MAYBE]', () => {
-			test.test('"Null"', () => {
-				assert.strictEqual(setupScript(`{
-					val n: anything = null;
-					val i: anything = 42;
-					n as? Null;
-					i as? Null;
-				}`, {codegen: false}).builder.print(), xjs.String.dedent`
-					"block-0":
-						(DECL <null> n (NULL.CONST null))
-						(DECL <int> i (INT.CONST 42))
-						(DECL <Maybe> $0)
-						(GOTO.IF (ID (GET n) (NULL.CONST null)) "block-1" "block-2")
-					"block-1":
-						(SET $0 (MAYBE.NEW (CAST Null (GET n))))
-						(GOTO "block-3")
-					"block-2":
-						(SET $0 (MAYBE.NEW))
-						(GOTO "block-3")
-					"block-3":
-						(DROP (GET $0))
-						(DECL <Maybe> $1)
-						(GOTO.IF (ID (GET i) (NULL.CONST null)) "block-4" "block-5")
-					"block-4":
-						(SET $1 (MAYBE.NEW (CAST Null (GET i))))
-						(GOTO "block-6")
-					"block-5":
-						(SET $1 (MAYBE.NEW))
-						(GOTO "block-6")
-					"block-6":
-						(DROP (GET $1))
-						(ENDPROGRAM)
-				`.trim());
-			});
-			test.test('"Boolean"', () => {
-				assert.strictEqual(setupScript(`{
-					val n: anything = null;
-					val i: anything = 42;
-					n as? Boolean;
-					i as? Boolean;
-				}`, {codegen: false}).builder.print(), xjs.String.dedent`
-					"block-0":
-						(DECL <null> n (NULL.CONST null))
-						(DECL <int> i (INT.CONST 42))
-						(DECL <Maybe> $0)
-						(DECL <bool> $1 (ID (GET n) (BOOL.CONST false)))
-						(DECL <bool> $2)
-						(GOTO.IF (GET $1) "block-4" "block-5")
-					"block-4":
-						(SET $2 (GET $1))
-						(GOTO "block-6")
-					"block-5":
-						(SET $2 (ID (GET n) (BOOL.CONST true)))
-						(GOTO "block-6")
-					"block-6":
-						(GOTO.IF (GET $2) "block-1" "block-2")
-					"block-1":
-						(SET $0 (MAYBE.NEW (CAST Boolean (GET n))))
-						(GOTO "block-3")
-					"block-2":
-						(SET $0 (MAYBE.NEW))
-						(GOTO "block-3")
-					"block-3":
-						(DROP (GET $0))
-						(DECL <Maybe> $3)
-						(DECL <bool> $4 (ID (GET i) (BOOL.CONST false)))
-						(DECL <bool> $5)
-						(GOTO.IF (GET $4) "block-10" "block-11")
-					"block-10":
-						(SET $5 (GET $4))
-						(GOTO "block-12")
-					"block-11":
-						(SET $5 (ID (GET i) (BOOL.CONST true)))
-						(GOTO "block-12")
-					"block-12":
-						(GOTO.IF (GET $5) "block-7" "block-8")
-					"block-7":
-						(SET $3 (MAYBE.NEW (CAST Boolean (GET i))))
-						(GOTO "block-9")
-					"block-8":
-						(SET $3 (MAYBE.NEW))
-						(GOTO "block-9")
-					"block-9":
-						(DROP (GET $3))
-						(ENDPROGRAM)
-				`.trim());
-			});
-			test.test('not "Null" nor "Boolean".', () => {
-				assert.strictEqual(setupScript(`{
-					val n: anything = null;
-					${INTRINSICS.slice(2).map((t) => `n as? ${t};`).join('\n')}
-				}`, {codegen: false}).builder.print(), xjs.String.dedent`
-					"block-0":
-						(DECL <null> n (NULL.CONST null))
-						${INTRINSICS.slice(2).map((t, i) => {
-							const block_then:  string = `block-${3 * i + 1}`;
-							const block_else:  string = `block-${3 * i + 2}`;
-							const block_endif: string = `block-${3 * i + 3}`;
-							const return_name: string = `$${i}`;
-							return xjs.String.dedent`
-								${''}
-									(DECL <Maybe> ${return_name})
-									(GOTO.IF (INSTANCEOF ${t} (GET n)) "${block_then}" "${block_else}")
-								"${block_then}":
-									(SET ${return_name} (MAYBE.NEW (CAST ${t} (GET n))))
-									(GOTO "${block_endif}")
-								"${block_else}":
-									(SET ${return_name} (MAYBE.NEW))
-									(GOTO "${block_endif}")
-								"${block_endif}":
-									(DROP (GET ${return_name}))
-							`.trim();
-						}).join('\n\t').trim()}
-						(ENDPROGRAM)
-				`.trim());
-			});
+		test.test('[operator=MAYBE]', () => {
+			assert.strictEqual(setupScript(`{
+				val n: anything = null;
+				${CORE_LIB_NAMES.map((t) => `n as? ${t};`).join('\n')}
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
+				"block-0":
+					(DECL <null> n (NULL.CONST null))
+					${CORE_LIB_NAMES.map((t, i) => cast_output(3 * i + 1, 'Maybe', 'n', t, i)).join('\n\t').trim()}
+					(ENDPROGRAM)
+			`.trim());
 		});
 	});
 

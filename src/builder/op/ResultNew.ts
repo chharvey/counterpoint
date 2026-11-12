@@ -31,7 +31,7 @@ export class ResultNew extends Value {
 
 
 	public override toString(): string {
-		return super.toString(...(this.isOk ? [this.argument.toString(), 'nil'] : ['nil', this.argument.toString()]));
+		return super.toString(...(this.isOk ? [this.argument, 'nil'] : ['nil', this.argument]));
 	}
 
 	@runOnceMethod
@@ -44,15 +44,17 @@ export class ResultNew extends Value {
 	}
 
 	public override interpret(interp: Interpreter): VALUE.Result {
-		return new VALUE.Result(this.isOk, this.argument.interpret(interp));
+		const argument: VALUE.Value = this.argument.interpret(interp);
+		const {typeargFailure, typeargSuccess} = this.type as TYPE.Result;
+		return this.isOk ? new VALUE.Ok(argument, typeargFailure) : new VALUE.Fail(typeargSuccess, argument as VALUE.Exception);
 	}
 
 	@memoizeMethod
 	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
 		let argument: binaryen.ExpressionRef /* (ref $Value) */ = this.argument.codegen(cg);
 		if (!this.isOk) {
-			argument /* (ref $Exception) */ = cg.vm.Value.cast(argument, cg.vm.reftype.Exception);
+			argument /* (ref $Exception) */ = cg.vm.mod.wasm.ref.cast(argument, cg.vm.reftype.Exception);
 		}
-		return cg.vm.Value.newComposite(cg.codegenResult(this.isOk, argument));
+		return cg.codegenResult(this.isOk, argument);
 	}
 }

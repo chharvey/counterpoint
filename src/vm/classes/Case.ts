@@ -1,18 +1,10 @@
-import * as binaryen from 'binaryen.ts';
+import type * as binaryen from 'binaryen.ts';
 import {memoizeGetter} from '../../lib/index.ts';
 import type {VirtualMachine} from '../VirtualMachine.ts';
 import type {
 	FuncImportData,
 	HasFuncData,
 } from './HasFuncData.ts';
-
-
-
-/** Struct field constant indices. */
-const FIELD = {
-	/** `$Case.$ant` */ ANT: 0,
-	/** `$Case.$con` */ CON: 1,
-} as const;
 
 
 
@@ -25,24 +17,12 @@ export class Case implements HasFuncData {
 	@memoizeGetter
 	public get funcImportDataMap(): ReadonlyMap<string, FuncImportData> {
 		return new Map<string, FuncImportData>([
-			['Case#isTombstone', {name: 'Case.is-tombstone', param: this.vm.reftypeNull.Case, result: binaryen.Type.i32}],
 		]);
 	}
 
 
-	public field(ref: binaryen.ExpressionRef /* (ref null $Case) */): {
-		/** @return `(struct.get $Case $ant <ref>)` */ readonly ant: binaryen.ExpressionRef /* (ref $Value) */,
-		/** @return `(struct.get $Case $con <ref>)` */ readonly con: binaryen.ExpressionRef /* (ref $Value) */,
-	} {
-		const {mod: {wasm}, reftype} = this.vm;
-		return {
-			get ant() { return wasm.struct.get(FIELD.ANT, ref, reftype.Value); },
-			get con() { return wasm.struct.get(FIELD.CON, ref, reftype.Value); },
-		};
-	}
-
 	/**
-	 * Returns whether a Case is a “tombstone”, that is, whether it represents a deletion in a Map.
+	 * A Case “tombstone” represents a deletion in a Map.
 	 *
 	 * Case tombstones are used when deleting Map entries so as not to break linear probing chains.
 	 * They may be returned when looking up an antecedent for which an entry has since been deleted.
@@ -57,7 +37,7 @@ export class Case implements HasFuncData {
 	 * they are counted when determining when a Map’s array should be grown or shrunk.
 	 * When growing/shrinking an array, tombstones are not copied over to the new array.
 	 */
-	public isTombstone(case_: binaryen.ExpressionRef /* (ref null $Case) */): binaryen.ExpressionRef /* i32 */ {
-		return this.vm.mod.wasm.call('Case.is-tombstone', [case_], binaryen.Type.i32);
+	public get TOMBSTONE(): binaryen.ExpressionRef /* (ref $Case) */ {
+		return this.vm.mod.wasm.global.get('Case.TOMBSTONE', this.vm.reftype.Case);
 	}
 }

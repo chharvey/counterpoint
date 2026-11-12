@@ -32,12 +32,12 @@ test.suite('AstNode', () => {
 				const {stmts} = setupScript(`{
 					\\(a: int, mut b: int, mut $c: int, delta= d: int, $e?: int): void { return; };
 				}`, {varCheck: false});
-				const id_a:     bigint = Validator.cookTokenIdentifier('a');
-				const id_b:     bigint = Validator.cookTokenIdentifier('b');
-				const id_c:     bigint = Validator.cookTokenIdentifier('c');
-				const id_delta: bigint = Validator.cookTokenIdentifier('delta');
-				const id_d:     bigint = Validator.cookTokenIdentifier('d');
-				const id_e:     bigint = Validator.cookTokenIdentifier('e');
+				const id_a:     bigint = Validator.keyId('a');
+				const id_b:     bigint = Validator.keyId('b');
+				const id_c:     bigint = Validator.keyId('c');
+				const id_delta: bigint = Validator.keyId('delta');
+				const id_d:     bigint = Validator.keyId('d');
+				const id_e:     bigint = Validator.keyId('e');
 				const fn = (stmts[0] as AST.STMT.StatementExpression).expr as AST.EXPR.Function;
 				assert.ok(!fn.block.validator.hasSymbol(id_a));
 				assert.ok(!fn.block.validator.hasSymbol(id_b));
@@ -306,8 +306,8 @@ test.suite('AstNode', () => {
 				const {stmts, visitors} = setupScript(`{
 					\\(a: float, mut b: str): void { return; };
 				}`, {typeCheck: false});
-				const id_a: bigint = Validator.cookTokenIdentifier('a');
-				const id_b: bigint = Validator.cookTokenIdentifier('b');
+				const id_a: bigint = Validator.keyId('a');
+				const id_b: bigint = Validator.keyId('b');
 				const fn = (stmts[0] as AST.STMT.StatementExpression).expr as AST.EXPR.Function;
 				assert.ok(fn.block.validator.hasSymbol(id_a));
 				assert.ok(fn.block.validator.hasSymbol(id_b));

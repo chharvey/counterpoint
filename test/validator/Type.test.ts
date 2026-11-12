@@ -102,8 +102,8 @@ test.suite('Type', () => {
 						TYPE.BOOL,
 						TYPE.INT.union(TYPE.NULL),
 					]), TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>([
-						[Validator.cookTokenIdentifier('alpha'), TYPE.STR],
-						[Validator.cookTokenIdentifier('bravo'), TYPE.FLOAT],
+						[Validator.keyId('alpha'), TYPE.STR],
+						[Validator.keyId('bravo'), TYPE.FLOAT],
 					]))),
 				);
 			});
@@ -114,8 +114,8 @@ test.suite('Type', () => {
 						{type: TYPE.BOOL,                 optional: false},
 						{type: TYPE.INT.union(TYPE.NULL), optional: true},
 					]), new TYPE.Record(new Map<bigint, EntryType>([
-						[Validator.cookTokenIdentifier('alpha'), {type: TYPE.STR,   optional: true}],
-						[Validator.cookTokenIdentifier('bravo'), {type: TYPE.FLOAT, optional: false}],
+						[Validator.keyId('alpha'), {type: TYPE.STR,   optional: true}],
+						[Validator.keyId('bravo'), {type: TYPE.FLOAT, optional: false}],
 					]))),
 				);
 			});
@@ -145,7 +145,7 @@ test.suite('Type', () => {
 					new VALUE.Symbol(0x52n, 'then').toType(),
 					new VALUE.Symbol(0x46n, 'str').toType(),
 					new VALUE.Symbol(0x49n, 'false').toType(),
-					new VALUE.Symbol(Validator.cookTokenIdentifier('foobar'), 'foobar').toType(),
+					new VALUE.Symbol(Validator.keyId('foobar'), 'foobar').toType(),
 					typeUnit(42n),
 					typeUnit(42n, 'nat'),
 					typeUnit(4.2e+3),
@@ -172,7 +172,7 @@ test.suite('Type', () => {
 
 	test.suite('TypeAlias', () => {
 		test.suite('#varCheck', () => {
-			test.test('does not throw when referencing intrinsic identifiers.', () => {
+			test.test('does not throw when referencing built-in identifiers.', () => {
 				setupScript(`{
 					type T = Object;
 					type E = Exception;

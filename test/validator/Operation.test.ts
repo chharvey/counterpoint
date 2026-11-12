@@ -3,7 +3,7 @@ import * as test from 'node:test';
 import * as xjs from 'extrajs';
 import {
 	assert_instanceof,
-	INTRINSICS,
+	CORE_LIB_NAMES,
 	Validator,
 	AST,
 	SymbolSchemaVar,
@@ -145,7 +145,7 @@ test.suite('Operation', () => {
 				assert_shallowStrictEqual(
 					setupScript(`{
 						val n: null = null;
-						${INTRINSICS.map((t) => `n is ${t};`).join('\n')}
+						${CORE_LIB_NAMES.map((t) => `n is ${t};`).join('\n')}
 					}`, {build: false}).stmts.slice(1).map((stmt) => VISITOR.visit((stmt as AST.STMT.StatementExpression).expr!)),
 					repeat(TYPE.BOOL, 21),
 				);
@@ -156,7 +156,7 @@ test.suite('Operation', () => {
 					assertEqualTypes(
 						setupScript(`{
 							val n: anything = null;
-							${INTRINSICS.map((t) => `n as ${t};`).join('\n')}
+							${CORE_LIB_NAMES.map((t) => `n as ${t};`).join('\n')}
 						}`, {build: false}).stmts.slice(1).map((stmt) => VISITOR.visit((stmt as AST.STMT.StatementExpression).expr!)),
 						[
 							TYPE.NULL,
@@ -215,7 +215,7 @@ test.suite('Operation', () => {
 					assertEqualTypes(
 						setupScript(`{
 							val n: anything = null;
-							${INTRINSICS.map((t) => `n as? ${t};`).join('\n')}
+							${CORE_LIB_NAMES.map((t) => `n as? ${t};`).join('\n')}
 						}`, {build: false}).stmts.slice(1).map((stmt) => VISITOR.visit((stmt as AST.STMT.StatementExpression).expr!)),
 						[
 							new TYPE.Maybe(TYPE.NULL),
@@ -763,7 +763,7 @@ test.suite('Operation', () => {
 			});
 			test.test('returns `nothing` when condition is `nothing`.', () => {
 				const ternary: AST.EXPR.OperationTernary = AST.EXPR.OperationTernary.fromSource('if n as <nothing> then true else false');
-				ternary.validator.addSymbol(new SymbolSchemaVar(Validator.cookTokenIdentifier('n'), (ternary.operand0 as AST.EXPR.Claim).operand, false, false));
+				ternary.validator.addSymbol(new SymbolSchemaVar(Validator.keyId('n'), (ternary.operand0 as AST.EXPR.Claim).operand, false, false));
 				return assert.ok(VISITOR.visit(ternary)!.isBottomType);
 			});
 			test.test('returns no type when consequent/alternative is void.', () => {
