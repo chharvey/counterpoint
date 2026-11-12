@@ -118,11 +118,11 @@ export class Unop extends Value {
 			case OpCode.SET_COUNT:  { return new VALUE.Natural((operand as VALUE.Set).count); }
 			case OpCode.MAP_COUNT:  { return new VALUE.Natural((operand as VALUE.Map).count); }
 
-			case OpCode.NONE_IS:        { return VALUE.Boolean.fromBoolean(operand instanceof VALUE.Maybe && operand.isNone); }
-			case OpCode.FAIL_IS:        { return VALUE.Boolean.fromBoolean(operand instanceof VALUE.Result && !operand.isOk); }
-			case OpCode.MAYBE_UNWRAP:   { return (operand as VALUE.Maybe).value ?? assert.fail(new TypeError('Unwrapped a None value.')); }
-			case OpCode.RESULT_UNWRAP:  { return  (operand as VALUE.Result).isOk ? (operand as VALUE.Result).argument : assert.fail(new TypeError('Unwrapped a Fail value.')); }
-			case OpCode.RESULT_EXTRACT: { return !(operand as VALUE.Result).isOk ? (operand as VALUE.Result).argument : assert.fail(new TypeError('Extracted from an Ok value.')); }
+			case OpCode.NONE_IS:        { return VALUE.Boolean.fromBoolean(operand instanceof VALUE.None); }
+			case OpCode.FAIL_IS:        { return VALUE.Boolean.fromBoolean(operand instanceof VALUE.Fail); }
+			case OpCode.MAYBE_UNWRAP:   { return operand instanceof VALUE.Some ? operand.value  : assert.fail(new TypeError('Unwrapped a None value.')); }
+			case OpCode.RESULT_UNWRAP:  { return operand instanceof VALUE.Ok   ? operand.value  : assert.fail(new TypeError('Unwrapped a Fail value.')); }
+			case OpCode.RESULT_EXTRACT: { return operand instanceof VALUE.Fail ? operand.reason : assert.fail(new TypeError('Extracted from an Ok value.')); }
 		}
 	}
 

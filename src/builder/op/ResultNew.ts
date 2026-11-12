@@ -44,7 +44,9 @@ export class ResultNew extends Value {
 	}
 
 	public override interpret(interp: Interpreter): VALUE.Result {
-		return new VALUE.Result(this.isOk, this.argument.interpret(interp));
+		const argument: VALUE.Value = this.argument.interpret(interp);
+		const {typeargFailure, typeargSuccess} = this.type as TYPE.Result;
+		return this.isOk ? new VALUE.Ok(argument, typeargFailure) : new VALUE.Fail(typeargSuccess, argument as VALUE.Exception);
 	}
 
 	@memoizeMethod

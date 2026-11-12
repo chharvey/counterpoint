@@ -81,22 +81,22 @@ test.suite('Value', () => {
 
 		test.suite('Maybe', () => {
 			test.test('different Nones are not identical.', () => {
-				assert.ok(!new VALUE.Maybe(TYPE.STR).identical(new VALUE.Maybe(TYPE.STR)));
+				assert.ok(!new VALUE.None(TYPE.STR).identical(new VALUE.None(TYPE.STR)));
 			});
 			test.test('Somes with identical values are not identical.', () => {
 				const v = new VALUE.String('water');
-				return assert.ok(!new VALUE.Maybe(v).identical(new VALUE.Maybe(v)));
+				return assert.ok(!new VALUE.Some(v).identical(new VALUE.Some(v)));
 			});
 		});
 
 		test.suite('Result', () => {
 			test.test('Fails with identical reasons are not identical.', () => {
 				const r = new VALUE.Exception(new VALUE.String('error'));
-				return assert.ok(!new VALUE.Result(false, r).identical(new VALUE.Result(false, r)));
+				return assert.ok(!new VALUE.Fail(TYPE.NOTHING, r).identical(new VALUE.Fail(TYPE.NOTHING, r)));
 			});
 			test.test('Oks with identical values are not identical.', () => {
 				const v = new VALUE.String('water');
-				return assert.ok(!new VALUE.Result(true, v).identical(new VALUE.Result(true, v)));
+				return assert.ok(!new VALUE.Ok(v).identical(new VALUE.Ok(v)));
 			});
 		});
 	});
@@ -273,59 +273,59 @@ test.suite('Value', () => {
 
 		test.suite('Maybe', () => {
 			test.test('different Nones are equal.', () => {
-				assert.ok(new VALUE.Maybe(TYPE.STR).equal(new VALUE.Maybe(TYPE.STR)));
+				assert.ok(new VALUE.None(TYPE.STR).equal(new VALUE.None(TYPE.STR)));
 			});
 			test.test('Somes with equal values are equal.', () => {
-				assert.ok(new VALUE.Maybe(new VALUE.List<VALUE.String>([
+				assert.ok(new VALUE.Some(new VALUE.List<VALUE.String>([
 					new VALUE.String('earth'),
 					new VALUE.String('wind'),
 					new VALUE.String('fire'),
-				])).equal(new VALUE.Maybe(new VALUE.List<VALUE.String>([
+				])).equal(new VALUE.Some(new VALUE.List<VALUE.String>([
 					new VALUE.String('earth'),
 					new VALUE.String('wind'),
 					new VALUE.String('fire'),
 				]))));
 			});
 			test.test('Somes with unequal values are not equal.', () => {
-				assert.ok(!new VALUE.Maybe(new VALUE.List<VALUE.String>([
+				assert.ok(!new VALUE.Some(new VALUE.List<VALUE.String>([
 					new VALUE.String('earth'),
 					new VALUE.String('wind'),
 					new VALUE.String('fire'),
-				])).equal(new VALUE.Maybe(new VALUE.List<VALUE.String>([
+				])).equal(new VALUE.Some(new VALUE.List<VALUE.String>([
 					new VALUE.String('clubs'),
 					new VALUE.String('spades'),
 					new VALUE.String('diamonds'),
 				]))));
 			});
 			test.test('None and Some are never equal.', () => {
-				assert.ok(!new VALUE.Maybe(TYPE.STR).equal(new VALUE.Maybe(new VALUE.String('hearts'))));
+				assert.ok(!new VALUE.None(TYPE.STR).equal(new VALUE.Some(new VALUE.String('hearts'))));
 			});
 		});
 
 		test.suite('Result', () => {
 			test.test('Fails with equal reasons are equal.', () => {
-				assert.ok(new VALUE.Result(false, new VALUE.Exception(new VALUE.String('error'))).equal(new VALUE.Result(false, new VALUE.Exception(new VALUE.String('error')))));
+				assert.ok(new VALUE.Fail(TYPE.NOTHING, new VALUE.Exception(new VALUE.String('error'))).equal(new VALUE.Fail(TYPE.NOTHING, new VALUE.Exception(new VALUE.String('error')))));
 			});
 			test.test('Fails with unequal reasons are not equal.', () => {
-				assert.ok(!new VALUE.Result(false, new VALUE.Exception(new VALUE.String('error1'))).equal(new VALUE.Result(false, new VALUE.Exception(new VALUE.String('error2')))));
+				assert.ok(!new VALUE.Fail(TYPE.NOTHING, new VALUE.Exception(new VALUE.String('error1'))).equal(new VALUE.Fail(TYPE.NOTHING, new VALUE.Exception(new VALUE.String('error2')))));
 			});
 			test.test('Oks with equal values are equal.', () => {
-				assert.ok(new VALUE.Result(true, new VALUE.List<VALUE.String>([
+				assert.ok(new VALUE.Ok(new VALUE.List<VALUE.String>([
 					new VALUE.String('earth'),
 					new VALUE.String('wind'),
 					new VALUE.String('fire'),
-				])).equal(new VALUE.Result(true, new VALUE.List<VALUE.String>([
+				])).equal(new VALUE.Ok(new VALUE.List<VALUE.String>([
 					new VALUE.String('earth'),
 					new VALUE.String('wind'),
 					new VALUE.String('fire'),
 				]))));
 			});
 			test.test('Oks with unequal values are not equal.', () => {
-				assert.ok(!new VALUE.Result(true, new VALUE.List<VALUE.String>([
+				assert.ok(!new VALUE.Ok(new VALUE.List<VALUE.String>([
 					new VALUE.String('earth'),
 					new VALUE.String('wind'),
 					new VALUE.String('fire'),
-				])).equal(new VALUE.Result(true, new VALUE.List<VALUE.String>([
+				])).equal(new VALUE.Ok(new VALUE.List<VALUE.String>([
 					new VALUE.String('clubs'),
 					new VALUE.String('spades'),
 					new VALUE.String('diamonds'),
@@ -333,7 +333,7 @@ test.suite('Value', () => {
 			});
 			test.test('Fail and Ok are never equal, even with same underlying value.', () => {
 				const excp = new VALUE.Exception(new VALUE.String('success or failure'));
-				assert.ok(!new VALUE.Result(false, excp).equal(new VALUE.Result(true, excp)));
+				assert.ok(!new VALUE.Fail(TYPE.NOTHING, excp).equal(new VALUE.Ok(excp)));
 			});
 		});
 	});

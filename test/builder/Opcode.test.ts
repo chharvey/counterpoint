@@ -80,7 +80,7 @@ test.suite('Opcode', () => {
 						new VALUE.Symbol(Validator.keyId('hello'), 'hello'),
 						new VALUE.Integer(42n),
 						new VALUE.Float(4.2),
-						new VALUE.Maybe(TYPE.STR),
+						new VALUE.None(TYPE.STR),
 					]);
 				});
 				test.test('core lib classes return native class wrappers.', () => {
@@ -100,7 +100,11 @@ test.suite('Opcode', () => {
 							CoreLibName.MAP,
 							CoreLibName.EXCEPTION,
 							CoreLibName.MAYBE,
+							CoreLibName.NONE,
+							CoreLibName.SOME,
 							CoreLibName.RESULT,
+							CoreLibName.FAIL,
+							CoreLibName.OK,
 							CoreLibName.FUNCTION,
 							CoreLibName.CLASS,
 						].join(';')};
@@ -119,23 +123,14 @@ test.suite('Opcode', () => {
 						[new TYPE.Map(TYPE.ANYTHING, TYPE.ANYTHING), VALUE.Map],
 						[TYPE.EXCP,                                  VALUE.Exception],
 						[new TYPE.Maybe(TYPE.ANYTHING),              VALUE.Maybe],
+						[new TYPE.None(TYPE.ANYTHING),               VALUE.None],
+						[new TYPE.Some(TYPE.ANYTHING),               VALUE.Some],
 						[new TYPE.Result(TYPE.ANYTHING),             VALUE.Result],
+						[new TYPE.Fail(TYPE.ANYTHING),               VALUE.Fail],
+						[new TYPE.Ok(TYPE.ANYTHING),                 VALUE.Ok],
 						[TYPE.FUNCTION,                              VALUE.Function],
 						[TYPE.CLASS,                                 VALUE.Class],
 					])].map(([t, c]) => new VALUE.Class(t, c)));
-					const {builder} = setupScript(`{
-						${[
-							CoreLibName.NONE,
-							CoreLibName.SOME,
-							CoreLibName.FAIL,
-							CoreLibName.OK,
-						].join(';')};
-					}`, {codegen: false});
-					const interp = new Interpreter();
-					xjs.Array.forEachAggregated(
-						builder.instructions,
-						(instr) => assert.throws(() => (instr as OP.Drop).value.interpret(interp), /not yet supported/),
-					);
 				});
 			});
 
@@ -234,8 +229,8 @@ test.suite('Opcode', () => {
 					new OP.MaybeNew(TYPE.STR),
 					new OP.MaybeNew(TYPE.STR, new OP.Const(new VALUE.String('hello'))),
 				].map((opcode) => opcode.interpret(interp)), [
-					new VALUE.Maybe(TYPE.STR),
-					new VALUE.Maybe(new VALUE.String('hello')),
+					new VALUE.None(TYPE.STR),
+					new VALUE.Some(new VALUE.String('hello')),
 				]);
 			});
 
@@ -245,8 +240,8 @@ test.suite('Opcode', () => {
 					new OP.ResultNew(false, TYPE.INT, TYPE.EXCP, new OP.ExcpNew(new OP.Const(new VALUE.String('message')))),
 					new OP.ResultNew(true,  TYPE.INT, TYPE.EXCP, new OP.Const(new VALUE.Integer(42n))),
 				].map((opcode) => opcode.interpret(interp)), [
-					new VALUE.Result(false, new VALUE.Exception(new VALUE.String('message'))),
-					new VALUE.Result(true, new VALUE.Integer(42n)),
+					new VALUE.Fail(TYPE.INT, new VALUE.Exception(new VALUE.String('message'))),
+					new VALUE.Ok(new VALUE.Integer(42n)),
 				]);
 			});
 
@@ -1061,6 +1056,12 @@ test.suite('Opcode', () => {
 							CoreLibName.SET,
 							CoreLibName.MAP,
 							CoreLibName.EXCEPTION,
+							CoreLibName.MAYBE,
+							CoreLibName.NONE,
+							CoreLibName.SOME,
+							CoreLibName.RESULT,
+							CoreLibName.FAIL,
+							CoreLibName.OK,
 							CoreLibName.FUNCTION,
 							CoreLibName.CLASS,
 						] as const).forEach((name, i) => {
@@ -1081,13 +1082,17 @@ test.suite('Opcode', () => {
 									VALUE.Set,
 									VALUE.Map,
 									VALUE.Exception,
+									VALUE.Maybe,
+									VALUE.None,
+									VALUE.Some,
+									VALUE.Result,
+									VALUE.Fail,
+									VALUE.Ok,
 									VALUE.Function,
 									VALUE.Class,
 								][i])));
 							});
 						});
-						test.test.todo('None,Some', () => undefined);
-						test.test.todo('Fail,OK', () => undefined);
 					});
 				});
 			});

@@ -38,7 +38,9 @@ export class MaybeNew extends Value {
 	}
 
 	public override interpret(interp: Interpreter): VALUE.Maybe {
-		return new VALUE.Maybe(this.value?.interpret(interp) ?? (this.type as TYPE.Maybe).typearg);
+		return this.value
+			? new VALUE.Some(this.value.interpret(interp))
+			: new VALUE.None((this.type as TYPE.Maybe).typearg);
 	}
 
 	@memoizeMethod

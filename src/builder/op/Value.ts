@@ -76,7 +76,7 @@ export abstract class ValueVisitor<T> {
 			case DictNew:              { return this.visitDictNew              (val as DictNew); }
 			case MapNew:               { return this.visitMapNew               (val as MapNew); }
 			case ObjectNew:            { return this.visitObjectNew            (val as ObjectNew); }
-			case MaybeNew:             { return this.visitMaybeNew             (val as MaybeNew); }
+			case MaybeNew:             { return this.visitMaybeNew             (val as MaybeNew); } // eslint-disable-line @typescript-eslint/no-unnecessary-type-assertion
 			case TupleHas:             { return this.visitTupleHas             (val as TupleHas); }
 			case RecordHas:            { return this.visitRecordHas            (val as RecordHas); }
 			case TupleGet:             { return this.visitTupleGet             (val as TupleGet); }

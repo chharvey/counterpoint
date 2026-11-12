@@ -72,11 +72,11 @@ export class Get extends ValueTac {
 				case CoreLibName.MAP:       { native_class = VALUE.Map;       break; }
 				case CoreLibName.EXCEPTION: { native_class = VALUE.Exception; break; }
 				case CoreLibName.MAYBE:     { native_class = VALUE.Maybe;     break; }
-				case CoreLibName.NONE:      { throw new Error('`None` class not yet supported.'); }
-				case CoreLibName.SOME:      { throw new Error('`Some` class not yet supported.'); }
+				case CoreLibName.NONE:      { native_class = VALUE.None;      break; }
+				case CoreLibName.SOME:      { native_class = VALUE.Some;      break; }
 				case CoreLibName.RESULT:    { native_class = VALUE.Result;    break; }
-				case CoreLibName.FAIL:      { throw new Error('`Fail` class not yet supported.'); }
-				case CoreLibName.OK:        { throw new Error('`Ok`   class not yet supported.'); }
+				case CoreLibName.FAIL:      { native_class = VALUE.Fail;      break; }
+				case CoreLibName.OK:        { native_class = VALUE.Ok;        break; }
 				case CoreLibName.FUNCTION:  { native_class = VALUE.Function;  break; }
 				case CoreLibName.CLASS:     { native_class = VALUE.Class;     break; }
 			}

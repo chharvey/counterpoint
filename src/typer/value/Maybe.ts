@@ -1,4 +1,3 @@
-import {equal_nullish_values} from '../../lib/index.ts';
 import {TYPE} from '../index.ts';
 import {
 	strictEqual,
@@ -14,44 +13,67 @@ import {
 
 /**
  * A `Maybe` repesents presence or absence of a value.
- * @final
+ * Known subclasses:
+ * - None
+ * - Some
  */
-export class Maybe<T extends Value = Value> extends Value {
-	private readonly typearg: TYPE.Type;
-	public  readonly value?:  T;
+export abstract class Maybe extends Value {
+}
 
 
-	public constructor(value_or_type: T | TYPE.Type) {
+
+export class None extends Maybe {
+	public constructor(private readonly type: TYPE.Type) {
 		super();
-		this.typearg = value_or_type instanceof Value ? value_or_type.toType() : value_or_type;
-		if (value_or_type instanceof Value) {
-			this.value = value_or_type;
-		}
-	}
-
-	public get isNone(): boolean {
-		return !this.value;
 	}
 
 
 	public override toString(): string {
-		return `<Maybe instance ${(0x00).toString(16)}>`; // TODO: interpreter object ids
+		return `<None instance ${(0x00).toString(16)}>`; // TODO: interpreter object ids
 	}
 
 	@strictEqual
 	@identical
 	@memoizeBinOp(true, true)
-	@instanceOf(() => Maybe)
-	public override equal(value: Value): boolean {
-		const maybe = value as Maybe;
-		return equal_nullish_values(this.value, maybe.value, (a, b) => a.equal(b));
+	@instanceOf(() => None)
+	public override equal(_value: Value): boolean {
+		return true;
 	}
 
 	/**
 	 * @inheritdoc
-	 * Returns a TYPE.Maybe whose type argument is the type of this Maybe’s value (defaulting to `anything`).
+	 * Returns a TYPE.None with the given type argument.
 	 */
 	public override toType(): TYPE.Maybe {
-		return new TYPE.Maybe(this.typearg);
+		return new TYPE.None(this.type);
+	}
+}
+
+
+
+export class Some<T extends Value = Value> extends Maybe {
+	public constructor(public readonly value: T) {
+		super();
+	}
+
+
+	public override toString(): string {
+		return `<Some instance ${(0x00).toString(16)}>`; // TODO: interpreter object ids
+	}
+
+	@strictEqual
+	@identical
+	@memoizeBinOp(true, true)
+	@instanceOf(() => Some)
+	public override equal(value: Value): boolean {
+		return this.value.equal((value as Some).value);
+	}
+
+	/**
+	 * @inheritdoc
+	 * Returns a TYPE.Some whose type argument is the type of this Some’s value.
+	 */
+	public override toType(): TYPE.Maybe {
+		return new TYPE.Some(this.value.toType());
 	}
 }
