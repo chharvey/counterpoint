@@ -70,7 +70,17 @@ function TypeBuilder_makeField(typ: binaryen.Type, packedType: 'notPacked' | 'i8
 
 
 
-const MODULE_TEXT: string = await fs.promises.readFile(path.join(import.meta.dirname, '../../dist/vm/module.wat'), 'utf8');
+const WASM_MODULE = binaryen.parseText(
+	await fs.promises.readFile(path.join(import.meta.dirname, '../../dist/vm/module.wat'), 'utf8'),
+	(0
+		| binaryen.Feature.NontrappingFPToInt
+		| binaryen.Feature.SIMD128
+		| binaryen.Feature.TailCall
+		| binaryen.Feature.ReferenceTypes
+		| binaryen.Feature.Multivalue
+		| binaryen.Feature.GC
+	),
+);
 
 /**
  * An object of registries for all the common types.
@@ -364,14 +374,7 @@ const TYPES: {
 
 export class VirtualMachine {
 	/** The Binaryen module that holds static types and functions, independent of any source program. */
-	public readonly mod: binaryen.Module = binaryen.parseText(MODULE_TEXT, (0
-		| binaryen.Feature.NontrappingFPToInt
-		| binaryen.Feature.SIMD128
-		| binaryen.Feature.TailCall
-		| binaryen.Feature.ReferenceTypes
-		| binaryen.Feature.Multivalue
-		| binaryen.Feature.GC
-	));
+	public readonly mod: binaryen.Module = WASM_MODULE;
 
 	/** A lookup table for heap types created by a Binaryen TypeBuilder. */
 	public readonly heaptype: HeaptypeRegistry;
