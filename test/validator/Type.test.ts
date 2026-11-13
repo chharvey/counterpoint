@@ -253,12 +253,30 @@ test.suite('Type', () => {
 
 		test.suite('#eval', () => {
 			test.test('computes the value of reserved types.', () => {
-				assertEqualTypes([
-					'Object',
-					'Exception',
-				].map((src) => AST.TYPE.TypeAlias.fromSource(src).eval()), [
+				assertEqualTypes(extract_lines`
+					Null
+					Boolean
+					Symbol
+					Integer
+					Natural
+					Float
+					String
+					Object
+					Exception
+					Function
+					Class
+				`.map((src) => AST.TYPE.TypeAlias.fromSource(src).eval()), [
+					TYPE.NULL,
+					TYPE.BOOL,
+					TYPE.SYM,
+					TYPE.INT,
+					TYPE.NAT,
+					TYPE.FLOAT,
+					TYPE.STR,
 					TYPE.OBJ,
 					TYPE.EXCP,
+					TYPE.FUNCTION,
+					TYPE.CLASS,
 				]);
 			});
 			test.test('computes the value of a type alias.', () => {

@@ -11,8 +11,7 @@ import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../../core/index.ts';
-import {TYPE} from '../../../typer/index.ts';
-import {CoreLibName} from '../../../parser/index.ts';
+import type {TYPE} from '../../../typer/index.ts';
 import {
 	SymbolKind,
 	type SymbolSchema,
@@ -67,18 +66,14 @@ export class TypeAlias extends Type {
 
 	@memoizeMethod
 	public override eval(): TYPE.Type {
-		if (this.source === CoreLibName.OBJECT) {
-			return TYPE.OBJ;
-		}
-		if (this.source === CoreLibName.EXCEPTION) {
-			return TYPE.EXCP;
-		}
-		if (this.source === CoreLibName.CLASS) {
-			return TYPE.CLASS;
-		}
 		assert.ok(this.validator.hasSymbol(this.id), `Expected ${this.source} (${this.id}) to be in the symbol table.`);
 		const symbol: SymbolSchema = this.validator.getSymbol(this.id)!;
-		assert_instanceof(symbol, SymbolSchemaType);
-		return symbol.typevalue;
+		if (symbol instanceof SymbolSchemaType) {
+			return symbol.typevalue;
+		} else {
+			assert_instanceof(symbol, SymbolSchemaClass);
+			assert.ok(!symbol.classSignature.genericParams);
+			return symbol.classSignature.instanceType;
+		}
 	}
 }
