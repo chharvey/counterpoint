@@ -76,11 +76,14 @@ Nil TypeCheck(SemanticType typexpr) :=
 		1. *Note:* The result of this step is not used; it is only performed to rethrow any TypeErrors.
 ;
 
-Nil TypeCheck(SemanticTypeCall typexpr) :=
-	1. *Note:* Skip type-checking of `typexpr.children.0` for now, as semantics is determined by syntax.
-	2. *For each* `it` in `typexpr.children[1..]`:
+Nil TypeCheck(SemanticTypeCall ::= SemanticType__0 SemanticType__1+) :=
+	1. *If* `SemanticType__0` is a `SemanticTypeAlias` *and* `SemanticType__0.isTypefuncRef` is `true`:
+		1. Fall through.
+	2. *Else:*
+		1. *Perform:* *Unwrap:* `TypeCheck(SemanticType__0)`.
+	3. *For each* `it` in `SemanticType__1+`:
 		1. *Perform:* *Unwrap:* `TypeCheck(it)`.
-	3. *Perform:* *Unwrap:* `TypeValueOf(typexpr)`.
+	4. *Perform:* *Unwrap:* `TypeValueOf(SemanticTypeCall)`.
 		1. *Note:* The result of this step is not used; it is only performed to rethrow any TypeErrors.
 ;
 

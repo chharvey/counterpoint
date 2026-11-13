@@ -36,7 +36,7 @@ import {Key} from '../Key.ts';
 import type {ParameterFunction} from '../ParameterFunction.ts';
 import type {Capture} from '../Capture.ts';
 import type {Block} from '../Block.ts';
-import type * as AST_TYPE from '../type/index.ts';
+import * as AST_TYPE from '../type/index.ts';
 import * as EXPR from '../expression/index.ts';
 import type * as STMT from '../statement/index.ts';
 import {AstNodeVisitorCompletion} from './AstNodeVisitorCompletion.ts';
@@ -86,8 +86,9 @@ export class AstNodeVisitorTypeCheck extends AstNodeVisitor<void> {
 	public override visitTypeAccess          (typenode: AST_TYPE.Access):          void { return this.visitType(typenode); }
 
 	public override visitTypeCall(typenode: AST_TYPE.Call): void {
-		// NOTE: ignore type-checking `typenode.base` for now, as semantics is determined by syntax.
-		// (`typenode.base.source` must be a `CallableInterfaceName`)
+		if (!(typenode.base instanceof AST_TYPE.TypeAlias && typenode.base.isTypefuncRef)) {
+			return this.visit(typenode.base);
+		}
 		xjs.Array.forEachAggregated(typenode.args, (arg) => this.visit(arg));
 		typenode.eval();
 	}

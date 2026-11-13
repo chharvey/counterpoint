@@ -81,8 +81,8 @@ export class Call extends Type {
 
 	public constructor(
 		start_node: SyntaxNodeType<'type_compound'>,
-		private readonly base: Type,
-		public  readonly args: Readonly<NonemptyArray<Type>>,
+		public readonly base: Type,
+		public readonly args: Readonly<NonemptyArray<Type>>,
 	) {
 		super(start_node, {}, [base, ...args]);
 	}
