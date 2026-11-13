@@ -332,14 +332,17 @@ Type! TypeOf(SemanticExpressionOperation[operator=CAST] ::= SemanticExpression__
 		1. *Throw:* a new TypeErrorInvalidOperation.
 	5. *Else:*
 		1. Fall through.
-	6. *Let* `cast_type` be the class identified by `SemanticExpression__1`, if it exists.
-	7. *If* `cast_type` is *nil*:
-		1. *Return:* `t0`.
-	8. *Else:*
-		1. *If* `Subtype(cast_type, t0)` is `true`:
+	6. *If* `SemanticExpression__1` is a SemanticExpressionVariable:
+		1. *Assert:* the validator’s symbol table contains a SymbolSchema `symbol` whose `id` is `SemanticExpression__1.id`.
+		2. *Assert:* `symbol` is an instance of `SymbolSchemaClass`.
+		3. *Let* `cast_type` be `symbol.signature.instanceType`.
+		4. *Note:* `cast_type` is a Type.
+		5. *If* `Subtype(cast_type, t0)` is `true`:
 			1. *Return:* `cast_type`.
 		2. *Else:*
 			1. *Throw:* a new TypeErrorNotNarrow.
+	7. *Else:*
+		1. *Return:* `t0`.
 ;
 
 Type! TypeOf(SemanticExpressionOperation[operator=MAYBE] ::= SemanticExpression__0 SemanticExpression__1[type: Class]) :=
@@ -351,14 +354,17 @@ Type! TypeOf(SemanticExpressionOperation[operator=MAYBE] ::= SemanticExpression_
 		1. *Throw:* a new TypeErrorInvalidOperation.
 	5. *Else:*
 		1. Fall through.
-	6. *Let* `cast_type` be the class identified by `SemanticExpression__1`, if it exists.
-	7. *If* `cast_type` is *nil*:
-		1. *Return:* `Maybe(t0)`.
-	8. *Else:*
-		1. *If* `Subtype(cast_type, t0)` is `true`:
+	6. *If* `SemanticExpression__1` is a SemanticExpressionVariable:
+		1. *Assert:* the validator’s symbol table contains a SymbolSchema `symbol` whose `id` is `SemanticExpression__1.id`.
+		2. *Assert:* `symbol` is an instance of `SymbolSchemaClass`.
+		3. *Let* `cast_type` be `symbol.signature.instanceType`.
+		4. *Note:* `cast_type` is a Type.
+		5. *If* `Subtype(cast_type, t0)` is `true`:
 			1. *Return:* `Maybe(cast_type)`.
 		2. *Else:*
 			1. *Throw:* a new TypeErrorNotNarrow.
+	7. *Else:*
+		1. *Return:* `Maybe(t0)`.
 ;
 
 Type! TypeOf(SemanticExpressionOperation[operator: EXP | MUL | DIV | ADD | SUB] expr) :=
