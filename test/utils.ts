@@ -267,6 +267,7 @@ export function setupScript(
 	readonly cg:       CodeGenerator,
 	readonly wasm:     binaryen.ExpressionBuilder,
 	readonly visitors: {
+		readonly refCheck:  AST.AstNodeVisitorRefCheck,
 		readonly typeCheck: AST.AstNodeVisitorTypeCheck,
 		readonly build:     AST.AstNodeVisitorBuild,
 	},
@@ -274,6 +275,7 @@ export function setupScript(
 	const goal: AST.Goal     = AST.Goal.fromSource(source);
 	const builder            = new Builder();
 	const cg                 = new CodeGenerator();
+	const visitor_ref_check  = new AST.AstNodeVisitorRefCheck();
 	const visitor_type_check = new AST.AstNodeVisitorTypeCheck();
 	const visitor_build      = new AST.AstNodeVisitorBuild(builder);
 	assert.ok(goal.block, 'Expected AST.Goal to contain a block.');
@@ -281,7 +283,7 @@ export function setupScript(
 	opts.typeCheck ??= true;
 	opts.build     ??= true;
 	opts.codegen   ??= true;
-	opts.varCheck &&                                                 goal.varCheck();
+	opts.varCheck &&                                                 visitor_ref_check.visit(goal);
 	opts.varCheck && opts.typeCheck &&                               visitor_type_check.visit(goal);
 	opts.varCheck && opts.typeCheck && opts.build &&                 visitor_build.visit(goal);
 	opts.varCheck && opts.typeCheck && opts.build && opts.codegen && builder.codegen(cg);
@@ -292,6 +294,7 @@ export function setupScript(
 		stmts:    goal.block.children,
 		wasm:     cg.mod.wasm,
 		visitors: {
+			refCheck:  visitor_ref_check,
 			typeCheck: visitor_type_check,
 			build:     visitor_build,
 		},

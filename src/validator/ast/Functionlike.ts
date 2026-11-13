@@ -1,8 +1,3 @@
-import * as xjs from 'extrajs';
-import {
-	AssignmentErrorDuplicateDeclaration,
-	AssignmentErrorDuplicateKey,
-} from '../../index.ts';
 import type {AstNode} from './AstNode.ts';
 import type {ParameterFunction} from './ParameterFunction.ts';
 import type {Capture} from './Capture.ts';
@@ -29,40 +24,4 @@ export interface Functionlike extends AstNode {
 
 export function is_Functionlike(node: AstNode): node is Functionlike {
 	return node instanceof EXPR.Function || node instanceof STMT.DeclarationFunction;
-}
-
-
-
-/**
- * Default implementation of `Functionlike#varCheck`.
- */
-export function Functionlike_varCheck(this: Functionlike): void {
-	xjs.Array.forEachAggregated(this.captures, (capt) => capt.varCheck());
-	xjs.Array.forEachAggregated(this.parameters, (param) => param.varCheck());
-
-	// ensure no duplicate parameter keys
-	const key_ids = new Set<bigint>();
-	xjs.Array.forEachAggregated(this.parameters, (param) => {
-		const key_id: bigint | undefined = param.labelId;
-		if (key_id !== undefined) {
-			if (key_ids.has(key_id)) {
-				throw new AssignmentErrorDuplicateKey(param.key ?? param.identifier!);
-			} else {
-				key_ids.add(key_id);
-			}
-		}
-	});
-
-	// ensure no duplicate captures
-	const capt_ids = new Set<bigint>();
-	xjs.Array.forEachAggregated(this.captures, (capt) => {
-		if (capt_ids.has(capt.variable.id)) {
-			throw new AssignmentErrorDuplicateDeclaration(capt.variable);
-		} else {
-			capt_ids.add(capt.variable.id);
-		}
-	});
-
-	this.returnType?.varCheck();
-	return this.block.varCheck();
 }

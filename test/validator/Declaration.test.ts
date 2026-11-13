@@ -36,7 +36,7 @@ test.suite('Declaration', () => {
 				}`);
 				const id: bigint = Validator.keyId('T');
 				assert.ok(!goal.block!.validator.hasSymbol(id));
-				goal.varCheck();
+				new AST.AstNodeVisitorRefCheck().visit(goal);
 				assert.ok(goal.block!.validator.hasSymbol(id));
 				const info: SymbolSchema | undefined = goal.block!.validator.getSymbol(id);
 				assert_instanceof(info, SymbolSchemaType);
@@ -47,7 +47,7 @@ test.suite('Declaration', () => {
 					type _ = str;
 				}`);
 				assert.ok(!goal.block!.validator.hasSymbol(0x100n));
-				goal.varCheck();
+				new AST.AstNodeVisitorRefCheck().visit(goal);
 				return assert.ok(!goal.block!.validator.hasSymbol(0x100n));
 			});
 			test.test('throws if the validator already contains a record for the symbol.', () => {
@@ -102,7 +102,7 @@ test.suite('Declaration', () => {
 				assert.ok(!goal.block!.validator.hasSymbol(id_a));
 				assert.ok(!goal.block!.validator.hasSymbol(id_b));
 				assert.ok(!goal.block!.validator.hasSymbol(id_c));
-				goal.varCheck();
+				new AST.AstNodeVisitorRefCheck().visit(goal);
 				assert.ok(goal.block!.validator.hasSymbol(id_a));
 				assert.ok(goal.block!.validator.hasSymbol(id_b));
 				assert.ok(goal.block!.validator.hasSymbol(id_c));
@@ -133,7 +133,7 @@ test.suite('Declaration', () => {
 					val _: float = 4.2;
 				}`);
 				assert.ok(!goal.block!.validator.hasSymbol(0x100n));
-				goal.varCheck();
+				new AST.AstNodeVisitorRefCheck().visit(goal);
 				return assert.ok(!goal.block!.validator.hasSymbol(0x100n));
 			});
 			test.test('throws if the validator already contains a record for the variable.', () => {
@@ -184,7 +184,7 @@ test.suite('Declaration', () => {
 			});
 			test.test('hoists function names.', () => {
 				const errmsg = /Only function names should be hoisted/;
-				const {stmts} = setupScript(`{
+				const {stmts, visitors} = setupScript(`{
 					func f(): void { return; }
 					func f(a: int): void { return; }
 					type T = \\(int) => void;
@@ -192,12 +192,12 @@ test.suite('Declaration', () => {
 					val x = \\(): void { return; };
 					func x(a: int): void { return; }
 				}`, {varCheck: false});
-				stmts[0].varCheck();
-				stmts[1].varCheck(); // allows overloads
-				stmts[2].varCheck();
-				assert.throws(() => stmts[3].varCheck(), errmsg);
-				stmts[4].varCheck();
-				return assert.throws(() => stmts[5].varCheck(), errmsg);
+				visitors.refCheck.visit(stmts[0]);
+				visitors.refCheck.visit(stmts[1]); // allows overloads
+				visitors.refCheck.visit(stmts[2]);
+				assert.throws(() => visitors.refCheck.visit(stmts[3]), errmsg);
+				visitors.refCheck.visit(stmts[4]);
+				return assert.throws(() => visitors.refCheck.visit(stmts[5]), errmsg);
 			});
 			test.test('allows self-reference, but not self-shadowing.', () => {
 				setupScript(`{
@@ -265,14 +265,14 @@ test.suite('Declaration', () => {
 					: visitors.typeCheck.visit(goal);
 			}
 			test.test('checks the assigned expression’s type against the variable assignee’s type.', () => {
-				setupScript(`{
+				const {visitors} = setupScript(`{
 					val the_answer: nat = +42;
 				}`, {build: false}); // assert does not throw
 				const var_: AST.STMT.DeclarationVariable = AST.STMT.DeclarationVariable.fromSource(`
 					val  the_answer:  int | float =  21  *  2;
 				`);
-				var_.varCheck();
-				return node_type_check.visit(var_);
+				visitors.refCheck.visit(var_);
+				return visitors.typeCheck.visit(var_);
 			});
 			test.test('passes when assigned is structurally assignable.', () => {
 				xjs.Array.forEachAggregated(extract_lines`

@@ -29,13 +29,13 @@ test.suite('Statement', () => {
 	test.suite('#varCheck', () => {
 		test.suite('StatementReassignment', () => {
 			test.test('`set` throws if the variable is read-only.', () => {
-				const {goal, stmts} = setupScript(`{
+				const {goal, stmts, visitors} = setupScript(`{
 					val mut i: int = 42;
 					val     j: int = 42;
 					set i = 24;
 					set j = 24;
 				}`, {varCheck: false});
-				stmts.slice(0, 3).forEach((stmt) => stmt.varCheck());
+				stmts.slice(0, 3).forEach((stmt) => visitors.refCheck.visit(stmt));
 				assert.partialDeepStrictEqual(goal.block!.validator.getSymbolBySource('i'), {
 					isWritable:      true,
 					isUninitialized: false,
@@ -44,7 +44,7 @@ test.suite('Statement', () => {
 					isWritable:      false,
 					isUninitialized: false,
 				});
-				return assert.throws(() => stmts[3].varCheck(), AssignmentErrorReassignment);
+				return assert.throws(() => visitors.refCheck.visit(stmts[3]), AssignmentErrorReassignment);
 			});
 			test.test('`set` always throws for type alias reassignment.', () => {
 				assert.throws(() => setupScript(`{
@@ -60,13 +60,13 @@ test.suite('Statement', () => {
 				}`, {typeCheck: false}), AssignmentErrorReassignment);
 			});
 			test.test('`delete` throws if the variable was initialized.', () => {
-				const {goal, stmts} = setupScript(`{
+				const {goal, stmts, visitors} = setupScript(`{
 					val mut i?: int;
 					val mut j:  int = 42;
 					delete i;
 					delete j;
 				}`, {varCheck: false});
-				stmts.slice(0, 3).forEach((stmt) => stmt.varCheck());
+				stmts.slice(0, 3).forEach((stmt) => visitors.refCheck.visit(stmt));
 				assert.partialDeepStrictEqual(goal.block!.validator.getSymbolBySource('i'), {
 					isWritable:      true,
 					isUninitialized: true,
@@ -75,7 +75,7 @@ test.suite('Statement', () => {
 					isWritable:      true,
 					isUninitialized: false,
 				});
-				return assert.throws(() => stmts[3].varCheck(), AssignmentErrorDeletion);
+				return assert.throws(() => visitors.refCheck.visit(stmts[3]), AssignmentErrorDeletion);
 			});
 			test.test('`delete` always throws for type alias deletion.', () => {
 				assert.throws(() => setupScript(`{
@@ -102,7 +102,7 @@ test.suite('Statement', () => {
 				const validator: Validator = (goal.block!.children[0] as AST.STMT.StatementIteration).block.validator;
 				const id: bigint = Validator.keyId('it');
 				assert.ok(!validator.hasSymbol(id));
-				goal.varCheck();
+				new AST.AstNodeVisitorRefCheck().visit(goal);
 				assert.ok(validator.hasSymbol(id));
 				const info_it: SymbolSchema | undefined = validator.getSymbol(id);
 				assert_instanceof(info_it, SymbolSchemaVar);
@@ -121,7 +121,7 @@ test.suite('Statement', () => {
 				const validator: Validator = (goal.block!.children[0] as AST.STMT.StatementIteration).block.validator;
 				const id: bigint = Validator.keyId('_');
 				assert.ok(!validator.hasSymbol(id));
-				goal.varCheck();
+				new AST.AstNodeVisitorRefCheck().visit(goal);
 				return assert.ok(!validator.hasSymbol(id));
 			});
 			test.test('allows duplicate declaration of iteration variable.', () => {

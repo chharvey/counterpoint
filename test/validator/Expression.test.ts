@@ -37,29 +37,29 @@ test.suite('Expression', () => {
 	test.suite('#varCheck', () => {
 		test.suite('ExpressionFunction (and DeclarationFunction)', () => {
 			test.test('disallows duplicate param keys.', () => {
-				const {stmts} = setupScript(`{
+				const {stmts, visitors} = setupScript(`{
 					\\(a= b: int, a= c: float): void { return; };
 					\\($a: int, a= c: float): void { return; };
 				}`, {varCheck: false});
 				const fn0 = (stmts[0] as AST.STMT.StatementExpression).expr as AST.EXPR.Function;
 				const fn1 = (stmts[1] as AST.STMT.StatementExpression).expr as AST.EXPR.Function;
-				assert.throws(() => fn0.varCheck(), AssignmentErrorDuplicateKey);
-				return assert.throws(() => fn1.varCheck(), AssignmentErrorDuplicateKey);
+				assert.throws(() => visitors.refCheck.visit(fn0), AssignmentErrorDuplicateKey);
+				return assert.throws(() => visitors.refCheck.visit(fn1), AssignmentErrorDuplicateKey);
 			});
 			test.test('throws when capture is not declared.', () => {
-				const {stmts} = setupScript(`{
+				const {stmts, visitors} = setupScript(`{
 					\\() with (x): void { return; };
 				}`, {varCheck: false});
-				return assert.throws(() => stmts[0].varCheck(), ReferenceErrorUndeclared);
+				return assert.throws(() => visitors.refCheck.visit(stmts[0]), ReferenceErrorUndeclared);
 			});
 			test.test('disallows duplicate captures.', () => {
-				const {stmts} = setupScript(`{
+				const {stmts, visitors} = setupScript(`{
 					val x: int = 42;
 					\\() with (x, x): void { return; };
 				}`, {varCheck: false});
-				stmts[0].varCheck();
+				visitors.refCheck.visit(stmts[0]);
 				const fn0 = (stmts[1] as AST.STMT.StatementExpression).expr as AST.EXPR.Function;
-				return assert.throws(() => fn0.varCheck(), AssignmentErrorDuplicateDeclaration);
+				return assert.throws(() => visitors.refCheck.visit(fn0), AssignmentErrorDuplicateDeclaration);
 			});
 		});
 	});
@@ -211,7 +211,7 @@ test.suite('Expression', () => {
 	test.suite('Constant', () => {
 		test.suite('#varCheck', () => {
 			test.test('never throws.', () => {
-				AST.EXPR.Constant.fromSource('42').varCheck();
+				new AST.AstNodeVisitorRefCheck().visit(AST.EXPR.Constant.fromSource('42'));
 			});
 		});
 
@@ -300,11 +300,11 @@ test.suite('Expression', () => {
 				}`, {typeCheck: false}); // assert does not throw
 			});
 			test.test('throws if the validator does not contain a record for the identifier.', () => {
-				setupScript(`{
+				const {visitors} = setupScript(`{
 					val mut i: int = 42;
 					i;
 				}`, {typeCheck: false}); // assert does not throw
-				assert.throws(() => AST.EXPR.Variable.fromSource('i').varCheck(), ReferenceErrorUndeclared);
+				assert.throws(() => visitors.refCheck.visit(AST.EXPR.Variable.fromSource('i')), ReferenceErrorUndeclared);
 			});
 			test.test('throws when declared in an inner scope.', () => {
 				assert.throws(() => setupScript(`{
@@ -403,11 +403,13 @@ test.suite('Expression', () => {
 					);
 				});
 				test.test('throws if containing duplicate keys.', () => {
+					const node_visitor_ref_check = new AST.AstNodeVisitorRefCheck();
+
 					[
 						AST.TYPE.Record .fromSource('(a: int, b: float, c: str)'),
 						AST.EXPR.Record .fromSource('(a= 1, b= 2.0, c= "three")'),
 						AST.EXPR.Dict   .fromSource('[a= 1, b= 2.0, c= "three"]'),
-					].forEach((node) => node.varCheck()); // assert does not throw
+					].forEach((node) => node_visitor_ref_check.visit(node)); // assert does not throw
 
 					[
 						AST.TYPE.Record .fromSource('(a: int, b: float, a: str)'),
@@ -416,7 +418,7 @@ test.suite('Expression', () => {
 						AST.EXPR.Record .fromSource('(_= 1, b= 2.0, _= "three")'),
 						AST.EXPR.Dict   .fromSource('[a= 1, b= 2.0, a= "three"]'),
 						AST.EXPR.Dict   .fromSource('[_= 1, b= 2.0, _= "three"]'),
-					].forEach((node) => assert.throws(() => node.varCheck(), AssignmentErrorDuplicateKey));
+					].forEach((node) => assert.throws(() => node_visitor_ref_check.visit(node), AssignmentErrorDuplicateKey));
 
 					new Map<AST.AstNode, string[]>([
 						[AST.TYPE.Record .fromSource('(c: int, d: float, c: str, d: bool)'),  ['c', 'd']],
@@ -425,7 +427,7 @@ test.suite('Expression', () => {
 						[AST.EXPR.Record .fromSource('(e= 1, f= 2.0, e= "three", e= false)'), ['e', 'e']],
 						[AST.EXPR.Dict   .fromSource('[c= 1, d= 2.0, c= "three", d= false]'), ['c', 'd']],
 						[AST.EXPR.Dict   .fromSource('[e= 1, f= 2.0, e= "three", e= false]'), ['e', 'e']],
-					]).forEach((dupes, node) => assert.throws(() => node.varCheck(), (err) => {
+					]).forEach((dupes, node) => assert.throws(() => node_visitor_ref_check.visit(node), (err) => {
 						assertAssignable(err as Error, {
 							cons:   AggregateError,
 							errors: dupes.map((k) => ({

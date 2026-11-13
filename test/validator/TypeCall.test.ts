@@ -21,7 +21,7 @@ test.suite('TypeCall', () => {
 				SET.<str>
 				Mapping.<bool>
 			`, (src) => {
-				assert.throws(() => AST.TYPE.Call.fromSource(src).varCheck(), SyntaxError);
+				assert.throws(() => new AST.AstNodeVisitorRefCheck().visit(AST.TYPE.Call.fromSource(src)), SyntaxError);
 			});
 		});
 	});

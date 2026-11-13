@@ -1,17 +1,12 @@
-import * as assert from 'node:assert';
 import {assert_instanceof} from '../../../lib/index.ts';
 import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../../core/index.ts';
 import type {Serializable} from '../../../parser/index.ts';
-import {SymbolSchemaFunc} from '../../index.ts';
 import type {SyntaxNodeType} from '../../utils-private.ts';
 import {Validator} from '../../Validator.ts';
-import {
-	type Functionlike,
-	Functionlike_varCheck,
-} from '../Functionlike.ts';
+import type {Functionlike} from '../Functionlike.ts';
 import type {ParameterFunction} from '../ParameterFunction.ts';
 import type {Capture} from '../Capture.ts';
 import type {Block} from '../Block.ts';
@@ -43,20 +38,5 @@ export class DeclarationFunction extends Statement implements Functionlike {
 		if (this.identifier) {
 			this.id = Validator.cookTokenIdentifier(this.identifier.source);
 		}
-	}
-
-
-	public hoist(): void {
-		if (this.identifier) {
-			if (this.validator.hasSymbol(this.id!)) {
-				return assert.ok(this.validator.getSymbol(this.id!) instanceof SymbolSchemaFunc, 'Only function names should be hoisted.');
-			}
-			this.validator.addSymbol(new SymbolSchemaFunc(this.id!, this.identifier));
-		}
-	}
-
-	public override varCheck(): void {
-		this.hoist();
-		return Functionlike_varCheck.call(this);
 	}
 }

@@ -1,4 +1,3 @@
-import * as xjs from 'extrajs';
 import {assert_instanceof} from '../../../lib/index.ts';
 import {
 	type CplConfig,
@@ -28,11 +27,5 @@ export class StatementLoop extends StatementBreakable {
 		public readonly block:     Block,
 	) {
 		super(start_node, {doFirst, until}, [condition, block]);
-	}
-
-
-	public override varCheck(): void {
-		// Do not call `super.varCheck()` as we VarCheck children in a different order.
-		xjs.Array.forEachAggregated(this.doFirst ? [this.block, this.condition] : [this.condition, this.block], (c) => c.varCheck());
 	}
 }

@@ -1,9 +1,5 @@
 import * as assert from 'node:assert';
 import {
-	ReferenceErrorUndeclared,
-	ReferenceErrorKind,
-} from '../../../index.ts';
-import {
 	assert_instanceof,
 	memoizeMethod,
 } from '../../../lib/index.ts';
@@ -14,7 +10,6 @@ import {
 import {TYPE} from '../../../typer/index.ts';
 import {CoreLibName} from '../../../parser/index.ts';
 import {
-	SymbolKind,
 	type SymbolSchema,
 	SymbolSchemaType,
 } from '../../index.ts';
@@ -32,32 +27,13 @@ export class TypeAlias extends Type {
 	}
 
 
-	private readonly id: bigint = Validator.cookTokenIdentifier(this.start_node.text);
+	public readonly id: bigint = Validator.cookTokenIdentifier(this.start_node.text);
 
 
 	public constructor(start_node: SyntaxNodeType<'identifier'>) {
 		super(start_node);
 	}
 
-
-	public override varCheck(): void {
-		// NOTE: ignore var-checking `this` for now if source is a built-in identifier, as semantics is determined by syntax.
-		if (([
-			CoreLibName.OBJECT,
-			CoreLibName.EXCEPTION,
-			CoreLibName.FUNCTION,
-			CoreLibName.CLASS,
-		] as readonly string[]).includes(this.source)) {
-			return;
-		}
-		if (!this.validator.hasSymbol(this.id)) {
-			throw new ReferenceErrorUndeclared(this);
-		}
-		if (!(this.validator.getSymbol(this.id) instanceof SymbolSchemaType)) {
-			throw new ReferenceErrorKind(this, SymbolKind.VALUE, SymbolKind.TYPE);
-			// TODO: When Type objects are allowed as runtime values, this should be removed and checked by the type checker (`this#typeCheck`).
-		}
-	}
 
 	@memoizeMethod
 	public override eval(): TYPE.Type {

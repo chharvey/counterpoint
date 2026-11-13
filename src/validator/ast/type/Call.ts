@@ -1,5 +1,4 @@
 import * as assert from 'node:assert';
-import * as xjs from 'extrajs';
 import {
 	TypeErrorNotNarrow,
 	TypeErrorNotCallable,
@@ -19,7 +18,6 @@ import type {SyntaxNodeType} from '../../utils-private.ts';
 import type {EXPR} from '../index.ts';
 import {
 	type CallableInterfaceName,
-	validate_callable_interface_name,
 	type ConstructorSchema,
 	CLASS_API,
 } from '../utils-private.ts';
@@ -82,18 +80,12 @@ export class Call extends Type {
 
 	public constructor(
 		start_node: SyntaxNodeType<'type_compound'>,
-		private readonly base: Type,
-		public  readonly args: Readonly<NonemptyArray<Type>>,
+		public readonly base: Type,
+		public readonly args: Readonly<NonemptyArray<Type>>,
 	) {
 		super(start_node, {}, [base, ...args]);
 	}
 
-	public override varCheck(): void {
-		// NOTE: ignore var-checking `this.base` for now, as semantics is determined by syntax.
-		// (`this.base.source` must be a `CallableInterfaceName`)
-		validate_callable_interface_name(this.base.source);
-		return xjs.Array.forEachAggregated(this.args, (arg) => arg.varCheck());
-	}
 
 	@memoizeMethod
 	public override eval(): TYPE.Type {

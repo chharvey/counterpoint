@@ -1,7 +1,5 @@
 import * as assert from 'node:assert';
-import * as xjs from 'extrajs';
 import {
-	AssignmentErrorDuplicateKey,
 	TypeErrorInvalidOperation,
 	TypeErrorNotNarrow,
 	TypeErrorNoEntry,
@@ -41,20 +39,6 @@ function only_errors_of_type<E extends Error = Error>(err: unknown, types: reado
 		types.some((typ) => err instanceof typ) ||
 		err instanceof AggregateError && err.errors.every((suberr) => only_errors_of_type<E>(suberr, types))
 	);
-}
-
-
-
-/** Ensure no duplicate keys in a record/dict expression/type or function type. */
-export function check_unique_keys(keys: readonly Key[]): void {
-	const key_ids = new Set<bigint>();
-	return xjs.Array.forEachAggregated(keys, (key) => {
-		if (key_ids.has(key.id)) {
-			throw new AssignmentErrorDuplicateKey(key);
-		} else {
-			key_ids.add(key.id);
-		}
-	});
 }
 
 
