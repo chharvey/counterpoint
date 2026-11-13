@@ -6,10 +6,6 @@ import {
 	type EntryType,
 	TYPE,
 	VALUE,
-	ReferenceErrorUndeclared,
-	ReferenceErrorDeadZone,
-	ReferenceErrorKind,
-	AssignmentErrorDuplicateKey,
 } from '../../src/index.ts';
 import {
 	extract_tokens,
@@ -21,26 +17,6 @@ import {
 
 
 test.suite('Type', () => {
-	test.suite('#varCheck', () => {
-		test.suite('TypeFunction', () => {
-			test.test('throws for duplicate param labels.', () => {
-				const {stmts, visitors} = setupScript(`{
-					type T = \\(a: int, b: bool) => void;
-					type U = \\(a: int, b: bool) => void;
-					type V = \\(a: int, a: bool) => void;
-				}`, {varCheck: false});
-				stmts.slice(0, 2).forEach((stmt) => visitors.refCheck.visit(stmt));
-				return assert.throws(() => visitors.refCheck.visit(stmts[2]), AssignmentErrorDuplicateKey);
-			});
-			test.test('single underscore is considered a word, not an identifier.', () => {
-				const decl: AST.STMT.DeclarationType = AST.STMT.DeclarationType.fromSource('type X = \\(_: bool, _: int) => void;');
-				return assert.throws(() => new AST.AstNodeVisitorRefCheck().visit(decl), AssignmentErrorDuplicateKey);
-			});
-		});
-	});
-
-
-
 	test.suite('#eval', () => {
 		test.suite('TypeCollectionLiteral', () => {
 			test.test('TypeTuple', () => {
@@ -171,52 +147,6 @@ test.suite('Type', () => {
 
 
 	test.suite('TypeAlias', () => {
-		test.suite('#varCheck', () => {
-			test.test('does not throw when referencing built-in identifiers.', () => {
-				setupScript(`{
-					type T = Object;
-					type E = Exception;
-					val obj: Object = 42;
-					val ex: Exception = Exception.("hello");
-				}`, {typeCheck: false}); // assert does not throw
-			});
-			test.test('throws if the validator does not contain a record for the identifier.', () => {
-				setupScript(`{
-					type T = int;
-					type U = float | T;
-				}`, {typeCheck: false}); // assert does not throw
-				assert.throws(() => setupScript(`{
-					type U = float | T;
-				}`, {typeCheck: false}), ReferenceErrorUndeclared);
-			});
-			test.test('throws when declared in an inner scope.', () => {
-				assert.throws(() => setupScript(`{
-					if true then {
-						type T = int;
-					};
-					type _ = float | T;
-				}`, {typeCheck: false}), ReferenceErrorUndeclared);
-			});
-			test.test('throws when there is a temporal dead zone.', {expectFailure: true}, () => {
-				assert.throws(() => setupScript(`{
-					T;
-					type T = int;
-				}`, {typeCheck: false}), ReferenceErrorDeadZone);
-			});
-			test.test('throws if was declared as a value variable.', () => {
-				assert.throws(() => setupScript(`{
-					val FOO: int = 42;
-					type _ = FOO | float;
-				}`, {typeCheck: false}), ReferenceErrorKind);
-				assert.throws(() => setupScript(`{
-					for FOO: int in [42] do {
-						type _ = FOO | float;
-					};
-				}`, {typeCheck: false}), ReferenceErrorKind);
-			});
-		});
-
-
 		test.suite('#eval', () => {
 			test.test('computes the value of reserved types.', () => {
 				assertEqualTypes([

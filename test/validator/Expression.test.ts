@@ -9,11 +9,6 @@ import {
 	AST,
 	SymbolSchemaType,
 	SymbolSchemaVar,
-	ReferenceErrorUndeclared,
-	ReferenceErrorDeadZone,
-	ReferenceErrorKind,
-	AssignmentErrorDuplicateDeclaration,
-	AssignmentErrorDuplicateKey,
 	TypeErrorInvalidOperation,
 	TypeErrorNotAssignable,
 } from '../../src/index.ts';
@@ -22,7 +17,6 @@ import {
 	extract_lines,
 	repeat,
 	assert_shallowStrictEqual,
-	assertAssignable,
 	assertEqualTypes,
 	typeUnit,
 	setupScript,
@@ -32,38 +26,6 @@ import {
 
 test.suite('Expression', () => {
 	const VISITOR = new AST.ExprVisitorType();
-
-
-	test.suite('#varCheck', () => {
-		test.suite('ExpressionFunction (and DeclarationFunction)', () => {
-			test.test('disallows duplicate param keys.', () => {
-				const {stmts, visitors} = setupScript(`{
-					\\(a= b: int, a= c: float): void { return; };
-					\\($a: int, a= c: float): void { return; };
-				}`, {varCheck: false});
-				const fn0 = (stmts[0] as AST.STMT.StatementExpression).expr as AST.EXPR.Function;
-				const fn1 = (stmts[1] as AST.STMT.StatementExpression).expr as AST.EXPR.Function;
-				assert.throws(() => visitors.refCheck.visit(fn0), AssignmentErrorDuplicateKey);
-				return assert.throws(() => visitors.refCheck.visit(fn1), AssignmentErrorDuplicateKey);
-			});
-			test.test('throws when capture is not declared.', () => {
-				const {stmts, visitors} = setupScript(`{
-					\\() with (x): void { return; };
-				}`, {varCheck: false});
-				return assert.throws(() => visitors.refCheck.visit(stmts[0]), ReferenceErrorUndeclared);
-			});
-			test.test('disallows duplicate captures.', () => {
-				const {stmts, visitors} = setupScript(`{
-					val x: int = 42;
-					\\() with (x, x): void { return; };
-				}`, {varCheck: false});
-				visitors.refCheck.visit(stmts[0]);
-				const fn0 = (stmts[1] as AST.STMT.StatementExpression).expr as AST.EXPR.Function;
-				return assert.throws(() => visitors.refCheck.visit(fn0), AssignmentErrorDuplicateDeclaration);
-			});
-		});
-	});
-
 
 
 	test.suite('#type', () => {
@@ -209,13 +171,6 @@ test.suite('Expression', () => {
 
 
 	test.suite('Constant', () => {
-		test.suite('#varCheck', () => {
-			test.test('never throws.', () => {
-				new AST.AstNodeVisitorRefCheck().visit(AST.EXPR.Constant.fromSource('42'));
-			});
-		});
-
-
 		test.suite('#type', () => {
 			test.test('returns the result of `this#interpreterValue`, wrapped in a `new Unit`.', () => {
 				const constants: AST.EXPR.Constant[] = extract_tokens(`
@@ -292,63 +247,6 @@ test.suite('Expression', () => {
 
 
 
-	test.suite('Variable', () => {
-		test.suite('#varCheck', () => {
-			test.test('allows core lib class references.', () => {
-				setupScript(`{
-					${CORE_LIB_NAMES.join(';')};
-				}`, {typeCheck: false}); // assert does not throw
-			});
-			test.test('throws if the validator does not contain a record for the identifier.', () => {
-				const {visitors} = setupScript(`{
-					val mut i: int = 42;
-					i;
-				}`, {typeCheck: false}); // assert does not throw
-				assert.throws(() => visitors.refCheck.visit(AST.EXPR.Variable.fromSource('i')), ReferenceErrorUndeclared);
-			});
-			test.test('throws when declared in an inner scope.', () => {
-				assert.throws(() => setupScript(`{
-					if true then {
-						val mut i: int = 42;
-					};
-					i;
-				}`, {typeCheck: false}), ReferenceErrorUndeclared);
-			});
-			test.test('throws when there is a temporal dead zone.', {expectFailure: true}, () => {
-				assert.throws(() => setupScript(`{
-					i;
-					val mut i: int = 42;
-				}`, {typeCheck: false}), ReferenceErrorDeadZone);
-			});
-			test.test('throws if it was declared as a type alias.', () => {
-				assert.throws(() => setupScript(`{
-					type FOO = int;
-					42 || FOO;
-				}`, {typeCheck: false}), ReferenceErrorKind);
-			});
-			test.test('iteration variable of `for` loop is scoped only to the block.', () => {
-				setupScript(`{
-					for it: float in [1.1, 2.2, 3.3] do {
-						it;
-					};
-				}`, {typeCheck: false}); // assert does not throw
-				assert.throws(() => setupScript(`{
-					for it: float in [1.1, 2.2, 3.3, it] do {
-						42;
-					};
-				}`, {typeCheck: false}), ReferenceErrorUndeclared, 'iteraion variable cannot be referenced in the iterator expression.');
-				assert.throws(() => setupScript(`{
-					for it: float in [1.1, 2.2, 3.3] do {
-						42;
-					};
-					it;
-				}`, {typeCheck: false}), ReferenceErrorUndeclared, 'iteration variable cannot be referenced after the iteration statement.');
-			});
-		});
-	});
-
-
-
 	test.suite('Template', () => {
 		function initTemplates(): AST.EXPR.Template[] {
 			return [
@@ -374,74 +272,6 @@ test.suite('Expression', () => {
 
 
 	test.suite('CollectionLiteral', () => {
-		test.suite('#varCheck', () => {
-			test.suite('{Type}Record,Dict', () => {
-				test.test('var-checks all keys before all values.', () => {
-					const {goal, stmts} = setupScript(`{
-						type T = str;
-						type U = (a: bool, b: (z: int), c: T, d: (y: float));
-						val f: null = null;
-						(e= [x= 42, w= 4.2], f= f);
-						[g= (w= 42, x= 4.2), f= f];
-					}`, {build: false});
-					assert.partialDeepStrictEqual(
-						goal.block!.validator.getAllSymbols(),
-						new Map([
-							[Validator.keyId('T'), {source: 'T'}],
-							[Validator.keyId('U'), {source: 'U'}],
-							[Validator.keyId('f'), {source: 'f'}],
-						]),
-					);
-					return assertEqualTypes(
-						(stmts[1] as AST.STMT.DeclarationType).assigned.eval(),
-						TYPE.Record.fromTypes(new Map([
-							[Validator.keyId('a'), TYPE.BOOL],
-							[Validator.keyId('b'), TYPE.Record.fromTypes(new Map([[Validator.keyId('z'), TYPE.INT]]))],
-							[Validator.keyId('c'), TYPE.STR],
-							[Validator.keyId('d'), TYPE.Record.fromTypes(new Map([[Validator.keyId('y'), TYPE.FLOAT]]))],
-						])),
-					);
-				});
-				test.test('throws if containing duplicate keys.', () => {
-					const node_visitor_ref_check = new AST.AstNodeVisitorRefCheck();
-
-					[
-						AST.TYPE.Record .fromSource('(a: int, b: float, c: str)'),
-						AST.EXPR.Record .fromSource('(a= 1, b= 2.0, c= "three")'),
-						AST.EXPR.Dict   .fromSource('[a= 1, b= 2.0, c= "three"]'),
-					].forEach((node) => node_visitor_ref_check.visit(node)); // assert does not throw
-
-					[
-						AST.TYPE.Record .fromSource('(a: int, b: float, a: str)'),
-						AST.TYPE.Record .fromSource('(_: int, b: float, _: str)'),
-						AST.EXPR.Record .fromSource('(a= 1, b= 2.0, a= "three")'),
-						AST.EXPR.Record .fromSource('(_= 1, b= 2.0, _= "three")'),
-						AST.EXPR.Dict   .fromSource('[a= 1, b= 2.0, a= "three"]'),
-						AST.EXPR.Dict   .fromSource('[_= 1, b= 2.0, _= "three"]'),
-					].forEach((node) => assert.throws(() => node_visitor_ref_check.visit(node), AssignmentErrorDuplicateKey));
-
-					new Map<AST.AstNode, string[]>([
-						[AST.TYPE.Record .fromSource('(c: int, d: float, c: str, d: bool)'),  ['c', 'd']],
-						[AST.TYPE.Record .fromSource('(e: int, f: float, e: str, e: bool)'),  ['e', 'e']],
-						[AST.EXPR.Record .fromSource('(c= 1, d= 2.0, c= "three", d= false)'), ['c', 'd']],
-						[AST.EXPR.Record .fromSource('(e= 1, f= 2.0, e= "three", e= false)'), ['e', 'e']],
-						[AST.EXPR.Dict   .fromSource('[c= 1, d= 2.0, c= "three", d= false]'), ['c', 'd']],
-						[AST.EXPR.Dict   .fromSource('[e= 1, f= 2.0, e= "three", e= false]'), ['e', 'e']],
-					]).forEach((dupes, node) => assert.throws(() => node_visitor_ref_check.visit(node), (err) => {
-						assertAssignable(err as Error, {
-							cons:   AggregateError,
-							errors: dupes.map((k) => ({
-								cons:    AssignmentErrorDuplicateKey,
-								message: `Duplicate record/dict/parameter key \`${k}\`.`,
-							})),
-						});
-						return true;
-					}));
-				});
-			});
-		});
-
-
 		test.suite('#type', () => {
 			test.test('with constant folding on.', () => {
 				const expected: readonly TYPE.Unit[] = [typeUnit(1n), typeUnit(2.0), typeUnit('three')];

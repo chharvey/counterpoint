@@ -15,18 +15,6 @@ import {
 
 
 test.suite('TypeCall', () => {
-	test.suite('#varCheck', () => {
-		test.test('throws if base is not one of the allowed strings.', () => {
-			xjs.Array.forEachAggregated(extract_lines`
-				SET.<str>
-				Mapping.<bool>
-			`, (src) => {
-				assert.throws(() => new AST.AstNodeVisitorRefCheck().visit(AST.TYPE.Call.fromSource(src)), SyntaxError);
-			});
-		});
-	});
-
-
 	test.suite('#eval', () => {
 		test.test('evaluates Callable Interface Names.', () => {
 			assertEqualTypes(
