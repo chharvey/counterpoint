@@ -121,7 +121,7 @@ export class AstNodeVisitorRefCheck extends AstNodeVisitor<void> {
 		}
 		if (expr.validator.getSymbol(expr.id) instanceof SymbolSchemaType) {
 			throw new ReferenceErrorKind(expr, SymbolKind.TYPE, SymbolKind.VALUE);
-			// TODO: When Type objects are allowed as runtime values, this should be removed and checked by the type checker (`this#typeCheck`).
+			// TODO: When Type objects are allowed as runtime values, this should be removed and checked by the type checker.
 		}
 	}
 
