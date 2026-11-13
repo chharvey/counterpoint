@@ -9,11 +9,16 @@ import type {Serializable} from '../parser/index.ts';
 /** Kinds of symbols. */
 export enum SymbolKind {
 	/** A type variable / type alias. */
-	TYPE  = 'type', // eslint-disable-line @typescript-eslint/no-shadow --- not a variable declaration
+	TYPE = 'type', // eslint-disable-line @typescript-eslint/no-shadow --- not a variable declaration
+
+	/** A type function or generic class/interface. */
+	TYPEFUNC = 'type function',
+
 	/** A value variable (a variable holding a Counterpoint Language Value). */
 	VALUE = 'value',
+
 	/** A declared function. */
-	FUNC  = 'function',
+	FUNC = 'function',
 }
 
 

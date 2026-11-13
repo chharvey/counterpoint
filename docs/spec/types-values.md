@@ -161,12 +161,20 @@ Property            | Read-Only? | Description
 \`type\`            | no         | the Counterpoint Language Type of the variable
 
 ##### SymbolSchemaFunc
-A **SymbolSchemaFunc** represents the symbol a function declaration.
+A **SymbolSchemaFunc** represents the name of a declared function.
 
 Property  | Read-Only? | Description
 --------- | ---------- | -----------
 \`id\`    | yes        | the unique identifier of the declared function
 \`types\` | yes        | a mutable Sequence of Counterpoint Language Types for the function’s overloads
+
+##### SymbolSchemaClass
+A **SymbolSchemaClass** represents the name of a declared interface or class.
+
+Property      | Read-Only? | Description
+------------- | ---------- | -----------
+\`id\`        | yes        | the unique identifier of the declared interface/class
+\`signature\` | yes        | an object holding information about how the interface/class may be called
 
 
 ### Nodes

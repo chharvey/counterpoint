@@ -183,7 +183,7 @@ Decorate(GenericArguments ::= "<" ","? Type# ","? ">") -> Sequence<SemanticType>
 
 
 Decorate(TypeUnit ::= IDENTIFIER) -> SemanticTypeAlias
-	:= (SemanticTypeAlias[id=TokenWorth(IDENTIFIER)]);
+	:= (SemanticTypeAlias[id=TokenWorth(IDENTIFIER)][isTypefuncRef=false]);
 Decorate(TypeUnit ::= KeywordType) -> SemanticTypeConstant
 	:= (SemanticTypeConstant[value=KeywordType(KeywordType)]);
 Decorate(TypeUnit ::= PrimitiveLiteral) -> SemanticTypeConstant

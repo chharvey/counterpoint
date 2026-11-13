@@ -1,5 +1,6 @@
 import * as assert from 'node:assert';
 import * as test from 'node:test';
+import * as xjs from 'extrajs';
 import {
 	Validator,
 	AST,
@@ -13,6 +14,7 @@ import {
 } from '../../src/index.ts';
 import {
 	extract_tokens,
+	extract_lines,
 	assertEqualTypes,
 	typeUnit,
 	setupScript,
@@ -172,14 +174,6 @@ test.suite('Type', () => {
 
 	test.suite('TypeAlias', () => {
 		test.suite('#varCheck', () => {
-			test.test('does not throw when referencing built-in identifiers.', () => {
-				setupScript(`{
-					type T = Object;
-					type E = Exception;
-					val obj: Object = 42;
-					val ex: Exception = Exception.("hello");
-				}`, {typeCheck: false}); // assert does not throw
-			});
 			test.test('throws if the validator does not contain a record for the identifier.', () => {
 				setupScript(`{
 					type T = int;
@@ -203,7 +197,39 @@ test.suite('Type', () => {
 					type T = int;
 				}`, {typeCheck: false}), ReferenceErrorDeadZone);
 			});
-			test.test('throws if was declared as a value variable.', () => {
+			test.test('allows core lib class references if they are not generic.', () => {
+				setupScript(`{
+					type Nu = Null;
+					type Bo = Boolean;
+					type Sy = Symbol;
+					type In = Integer;
+					type Na = Natural;
+					type Fl = Float;
+					type St = String;
+					type Ob = Object;
+					type Ex = Exception;
+					type Fu = Function;
+					type Cl = Class;
+				}`, {typeCheck: false}); // assert does not throw
+			});
+			test.test('throws if core lib generic class references are referenced with no generic arguments.', () => {
+				xjs.Array.forEachAggregated(extract_lines`
+					List
+					Dict
+					Set
+					Map
+					Maybe
+					None
+					Some
+					Result
+					Fail
+					Ok
+				`, (src) => {
+					const alias: AST.TYPE.TypeAlias = AST.TYPE.TypeAlias.fromSource(src);
+					return assert.throws(() => alias.varCheck(), ReferenceErrorKind);
+				});
+			});
+			test.test('throws if referencing a variable declaration.', () => {
 				assert.throws(() => setupScript(`{
 					val FOO: int = 42;
 					type _ = FOO | float;
@@ -213,6 +239,14 @@ test.suite('Type', () => {
 						type _ = FOO | float;
 					};
 				}`, {typeCheck: false}), ReferenceErrorKind);
+			});
+			test.test('throws if referencing a function declaration.', () => {
+				const {stmts} = setupScript(`{
+					func f(): void { return; }
+					type U = f;
+				}`, {varCheck: false});
+				stmts[0].varCheck();
+				return assert.throws(() => ((stmts[1] as AST.STMT.DeclarationType).assigned as AST.TYPE.TypeAlias).varCheck(), ReferenceErrorKind);
 			});
 		});
 

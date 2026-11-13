@@ -17,6 +17,9 @@ import {
 	SymbolKind,
 	type SymbolSchema,
 	SymbolSchemaType,
+	SymbolSchemaVar,
+	SymbolSchemaFunc,
+	SymbolSchemaClass,
 } from '../../index.ts';
 import type {SyntaxNodeType} from '../../utils-private.ts';
 import {Validator} from '../../Validator.ts';
@@ -32,6 +35,8 @@ export class TypeAlias extends Type {
 	}
 
 
+	#isTypefuncRef: boolean = false;
+
 	private readonly id: bigint = Validator.cookTokenIdentifier(this.start_node.text);
 
 
@@ -40,22 +45,23 @@ export class TypeAlias extends Type {
 	}
 
 
+	private get isTypefuncRef(): boolean {
+		return this.#isTypefuncRef;
+	}
+
+
 	public override varCheck(): void {
-		// NOTE: ignore var-checking `this` for now if source is a built-in identifier, as semantics is determined by syntax.
-		if (([
-			CoreLibName.OBJECT,
-			CoreLibName.EXCEPTION,
-			CoreLibName.FUNCTION,
-			CoreLibName.CLASS,
-		] as readonly string[]).includes(this.source)) {
-			return;
-		}
 		if (!this.validator.hasSymbol(this.id)) {
 			throw new ReferenceErrorUndeclared(this);
 		}
-		if (!(this.validator.getSymbol(this.id) instanceof SymbolSchemaType)) {
+		const symbol: SymbolSchema = this.validator.getSymbol(this.id)!;
+		if (symbol instanceof SymbolSchemaVar || symbol instanceof SymbolSchemaFunc) {
 			throw new ReferenceErrorKind(this, SymbolKind.VALUE, SymbolKind.TYPE);
 			// TODO: When Type objects are allowed as runtime values, this should be removed and checked by the type checker (`this#typeCheck`).
+		}
+		if (symbol instanceof SymbolSchemaClass && symbol.classSignature.genericParams) {
+			this.#isTypefuncRef = true;
+			throw new ReferenceErrorKind(this, SymbolKind.TYPEFUNC, SymbolKind.TYPE);
 		}
 	}
 

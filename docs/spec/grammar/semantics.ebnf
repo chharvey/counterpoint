@@ -67,7 +67,7 @@ SemanticType =:=
 SemanticTypeConstant[value: Type]
 	::= ();
 
-SemanticTypeAlias[id: RealNumber]
+SemanticTypeAlias[id: RealNumber][isTypefuncRef: Boolean]
 	::= ();
 
 SemanticTypeCollection =:=
