@@ -72,23 +72,6 @@ export type CallableInterfaceName = (
 	| CoreLibName.FAIL
 	| CoreLibName.OK
 );
-const CALLABLE_INTERFACES: readonly string[] = [
-	CoreLibName.LIST,
-	CoreLibName.DICT,
-	CoreLibName.SET,
-	CoreLibName.MAP,
-	CoreLibName.MAYBE,
-	CoreLibName.NONE,
-	CoreLibName.SOME,
-	CoreLibName.RESULT,
-	CoreLibName.FAIL,
-	CoreLibName.OK,
-];
-export function validate_callable_interface_name(source: string): asserts source is CallableInterfaceName {
-	if (!CALLABLE_INTERFACES.includes(source)) {
-		throw new SyntaxError(`Unexpected token: \`${source}\`; expected \`${CALLABLE_INTERFACES.join(' | ')}\`.`);
-	}
-}
 
 /** Callable classes that have value parameters. */
 export type CallableClassName = (

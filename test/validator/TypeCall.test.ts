@@ -4,11 +4,13 @@ import * as xjs from 'extrajs';
 import {
 	AST,
 	TYPE,
+	ReferenceErrorKind,
 	TypeErrorNotCallable,
 	TypeErrorArgCount,
 } from '../../src/index.ts';
 import {
 	extract_lines,
+	assertAssignable,
 	assertEqualTypes,
 } from '../utils.ts';
 
@@ -16,12 +18,17 @@ import {
 
 test.suite('TypeCall', () => {
 	test.suite('#varCheck', () => {
-		test.test('throws if base is not one of the allowed strings.', () => {
-			xjs.Array.forEachAggregated(extract_lines`
-				SET.<str>
-				Mapping.<bool>
-			`, (src) => {
-				assert.throws(() => AST.TYPE.Call.fromSource(src).varCheck(), SyntaxError);
+		test.test('catches ReferenceErrorKind thrown by `TypeAlias#varCheck`.', () => {
+			AST.TYPE.Call.fromSource('List.<int>').varCheck(); // assert does not throw
+			return assert.throws(() => AST.TYPE.Type.fromSource('List | Dict').varCheck(), (err) => {
+				assertAssignable(err as Error, {
+					cons:   AggregateError,
+					errors: [
+						{cons: ReferenceErrorKind, message: '`List` refers to a type function, but is used as a type.'},
+						{cons: ReferenceErrorKind, message: '`Dict` refers to a type function, but is used as a type.'},
+					],
+				});
+				return true;
 			});
 		});
 	});

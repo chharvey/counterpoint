@@ -45,7 +45,7 @@ export class TypeAlias extends Type {
 	}
 
 
-	private get isTypefuncRef(): boolean {
+	public get isTypefuncRef(): boolean {
 		return this.#isTypefuncRef;
 	}
 

@@ -19,7 +19,6 @@ import type {SyntaxNodeType} from '../../utils-private.ts';
 import type {EXPR} from '../index.ts';
 import {
 	type CallableInterfaceName,
-	validate_callable_interface_name,
 	type ConstructorSchema,
 	CLASS_API,
 } from '../utils-private.ts';
@@ -89,9 +88,13 @@ export class Call extends Type {
 	}
 
 	public override varCheck(): void {
-		// NOTE: ignore var-checking `this.base` for now, as semantics is determined by syntax.
-		// (`this.base.source` must be a `CallableInterfaceName`)
-		validate_callable_interface_name(this.base.source);
+		try {
+			this.base.varCheck();
+		} catch (err) {
+			if (!(this.base instanceof TypeAlias && this.base.isTypefuncRef)) {
+				throw err;
+			}
+		}
 		return xjs.Array.forEachAggregated(this.args, (arg) => arg.varCheck());
 	}
 

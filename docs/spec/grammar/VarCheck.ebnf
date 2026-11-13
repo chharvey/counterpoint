@@ -124,11 +124,16 @@ Nil! VarCheck(SemanticTypeAlias var) :=
 
 
 
-Nil! VarCheck(SemanticTypeCall call) :=
-	1. *Note:* Skip var-checking of `call.children.0` for now, as semantics is determined by syntax.
-	2. *If* `call.children.0.source` is not a Callable Interface Name:
-		1. *Throw:* a new SyntaxError.
-	3. *For each* `it` in `call.children[1..]`:
+Nil! VarCheck(SemanticTypeCall ::= SemanticType__0 SemanticType__1+) :=
+	1. *Let* `check_base` be `VarCheck(SemanticType__0)`.
+	2. *If* `check_base` is an abrupt completion:
+		1. *If* `SemanticType__0` is a `SemanticTypeAlias` *and* `SemanticType__0.isTypefuncRef` is `true`:
+			1. Fall through.
+		2. *Else:*
+			1. *Return:* `check_base`.
+	3. *Else:*
+		1. Fall through.
+	4. *For each* `it` in `SemanticType__1+`:
 		1. *Perform:* *Unwrap:* `VarCheck(it)`.
 ;
 
