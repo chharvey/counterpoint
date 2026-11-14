@@ -32,7 +32,7 @@ test.suite('AstNodeVisitorRefCheck#visit', () => {
 		test.test('adds a SymbolSchema to the symbol table with a preset `type` value of `anything`.', () => {
 			const {stmts, visitors} = setupScript(`{
 				\\(a: int, mut b: int, mut $c: int, delta= d: int, $e?: int): void { return; };
-			}`, {varCheck: false});
+			}`, {refCheck: false});
 			const id_a:     bigint = Validator.keyId('a');
 			const id_b:     bigint = Validator.keyId('b');
 			const id_c:     bigint = Validator.keyId('c');
@@ -92,7 +92,7 @@ test.suite('AstNodeVisitorRefCheck#visit', () => {
 		test.test('for blank params, does not add to symbol table.', () => {
 			const {stmts, visitors} = setupScript(`{
 				\\(_: int): void { return; };
-			}`, {varCheck: false});
+			}`, {refCheck: false});
 			const fn = (stmts[0] as AST.STMT.StatementExpression).expr as AST.EXPR.Function;
 			assert.ok(!fn.block.validator.hasSymbol(0x100n));
 			visitors.refCheck.visit(fn);
@@ -106,7 +106,7 @@ test.suite('AstNodeVisitorRefCheck#visit', () => {
 		test.test('disallows duplicate param ids.', () => {
 			const {stmts, visitors} = setupScript(`{
 				\\(a: int, a: float): void { return; };
-			}`, {varCheck: false});
+			}`, {refCheck: false});
 			return assert.throws(() => visitors.refCheck.visit((stmts[0] as AST.STMT.StatementExpression).expr as AST.EXPR.Function), AssignmentErrorDuplicateDeclaration);
 		});
 		test.test('parameters do not shadow outside scope.', () => {
@@ -134,7 +134,7 @@ test.suite('AstNodeVisitorRefCheck#visit', () => {
 					val y: float = 4.2; %> AssignmentErrorDuplicateDeclaration
 					return;
 				};
-			}`, {varCheck: false});
+			}`, {refCheck: false});
 			visitors.refCheck.visit(stmts[0]);
 			const fn = (stmts[1] as AST.STMT.StatementExpression).expr as AST.EXPR.Function;
 			visitors.refCheck.visit(fn.parameters[0]); // assert does not throw
@@ -159,7 +159,7 @@ test.suite('AstNodeVisitorRefCheck#visit', () => {
 						val f = \\(): void { return; };
 						func f(a: int): void { return; };
 					};
-				}`, {varCheck: false});
+				}`, {refCheck: false});
 				const blocks: readonly AST.Block[] = stmts.map((stmt) => ((stmt as AST.STMT.StatementExpression).expr as AST.EXPR.ExpressionBlock).block);
 				visitors.refCheck.visit(blocks[0]); // assert does not throw
 				assert.throws(() => visitors.refCheck.visit(blocks[1]), AssignmentErrorDuplicateDeclaration);
@@ -215,7 +215,7 @@ test.suite('AstNodeVisitorRefCheck#visit', () => {
 						return;
 					}
 					func g(): int => x;
-				}`, {varCheck: false});
+				}`, {refCheck: false});
 				visitors.refCheck.visit(stmts[0]);
 				return xjs.Array.forEachAggregated([
 					...(stmts.slice(1, 3) as AST.STMT.StatementExpression[]).map((stmt) => stmt.expr as AST.EXPR.Function),
@@ -234,7 +234,7 @@ test.suite('AstNodeVisitorRefCheck#visit', () => {
 						return;
 					}
 					func g(): int => x;
-				}`, {varCheck: false});
+				}`, {refCheck: false});
 				xjs.Array.forEachAggregated([
 					...(stmts.slice(0, 2) as AST.STMT.StatementExpression[]).map((stmt) => stmt.expr as AST.EXPR.Function),
 					...(stmts.slice(2) as AST.STMT.DeclarationFunction[]),
@@ -251,7 +251,7 @@ test.suite('AstNodeVisitorRefCheck#visit', () => {
 						val x: float = 4.2;
 						return;
 					}
-				}`, {varCheck: false});
+				}`, {refCheck: false});
 				visitors.refCheck.visit(stmts[0]);
 				return xjs.Array.forEachAggregated([
 					(stmts[1] as AST.STMT.StatementExpression).expr as AST.EXPR.Function,
@@ -276,7 +276,7 @@ test.suite('AstNodeVisitorRefCheck#visit', () => {
 						set x = 43;
 						return;
 					}
-				}`, {varCheck: false});
+				}`, {refCheck: false});
 				visitors.refCheck.visit(stmts[0]);
 				xjs.Array.forEachAggregated([
 					(stmts[1] as AST.STMT.StatementExpression).expr as AST.EXPR.Function,
@@ -488,7 +488,7 @@ test.suite('AstNodeVisitorRefCheck#visit', () => {
 				type T = \\(a: int, b: bool) => void;
 				type U = \\(a: int, b: bool) => void;
 				type V = \\(a: int, a: bool) => void;
-			}`, {varCheck: false});
+			}`, {refCheck: false});
 			stmts.slice(0, 2).forEach((stmt) => visitors.refCheck.visit(stmt));
 			return assert.throws(() => visitors.refCheck.visit(stmts[2]), AssignmentErrorDuplicateKey);
 		});
@@ -565,7 +565,7 @@ test.suite('AstNodeVisitorRefCheck#visit', () => {
 			const {stmts, visitors} = setupScript(`{
 				\\(a= b: int, a= c: float): void { return; };
 				\\($a: int, a= c: float): void { return; };
-			}`, {varCheck: false});
+			}`, {refCheck: false});
 			const fn0 = (stmts[0] as AST.STMT.StatementExpression).expr as AST.EXPR.Function;
 			const fn1 = (stmts[1] as AST.STMT.StatementExpression).expr as AST.EXPR.Function;
 			assert.throws(() => visitors.refCheck.visit(fn0), AssignmentErrorDuplicateKey);
@@ -574,14 +574,14 @@ test.suite('AstNodeVisitorRefCheck#visit', () => {
 		test.test('throws when capture is not declared.', () => {
 			const {stmts, visitors} = setupScript(`{
 				\\() with (x): void { return; };
-			}`, {varCheck: false});
+			}`, {refCheck: false});
 			return assert.throws(() => visitors.refCheck.visit(stmts[0]), ReferenceErrorUndeclared);
 		});
 		test.test('disallows duplicate captures.', () => {
 			const {stmts, visitors} = setupScript(`{
 				val x: int = 42;
 				\\() with (x, x): void { return; };
-			}`, {varCheck: false});
+			}`, {refCheck: false});
 			visitors.refCheck.visit(stmts[0]);
 			const fn0 = (stmts[1] as AST.STMT.StatementExpression).expr as AST.EXPR.Function;
 			return assert.throws(() => visitors.refCheck.visit(fn0), AssignmentErrorDuplicateDeclaration);
@@ -753,7 +753,7 @@ test.suite('AstNodeVisitorRefCheck#visit', () => {
 				func T(a: int): void { return; }
 				val x = \\(): void { return; };
 				func x(a: int): void { return; }
-			}`, {varCheck: false});
+			}`, {refCheck: false});
 			visitors.refCheck.visit(stmts[0]);
 			visitors.refCheck.visit(stmts[1]); // allows overloads
 			visitors.refCheck.visit(stmts[2]);
@@ -802,7 +802,7 @@ test.suite('AstNodeVisitorRefCheck#visit', () => {
 				val     j: int = 42;
 				set i = 24;
 				set j = 24;
-			}`, {varCheck: false});
+			}`, {refCheck: false});
 			stmts.slice(0, 3).forEach((stmt) => visitors.refCheck.visit(stmt));
 			assert.partialDeepStrictEqual(goal.block!.validator.getSymbolBySource('i'), {
 				isWritable:      true,
@@ -833,7 +833,7 @@ test.suite('AstNodeVisitorRefCheck#visit', () => {
 				val mut j:  int = 42;
 				delete i;
 				delete j;
-			}`, {varCheck: false});
+			}`, {refCheck: false});
 			stmts.slice(0, 3).forEach((stmt) => visitors.refCheck.visit(stmt));
 			assert.partialDeepStrictEqual(goal.block!.validator.getSymbolBySource('i'), {
 				isWritable:      true,

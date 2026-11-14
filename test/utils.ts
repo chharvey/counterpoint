@@ -251,15 +251,15 @@ export function genConst(cg: CodeGenerator, value: null | boolean | symbol | big
  * then return various aspects of the node.
  * @param source         the source text of the Counterpoint script
  * @param opts           various options for compiling
- * @param opts.varCheck  Should the RefCheck  algorithm be performed? (defaults true)
- * @param opts.typeCheck Should the TypeCheck algorithm be performed? (defaults true) (only done if `varCheck` is true)
- * @param opts.build     Should the Build     algorithm be performed? (defaults true) (only done if `varCheck` and `typeCheck` are true)
- * @param opts.codegen   Should the Codegen   algorithm be performed? (defaults true) (only done if `varCheck`, `typeCheck`, and `lower` are true)
+ * @param opts.refCheck  Should the RefCheck  algorithm be performed? (defaults true)
+ * @param opts.typeCheck Should the TypeCheck algorithm be performed? (defaults true) (only done if `refCheck` is true)
+ * @param opts.build     Should the Build     algorithm be performed? (defaults true) (only done if `refCheck` and `typeCheck` are true)
+ * @param opts.codegen   Should the Codegen   algorithm be performed? (defaults true) (only done if `refCheck`, `typeCheck`, and `lower` are true)
  * @return               the `Goal` instance and some properties of it
  */
 export function setupScript(
 	source: string,
-	opts:   {varCheck?: boolean, typeCheck?: boolean, build?: boolean, codegen?: boolean} = {},
+	opts:   {refCheck?: boolean, typeCheck?: boolean, build?: boolean, codegen?: boolean} = {},
 ): {
 	readonly goal:     AST.Goal,
 	readonly stmts:    AST.Block['children'],
@@ -279,14 +279,14 @@ export function setupScript(
 	const visitor_type_check = new AST.AstNodeVisitorTypeCheck();
 	const visitor_build      = new AST.AstNodeVisitorBuild(builder);
 	assert.ok(goal.block, 'Expected AST.Goal to contain a block.');
-	opts.varCheck  ??= true;
+	opts.refCheck  ??= true;
 	opts.typeCheck ??= true;
 	opts.build     ??= true;
 	opts.codegen   ??= true;
-	opts.varCheck &&                                                 visitor_ref_check.visit(goal);
-	opts.varCheck && opts.typeCheck &&                               visitor_type_check.visit(goal);
-	opts.varCheck && opts.typeCheck && opts.build &&                 visitor_build.visit(goal);
-	opts.varCheck && opts.typeCheck && opts.build && opts.codegen && builder.codegen(cg);
+	opts.refCheck &&                                                 visitor_ref_check.visit(goal);
+	opts.refCheck && opts.typeCheck &&                               visitor_type_check.visit(goal);
+	opts.refCheck && opts.typeCheck && opts.build &&                 visitor_build.visit(goal);
+	opts.refCheck && opts.typeCheck && opts.build && opts.codegen && builder.codegen(cg);
 	return {
 		goal,
 		builder,
