@@ -1,6 +1,9 @@
+import * as assert from 'node:assert';
 import type * as binaryen from 'binaryen.ts';
 import type {CodeGenerator} from '../../index.ts';
 import {memoizeMethod} from '../../lib/index.ts';
+import {TYPE} from '../../typer/index.ts';
+import type {Builder} from '../Builder.ts';
 import type {Interpreter} from '../Interpreter.ts';
 import {OpCode} from './Opcode.ts';
 import type {ValueTac} from './ValueTac.ts';
@@ -20,6 +23,13 @@ export class Return extends Instruction {
 
 	public override toString(): string {
 		return super.toString(...(this.isReturn ? [this.value, 'nil'] : ['nil', this.value]));
+	}
+
+	public override validate(builder: Builder): void {
+		this.value.validate(builder);
+		if (!this.isReturn) {
+			assert.ok(this.value.type.isSubtypeOf(TYPE.EXCP));
+		}
 	}
 
 	public override interpret(interp: Interpreter): void {

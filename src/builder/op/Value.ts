@@ -20,7 +20,9 @@ import {
 	DictNew,
 	MapNew,
 	ObjectNew,
+	ExcpNew,
 	MaybeNew,
+	ResultNew,
 	TupleHas,
 	RecordHas,
 	TupleGet,
@@ -50,7 +52,9 @@ export abstract class ValueVisitor<T> {
 	public visitDictNew              (val: DictNew):              T { return this.defaultVisit(val); }
 	public visitMapNew               (val: MapNew):               T { return this.defaultVisit(val); }
 	public visitObjectNew            (val: ObjectNew):            T { return this.defaultVisit(val); }
+	public visitExcpNew              (val: ExcpNew):              T { return this.defaultVisit(val); }
 	public visitMaybeNew             (val: MaybeNew):             T { return this.defaultVisit(val); }
+	public visitResultNew            (val: ResultNew):            T { return this.defaultVisit(val); }
 	public visitTupleHas             (val: TupleHas):             T { return this.defaultVisit(val); }
 	public visitRecordHas            (val: RecordHas):            T { return this.defaultVisit(val); }
 	public visitTupleGet             (val: TupleGet):             T { return this.defaultVisit(val); }
@@ -76,7 +80,9 @@ export abstract class ValueVisitor<T> {
 			case DictNew:              { return this.visitDictNew              (val as DictNew); }
 			case MapNew:               { return this.visitMapNew               (val as MapNew); }
 			case ObjectNew:            { return this.visitObjectNew            (val as ObjectNew); }
+			case ExcpNew:              { return this.visitExcpNew              (val as ExcpNew); }
 			case MaybeNew:             { return this.visitMaybeNew             (val as MaybeNew); } // eslint-disable-line @typescript-eslint/no-unnecessary-type-assertion
+			case ResultNew:            { return this.visitResultNew            (val as ResultNew); }
 			case TupleHas:             { return this.visitTupleHas             (val as TupleHas); }
 			case RecordHas:            { return this.visitRecordHas            (val as RecordHas); }
 			case TupleGet:             { return this.visitTupleGet             (val as TupleGet); }
