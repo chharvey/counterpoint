@@ -1,15 +1,11 @@
-import {AssignmentErrorDuplicateDeclaration} from '../../index.ts';
 import type {Serializable} from '../../parser/index.ts';
-import {SymbolSchemaVar} from '../index.ts';
 import type {SyntaxNodeFamily} from '../utils-private.ts';
 import {Validator} from '../Validator.ts';
 import type {
-	Block,
 	TYPE as AST_TYPE,
 	EXPR,
 } from './index.ts';
 import {AstNode} from './AstNode.ts';
-import type {Functionlike} from './Functionlike.ts';
 import type {Key} from './Key.ts';
 
 
@@ -20,13 +16,13 @@ export class ParameterFunction extends AstNode {
 
 	public constructor(
 		start_node: SyntaxNodeFamily<'parameter_function', ['named', 'optional']>,
-		public  readonly identifier: Serializable | null,
-		public  readonly named:      boolean,
-		private readonly writable:   boolean,
-		public  readonly optional:   boolean,
-		public  readonly key:        Key | null,
-		public  readonly typenode:   AST_TYPE.Type,
-		public  readonly expr:       EXPR.Expression | null,
+		public readonly identifier: Serializable | null,
+		public readonly named:      boolean,
+		public readonly writable:   boolean,
+		public readonly optional:   boolean,
+		public readonly key:        Key | null,
+		public readonly typenode:   AST_TYPE.Type,
+		public readonly expr:       EXPR.Expression | null,
 	) {
 		super(start_node, {named, writable, optional}, [
 			...(key ? [key] : []),
@@ -41,17 +37,5 @@ export class ParameterFunction extends AstNode {
 
 	public get labelId(): bigint | undefined {
 		return this.key?.id ?? this.id;
-	}
-
-
-	public override varCheck(): void {
-		super.varCheck();
-		if (this.identifier) {
-			const block: Block = (this.parent as Functionlike).block;
-			if (block.validator.hasSymbol(this.id!)) {
-				throw new AssignmentErrorDuplicateDeclaration(this.identifier);
-			}
-			block.validator.addSymbol(new SymbolSchemaVar(this.id!, this.identifier, this.writable, this.optional && !this.expr));
-		}
 	}
 }

@@ -1,19 +1,12 @@
-import {
-	assert_instanceof,
-	memoizeMethod,
-} from '../../../lib/index.ts';
+import {assert_instanceof} from '../../../lib/index.ts';
 import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../../core/index.ts';
-import {TYPE} from '../../../typer/index.ts';
 import type {SyntaxNodeType} from '../../utils-private.ts';
-import {check_unique_keys} from '../utils-private.ts';
 import type {ItemType} from '../ItemType.ts';
 import type {PropertyType} from '../PropertyType.ts';
 import {Type} from './Type.ts';
-import {Tuple} from './Tuple.ts';
-import {Record} from './Record.ts';
 
 
 
@@ -27,26 +20,11 @@ class TypeFunction extends Type {
 
 	public constructor(
 		start_node: SyntaxNodeType<'type_function'>,
-		private readonly paramPositTypes: readonly ItemType[],
-		private readonly paramNamedTypes: readonly PropertyType[],
-		private readonly returnType:      Type | null,
+		public readonly paramPositTypes: readonly ItemType[],
+		public readonly paramNamedTypes: readonly PropertyType[],
+		public readonly returnType:      Type | null,
 	) {
 		super(start_node, {}, [...paramPositTypes, ...paramNamedTypes, ...(returnType ? [returnType] : [])]);
-	}
-
-
-	public override varCheck(): void {
-		check_unique_keys(this.paramNamedTypes.map((prop) => prop.key));
-		return super.varCheck();
-	}
-
-	@memoizeMethod
-	public override eval(): TYPE.Function {
-		return new TYPE.Function(
-			Tuple .prototype.eval.call({children: this.paramPositTypes}) as TYPE.Tuple,
-			Record.prototype.eval.call({children: this.paramNamedTypes}) as TYPE.Record,
-			this.returnType?.eval(),
-		);
 	}
 }
 export {TypeFunction as Function};

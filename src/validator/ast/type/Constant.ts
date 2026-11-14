@@ -2,7 +2,7 @@ import * as assert from 'node:assert';
 import type {SyntaxNode} from 'tree-sitter';
 import {
 	assert_instanceof,
-	memoizeMethod,
+	memoizeGetter,
 } from '../../../lib/index.ts';
 import {
 	type CplConfig,
@@ -54,8 +54,8 @@ export class Constant extends Type {
 		super(start_node);
 	}
 
-	@memoizeMethod
-	public override eval(): TYPE.Type {
+	@memoizeGetter
+	public get typerTypevalue(): TYPE.Type {
 		if (isSyntaxNodeType(this.start_node, 'keyword_type')) {
 			return Constant.keywordType(this.start_node.children[0].text);
 		}

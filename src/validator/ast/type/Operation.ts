@@ -31,7 +31,7 @@ export abstract class Operation extends Type {
 			| SyntaxNodeType<'type_intersection'>
 			| SyntaxNodeType<'type_union'>,
 
-		protected readonly operator: ValidTypeOperator,
+		public readonly operator: ValidTypeOperator,
 		public override readonly children: Readonly<NonemptyArray<Type>>,
 	) {
 		super(start_node, {operator}, children);
