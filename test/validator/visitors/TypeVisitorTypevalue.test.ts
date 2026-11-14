@@ -79,7 +79,7 @@ test.suite('TypeVisitorTypevalue#visit', () => {
 				VISITOR.visit(((setupScript(`{
 					type T = int;
 					type U = T;
-				}`).stmts[1] as AST.STMT.DeclarationType).assigned as AST.TYPE.TypeAlias)),
+				}`, {build: false}).stmts[1] as AST.STMT.DeclarationType).assigned as AST.TYPE.TypeAlias)),
 				TYPE.INT,
 			);
 		});
