@@ -93,13 +93,16 @@ export abstract class Type extends AstNode {
 		return statement.assigned;
 	}
 
-	/**
-	 * Assess the type-value of this node at compile-time.
-	 * @returns the computed type-value of this node
-	 * @final
-	 * @deprecated
-	 */
-	public eval(): TYPE.Type {
-		return new TypeVisitorTypevalue().visit(this);
+
+	#typevalue?: TYPE.Type;
+
+
+	public get typevalue(): TYPE.Type {
+		this.#typevalue ??= new TypeVisitorTypevalue().visit(this);
+		return this.#typevalue;
+	}
+
+	public set typevalue(thunk: () => TYPE.Type) {
+		this.#typevalue ??= thunk();
 	}
 }

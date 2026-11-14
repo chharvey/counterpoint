@@ -422,7 +422,7 @@ test.suite('AstNodeVisitorRefCheck#visit', () => {
 				]),
 			);
 			return assertEqualTypes(
-				(stmts[1] as AST.STMT.DeclarationType).assigned.eval(),
+				(stmts[1] as AST.STMT.DeclarationType).assigned.typevalue,
 				TYPE.Record.fromTypes(new Map([
 					[Validator.keyId('a'), TYPE.BOOL],
 					[Validator.keyId('b'), TYPE.Record.fromTypes(new Map([[Validator.keyId('z'), TYPE.INT]]))],

@@ -134,6 +134,7 @@ export abstract class Expression extends AstNode {
 
 
 	public get type(): TYPE.Type {
+		// can’t use nullish-coalescing `??=` as `this.#type` may be `null`
 		if (this.#type === undefined) {
 			this.#type = new ExprVisitorType().visit(this);
 		}
@@ -141,6 +142,7 @@ export abstract class Expression extends AstNode {
 	}
 
 	public set type(thunk: () => TYPE.Type) {
+		// can’t use nullish-coalescing `??=` as `this.#type` may be `null`
 		if (this.#type === undefined) {
 			this.#type = thunk();
 		}

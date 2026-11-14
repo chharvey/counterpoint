@@ -24,11 +24,25 @@ import * as AST_TYPE from '../type/index.ts';
 
 
 
+function memoizeTypeTypevalue<Param extends AST_TYPE.Type>(
+	method:   (this: TypeVisitorTypevalue, arg: Param) => TYPE.Type,
+	_context: ClassMethodDecoratorContext<TypeVisitorTypevalue, typeof method>,
+): typeof method {
+	return function (arg) {
+		arg.typevalue = method.bind(this, arg);
+		return arg.typevalue;
+	};
+}
+
+
+
 export class TypeVisitorTypevalue extends AST_TYPE.TypeVisitor<TYPE.Type> {
+	@memoizeTypeTypevalue
 	public override visitConstant(typenode: AST_TYPE.Constant): TYPE.Type {
 		return typenode.typerTypevalue;
 	}
 
+	@memoizeTypeTypevalue
 	public override visitTypeAlias(typenode: AST_TYPE.TypeAlias): TYPE.Type {
 		if (typenode.source === CoreLibName.OBJECT) {
 			return TYPE.OBJ;
@@ -45,6 +59,7 @@ export class TypeVisitorTypevalue extends AST_TYPE.TypeVisitor<TYPE.Type> {
 		return symbol.typevalue;
 	}
 
+	@memoizeTypeTypevalue
 	public override visitTuple(typenode: AST_TYPE.Tuple): TYPE.Type {
 		return new TYPE.Tuple(typenode.children.map((c) => ({
 			type:     this.visit(c.typevalue),
@@ -52,6 +67,7 @@ export class TypeVisitorTypevalue extends AST_TYPE.TypeVisitor<TYPE.Type> {
 		})));
 	}
 
+	@memoizeTypeTypevalue
 	public override visitRecord(typenode: AST_TYPE.Record): TYPE.Type {
 		return new TYPE.Record(new Map<bigint, EntryType>(typenode.children.map((c) => [
 			c.key.id,
@@ -62,27 +78,33 @@ export class TypeVisitorTypevalue extends AST_TYPE.TypeVisitor<TYPE.Type> {
 		])));
 	}
 
+	@memoizeTypeTypevalue
 	public override visitList(typenode: AST_TYPE.List): TYPE.Type {
 		return new TYPE.List(this.visit(typenode.type));
 	}
 
+	@memoizeTypeTypevalue
 	public override visitDict(typenode: AST_TYPE.Dict): TYPE.Type {
 		return new TYPE.Dict(this.visit(typenode.type));
 	}
 
+	@memoizeTypeTypevalue
 	public override visitSet(typenode: AST_TYPE.Set): TYPE.Type {
 		return new TYPE.Set(this.visit(typenode.type));
 	}
 
+	@memoizeTypeTypevalue
 	public override visitMap(typenode: AST_TYPE.Map): TYPE.Type {
 		return new TYPE.Map(this.visit(typenode.antecedenttype), this.visit(typenode.consequenttype));
 	}
 
+	@memoizeTypeTypevalue
 	public override visitAccess(typenode: AST_TYPE.Access): TYPE.Type {
 		const entry: EntryType = get_entry_info(this.visit(typenode.base), typenode);
 		return entry.optional ? new TYPE.Maybe(entry.type) : entry.type;
 	}
 
+	@memoizeTypeTypevalue
 	public override visitCall(typenode: AST_TYPE.Call): TYPE.Type {
 		if (!(typenode.base instanceof AST_TYPE.TypeAlias)) {
 			throw new TypeErrorNotCallable(this.visit(typenode.base), typenode.base);
@@ -91,6 +113,7 @@ export class TypeVisitorTypevalue extends AST_TYPE.TypeVisitor<TYPE.Type> {
 		return constructor_schema.returnType(AST_TYPE.Call.checkGenericArgs(constructor_schema, typenode.args, typenode));
 	}
 
+	@memoizeTypeTypevalue
 	public override visitOperationUnary(typenode: AST_TYPE.OperationUnary): TYPE.Type {
 		const t: TYPE.Type = this.visit(typenode.operand);
 		return (
@@ -101,6 +124,7 @@ export class TypeVisitorTypevalue extends AST_TYPE.TypeVisitor<TYPE.Type> {
 		);
 	}
 
+	@memoizeTypeTypevalue
 	public override visitOperationBinary(typenode: AST_TYPE.OperationBinary): TYPE.Type {
 		const [t0, t1]: readonly TYPE.Type[] = typenode.children.map((operand) => this.visit(operand));
 		return (
@@ -110,10 +134,20 @@ export class TypeVisitorTypevalue extends AST_TYPE.TypeVisitor<TYPE.Type> {
 		);
 	}
 
+	@memoizeTypeTypevalue
 	public override visitFunction(typenode: AST_TYPE.Function): TYPE.Type {
 		return new TYPE.Function(
-			this.visitTuple  ({children: typenode.paramPositTypes} as AST_TYPE.Tuple)  as TYPE.Tuple,
-			this.visitRecord ({children: typenode.paramNamedTypes} as AST_TYPE.Record) as TYPE.Record,
+			new TYPE.Tuple(typenode.paramPositTypes.map((c) => ({
+				type:     this.visit(c.typevalue),
+				optional: c.optional,
+			}))),
+			new TYPE.Record(new Map<bigint, EntryType>(typenode.paramNamedTypes.map((c) => [
+				c.key.id,
+				{
+					type:     this.visit(c.typevalue),
+					optional: c.optional,
+				},
+			]))),
 			typenode.returnType ? this.visit(typenode.returnType) : undefined,
 		);
 	}
