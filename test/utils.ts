@@ -251,7 +251,7 @@ export function genConst(cg: CodeGenerator, value: null | boolean | symbol | big
  * then return various aspects of the node.
  * @param source         the source text of the Counterpoint script
  * @param opts           various options for compiling
- * @param opts.varCheck  Should the VarCheck  algorithm be performed? (defaults true)
+ * @param opts.varCheck  Should the RefCheck  algorithm be performed? (defaults true)
  * @param opts.typeCheck Should the TypeCheck algorithm be performed? (defaults true) (only done if `varCheck` is true)
  * @param opts.build     Should the Build     algorithm be performed? (defaults true) (only done if `varCheck` and `typeCheck` are true)
  * @param opts.codegen   Should the Codegen   algorithm be performed? (defaults true) (only done if `varCheck`, `typeCheck`, and `lower` are true)
