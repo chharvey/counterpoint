@@ -32,22 +32,25 @@ import {ValueTac} from './ValueTac.ts';
 export class Get extends ValueTac {
 	#interpretedValue?: VALUE.Value;
 
+	private readonly targetName: string;
+
 
 	public constructor(target: SymbolSchemaVar | SymbolSchemaClass, typ: TYPE.Type);
 	public constructor(target: Temp);
 	public constructor(private readonly target: BuilderLocalSymbol, typ?: TYPE.Type) {
 		super(OpCode.GET, target instanceof SymbolSchemaVar || target instanceof SymbolSchemaClass ? typ! : target.type);
+		this.targetName = this.target instanceof SymbolSchemaVar || this.target instanceof SymbolSchemaClass ? this.target.source : this.target.name;
 	}
 
 
 	public override toString(): string {
-		return super.toString(this.target instanceof SymbolSchemaVar || this.target instanceof SymbolSchemaClass ? this.target.source : this.target.name);
+		return super.toString(this.targetName);
 	}
 
 	@runOnceMethod
 	public override validate(builder: Builder): void {
 		if (builder.getLocalStatus(this.target) !== 'set') {
-			throw new ReferenceError(`Local variable \`${this.#targetName}\` must be set before getting!`);
+			throw new ReferenceError(`Local variable \`${this.targetName}\` must be set before getting!`);
 		}
 	}
 
@@ -83,7 +86,7 @@ export class Get extends ValueTac {
 			this.#interpretedValue ??= new VALUE.Class(this.target.classSignature.instanceType, native_class);
 			return this.#interpretedValue;
 		}
-		return interp.getLocalValue(this.target) ?? assert.fail(new ReferenceError(`Local variable \`${this.#targetName}\` must be set first!`));
+		return interp.getLocalValue(this.target) ?? assert.fail(new ReferenceError(`Local variable \`${this.targetName}\` must be set first!`));
 	}
 
 	@memoizeMethod
@@ -118,14 +121,10 @@ export class Get extends ValueTac {
 				default:                    { return cg.codegenClass(VmClass.CLASS); } // return a new class who is an instance of `Class`
 			}
 		}
-		return cg.getLocal(this.target)?.get() ?? assert.fail(new ReferenceError(`Local variable \`${this.#targetName}\` must be set first!`));
+		return cg.getLocal(this.target)?.get() ?? assert.fail(new ReferenceError(`Local variable \`${this.targetName}\` must be set first!`));
 	}
 
 	public override asTac(): this {
 		return this;
-	}
-
-	get #targetName(): string {
-		return this.target instanceof SymbolSchemaVar || this.target instanceof SymbolSchemaClass ? this.target.source : this.target.name;
 	}
 }

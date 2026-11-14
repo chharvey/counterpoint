@@ -20,6 +20,7 @@ import type {Value} from './Value.ts';
 
 /** Write a value to a variable/local. */
 class OpSet extends Instruction {
+	private readonly targetName: string;
 	private readonly targetType: TYPE.Type;
 	private readonly value:      Value;
 
@@ -33,25 +34,24 @@ class OpSet extends Instruction {
 	) {
 		super(OpCode.SET);
 		if (this.target instanceof SymbolSchemaVar) {
+			this.targetName = this.target.source;
 			this.targetType = arg1 as TYPE.Type;
 			this.value = arg2!;
 		} else {
+			this.targetName = this.target.name;
 			this.targetType = this.target.type;
 			this.value = arg1 as Value;
 		}
 	}
 
 	public override toString(): string {
-		return super.toString(
-			this.target instanceof SymbolSchemaVar ? this.target.source : this.target.name,
-			this.value,
-		);
+		return super.toString(this.targetName, this.value);
 	}
 
 	@runOnceMethod
 	public override validate(builder: Builder): void {
 		if (builder.getLocalStatus(this.target) === undefined) {
-			throw new ReferenceError(`Local variable \`${this.#targetName}\` must be declared before setting!`);
+			throw new ReferenceError(`Local variable \`${this.targetName}\` must be declared before setting!`);
 		}
 		builder.setLocalStatus(this.target, 'set');
 		this.value.validate(builder);
@@ -64,11 +64,7 @@ class OpSet extends Instruction {
 
 	@memoizeMethod
 	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
-		return cg.getLocal(this.target)?.set(this.value.codegen(cg)) ?? assert.fail(new ReferenceError(`Local variable \`${this.#targetName}\` must be set first!`));
-	}
-
-	get #targetName(): string {
-		return this.target instanceof SymbolSchemaVar ? this.target.source : this.target.name;
+		return cg.getLocal(this.target)?.set(this.value.codegen(cg)) ?? assert.fail(new ReferenceError(`Local variable \`${this.targetName}\` must be set first!`));
 	}
 }
 export {OpSet as Set};
