@@ -3,7 +3,10 @@ import {
 	CONFIG_DEFAULT,
 } from '../../../core/index.ts';
 import type {TYPE} from '../../../typer/index.ts';
-import {STMT} from '../index.ts';
+import {
+	STMT,
+	TypeVisitorTypevalue,
+} from '../index.ts';
 import {AstNode} from '../AstNode.ts';
 import {
 	Constant,
@@ -45,7 +48,7 @@ export abstract class TypeVisitor<T> {
 	/** @final */
 	public visit(typenode: Type): T {
 		switch (typenode.constructor) {
-			case Constant:        { return this.visitConstant        (typenode as Constant); } // eslint-disable-line @typescript-eslint/no-unnecessary-type-assertion
+			case Constant:        { return this.visitConstant        (typenode as Constant); }
 			case TypeAlias:       { return this.visitTypeAlias       (typenode as TypeAlias); }
 			case Tuple:           { return this.visitTuple           (typenode as Tuple); }
 			case Record:          { return this.visitRecord          (typenode as Record); }
@@ -93,6 +96,10 @@ export abstract class Type extends AstNode {
 	/**
 	 * Assess the type-value of this node at compile-time.
 	 * @returns the computed type-value of this node
+	 * @final
+	 * @deprecated
 	 */
-	public abstract eval(): TYPE.Type;
+	public eval(): TYPE.Type {
+		return new TypeVisitorTypevalue().visit(this);
+	}
 }

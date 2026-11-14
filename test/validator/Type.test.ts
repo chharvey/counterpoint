@@ -17,11 +17,13 @@ import {
 
 
 test.suite('Type', () => {
+	const VISITOR = new AST.TypeVisitorTypevalue();
+
 	test.suite('#eval', () => {
 		test.suite('TypeCollectionLiteral', () => {
 			test.test('TypeTuple', () => {
 				assertEqualTypes(
-					AST.TYPE.Tuple.fromSource('(int, bool, ?:str)').eval(),
+					VISITOR.visit(AST.TYPE.Tuple.fromSource('(int, bool, ?:str)')),
 					new TYPE.Tuple([
 						{type: TYPE.INT,  optional: false},
 						{type: TYPE.BOOL, optional: false},
@@ -33,7 +35,7 @@ test.suite('Type', () => {
 			test.test('TypeRecord', () => {
 				const rec: AST.TYPE.Record = AST.TYPE.Record.fromSource('(x: int, y?: bool, _: str)');
 				return assertEqualTypes(
-					rec.eval(),
+					VISITOR.visit(rec),
 					new TYPE.Record(new Map<bigint, EntryType>(rec.children.map((c, i) => [c.key.id, [
 						{type: TYPE.INT,  optional: false},
 						{type: TYPE.BOOL, optional: true},
@@ -46,10 +48,10 @@ test.suite('Type', () => {
 				const INT_BOOL: TYPE.Type = TYPE.INT.union(TYPE.BOOL);
 				assertEqualTypes(
 					[
-						AST.TYPE.List .fromSource('[int | bool]')  .eval(),
-						AST.TYPE.Dict .fromSource('[:int | bool]') .eval(),
-						AST.TYPE.Set  .fromSource('{int | bool}')  .eval(),
-						AST.TYPE.Map  .fromSource('{int -> bool}') .eval(),
+						VISITOR.visit(AST.TYPE.List .fromSource('[int | bool]')),
+						VISITOR.visit(AST.TYPE.Dict .fromSource('[:int | bool]')),
+						VISITOR.visit(AST.TYPE.Set  .fromSource('{int | bool}')),
+						VISITOR.visit(AST.TYPE.Map  .fromSource('{int -> bool}')),
 					],
 					[
 						new TYPE.List(INT_BOOL),
@@ -73,7 +75,7 @@ test.suite('Type', () => {
 		test.suite('TypeFunction', () => {
 			test.test('with all required parameters.', () => {
 				assertEqualTypes(
-					AST.TYPE.Function.fromSource('\\(bool, int | null, alpha: str, bravo: float) => void').eval(),
+					VISITOR.visit(AST.TYPE.Function.fromSource('\\(bool, int | null, alpha: str, bravo: float) => void')),
 					new TYPE.Function(TYPE.Tuple.fromTypes([
 						TYPE.BOOL,
 						TYPE.INT.union(TYPE.NULL),
@@ -85,7 +87,7 @@ test.suite('Type', () => {
 			});
 			test.test('with optional parameters.', () => {
 				assertEqualTypes(
-					AST.TYPE.Function.fromSource('\\(bool, ?: int | null, alpha?: str, bravo: float) => void').eval(),
+					VISITOR.visit(AST.TYPE.Function.fromSource('\\(bool, ?: int | null, alpha?: str, bravo: float) => void')),
 					new TYPE.Function(new TYPE.Tuple([
 						{type: TYPE.BOOL,                 optional: false},
 						{type: TYPE.INT.union(TYPE.NULL), optional: true},
@@ -97,7 +99,7 @@ test.suite('Type', () => {
 			});
 			test.test('with return type.', () => {
 				assertEqualTypes(
-					AST.TYPE.Function.fromSource('\\() => sym').eval(),
+					VISITOR.visit(AST.TYPE.Function.fromSource('\\() => sym')),
 					new TYPE.Function(undefined, undefined, TYPE.SYM),
 				);
 			});
@@ -114,7 +116,7 @@ test.suite('Type', () => {
 					@then  @str  @false  @foobar
 					42  +42  4.2e+3
 					"hi"
-				`).map((src) => AST.TYPE.Constant.fromSource(src).eval()), [
+				`).map((src) => VISITOR.visit(AST.TYPE.Constant.fromSource(src))), [
 					TYPE.NULL,
 					TYPE.FALSE,
 					TYPE.TRUE,
@@ -131,7 +133,7 @@ test.suite('Type', () => {
 			test.test('computes the value of keyword type.', () => {
 				assertEqualTypes(extract_tokens(`
 					nothing  bool  sym  int  float  str  anything
-				`).map((src) => AST.TYPE.Constant.fromSource(src).eval()), [
+				`).map((src) => VISITOR.visit(AST.TYPE.Constant.fromSource(src))), [
 					TYPE.NOTHING,
 					TYPE.BOOL,
 					TYPE.SYM,
@@ -152,17 +154,17 @@ test.suite('Type', () => {
 				assertEqualTypes([
 					'Object',
 					'Exception',
-				].map((src) => AST.TYPE.TypeAlias.fromSource(src).eval()), [
+				].map((src) => VISITOR.visit(AST.TYPE.TypeAlias.fromSource(src))), [
 					TYPE.OBJ,
 					TYPE.EXCP,
 				]);
 			});
 			test.test('computes the value of a type alias.', () => {
 				assert.strictEqual(
-					((setupScript(`{
+					VISITOR.visit(((setupScript(`{
 						type T = int;
 						type U = T;
-					}`).stmts[1] as AST.STMT.DeclarationType).assigned as AST.TYPE.TypeAlias).eval(),
+					}`).stmts[1] as AST.STMT.DeclarationType).assigned as AST.TYPE.TypeAlias)),
 					TYPE.INT,
 				);
 			});

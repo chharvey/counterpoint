@@ -18,6 +18,8 @@ import {
 
 test.suite('TypeAccess', () => {
 	test.suite('#eval', () => {
+		const VISITOR = new AST.TypeVisitorTypevalue();
+
 		/**
 		 * Takes a program source text and compares it to the array of expected types.
 		 * The format of the program source text must be 0 or more type declarations.
@@ -40,11 +42,11 @@ test.suite('TypeAccess', () => {
 				? (assert.strictEqual(statements.length, expecteds.length, 'Arrays are not the same length.'), xjs.Array.forEachAggregated(statements, (stmt, i) => {
 					const expected: TYPE.Type | ConstructorType<Error> = expecteds[i];
 					return expected instanceof Function
-						? assert.throws(() => stmt.assigned.eval(), expected)
-						: assertEqualTypes(stmt.assigned.eval(), expected);
+						? assert.throws(() => VISITOR.visit(stmt.assigned), expected)
+						: assertEqualTypes(VISITOR.visit(stmt.assigned), expected);
 				}))
 				: assertEqualTypes(
-					statements.map((stmt) => stmt.assigned.eval()),
+					statements.map((stmt) => VISITOR.visit(stmt.assigned)),
 					expecteds as TYPE.Type[],
 				);
 		}
@@ -113,13 +115,13 @@ test.suite('TypeAccess', () => {
 				xjs.Array.forEachAggregated(extract_lines`
 					List.<int>.1
 					Dict.<int>.b
-				`, (src) => assert.throws(() => AST.TYPE.Access.fromSource(src).eval(), TypeErrorNoEntry, src));
+				`, (src) => assert.throws(() => VISITOR.visit(AST.TYPE.Access.fromSource(src)), TypeErrorNoEntry, src));
 			});
 			test.test('throws when index is out of bounds / when key is out of range.', () => {
 				xjs.Array.forEachAggregated(extract_lines`
 					(1, 2.0, "three").3
 					(a: 1, b: 2.0, c: "three").d
-				`, (src) => assert.throws(() => AST.TYPE.Access.fromSource(src).eval(), TypeErrorNoEntry));
+				`, (src) => assert.throws(() => VISITOR.visit(AST.TYPE.Access.fromSource(src)), TypeErrorNoEntry));
 			});
 		});
 	});

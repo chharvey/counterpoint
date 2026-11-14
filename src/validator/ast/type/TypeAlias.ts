@@ -1,18 +1,8 @@
-import * as assert from 'node:assert';
-import {
-	assert_instanceof,
-	memoizeMethod,
-} from '../../../lib/index.ts';
+import {assert_instanceof} from '../../../lib/index.ts';
 import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../../core/index.ts';
-import {TYPE} from '../../../typer/index.ts';
-import {CoreLibName} from '../../../parser/index.ts';
-import {
-	type SymbolSchema,
-	SymbolSchemaType,
-} from '../../index.ts';
 import type {SyntaxNodeType} from '../../utils-private.ts';
 import {Validator} from '../../Validator.ts';
 import {Type} from './Type.ts';
@@ -32,23 +22,5 @@ export class TypeAlias extends Type {
 
 	public constructor(start_node: SyntaxNodeType<'identifier'>) {
 		super(start_node);
-	}
-
-
-	@memoizeMethod
-	public override eval(): TYPE.Type {
-		if (this.source === CoreLibName.OBJECT) {
-			return TYPE.OBJ;
-		}
-		if (this.source === CoreLibName.EXCEPTION) {
-			return TYPE.EXCP;
-		}
-		if (this.source === CoreLibName.CLASS) {
-			return TYPE.CLASS;
-		}
-		assert.ok(this.validator.hasSymbol(this.id), `Expected ${this.source} (${this.id}) to be in the symbol table.`);
-		const symbol: SymbolSchema = this.validator.getSymbol(this.id)!;
-		assert_instanceof(symbol, SymbolSchemaType);
-		return symbol.typevalue;
 	}
 }

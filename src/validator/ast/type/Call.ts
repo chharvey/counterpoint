@@ -1,13 +1,11 @@
 import * as assert from 'node:assert';
 import {
 	TypeErrorNotNarrow,
-	TypeErrorNotCallable,
 	TypeErrorArgCount,
 } from '../../../index.ts';
 import {
 	type NonemptyArray,
 	assert_instanceof,
-	memoizeMethod,
 } from '../../../lib/index.ts';
 import {
 	type CplConfig,
@@ -15,14 +13,12 @@ import {
 } from '../../../core/index.ts';
 import type {TYPE} from '../../../typer/index.ts';
 import type {SyntaxNodeType} from '../../utils-private.ts';
-import type {EXPR} from '../index.ts';
 import {
-	type CallableInterfaceName,
-	type ConstructorSchema,
-	CLASS_API,
-} from '../utils-private.ts';
+	type EXPR,
+	TypeVisitorTypevalue,
+} from '../index.ts';
+import type {ConstructorSchema} from '../utils-private.ts';
 import {Type} from './Type.ts';
-import {TypeAlias} from './TypeAlias.ts';
 
 
 
@@ -58,7 +54,8 @@ export class Call extends Type {
 		}
 
 		/* Argument Typing. Handles optionality and default values. Also checks if each argument matches the constraints given. */
-		const generic_args: TYPE.Type[] = args.map((t_arg) => t_arg.eval());
+		const type_visitor_typevalue = new TypeVisitorTypevalue();
+		const generic_args: TYPE.Type[] = args.map((t_arg) => type_visitor_typevalue.visit(t_arg));
 		generic_params.forEach((param, i) => {
 			if (!args.at(i)) {
 				assert.ok(param.default); // we can assert this due to argument counting above
@@ -84,15 +81,5 @@ export class Call extends Type {
 		public readonly args: Readonly<NonemptyArray<Type>>,
 	) {
 		super(start_node, {}, [base, ...args]);
-	}
-
-
-	@memoizeMethod
-	public override eval(): TYPE.Type {
-		if (!(this.base instanceof TypeAlias)) {
-			throw new TypeErrorNotCallable(this.base.eval(), this.base);
-		}
-		const constructor_schema: ConstructorSchema = CLASS_API.get(this.base.source as CallableInterfaceName)!;
-		return constructor_schema.returnType(Call.checkGenericArgs(constructor_schema, this.args, this));
 	}
 }

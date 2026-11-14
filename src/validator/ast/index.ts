@@ -19,5 +19,6 @@ export {AstNodeVisitorRefCheck} from './visitors/AstNodeVisitorRefCheck.ts';
 export {AstNodeVisitorTypeCheck} from './visitors/AstNodeVisitorTypeCheck.ts';
 export {AstNodeVisitorCompletion} from './visitors/AstNodeVisitorCompletion.ts';
 export {AstNodeVisitorBuild} from './visitors/AstNodeVisitorBuild.ts';
+export {TypeVisitorTypevalue} from './visitors/TypeVisitorTypevalue.ts';
 export {ExprVisitorType} from './visitors/ExprVisitorType.ts';
 export {ExprVisitorBuild} from './visitors/ExprVisitorBuild.ts';

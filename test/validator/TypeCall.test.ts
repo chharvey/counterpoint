@@ -16,6 +16,8 @@ import {
 
 test.suite('TypeCall', () => {
 	test.suite('#eval', () => {
+		const VISITOR = new AST.TypeVisitorTypevalue();
+
 		test.test('evaluates Callable Interface Names.', () => {
 			assertEqualTypes(
 				[
@@ -32,7 +34,7 @@ test.suite('TypeCall', () => {
 					'Result.<int, Exception>',
 					'Fail.<int, Exception>',
 					'Ok.<int, Exception>',
-				].map((src) => AST.TYPE.Call.fromSource(src).eval()),
+				].map((src) => VISITOR.visit(AST.TYPE.Call.fromSource(src))),
 				[
 					new TYPE.List(TYPE.NULL),
 					new TYPE.Dict(TYPE.BOOL),
@@ -54,7 +56,7 @@ test.suite('TypeCall', () => {
 			xjs.Array.forEachAggregated(extract_lines`
 				int.<str>
 				(int | float).<bool>
-			`, (src) => assert.throws(() => AST.TYPE.Call.fromSource(src).eval(), TypeErrorNotCallable));
+			`, (src) => assert.throws(() => VISITOR.visit(AST.TYPE.Call.fromSource(src)), TypeErrorNotCallable));
 		});
 		test.test('throws when providing incorrect number of arguments.', () => {
 			xjs.Array.forEachAggregated(extract_lines`
@@ -64,10 +66,10 @@ test.suite('TypeCall', () => {
 				Map.<int, int, int, int, int>
 				None.<int, int>
 				Some.<int, int>
-			`, (src) => assert.throws(() => AST.TYPE.Call.fromSource(src).eval(), TypeErrorArgCount));
+			`, (src) => assert.throws(() => VISITOR.visit(AST.TYPE.Call.fromSource(src)), TypeErrorArgCount));
 		});
 		test.test('None and Some are disjoint.', () => {
-			assert.ok(AST.TYPE.Call.fromSource('None.<int>').eval().isDisjointWith(AST.TYPE.Call.fromSource('Some.<int>').eval()));
+			assert.ok(VISITOR.visit(AST.TYPE.Call.fromSource('None.<int>')).isDisjointWith(VISITOR.visit(AST.TYPE.Call.fromSource('Some.<int>'))));
 		});
 	});
 });
