@@ -1,5 +1,4 @@
 import * as assert from 'node:assert';
-import {memoizeGetter} from '../../../lib/index.ts';
 import {
 	type CplConfig,
 	CONFIG_DEFAULT,
@@ -134,7 +133,6 @@ export abstract class Expression extends AstNode {
 	#type?: TYPE.Type;
 
 
-	@memoizeGetter
 	public get type(): TYPE.Type {
 		if (this.#type === undefined) {
 			this.#type = new ExprVisitorType().visit(this);

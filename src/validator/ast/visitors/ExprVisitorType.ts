@@ -42,7 +42,7 @@ import {AstNodeVisitorCompletion} from './AstNodeVisitorCompletion.ts';
 
 
 
-export function memoizeExpressionType<Param extends EXPR.Expression>(
+function memoizeExpressionType<Param extends EXPR.Expression>(
 	method:   (this: ExprVisitorType, arg: Param) => TYPE.Type,
 	_context: ClassMethodDecoratorContext<ExprVisitorType, typeof method>,
 ): typeof method {
