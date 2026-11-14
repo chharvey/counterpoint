@@ -33,7 +33,6 @@ import {CompletionKind} from '../CompletionKind.ts';
 import {typecheck_assign} from '../AstNode.ts';
 import type {Functionlike} from '../Functionlike.ts';
 import type {Property} from '../Property.ts';
-import * as AST_TYPE from '../type/index.ts';
 import * as EXPR from '../expression/index.ts';
 import * as STMT from '../statement/index.ts';
 import {
@@ -43,10 +42,11 @@ import {
 	bothNumbers,
 } from './utils.ts';
 import {AstNodeVisitorCompletion} from './AstNodeVisitorCompletion.ts';
+import {TypeVisitorTypevalue} from './TypeVisitorTypevalue.ts';
 
 
 
-export function memoizeExpressionType<Param extends EXPR.Expression>(
+function memoizeExpressionType<Param extends EXPR.Expression>(
 	method:   (this: ExprVisitorType, arg: Param) => TYPE.Type | null,
 	_context: ClassMethodDecoratorContext<ExprVisitorType, typeof method>,
 ): typeof method {
@@ -61,6 +61,7 @@ export function memoizeExpressionType<Param extends EXPR.Expression>(
 
 export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type | null> {
 	readonly #astNodeVisitorCompletion = new AstNodeVisitorCompletion();
+	readonly #typeVisitorTypevalue     = new TypeVisitorTypevalue();
 
 
 	@memoizeExpressionType
@@ -257,9 +258,9 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type | null> {
 			}
 		}
 		const constructor_schema:    ConstructorSchema = CLASS_API.get(expr.base.source as CallableClassName)!;
-		const resolved_generic_args: TYPE.Type[]       = AST_TYPE.Call.checkGenericArgs(constructor_schema, expr.typeargs, expr);
+		const resolved_generic_args: TYPE.Type[]       = this.#typeVisitorTypevalue.checkGenericArgs(constructor_schema, expr.typeargs, expr);
 		try {
-			this.#checkFunctionArgs(expr, constructor_schema, resolved_generic_args);
+			this.checkFunctionArgs(expr, constructor_schema, resolved_generic_args);
 		} catch (err) {
 			if (err instanceof TypeErrorArgCount) {
 				throw err;
@@ -270,7 +271,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type | null> {
 			switch (expr.base.source as CallableClassName) {
 				case CoreLibName.LIST: {
 					// If function overload checking failed, `arg` is either a tuple literal or an expression with a tuple type.
-					const itemtype: TYPE.Type  = expr.typeargs[0].eval();
+					const itemtype: TYPE.Type       = this.#typeVisitorTypevalue.visit(expr.typeargs[0]);
 					const arg:      EXPR.Expression = expr.exprargsPosit[0];
 					if (arg instanceof EXPR.Tuple) {
 						xjs.Array.forEachAggregated(arg.children, (item) => typecheck_assign(this, item, itemtype, item));
@@ -289,7 +290,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type | null> {
 				}
 				case CoreLibName.DICT: {
 					// If function overload checking failed, `arg` is either a tuple/record literal or an expression with a tuple/record type.
-					const valuetype: TYPE.Type  = expr.typeargs[0].eval();
+					const valuetype: TYPE.Type  = this.#typeVisitorTypevalue.visit(expr.typeargs[0]);
 					const entrytype: TYPE.Tuple = TYPE.Tuple.fromTypes([TYPE.SYM, valuetype]);
 					const arg:       EXPR.Expression = expr.exprargsPosit[0];
 					if (arg instanceof EXPR.Tuple) {
@@ -316,7 +317,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type | null> {
 				}
 				case CoreLibName.SET: {
 					// If function overload checking failed, `arg` is either a tuple literal or an expression with a tuple type.
-					const eltype: TYPE.Type  = expr.typeargs[0].eval();
+					const eltype: TYPE.Type       = this.#typeVisitorTypevalue.visit(expr.typeargs[0]);
 					const arg:    EXPR.Expression = expr.exprargsPosit[0];
 					if (arg instanceof EXPR.Tuple) {
 						xjs.Array.forEachAggregated(arg.children, (item) => typecheck_assign(this, item, eltype, item));
@@ -335,8 +336,8 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type | null> {
 				}
 				case CoreLibName.MAP: {
 					// If function overload checking failed, `arg` is either a tuple literal or an expression with a tuple type.
-					const anttype:   TYPE.Type  = expr.typeargs[0].eval();
-					const contype:   TYPE.Type  = expr.typeargs[1]?.eval() ?? anttype;
+					const anttype:   TYPE.Type  = this.#typeVisitorTypevalue.visit(expr.typeargs[0]);
+					const contype:   TYPE.Type  = expr.typeargs[1] ? this.#typeVisitorTypevalue.visit(expr.typeargs[1]) : anttype;
 					const entrytype: TYPE.Tuple = TYPE.Tuple.fromTypes([anttype, contype]);
 					const arg:       EXPR.Expression = expr.exprargsPosit[0];
 					if (arg instanceof EXPR.Tuple) {
@@ -366,7 +367,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type | null> {
 	@memoizeExpressionType
 	public override visitClaim(expr: EXPR.Claim): TYPE.Type | null {
 		const computed_type: TYPE.Type = this.throwIfVoid(expr.operand);
-		const claimed_type:  TYPE.Type = expr.claimed_type.eval();
+		const claimed_type:  TYPE.Type = this.#typeVisitorTypevalue.visit(expr.claimed_type);
 		/* If the types are disjoint and neither of the types are the Bottom Type, throw an error. */
 		if (!expr.force && computed_type.isDisjointWith(claimed_type) && !computed_type.isBottomType && !claimed_type.isBottomType) {
 			/*
@@ -578,17 +579,17 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type | null> {
 	public visitFunctionlike(node: Functionlike): TYPE.Function {
 		return new TYPE.Function(
 			new TYPE.Tuple(node.parameters.filter((param) => !param.named).map((param) => ({
-				type:     param.typenode.eval(),
+				type:     this.#typeVisitorTypevalue.visit(param.typenode),
 				optional: param.optional,
 			}))),
 			new TYPE.Record(new Map<bigint, EntryType>(node.parameters.filter((param) => param.named).map((param) => [
 				param.labelId!,
 				{
-					type:     param.typenode.eval(),
+					type:     this.#typeVisitorTypevalue.visit(param.typenode),
 					optional: param.optional,
 				},
 			]))),
-			node.returnType?.eval(),
+			node.returnType ? this.#typeVisitorTypevalue.visit(node.returnType) : undefined,
 		);
 	}
 
@@ -620,9 +621,9 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type | null> {
 	/**
 	 * Type-checks assignment of function arguments to a constructor call.
 	 * @param constructor_schema    the name of the class constructor’s schema
-	 * @param resolved_generic_args the resolved type arguments, returned by {@link AST_TYPE.Call.checkGenericArgs}
+	 * @param resolved_generic_args the resolved type arguments, returned by {@link TypeVisitorTypevalue#checkGenericArgs}
 	 */
-	#checkFunctionArgs(call: EXPR.Call, constructor_schema: ConstructorSchema, resolved_generic_args: readonly TYPE.Type[]): void {
+	private checkFunctionArgs(call: EXPR.Call, constructor_schema: ConstructorSchema, resolved_generic_args: readonly TYPE.Type[]): void {
 		if (!constructor_schema.overloads.length) {
 			throw new TypeErrorNotCallable(
 				this.visit(call.base)!,

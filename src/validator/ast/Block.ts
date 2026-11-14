@@ -1,5 +1,4 @@
 import * as assert from 'node:assert';
-import * as xjs from 'extrajs';
 import {
 	type NonemptyArray,
 	memoizeGetter,
@@ -12,7 +11,7 @@ import {Validator} from '../Validator.ts';
 import type {SyntaxNodeFamily} from '../utils-private.ts';
 import {
 	Goal,
-	STMT,
+	type STMT,
 	EXPR,
 } from './index.ts';
 import {AstNode} from './AstNode.ts';
@@ -66,10 +65,5 @@ export class Block extends AstNode {
 			});
 		}
 		return v;
-	}
-
-	public override varCheck(): void {
-		xjs.Array.forEachAggregated(this.children.filter((stmt) => stmt instanceof STMT.DeclarationFunction), (fn) => fn.hoist());
-		return super.varCheck();
 	}
 }

@@ -16,16 +16,16 @@ import {Class as TypeClass} from './Class.ts';
 
 
 
-/** The Counterpoint Language Nothing  Type `nothing`.   */ export const NOTHING  = new Nothing();
-/** The Counterpoint Language Anything Type `anything`.  */ export const ANYTHING = new Anything();
-/** The Counterpoint Language Symbol   Type `sym`.       */ export const SYM      = new TypeSymbol();
-/** The Counterpoint Language Integer  Type `int`.       */ export const INT      = new Integer();
-/** The Counterpoint Language Natural  Type `nat`.       */ export const NAT      = new Natural();
-/** The Counterpoint Language Float    Type `float`.     */ export const FLOAT    = new Float();
-/** The Counterpoint Language String   Type `str`.       */ export const STR      = new TypeString();
-/** The Counterpoint Language Object   Type `Object`.    */ export const OBJ      = new TypeObject();
-/** The Counterpoint Language Object   Type `Exception`. */ export const EXCP     = new Exception();
-/** The Counterpoint Language Object   Type `Class`.     */ export const CLASS    = new TypeClass();
+/** The Counterpoint Language Nothing   Type `nothing`.   */ export const NOTHING  = new Nothing();
+/** The Counterpoint Language Anything  Type `anything`.  */ export const ANYTHING = new Anything();
+/** The Counterpoint Language Symbol    Type `sym`.       */ export const SYM      = new TypeSymbol();
+/** The Counterpoint Language Integer   Type `int`.       */ export const INT      = new Integer();
+/** The Counterpoint Language Natural   Type `nat`.       */ export const NAT      = new Natural();
+/** The Counterpoint Language Float     Type `float`.     */ export const FLOAT    = new Float();
+/** The Counterpoint Language String    Type `str`.       */ export const STR      = new TypeString();
+/** The Counterpoint Language Object    Type `Object`.    */ export const OBJ      = new TypeObject();
+/** The Counterpoint Language Exception Type `Exception`. */ export const EXCP     = new Exception();
+/** The Counterpoint Language Class     Type `Class`.     */ export const CLASS    = new TypeClass();
 
 
 
@@ -50,6 +50,8 @@ export const BOOL = new TypeBoolean(); // NOTE: We would typically just use a `n
 export const NUMBER = new Union(INT, NAT, FLOAT); // cannot call `Type#union` because it has a decorator that relies on `TYPE_CONSTANTS` below
 
 /**
+ * The Counterpoint Language Function Type `Function`.
+ *
  * The supertype of all function types.
  * `(\() => anything) | (\() => void)`
  */
