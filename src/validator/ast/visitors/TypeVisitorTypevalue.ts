@@ -1,7 +1,9 @@
 import * as assert from 'node:assert';
 import {
 	TypeErrorInvalidOperation,
+	TypeErrorNotNarrow,
 	TypeErrorNotCallable,
+	TypeErrorArgCount,
 } from '../../../index.ts';
 import {assert_instanceof} from '../../../lib/index.ts';
 import {
@@ -21,6 +23,7 @@ import {
 	get_entry_info,
 } from '../utils-private.ts';
 import * as AST_TYPE from '../type/index.ts';
+import type * as EXPR from '../expression/index.ts';
 
 
 
@@ -110,7 +113,7 @@ export class TypeVisitorTypevalue extends AST_TYPE.TypeVisitor<TYPE.Type> {
 			throw new TypeErrorNotCallable(this.visit(typenode.base), typenode.base);
 		}
 		const constructor_schema: ConstructorSchema = CLASS_API.get(typenode.base.source as CallableInterfaceName)!;
-		return constructor_schema.returnType(AST_TYPE.Call.checkGenericArgs(constructor_schema, typenode.args, typenode));
+		return constructor_schema.returnType(this.checkGenericArgs(constructor_schema, typenode.args, typenode));
 	}
 
 	@memoizeTypeTypevalue
@@ -154,5 +157,49 @@ export class TypeVisitorTypevalue extends AST_TYPE.TypeVisitor<TYPE.Type> {
 
 	public override defaultVisit(_typenode: AST_TYPE.Type): TYPE.Type {
 		return TYPE.ANYTHING;
+	}
+
+	/**
+	 * Type-checks assignment of generic arguments to a type call or generic constructor call, and resolves unprovided generic arguments.
+	 * @param constructor_schema the name of the class constructor’s schema
+	 * @param args               the actual generic argument nodes provided
+	 * @param call_node          the type/function call
+	 * @return                   a list of resolved generic parameter assignments
+	 */
+	public checkGenericArgs(constructor_schema: ConstructorSchema, args: readonly AST_TYPE.Type[], call_node: AST_TYPE.Call | EXPR.Call): TYPE.Type[] {
+		const {genericParams: generic_params}: ConstructorSchema = constructor_schema;
+
+		/* Argument Counting. Throws if the number of given args does not match the number of expected parameters. */
+		const expected_generic = {
+			min: BigInt(generic_params.filter((param) => !param.default).length),
+			max: BigInt(generic_params.length),
+		} as const;
+		const actual_generic: bigint = BigInt(args.length);
+		// TODO: throw AggregateError if both
+		if (actual_generic < expected_generic.min) {
+			throw new TypeErrorArgCount(actual_generic, expected_generic.min, true, call_node);
+		}
+		if (actual_generic > expected_generic.max) {
+			throw new TypeErrorArgCount(actual_generic, expected_generic.max, true, call_node);
+		}
+
+		/* Argument Typing. Handles optionality and default values. Also checks if each argument matches the constraints given. */
+		const generic_args: TYPE.Type[] = args.map((t_arg) => this.visit(t_arg));
+		generic_params.forEach((param, i) => {
+			if (!args.at(i)) {
+				assert.ok(param.default); // we can assert this due to argument counting above
+				generic_args[i] = param.default.call(null, generic_args);
+			}
+			if (param.constraint) {
+				const arg:             TYPE.Type = generic_args.at(i)!;
+				const constraint_type: TYPE.Type = param.constraint.type.call(null, generic_args);
+				if (param.constraint.direction === 'narrows' && !arg.isSubtypeOf(constraint_type)) {
+					throw new TypeErrorNotNarrow(arg, constraint_type, call_node.line_index, call_node.col_index);
+				} else if (param.constraint.direction === 'widens' && !constraint_type.isSubtypeOf(arg)) {
+					throw new TypeErrorNotNarrow(constraint_type, arg, call_node.line_index, call_node.col_index);
+				}
+			}
+		});
+		return [...generic_args];
 	}
 }

@@ -29,7 +29,6 @@ import {
 import {CompletionKind} from '../CompletionKind.ts';
 import {typecheck_assign} from '../AstNode.ts';
 import type {Functionlike} from '../Functionlike.ts';
-import * as AST_TYPE from '../type/index.ts';
 import * as EXPR from '../expression/index.ts';
 import * as STMT from '../statement/index.ts';
 import {
@@ -207,9 +206,9 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 			return TYPE.NOTHING;
 		}
 		const constructor_schema:    ConstructorSchema = CLASS_API.get(expr.base.source as CallableClassName)!;
-		const resolved_generic_args: TYPE.Type[]       = AST_TYPE.Call.checkGenericArgs(constructor_schema, expr.typeargs, expr);
+		const resolved_generic_args: TYPE.Type[]       = this.#typeVisitorTypevalue.checkGenericArgs(constructor_schema, expr.typeargs, expr);
 		try {
-			this.#checkFunctionArgs(expr, constructor_schema, resolved_generic_args);
+			this.checkFunctionArgs(expr, constructor_schema, resolved_generic_args);
 		} catch (err) {
 			if (err instanceof TypeErrorArgCount) {
 				throw err;
@@ -526,9 +525,9 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 	/**
 	 * Type-checks assignment of function arguments to a constructor call.
 	 * @param constructor_schema    the name of the class constructor’s schema
-	 * @param resolved_generic_args the resolved type arguments, returned by {@link AST_TYPE.Call.checkGenericArgs}
+	 * @param resolved_generic_args the resolved type arguments, returned by {@link TypeVisitorTypevalue#checkGenericArgs}
 	 */
-	#checkFunctionArgs(call: EXPR.Call, constructor_schema: ConstructorSchema, resolved_generic_args: readonly TYPE.Type[]): void {
+	private checkFunctionArgs(call: EXPR.Call, constructor_schema: ConstructorSchema, resolved_generic_args: readonly TYPE.Type[]): void {
 		if (!constructor_schema.overloads.length) {
 			throw new TypeErrorNotCallable(
 				call.base.source === CoreLibName.MAYBE  ? new TYPE.Maybe  (resolved_generic_args[0]) :
