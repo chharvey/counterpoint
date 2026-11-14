@@ -3,13 +3,11 @@ import type {CodeGenerator} from '../../index.ts';
 import {
 	assert_instanceof,
 	memoizeMethod,
-	runOnceMethod,
 } from '../../lib/index.ts';
 import {
 	VALUE,
 	TYPE,
 } from '../../typer/index.ts';
-import type {Builder} from '../Builder.ts';
 import type {Interpreter} from '../Interpreter.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
@@ -20,7 +18,7 @@ import type {ValueTac} from './ValueTac.ts';
 /** Determine whether a record has an entry. */
 export class RecordHas extends Value {
 	public constructor(
-		private readonly record:   ValueTac,
+		public  readonly record:   ValueTac,
 		private readonly accessor: {readonly keyid: bigint, readonly keysrc?: string},
 	) {
 		super(OpCode.RECORD_HAS, TYPE.BOOL);
@@ -32,12 +30,6 @@ export class RecordHas extends Value {
 			`@${this.accessor.keysrc || `\\x${this.accessor.keyid.toString(16)}`}`, // static accessor before collection
 			this.record,
 		);
-	}
-
-	@runOnceMethod
-	public override validate(builder: Builder): void {
-		this.record.validate(builder);
-		return assert_instanceof(this.record.type, TYPE.Record);
 	}
 
 	public override interpret(interp: Interpreter): VALUE.Boolean {

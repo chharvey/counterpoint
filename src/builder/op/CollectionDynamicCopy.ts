@@ -1,17 +1,14 @@
 import * as assert from 'node:assert';
 import type * as binaryen from 'binaryen.ts';
-import * as xjs from 'extrajs';
 import type {CodeGenerator} from '../../index.ts';
 import {
 	assert_instanceof,
 	memoizeMethod,
-	runOnceMethod,
 } from '../../lib/index.ts';
 import {
 	VALUE,
 	TYPE,
 } from '../../typer/index.ts';
-import type {Builder} from '../Builder.ts';
 import type {Interpreter} from '../Interpreter.ts';
 import {
 	TypeName,
@@ -26,9 +23,9 @@ import type {ValueTac} from './ValueTac.ts';
 /** Copy an existing collection into a dynamic collection (List/Dict/Set/Map). */
 export class CollectionDynamicCopy extends Instruction {
 	public constructor(
-		private readonly name:        CollectionDynamicName,
-		private readonly destination: ValueTac,
-		private readonly source:      ValueTac,
+		public readonly name:        CollectionDynamicName,
+		public readonly destination: ValueTac,
+		public readonly source:      ValueTac,
 	) {
 		super(new Map<typeof name, OpCode>([
 			[TypeName.LIST, OpCode.LIST_COPY],
@@ -40,29 +37,6 @@ export class CollectionDynamicCopy extends Instruction {
 
 	public override toString(): string {
 		return super.toString(this.destination, this.source);
-	}
-
-	@runOnceMethod
-	public override validate(builder: Builder): void {
-		xjs.Array.forEachAggregated([this.destination, this.source], (value) => value.validate(builder));
-		switch (this.name) {
-			case TypeName.LIST: {
-				assert_instanceof(this.destination.type, TYPE.List);
-				return assert.ok([TYPE.Tuple, TYPE.List, TYPE.Set].some((typ) => this.source.type instanceof typ));
-			}
-			case TypeName.DICT: {
-				assert_instanceof(this.destination.type, TYPE.Dict);
-				return assert.ok([TYPE.Tuple, TYPE.Record, TYPE.List, TYPE.Dict, TYPE.Set, TYPE.Map].some((typ) => this.source.type instanceof typ));
-			}
-			case TypeName.SET: {
-				assert_instanceof(this.destination.type, TYPE.Set);
-				return assert.ok([TYPE.Tuple, TYPE.List, TYPE.Set].some((typ) => this.source.type instanceof typ));
-			}
-			case TypeName.MAP: {
-				assert_instanceof(this.destination.type, TYPE.Map);
-				return assert.ok([TYPE.Tuple, TYPE.List, TYPE.Set, TYPE.Map].some((typ) => this.source.type instanceof typ));
-			}
-		}
 	}
 
 	public override interpret(interp: Interpreter): void {

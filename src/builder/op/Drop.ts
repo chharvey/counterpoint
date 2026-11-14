@@ -1,10 +1,6 @@
 import type * as binaryen from 'binaryen.ts';
 import type {CodeGenerator} from '../../index.ts';
-import {
-	memoizeMethod,
-	runOnceMethod,
-} from '../../lib/index.ts';
-import type {Builder} from '../Builder.ts';
+import {memoizeMethod} from '../../lib/index.ts';
 import type {Interpreter} from '../Interpreter.ts';
 import {OpCode} from './Opcode.ts';
 import {Instruction} from './Instruction.ts';
@@ -20,11 +16,6 @@ export class Drop extends Instruction {
 
 	public override toString(): string {
 		return super.toString(this.value);
-	}
-
-	@runOnceMethod
-	public override validate(builder: Builder): void {
-		return this.value.validate(builder);
 	}
 
 	public override interpret(interp: Interpreter): void {

@@ -1,18 +1,13 @@
 import type * as binaryen from 'binaryen.ts';
-import * as xjs from 'extrajs';
 import type {
 	CodeGenerator,
 	Local,
 } from '../../index.ts';
-import {
-	memoizeMethod,
-	runOnceMethod,
-} from '../../lib/index.ts';
+import {memoizeMethod} from '../../lib/index.ts';
 import {
 	type VALUE,
 	TYPE,
 } from '../../typer/index.ts';
-import type {Builder} from '../Builder.ts';
 import type {Interpreter} from '../Interpreter.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
@@ -22,17 +17,12 @@ import type {ValueTac} from './ValueTac.ts';
 
 /** Create a string template. */
 export class Template extends Value {
-	public constructor(private readonly items: readonly ValueTac[]) {
+	public constructor(public readonly items: readonly ValueTac[]) {
 		super(OpCode.STR_TEMPLATE, TYPE.STR);
 	}
 
 	public override toString(): string {
 		return super.toString(...this.items);
-	}
-
-	@runOnceMethod
-	public override validate(builder: Builder): void {
-		return xjs.Array.forEachAggregated(this.items, (item) => item.validate(builder));
 	}
 
 	public override interpret(interp: Interpreter): VALUE.String {

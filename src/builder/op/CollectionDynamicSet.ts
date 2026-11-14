@@ -1,6 +1,5 @@
 import * as assert from 'node:assert';
 import type * as binaryen from 'binaryen.ts';
-import * as xjs from 'extrajs';
 import type {
 	CodeGenerator,
 	Local,
@@ -8,13 +7,8 @@ import type {
 import {
 	assert_instanceof,
 	memoizeMethod,
-	runOnceMethod,
 } from '../../lib/index.ts';
-import {
-	VALUE,
-	TYPE,
-} from '../../typer/index.ts';
-import type {Builder} from '../Builder.ts';
+import {VALUE} from '../../typer/index.ts';
 import type {Interpreter} from '../Interpreter.ts';
 import {
 	TypeName,
@@ -29,10 +23,10 @@ import type {ValueTac} from './ValueTac.ts';
 /** Write to an entry of a dynamic collection (List/Dict/Set/Map). */
 export class CollectionDynamicSet extends Instruction {
 	public constructor(
-		private readonly name:       CollectionDynamicName,
-		private readonly collection: ValueTac,
-		private readonly accessor:   ValueTac,
-		private readonly value:      ValueTac,
+		public readonly name:       CollectionDynamicName,
+		public readonly collection: ValueTac,
+		public readonly accessor:   ValueTac,
+		public readonly value:      ValueTac,
 	) {
 		super(new Map<typeof name, OpCode>([
 			[TypeName.LIST, OpCode.LIST_SET],
@@ -44,29 +38,6 @@ export class CollectionDynamicSet extends Instruction {
 
 	public override toString(): string {
 		return super.toString(this.collection, this.accessor, this.value);
-	}
-
-	@runOnceMethod
-	public override validate(builder: Builder): void {
-		xjs.Array.forEachAggregated([this.collection, this.accessor, this.value], (value) => value.validate(builder));
-		switch (this.name) {
-			case TypeName.LIST: {
-				assert_instanceof(this.collection.type, TYPE.List);
-				return assert.ok(this.accessor.type.isSubtypeOf(TYPE.INT.union(TYPE.NAT)));
-			}
-			case TypeName.DICT: {
-				assert_instanceof(this.collection.type, TYPE.Dict);
-				return assert.ok(this.accessor.type.isSubtypeOf(TYPE.SYM.union(TYPE.STR)));
-			}
-			case TypeName.SET: {
-				assert_instanceof(this.collection.type, TYPE.Set);
-				return; // TODO: Set type generics
-			}
-			case TypeName.MAP: {
-				assert_instanceof(this.collection.type, TYPE.Map);
-				return; // TODO: Map type generics
-			}
-		}
 	}
 
 	public override interpret(interp: Interpreter): void {

@@ -1,10 +1,7 @@
 import * as assert from 'node:assert';
 import type * as binaryen from 'binaryen.ts';
 import type {CodeGenerator} from '../../index.ts';
-import {
-	memoizeMethod,
-	runOnceMethod,
-} from '../../lib/index.ts';
+import {memoizeMethod} from '../../lib/index.ts';
 import {
 	CoreLibName,
 	CORE_LIB_NAMES,
@@ -20,7 +17,6 @@ import {
 import type {
 	Temp,
 	BuilderLocalSymbol,
-	Builder,
 } from '../Builder.ts';
 import type {Interpreter} from '../Interpreter.ts';
 import {OpCode} from './Opcode.ts';
@@ -32,12 +28,12 @@ import {ValueTac} from './ValueTac.ts';
 export class Get extends ValueTac {
 	#interpretedValue?: VALUE.Value;
 
-	private readonly targetName: string;
+	public readonly targetName: string;
 
 
 	public constructor(target: SymbolSchemaVar | SymbolSchemaClass, typ: TYPE.Type);
 	public constructor(target: Temp);
-	public constructor(private readonly target: BuilderLocalSymbol, typ?: TYPE.Type) {
+	public constructor(public readonly target: BuilderLocalSymbol, typ?: TYPE.Type) {
 		super(OpCode.GET, target instanceof SymbolSchemaVar || target instanceof SymbolSchemaClass ? typ! : target.type);
 		this.targetName = this.target instanceof SymbolSchemaVar || this.target instanceof SymbolSchemaClass ? this.target.source : this.target.name;
 	}
@@ -45,13 +41,6 @@ export class Get extends ValueTac {
 
 	public override toString(): string {
 		return super.toString(this.targetName);
-	}
-
-	@runOnceMethod
-	public override validate(builder: Builder): void {
-		if (builder.getLocalStatus(this.target) !== 'set') {
-			throw new ReferenceError(`Local variable \`${this.targetName}\` must be set before getting!`);
-		}
 	}
 
 	public override interpret(interp: Interpreter): VALUE.Value {

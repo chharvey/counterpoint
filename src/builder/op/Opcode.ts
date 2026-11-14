@@ -1,4 +1,3 @@
-import type {Builder} from '../Builder.ts';
 import {
 	Value,
 	Trap,
@@ -256,10 +255,5 @@ export abstract class Opcode {
 			OpCode[this.opCode].replace(/_/, '.'),
 			...args.filter((s) => s === 0 || s === 0n || !!s),
 		].join(' ')})`;
-	}
-
-	/** Type-validate this Opcode. Throws if invalid. */
-	public validate(_builder: Builder): void {
-		return;
 	}
 }

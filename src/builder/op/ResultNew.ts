@@ -1,16 +1,10 @@
-import * as assert from 'node:assert';
 import type * as binaryen from 'binaryen.ts';
 import type {CodeGenerator} from '../../index.ts';
-import {
-	assert_instanceof,
-	memoizeMethod,
-	runOnceMethod,
-} from '../../lib/index.ts';
+import {memoizeMethod} from '../../lib/index.ts';
 import {
 	VALUE,
 	TYPE,
 } from '../../typer/index.ts';
-import type {Builder} from '../Builder.ts';
 import type {Interpreter} from '../Interpreter.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
@@ -21,7 +15,7 @@ import type {ValueTac} from './ValueTac.ts';
 /** Create a Result. */
 export class ResultNew extends Value {
 	public constructor(
-		private readonly isOk: boolean,
+		public readonly isOk: boolean,
 		success_type: TYPE.Type,
 		failure_type: TYPE.Type,
 		public readonly argument: ValueTac,
@@ -32,15 +26,6 @@ export class ResultNew extends Value {
 
 	public override toString(): string {
 		return super.toString(...(this.isOk ? [this.argument, 'nil'] : ['nil', this.argument]));
-	}
-
-	@runOnceMethod
-	public override validate(builder: Builder): void {
-		assert_instanceof(this.type, TYPE.Result);
-		if (!this.isOk) {
-			assert.ok(this.argument.type.isSubtypeOf(TYPE.EXCP));
-		}
-		return this.argument.validate(builder);
 	}
 
 	public override interpret(interp: Interpreter): VALUE.Result {

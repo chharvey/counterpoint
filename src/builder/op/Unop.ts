@@ -1,16 +1,11 @@
 import * as assert from 'node:assert';
 import type * as binaryen from 'binaryen.ts';
 import type {CodeGenerator} from '../../index.ts';
-import {
-	assert_instanceof,
-	memoizeMethod,
-	runOnceMethod,
-} from '../../lib/index.ts';
+import {memoizeMethod} from '../../lib/index.ts';
 import {
 	VALUE,
 	TYPE,
 } from '../../typer/index.ts';
-import type {Builder} from '../Builder.ts';
 import type {Interpreter} from '../Interpreter.ts';
 import {drop_then} from './utils-private.ts';
 import {OpCode} from './Opcode.ts';
@@ -48,8 +43,8 @@ export type OpCodeUn = (
 /** A unary operation of 1 value. */
 export class Unop extends Value {
 	public constructor(
-		private readonly operator: OpCodeUn,
-		private readonly operand:  ValueTac,
+		public readonly operator: OpCodeUn,
+		public readonly operand:  ValueTac,
 		typ: TYPE.Type,
 	) {
 		super(operator, typ);
@@ -57,47 +52,6 @@ export class Unop extends Value {
 
 	public override toString(): string {
 		return super.toString(this.operand);
-	}
-
-	@runOnceMethod
-	public override validate(builder: Builder): void {
-		this.operand.validate(builder);
-		switch (this.operator) {
-			case OpCode.INT_FROM:
-			case OpCode.NAT_FROM:
-			case OpCode.FLOAT_FROM:
-			case OpCode.NEG: { return assert.ok(this.operand.type.isSubtypeOf(TYPE.NUMBER)); }
-
-			case OpCode.LIST_COUNT: {
-				assert_instanceof(this.operand.type, TYPE.List);
-				return assert.ok(this.type.isSubtypeOf(TYPE.NAT));
-			}
-			case OpCode.DICT_COUNT: {
-				assert_instanceof(this.operand.type, TYPE.Dict);
-				return assert.ok(this.type.isSubtypeOf(TYPE.NAT));
-			}
-			case OpCode.SET_COUNT:  {
-				assert_instanceof(this.operand.type, TYPE.Set);
-				return assert.ok(this.type.isSubtypeOf(TYPE.NAT));
-			}
-			case OpCode.MAP_COUNT:  {
-				assert_instanceof(this.operand.type, TYPE.Map);
-				return assert.ok(this.type.isSubtypeOf(TYPE.NAT));
-			}
-
-			case OpCode.MAYBE_UNWRAP: {
-				assert_instanceof(this.operand.type, TYPE.Maybe);
-				return assert.ok(this.type.isSubtypeOf(this.operand.type.typearg));
-			}
-			case OpCode.RESULT_UNWRAP: {
-				assert_instanceof(this.operand.type, TYPE.Result);
-				return assert.ok(this.type.isSubtypeOf(this.operand.type.typeargSuccess));
-			}
-			case OpCode.RESULT_EXTRACT: {
-				assert_instanceof(this.operand.type, TYPE.Result);
-				return assert.ok(this.type.isSubtypeOf(this.operand.type.typeargFailure));
-			}
-		}
 	}
 
 	public override interpret(interp: Interpreter): VALUE.Value {

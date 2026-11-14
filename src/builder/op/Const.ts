@@ -1,10 +1,6 @@
-import * as assert from 'node:assert';
 import type * as binaryen from 'binaryen.ts';
 import type {CodeGenerator} from '../../index.ts';
-import {
-	memoizeMethod,
-	runOnceMethod,
-} from '../../lib/index.ts';
+import {memoizeMethod} from '../../lib/index.ts';
 import type {
 	VALUE,
 	TYPE,
@@ -20,7 +16,7 @@ import {ValueTac} from './ValueTac.ts';
 
 /** A constant primitive value. */
 export class Const extends ValueTac {
-	public constructor(private readonly interpreterValue: VALUE.Primitive) {
+	public constructor(public readonly interpreterValue: VALUE.Primitive) {
 		const typ: TYPE.Unit = interpreterValue.toType();
 		super(new Map<TypeName, OpCode>([
 			[TypeName.NOTHING, OpCode.TRAP],
@@ -36,11 +32,6 @@ export class Const extends ValueTac {
 
 	public override toString(): string {
 		return super.toString(this.interpreterValue);
-	}
-
-	@runOnceMethod
-	public override validate(): void {
-		return assert.ok(this.interpreterValue.toType().isSubtypeOf(this.type));
 	}
 
 	public override interpret(): VALUE.Primitive {

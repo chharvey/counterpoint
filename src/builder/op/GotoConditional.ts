@@ -1,15 +1,8 @@
 import * as assert from 'node:assert';
 import type * as binaryen from 'binaryen.ts';
 import type {CodeGenerator} from '../../index.ts';
-import {
-	memoizeMethod,
-	runOnceMethod,
-} from '../../lib/index.ts';
-import {
-	VALUE,
-	TYPE,
-} from '../../typer/index.ts';
-import type {Builder} from '../Builder.ts';
+import {memoizeMethod} from '../../lib/index.ts';
+import {VALUE} from '../../typer/index.ts';
 import type {Interpreter} from '../Interpreter.ts';
 import {OpCode} from './Opcode.ts';
 import {Terminator} from './Terminator.ts';
@@ -28,7 +21,7 @@ export class GotoConditional extends Terminator {
 	 * @param label_if_false the label to jump to if the condition is false
 	 */
 	public constructor(
-		private readonly condition:    Value,
+		public  readonly condition:    Value,
 		private readonly labelIfTrue:  string,
 		private readonly labelIfFalse: string,
 	) {
@@ -37,12 +30,6 @@ export class GotoConditional extends Terminator {
 
 	public override toString(): string {
 		return super.toString(this.condition, `"${this.labelIfTrue}"`, `"${this.labelIfFalse}"`);
-	}
-
-	@runOnceMethod
-	public override validate(builder: Builder): void {
-		this.condition.validate(builder);
-		return assert.ok(this.condition.type.isSubtypeOf(TYPE.BOOL));
 	}
 
 	public override interpret(interp: Interpreter): void {

@@ -1,16 +1,13 @@
-import * as assert from 'node:assert';
 import type * as binaryen from 'binaryen.ts';
 import type {CodeGenerator} from '../../index.ts';
 import {
 	assert_instanceof,
 	memoizeMethod,
-	runOnceMethod,
 } from '../../lib/index.ts';
 import {
 	VALUE,
 	TYPE,
 } from '../../typer/index.ts';
-import type {Builder} from '../Builder.ts';
 import type {Interpreter} from '../Interpreter.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
@@ -21,8 +18,8 @@ import type {ValueTac} from './ValueTac.ts';
 /** Create an Exception. */
 export class ExcpNew extends Value {
 	public constructor(
-		private readonly message: ValueTac,
-		private readonly cause?:  ValueTac,
+		public readonly message: ValueTac,
+		public readonly cause?:  ValueTac,
 	) {
 		super(OpCode.EXCP_NEW, TYPE.EXCP);
 	}
@@ -30,13 +27,6 @@ export class ExcpNew extends Value {
 
 	public override toString(): string {
 		return super.toString(this.message, this.cause ?? '');
-	}
-
-	@runOnceMethod
-	public override validate(builder: Builder): void {
-		assert.ok(this.message.type.isSubtypeOf(TYPE.STR));
-		this.message.validate(builder);
-		return this.cause?.validate(builder);
 	}
 
 	public override interpret(interp: Interpreter): VALUE.Exception {

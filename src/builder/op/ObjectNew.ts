@@ -1,17 +1,14 @@
-import * as assert from 'node:assert';
 import type * as binaryen from 'binaryen.ts';
 import type {CodeGenerator} from '../../index.ts';
 import {
 	assert_instanceof,
 	memoizeMethod,
-	runOnceMethod,
 } from '../../lib/index.ts';
 import {
 	VALUE,
 	TYPE,
 	CLASS_CLASS,
 } from '../../typer/index.ts';
-import type {Builder} from '../Builder.ts';
 import type {Interpreter} from '../Interpreter.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
@@ -40,8 +37,8 @@ export class ObjectNew extends Value {
 	public constructor(is_class: true);
 	public constructor(is_class: boolean, class_: ValueTac);
 	public constructor(
-		private readonly isClass: boolean,
-		private readonly class_?: ValueTac,
+		public readonly isClass: boolean,
+		public readonly class_?: ValueTac,
 	) {
 		super(OpCode.OBJECT_NEW, isClass ? TYPE.CLASS : TYPE.OBJ);
 	}
@@ -49,13 +46,6 @@ export class ObjectNew extends Value {
 
 	public override toString(): string {
 		return super.toString(this.isClass ? '<Class>' : '', this.class_ ?? '');
-	}
-
-	@runOnceMethod
-	public override validate(builder: Builder): void {
-		assert.ok(!!this.class_ || this.isClass);
-		assert.ok(this.class_?.type.isSubtypeOf(TYPE.CLASS) ?? true);
-		return this.class_?.validate(builder);
 	}
 
 	public override interpret(interp: Interpreter): VALUE.Value {

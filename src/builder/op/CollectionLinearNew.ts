@@ -1,17 +1,10 @@
 import type * as binaryen from 'binaryen.ts';
-import * as xjs from 'extrajs';
 import type {CodeGenerator} from '../../index.ts';
-import {
-	type ConstructorType,
-	assert_instanceof,
-	memoizeMethod,
-	runOnceMethod,
-} from '../../lib/index.ts';
+import {memoizeMethod} from '../../lib/index.ts';
 import {
 	VALUE,
-	TYPE,
+	type TYPE,
 } from '../../typer/index.ts';
-import type {Builder} from '../Builder.ts';
 import type {Interpreter} from '../Interpreter.ts';
 import {TypeName} from './utils-public.ts';
 import {OpCode} from './Opcode.ts';
@@ -23,8 +16,8 @@ import type {ValueTac} from './ValueTac.ts';
 /** Create a linear collection (tuple/List/Set). */
 export class CollectionLinearNew extends Value {
 	public constructor(
-		private readonly name:  TypeName.TUPLE | TypeName.LIST | TypeName.SET,
-		private readonly items: readonly ValueTac[],
+		public readonly name:  TypeName.TUPLE | TypeName.LIST | TypeName.SET,
+		public readonly items: readonly ValueTac[],
 		typ: TYPE.Type,
 	) {
 		super(new Map<TypeName, OpCode>([
@@ -36,16 +29,6 @@ export class CollectionLinearNew extends Value {
 
 	public override toString(): string {
 		return super.toString(...this.items);
-	}
-
-	@runOnceMethod
-	public override validate(builder: Builder): void {
-		assert_instanceof(this.type, new Map<TypeName, ConstructorType<TYPE.Type>>([
-			[TypeName.TUPLE, TYPE.Tuple],
-			[TypeName.LIST,  TYPE.List],
-			[TypeName.SET,   TYPE.Set],
-		]).get(this.name)!);
-		return xjs.Array.forEachAggregated(this.items, (item) => item.validate(builder));
 	}
 
 	public override interpret(interp: Interpreter): VALUE.Tuple | VALUE.List | VALUE.Set {

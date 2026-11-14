@@ -3,13 +3,11 @@ import type {CodeGenerator} from '../../index.ts';
 import {
 	assert_instanceof,
 	memoizeMethod,
-	runOnceMethod,
 } from '../../lib/index.ts';
 import {
 	VALUE,
-	TYPE,
+	type TYPE,
 } from '../../typer/index.ts';
-import type {Builder} from '../Builder.ts';
 import type {Interpreter} from '../Interpreter.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
@@ -20,7 +18,7 @@ import type {ValueTac} from './ValueTac.ts';
 /** Read an entry of a record. */
 export class RecordGet extends Value {
 	public constructor(
-		private readonly record:   ValueTac,
+		public  readonly record:   ValueTac,
 		private readonly accessor: {readonly keyid: bigint, readonly keysrc?: string},
 		entry_type: TYPE.Type,
 	) {
@@ -33,12 +31,6 @@ export class RecordGet extends Value {
 			`@${this.accessor.keysrc || `\\x${this.accessor.keyid.toString(16)}`}`, // static accessor before collection
 			this.record,
 		);
-	}
-
-	@runOnceMethod
-	public override validate(builder: Builder): void {
-		this.record.validate(builder);
-		return assert_instanceof(this.record.type, TYPE.Record);
 	}
 
 	public override interpret(interp: Interpreter): VALUE.Value {

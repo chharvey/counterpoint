@@ -1,16 +1,9 @@
-import * as assert from 'node:assert';
 import type * as binaryen from 'binaryen.ts';
 import type {CodeGenerator} from '../../index.ts';
-import {
-	memoizeMethod,
-	runOnceMethod,
-} from '../../lib/index.ts';
+import {memoizeMethod} from '../../lib/index.ts';
 import {SymbolSchemaVar} from '../../validator/index.ts';
 import type {TYPE} from '../../typer/index.ts';
-import type {
-	Temp,
-	Builder,
-} from '../Builder.ts';
+import type {Temp} from '../Builder.ts';
 import type {Interpreter} from '../Interpreter.ts';
 import {
 	TypeName,
@@ -51,13 +44,13 @@ function stringify_type_name(typename: TypeName): string | undefined {
 
 /** Declare a variable/local without initializing it. */
 export class Decl extends Instruction {
-	private readonly targetType: TYPE.Type;
-	private readonly value?:     Value;
+	public readonly targetType: TYPE.Type;
+	public readonly value?:     Value;
 
 	public constructor(target: SymbolSchemaVar, typ: TYPE.Type, value?: Value);
 	public constructor(target: Temp);
 	public constructor(
-		private readonly target: SymbolSchemaVar | Temp,
+		public readonly target: SymbolSchemaVar | Temp,
 		typ?:   TYPE.Type,
 		value?: Value,
 	) {
@@ -78,15 +71,6 @@ export class Decl extends Instruction {
 			this.target instanceof SymbolSchemaVar ? this.target.source : this.target.name,
 			this.value ?? '',
 		);
-	}
-
-	@runOnceMethod
-	public override validate(builder: Builder): void {
-		// Use 'declared' only for declared, unset temps. Enforces setting before getting.
-		// Uninitialized variables can use 'set' becuase they always have a `Maybe` value.
-		builder.setLocalStatus(this.target, this.target instanceof SymbolSchemaVar || this.value ? 'set' : 'declared');
-		this.value?.validate(builder);
-		return this.value && assert.ok(this.value.type.isSubtypeOf(this.targetType), `${this.value.type} must be a subtype of ${this.targetType}.`);
 	}
 
 	public override interpret(interp: Interpreter): void {

@@ -1,16 +1,10 @@
 import * as assert from 'node:assert';
 import type * as binaryen from 'binaryen.ts';
 import type {CodeGenerator} from '../../index.ts';
-import {
-	memoizeMethod,
-	runOnceMethod,
-} from '../../lib/index.ts';
+import {memoizeMethod} from '../../lib/index.ts';
 import {SymbolSchemaVar} from '../../validator/index.ts';
 import type {TYPE} from '../../typer/index.ts';
-import type {
-	Temp,
-	Builder,
-} from '../Builder.ts';
+import type {Temp} from '../Builder.ts';
 import type {Interpreter} from '../Interpreter.ts';
 import {OpCode} from './Opcode.ts';
 import {Instruction} from './Instruction.ts';
@@ -20,15 +14,15 @@ import type {Value} from './Value.ts';
 
 /** Write a value to a variable/local. */
 class OpSet extends Instruction {
-	private readonly targetName: string;
-	private readonly targetType: TYPE.Type;
-	private readonly value:      Value;
+	public readonly targetName: string;
+	public readonly targetType: TYPE.Type;
+	public readonly value:      Value;
 
 
 	public constructor(target: SymbolSchemaVar, typ: TYPE.Type, value: Value);
 	public constructor(target: Temp, value: Value);
 	public constructor(
-		private readonly target: SymbolSchemaVar | Temp,
+		public readonly target: SymbolSchemaVar | Temp,
 		arg1:  TYPE.Type | Value,
 		arg2?: Value,
 	) {
@@ -46,16 +40,6 @@ class OpSet extends Instruction {
 
 	public override toString(): string {
 		return super.toString(this.targetName, this.value);
-	}
-
-	@runOnceMethod
-	public override validate(builder: Builder): void {
-		if (builder.getLocalStatus(this.target) === undefined) {
-			throw new ReferenceError(`Local variable \`${this.targetName}\` must be declared before setting!`);
-		}
-		builder.setLocalStatus(this.target, 'set');
-		this.value.validate(builder);
-		return assert.ok(this.value.type.isSubtypeOf(this.targetType), `${this.value.type} must be a subtype of ${this.targetType}.`);
 	}
 
 	public override interpret(interp: Interpreter): void {

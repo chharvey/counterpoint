@@ -1,6 +1,5 @@
 import * as assert from 'node:assert';
 import * as binaryen from 'binaryen.ts';
-import * as xjs from 'extrajs';
 import {
 	type CodeGenerator,
 	NanErrorDivZero,
@@ -8,14 +7,12 @@ import {
 import {
 	assert_instanceof,
 	memoizeMethod,
-	runOnceMethod,
 } from '../../lib/index.ts';
 import {
 	VALUE,
 	TYPE,
 } from '../../typer/index.ts';
 import {drop_then} from './utils-private.ts';
-import type {Builder} from '../Builder.ts';
 import type {Interpreter} from '../Interpreter.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
@@ -58,9 +55,9 @@ export type OpCodeBin = (
 /** A binary operation of 2 values. */
 export class Binop extends Value {
 	public constructor(
-		private readonly operator: OpCodeBin,
-		private readonly operand0: ValueTac,
-		private readonly operand1: ValueTac,
+		public readonly operator: OpCodeBin,
+		public readonly operand0: ValueTac,
+		public readonly operand1: ValueTac,
 		typ: TYPE.Type,
 	) {
 		super(operator, typ);
@@ -68,41 +65,6 @@ export class Binop extends Value {
 
 	public override toString(): string {
 		return super.toString(this.operand0, this.operand1);
-	}
-
-	@runOnceMethod
-	public override validate(builder: Builder): void {
-		const operands = [this.operand0, this.operand1] as const;
-		xjs.Array.forEachAggregated(operands, (arg) => {
-			arg.validate(builder);
-			switch (this.operator) {
-				case OpCode.INT_ADD: { return assert.ok(arg.type.isSubtypeOf(TYPE.INT)); }
-				case OpCode.INT_SUB: { return assert.ok(arg.type.isSubtypeOf(TYPE.INT)); }
-				case OpCode.INT_MUL: { return assert.ok(arg.type.isSubtypeOf(TYPE.INT)); }
-				case OpCode.INT_DIV: { return assert.ok(arg.type.isSubtypeOf(TYPE.INT)); }
-				case OpCode.INT_EXP: { return assert.ok(arg.type.isSubtypeOf(TYPE.INT)); }
-
-				case OpCode.NAT_ADD: { return assert.ok(arg.type.isSubtypeOf(TYPE.NAT)); }
-				case OpCode.NAT_SUB: { return assert.ok(arg.type.isSubtypeOf(TYPE.NAT)); }
-				case OpCode.NAT_MUL: { return assert.ok(arg.type.isSubtypeOf(TYPE.NAT)); }
-				case OpCode.NAT_DIV: { return assert.ok(arg.type.isSubtypeOf(TYPE.NAT)); }
-				case OpCode.NAT_EXP: { return assert.ok(arg.type.isSubtypeOf(TYPE.NAT)); }
-
-				case OpCode.FLOAT_ADD: { return assert.ok(arg.type.isSubtypeOf(TYPE.FLOAT)); }
-				case OpCode.FLOAT_SUB: { return assert.ok(arg.type.isSubtypeOf(TYPE.FLOAT)); }
-				case OpCode.FLOAT_MUL: { return assert.ok(arg.type.isSubtypeOf(TYPE.FLOAT)); }
-				case OpCode.FLOAT_DIV: { return assert.ok(arg.type.isSubtypeOf(TYPE.FLOAT)); }
-				case OpCode.FLOAT_EXP: { return assert.ok(arg.type.isSubtypeOf(TYPE.FLOAT)); }
-
-				case OpCode.LT: { return assert.ok(arg.type.isSubtypeOf(TYPE.NUMBER)); }
-				case OpCode.GT: { return assert.ok(arg.type.isSubtypeOf(TYPE.NUMBER)); }
-				case OpCode.LE: { return assert.ok(arg.type.isSubtypeOf(TYPE.NUMBER)); }
-				case OpCode.GE: { return assert.ok(arg.type.isSubtypeOf(TYPE.NUMBER)); }
-			}
-		});
-		if (this.operator === OpCode.IS) {
-			assert.ok(operands[1].type.isSubtypeOf(TYPE.CLASS));
-		}
 	}
 
 	public override interpret(interp: Interpreter): VALUE.Value {

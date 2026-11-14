@@ -6,7 +6,7 @@ import {
 	memoizeMethod,
 	runOnceMethod,
 } from '../lib/index.ts';
-import type {OP} from './index.ts';
+import {OP} from './index.ts';
 import type {Builder} from './Builder.ts';
 import type {Interpreter} from './Interpreter.ts';
 
@@ -54,10 +54,12 @@ export class CfgNode {
 
 	@runOnceMethod
 	public validate(builder: Builder): void {
-		xjs.Array.forEachAggregated(this.#instructions, (instr) => instr.validate(builder));
+		const code_visitor = new OP.OpcodeVisitorValidate(builder);
+
+		xjs.Array.forEachAggregated(this.#instructions, (instr) => code_visitor.visit(instr));
 
 		assert.ok(this.#terminator, 'Block should already be terminated.');
-		return this.#terminator.validate(builder);
+		return code_visitor.visit(this.#terminator);
 	}
 
 	public interpret(interp: Interpreter): void {
