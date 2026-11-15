@@ -1,6 +1,3 @@
-import type * as binaryen from 'binaryen.ts';
-import type {CodeGenerator} from '../../index.ts';
-import {memoizeMethod} from '../../lib/index.ts';
 import type {
 	VALUE,
 	TYPE,
@@ -32,11 +29,6 @@ export class Const extends ValueTac {
 
 	public override toString(): string {
 		return super.toString(this.interpreterValue);
-	}
-
-	@memoizeMethod
-	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
-		return this.interpreterValue.codegen(cg);
 	}
 
 	public override asTac(): this {

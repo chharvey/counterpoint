@@ -1,6 +1,3 @@
-import type * as binaryen from 'binaryen.ts';
-import type {CodeGenerator} from '../../index.ts';
-import {memoizeMethod} from '../../lib/index.ts';
 import {TYPE} from '../../typer/index.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
@@ -23,13 +20,5 @@ export class RecordHas extends Value {
 			`@${this.accessor.keysrc || `\\x${this.accessor.keyid.toString(16)}`}`, // static accessor before collection
 			this.record,
 		);
-	}
-
-	@memoizeMethod
-	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
-		return cg.vm.Value.boolFromI32(cg.vm.Record.hasKey(
-			cg.vm.Value.asRecord(this.record.codegen(cg)),
-			cg.mod.wasm.i64.const(this.accessor.keyid),
-		));
 	}
 }

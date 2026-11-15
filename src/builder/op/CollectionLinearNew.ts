@@ -1,6 +1,3 @@
-import type * as binaryen from 'binaryen.ts';
-import type {CodeGenerator} from '../../index.ts';
-import {memoizeMethod} from '../../lib/index.ts';
 import type {TYPE} from '../../typer/index.ts';
 import {TypeName} from './utils-public.ts';
 import {OpCode} from './Opcode.ts';
@@ -25,14 +22,5 @@ export class CollectionLinearNew extends Value {
 
 	public override toString(): string {
 		return super.toString(...this.items);
-	}
-
-	@memoizeMethod
-	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
-		switch (this.name) {
-			case TypeName.TUPLE: { return cg.vm.Value.fromTuple (cg.codegenTuple (this.items.map((item) => item.codegen(cg)))); }
-			case TypeName.LIST:  { return cg.vm.Value.fromList  (cg.codegenList  (this.items.map((item) => item.codegen(cg)))); }
-			case TypeName.SET:   { return cg.vm.Value.fromMap   (cg.codegenSet   (this.items.map((item) => item.codegen(cg)))); }
-		}
 	}
 }

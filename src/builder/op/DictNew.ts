@@ -1,6 +1,3 @@
-import type * as binaryen from 'binaryen.ts';
-import type {CodeGenerator} from '../../index.ts';
-import {memoizeMethod} from '../../lib/index.ts';
 import type {
 	VALUE,
 	TYPE,
@@ -22,13 +19,5 @@ export class DictNew extends Value {
 
 	public override toString(): string {
 		return super.toString(...[...this.props].map(([sym, value]) => `${sym}->${value}`));
-	}
-
-	@memoizeMethod
-	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
-		return cg.vm.Value.fromDict(cg.codegenDict(new Map<bigint, binaryen.ExpressionRef>([...this.props].map(([{id}, value]) => [
-			id,
-			cg.newProperty(id, value.codegen(cg)),
-		]))));
 	}
 }

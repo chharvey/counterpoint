@@ -1,6 +1,3 @@
-import type * as binaryen from 'binaryen.ts';
-import type {CodeGenerator} from '../../index.ts';
-import {memoizeMethod} from '../../lib/index.ts';
 import {TYPE} from '../../typer/index.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
@@ -38,11 +35,5 @@ export class ObjectNew extends Value {
 
 	public override toString(): string {
 		return super.toString(this.isClass ? '<Class>' : '', this.class_ ?? '');
-	}
-
-	@memoizeMethod
-	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
-		const class_: binaryen.ExpressionRef /* (ref $Class) */ | undefined = this.class_ && cg.mod.wasm.ref.cast(this.class_.codegen(cg), cg.vm.reftype.Class);
-		return this.isClass ? cg.codegenClass(class_) : cg.codegenObject(class_!);
 	}
 }

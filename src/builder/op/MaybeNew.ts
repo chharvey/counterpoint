@@ -1,6 +1,3 @@
-import type * as binaryen from 'binaryen.ts';
-import type {CodeGenerator} from '../../index.ts';
-import {memoizeMethod} from '../../lib/index.ts';
 import {TYPE} from '../../typer/index.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
@@ -20,10 +17,5 @@ export class MaybeNew extends Value {
 
 	public override toString(): string {
 		return super.toString(this.value ?? '');
-	}
-
-	@memoizeMethod
-	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
-		return cg.codegenMaybe(this.value?.codegen(cg));
 	}
 }

@@ -1,6 +1,3 @@
-import type * as binaryen from 'binaryen.ts';
-import type {CodeGenerator} from '../../index.ts';
-import {memoizeMethod} from '../../lib/index.ts';
 import type {TYPE} from '../../typer/index.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
@@ -23,14 +20,6 @@ export class RecordGet extends Value {
 			// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing --- keysrc may be empty string
 			`@${this.accessor.keysrc || `\\x${this.accessor.keyid.toString(16)}`}`, // static accessor before collection
 			this.record,
-		);
-	}
-
-	@memoizeMethod
-	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
-		return cg.vm.Record.get(
-			cg.vm.Value.asRecord(this.record.codegen(cg)),
-			cg.mod.wasm.i64.const(this.accessor.keyid),
 		);
 	}
 }

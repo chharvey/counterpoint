@@ -18,6 +18,7 @@ import type {CollectionDynamicSet} from '../CollectionDynamicSet.ts';
 import type {CollectionDynamicCopy} from '../CollectionDynamicCopy.ts';
 import type {Return} from '../Return.ts';
 import {memoizePerCode} from './decorators.ts';
+import {ValueVisitorCodegen} from './ValueVisitorCodegen.ts';
 
 
 
@@ -27,6 +28,8 @@ import {memoizePerCode} from './decorators.ts';
  * Returns a Binaryen expression of empty type (“`binaryen.none`”, not the WASM `none` heap type).
  */
 export class InstrVisitorCodegen extends InstrVisitor<binaryen.ExpressionRef /* void */> {
+	readonly #valueVisitorCodegen: ValueVisitorCodegen;
+
 	private readonly wasm:     binaryen.ExpressionBuilder;
 	private readonly heaptype: VirtualMachine['heaptype'];
 	private readonly reftype:  VirtualMachine['reftype'];
@@ -34,6 +37,7 @@ export class InstrVisitorCodegen extends InstrVisitor<binaryen.ExpressionRef /* 
 
 	public constructor(private readonly cg: CodeGenerator) {
 		super();
+		this.#valueVisitorCodegen = new ValueVisitorCodegen(cg);
 		this.wasm     = cg.mod.wasm;
 		this.heaptype = cg.vm.heaptype;
 		this.reftype  = cg.vm.reftype;
@@ -42,26 +46,26 @@ export class InstrVisitorCodegen extends InstrVisitor<binaryen.ExpressionRef /* 
 
 	@memoizePerCode
 	public override visitDrop(instr: Drop): binaryen.ExpressionRef /* void */ {
-		return this.wasm.drop(instr.value.codegen(this.cg));
+		return this.wasm.drop(this.#valueVisitorCodegen.visit(instr.value));
 	}
 
 	@memoizePerCode
 	public override visitDecl(instr: Decl): binaryen.ExpressionRef /* void */ {
-		return this.cg.teeLocal(instr.target, instr.value?.codegen(this.cg) ?? this.wasm.struct.new_default(this.heaptype.Value)).set();
+		return this.cg.teeLocal(instr.target, instr.value ? this.#valueVisitorCodegen.visit(instr.value) : this.wasm.struct.new_default(this.heaptype.Value)).set();
 	}
 
 	@memoizePerCode
 	public override visitSet(instr: OpSet): binaryen.ExpressionRef /* void */ {
-		return this.cg.getLocal(instr.target)?.set(instr.value.codegen(this.cg)) ?? assert.fail(new ReferenceError(`Local variable \`${instr.targetName}\` must be set first!`));
+		return this.cg.getLocal(instr.target)?.set(this.#valueVisitorCodegen.visit(instr.value)) ?? assert.fail(new ReferenceError(`Local variable \`${instr.targetName}\` must be set first!`));
 	}
 
 	@memoizePerCode
 	public override visitCollectionDynamicSet(instr: CollectionDynamicSet): binaryen.ExpressionRef /* void */ {
 		const {Vect, Value, List, Dict, Map: VmMap} = this.cg.vm;
 
-		const collection: binaryen.ExpressionRef = instr.collection.codegen(this.cg);
-		const accessor:   binaryen.ExpressionRef = instr.accessor.codegen(this.cg);
-		const value:      binaryen.ExpressionRef = instr.value.codegen(this.cg);
+		const collection: binaryen.ExpressionRef = this.#valueVisitorCodegen.visit(instr.collection);
+		const accessor:   binaryen.ExpressionRef = this.#valueVisitorCodegen.visit(instr.accessor);
+		const value:      binaryen.ExpressionRef = this.#valueVisitorCodegen.visit(instr.value);
 		switch (instr.name) {
 			case TypeName.LIST: {
 				return List.set(
@@ -111,8 +115,8 @@ export class InstrVisitorCodegen extends InstrVisitor<binaryen.ExpressionRef /* 
 	public override visitCollectionDynamicCopy(instr: CollectionDynamicCopy): binaryen.ExpressionRef /* void */ {
 		const {Value: VmValue, List, Dict, Map: VmMap} = this.cg.vm;
 
-		const code_dest: binaryen.ExpressionRef = instr.destination.codegen(this.cg);
-		const code_src:  binaryen.ExpressionRef = instr.source     .codegen(this.cg);
+		const code_dest: binaryen.ExpressionRef = this.#valueVisitorCodegen.visit(instr.destination);
+		const code_src:  binaryen.ExpressionRef = this.#valueVisitorCodegen.visit(instr.source);
 
 		switch (instr.name) {
 			case TypeName.LIST: {
@@ -271,7 +275,7 @@ export class InstrVisitorCodegen extends InstrVisitor<binaryen.ExpressionRef /* 
 
 	@memoizePerCode
 	public override visitReturn(instr: Return): binaryen.ExpressionRef /* void */ {
-		const value: binaryen.ExpressionRef = instr.value.codegen(this.cg);
+		const value: binaryen.ExpressionRef = this.#valueVisitorCodegen.visit(instr.value);
 		return this.wasm.return(this.wasm.tuple.make((instr.isReturn
 			? [value, this.wasm.ref.null(this.heaptype.Exception)]
 			: [this.wasm.ref.null(this.heaptype.Value), value]

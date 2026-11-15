@@ -1,6 +1,4 @@
-import type * as binaryen from 'binaryen.ts';
 import type {CodeGenerator} from '../../index.ts';
-import {memoizeMethod} from '../../lib/index.ts';
 import {drop_then} from './utils-private.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
@@ -36,11 +34,6 @@ class Phi extends Value {
 			`"${this.labelThen}"->${this.valueThen}`,
 			`"${this.labelElse}"->${this.valueElse}`,
 		);
-	}
-
-	@memoizeMethod
-	public override codegen(_: CodeGenerator): binaryen.ExpressionRef {
-		throw new Error('not yet supported.');
 	}
 
 	/* eslint-disable */
