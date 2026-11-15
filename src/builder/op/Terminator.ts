@@ -1,5 +1,3 @@
-import type * as binaryen from 'binaryen.ts';
-import type {CodeGenerator} from '../../index.ts';
 import {runOnceSetter} from '../../lib/index.ts';
 import {
 	Goto,
@@ -24,7 +22,7 @@ export abstract class TermVisitor<T> {
 		switch (term.constructor) {
 			case Goto:            { return this.visitGoto            (term as Goto); }
 			case GotoConditional: { return this.visitGotoConditional (term as GotoConditional); }
-			case EndProgram:      { return this.visitEndProgram      (term as EndProgram); }
+			case EndProgram:      { return this.visitEndProgram      (term as EndProgram); } // eslint-disable-line @typescript-eslint/no-unnecessary-type-assertion
 
 			default: { return this.defaultVisit(term); }
 		}
@@ -42,18 +40,16 @@ export abstract class TermVisitor<T> {
  * - EndProgram
  */
 export abstract class Terminator extends Opcode {
-	protected _containerLabel?: string;
+	#containerLabel?: string;
 
-	@runOnceSetter
-	public set containerLabel(label: string) {
-		this._containerLabel = label;
+	/** @final */
+	public get containerLabel(): string | undefined {
+		return this.#containerLabel;
 	}
 
-	/**
-	 * Generate assembly code.
-	 * Creates an edge from this Terminator’s containing block to a destination block.
-	 * @param cg        code-generator
-	 * @param relooper  Binaryen Relooper for constructing Binaryen `blocks`
-	 */
-	public abstract codegen(cg: CodeGenerator, relooper: binaryen.Relooper): void;
+	/** @final */
+	@runOnceSetter
+	public set containerLabel(label: string) {
+		this.#containerLabel = label;
+	}
 }

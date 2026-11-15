@@ -1,7 +1,3 @@
-import type * as binaryen from 'binaryen.ts';
-import type {CodeGenerator} from '../../index.ts';
-import {memoizeMethod} from '../../lib/index.ts';
-import {ValueVisitorCodegen} from './index.ts';
 import {OpCode} from './Opcode.ts';
 import {Terminator} from './Terminator.ts';
 import type {Value} from './Value.ts';
@@ -28,18 +24,5 @@ export class GotoConditional extends Terminator {
 
 	public override toString(): string {
 		return super.toString(this.condition, `"${this.labelIfTrue}"`, `"${this.labelIfFalse}"`);
-	}
-
-	@memoizeMethod
-	public override codegen(cg: CodeGenerator, relooper: binaryen.Relooper): void {
-		relooper.addBranch(
-			cg.getBlockRef(this._containerLabel!),
-			cg.getBlockRef(this.labelIfTrue),
-			cg.vm.Value.boolToI32(new ValueVisitorCodegen(cg).visit(this.condition)),
-		);
-		return relooper.addBranch(
-			cg.getBlockRef(this._containerLabel!),
-			cg.getBlockRef(this.labelIfFalse),
-		); // else (default)
 	}
 }

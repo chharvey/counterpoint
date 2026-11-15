@@ -1,4 +1,3 @@
-import {memoizeMethod} from '../../lib/index.ts';
 import {OpCode} from './Opcode.ts';
 import {Terminator} from './Terminator.ts';
 
@@ -8,10 +7,5 @@ import {Terminator} from './Terminator.ts';
 export class EndProgram extends Terminator {
 	public constructor() {
 		super(OpCode.ENDPROGRAM);
-	}
-
-	@memoizeMethod
-	public override codegen(): void {
-		return; // no-op
 	}
 }
