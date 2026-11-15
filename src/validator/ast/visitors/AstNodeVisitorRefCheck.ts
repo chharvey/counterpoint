@@ -98,10 +98,6 @@ export class AstNodeVisitorRefCheck extends AstNodeVisitor<void> {
 		return this.defaultVisit(typenode);
 	}
 
-	public override visitTypeCall(typenode: AST_TYPE.Call): void {
-		return xjs.Array.forEachAggregated([typenode.base, ...typenode.args], (arg) => this.visit(arg));
-	}
-
 	public override visitTypeFunction(typenode: AST_TYPE.Function): void {
 		check_unique_keys(typenode.paramNamedTypes.map((prop) => prop.key));
 		return this.defaultVisit(typenode);
@@ -129,15 +125,6 @@ export class AstNodeVisitorRefCheck extends AstNodeVisitor<void> {
 	public override visitExprDict(expr: EXPR.Dict): void {
 		check_unique_keys(expr.children.map((prop) => prop.key));
 		return this.defaultVisit(expr);
-	}
-
-	public override visitExprCall(expr: EXPR.Call): void {
-		return xjs.Array.forEachAggregated([
-			expr.base,
-			...expr.typeargs,
-			...expr.exprargsPosit,
-			...expr.exprargsNamed,
-		], (arg) => this.visit(arg));
 	}
 
 	public override visitExprFunction(expr: EXPR.Function): void {

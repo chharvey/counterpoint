@@ -86,12 +86,7 @@ export class AstNodeVisitorTypeCheck extends AstNodeVisitor<void> {
 	public override visitTypeSet             (typenode: AST_TYPE.Set):             void { return this.visitType(typenode); }
 	public override visitTypeMap             (typenode: AST_TYPE.Map):             void { return this.visitType(typenode); }
 	public override visitTypeAccess          (typenode: AST_TYPE.Access):          void { return this.visitType(typenode); }
-
-	public override visitTypeCall(typenode: AST_TYPE.Call): void {
-		xjs.Array.forEachAggregated([typenode.base, ...typenode.args], (arg) => this.visit(arg));
-		this.#typeVisitorTypevalue.visit(typenode);
-	}
-
+	public override visitTypeCall            (typenode: AST_TYPE.Call):            void { return this.visitType(typenode); }
 	public override visitTypeOperationUnary  (typenode: AST_TYPE.OperationUnary):  void { return this.visitType(typenode); }
 	public override visitTypeOperationBinary (typenode: AST_TYPE.OperationBinary): void { return this.visitType(typenode); }
 	public override visitTypeFunction        (typenode: AST_TYPE.Function):        void { return this.visitType(typenode); }
@@ -103,28 +98,18 @@ export class AstNodeVisitorTypeCheck extends AstNodeVisitor<void> {
 	}
 
 	/* eslint-disable @stylistic/space-before-function-paren */
-	public override visitExprConstant (expr: EXPR.Constant):        void { return this.visitExpression(expr); }
-	public override visitTemplate     (expr: EXPR.Template):        void { return this.visitExpression(expr); }
-	public override visitVariable     (expr: EXPR.Variable):        void { return this.visitExpression(expr); }
-	public override visitExprTuple    (expr: EXPR.Tuple):           void { return this.visitExpression(expr); }
-	public override visitExprRecord   (expr: EXPR.Record):          void { return this.visitExpression(expr); }
-	public override visitExprList     (expr: EXPR.List):            void { return this.visitExpression(expr); }
-	public override visitExprDict     (expr: EXPR.Dict):            void { return this.visitExpression(expr); }
-	public override visitExprSet      (expr: EXPR.Set):             void { return this.visitExpression(expr); }
-	public override visitExprMap      (expr: EXPR.Map):             void { return this.visitExpression(expr); }
-	public override visitExprBlock    (expr: EXPR.ExpressionBlock): void { return this.visitExpression(expr); }
-	public override visitExprAccess   (expr: EXPR.Access):          void { return this.visitExpression(expr); }
-
-	public override visitExprCall(expr: EXPR.Call): void {
-		xjs.Array.forEachAggregated([
-			expr.base,
-			...expr.typeargs,
-			...expr.exprargsPosit,
-			...expr.exprargsNamed,
-		], (arg) => this.visit(arg));
-		this.#exprVisitorType.visit(expr);
-	}
-
+	public override visitExprConstant                   (expr: EXPR.Constant):                   void { return this.visitExpression(expr); }
+	public override visitTemplate                       (expr: EXPR.Template):                   void { return this.visitExpression(expr); }
+	public override visitVariable                       (expr: EXPR.Variable):                   void { return this.visitExpression(expr); }
+	public override visitExprTuple                      (expr: EXPR.Tuple):                      void { return this.visitExpression(expr); }
+	public override visitExprRecord                     (expr: EXPR.Record):                     void { return this.visitExpression(expr); }
+	public override visitExprList                       (expr: EXPR.List):                       void { return this.visitExpression(expr); }
+	public override visitExprDict                       (expr: EXPR.Dict):                       void { return this.visitExpression(expr); }
+	public override visitExprSet                        (expr: EXPR.Set):                        void { return this.visitExpression(expr); }
+	public override visitExprMap                        (expr: EXPR.Map):                        void { return this.visitExpression(expr); }
+	public override visitExprBlock                      (expr: EXPR.ExpressionBlock):            void { return this.visitExpression(expr); }
+	public override visitExprAccess                     (expr: EXPR.Access):                     void { return this.visitExpression(expr); }
+	public override visitExprCall                       (expr: EXPR.Call):                       void { return this.visitExpression(expr); }
 	public override visitExprClaim                      (expr: EXPR.Claim):                      void { return this.visitExpression(expr); }
 	public override visitOperationExprUnary             (expr: EXPR.OperationUnary):             void { return this.visitExpression(expr); }
 	public override visitOperationExprBinaryCast        (expr: EXPR.OperationBinaryCast):        void { return this.visitExpression(expr); }

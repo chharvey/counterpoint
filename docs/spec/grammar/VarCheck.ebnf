@@ -126,18 +126,6 @@ Nil! VarCheck(SemanticTypeAlias var) :=
 
 
 
-Nil! VarCheck(SemanticTypeCall ::= SemanticType__0 SemanticType__1+) :=
-	1. *Let* `check_base` be `VarCheck(SemanticType__0)`.
-	2. *If* `check_base` is an abrupt completion:
-		1. *Return:* `check_base`.
-	3. *Else:*
-		1. Fall through.
-	4. *For each* `it` in `SemanticType__1+`:
-		1. *Perform:* *Unwrap:* `VarCheck(it)`.
-;
-
-
-
 Nil! VarCheck(SemanticTypeFunction fn) :=
 	1. *Note:* In function types, all parameter labels are var-checked before all parameter types.
 	2. *Let* `proptypes` be a filtering of `fn.children` for each `child` such that `child` is a SemanticPropertyType.
@@ -162,18 +150,6 @@ Nil! VarCheck(SemanticExpressionVariable var) :=
 		1. *Throw:* a new ReferenceErrorKind.
 	4. *Else:*
 		1. *Return.*
-;
-
-
-
-Nil! VarCheck(SemanticExpressionCall ::= SemanticExpression__0 SemanticType* SemanticExpression__1* SemanticProperty*) :=
-	1. *Let* `check_base` be `VarCheck(SemanticExpression__0)`.
-	2. *If* `check_base` is an abrupt completion:
-		1. *Return:* `check_base`.
-	3. *Else:*
-		1. Fall through.
-	4. *For each* `it` in `[SemanticType*, SemanticExpression__1*, SemanticProperty*]`:
-		1. *Perform:* *Unwrap:* `VarCheck(it)`.
 ;
 
 
