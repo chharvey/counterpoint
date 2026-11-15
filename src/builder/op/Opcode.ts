@@ -226,7 +226,7 @@ export abstract class OpcodeVisitor<T> {
 			case CollectionDynamicSet:  { return this.visitCollectionDynamicSet  (op as CollectionDynamicSet); }
 			case CollectionDynamicCopy: { return this.visitCollectionDynamicCopy (op as CollectionDynamicCopy); }
 			case Return:                { return this.visitReturn                (op as Return); }
-			case Instruction:           { return this.visitInstruction           (op as Instruction); }
+			case Instruction:           { return this.visitInstruction           (op as Instruction); } // eslint-disable-line @typescript-eslint/no-unnecessary-type-assertion
 
 			case Goto:            { return this.visitGoto            (op as Goto); }
 			case GotoConditional: { return this.visitGotoConditional (op as GotoConditional); }

@@ -1,6 +1,5 @@
 import type * as binaryen from 'binaryen.ts';
 import type {CodeGenerator} from '../../index.ts';
-import {memoizeMethod} from '../../lib/index.ts';
 import {SymbolSchemaVar} from '../../validator/index.ts';
 import type {TYPE} from '../../typer/index.ts';
 import type {Temp} from '../Builder.ts';
@@ -70,11 +69,6 @@ export class Decl extends Instruction {
 			this.target instanceof SymbolSchemaVar ? this.target.source : this.target.name,
 			this.value ?? '',
 		);
-	}
-
-	@memoizeMethod
-	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
-		return cg.teeLocal(this.target, this.value?.codegen(cg) ?? cg.mod.wasm.struct.new_default(cg.vm.heaptype.Value)).set();
 	}
 
 	/* eslint-disable */

@@ -1,6 +1,4 @@
-import type * as binaryen from 'binaryen.ts';
 import type {CodeGenerator} from '../../index.ts';
-import {memoizeMethod} from '../../lib/index.ts';
 import {OpCode} from './Opcode.ts';
 import {Instruction} from './Instruction.ts';
 import type {Value} from './Value.ts';
@@ -15,11 +13,6 @@ export class Drop extends Instruction {
 
 	public override toString(): string {
 		return super.toString(this.value);
-	}
-
-	@memoizeMethod
-	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
-		return cg.mod.wasm.drop(this.value.codegen(cg));
 	}
 
 	/* eslint-disable */

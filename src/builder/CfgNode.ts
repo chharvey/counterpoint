@@ -70,6 +70,7 @@ export class CfgNode {
 
 	@memoizeMethod
 	public codegen(cg: CodeGenerator, relooper: binaryen.Relooper): binaryen.RelooperBlockRef {
-		return relooper.addBlock(cg.mod.wasm.block(this.label, this.#instructions.map((instr) => instr.codegen(cg)))); // leaving off terminator for branching later
+		const instr_visitor = new OP.InstrVisitorCodegen(cg);
+		return relooper.addBlock(cg.mod.wasm.block(this.label, this.#instructions.map((instr) => instr_visitor.visit(instr)))); // leaving off terminator for branching later
 	}
 }
