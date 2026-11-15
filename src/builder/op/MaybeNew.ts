@@ -1,11 +1,7 @@
 import type * as binaryen from 'binaryen.ts';
 import type {CodeGenerator} from '../../index.ts';
 import {memoizeMethod} from '../../lib/index.ts';
-import {
-	VALUE,
-	TYPE,
-} from '../../typer/index.ts';
-import type {Interpreter} from '../Interpreter.ts';
+import {TYPE} from '../../typer/index.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
 import type {ValueTac} from './ValueTac.ts';
@@ -24,12 +20,6 @@ export class MaybeNew extends Value {
 
 	public override toString(): string {
 		return super.toString(this.value ?? '');
-	}
-
-	public override interpret(interp: Interpreter): VALUE.Maybe {
-		return this.value
-			? new VALUE.Some(this.value.interpret(interp))
-			: new VALUE.None((this.type as TYPE.Maybe).typearg);
 	}
 
 	@memoizeMethod

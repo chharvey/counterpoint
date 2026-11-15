@@ -16,37 +16,42 @@ import type {CollectionDynamicCopy} from '../CollectionDynamicCopy.ts';
 import type {Return} from '../Return.ts';
 import type {Goto} from '../Goto.ts';
 import type {GotoConditional} from '../GotoConditional.ts';
+import {ValueVisitorInterpret} from './ValueVisitorInterpret.ts';
 
 
 
 /** Execute the interpreter. */
 export class OpcodeVisitorInterpret extends OpcodeVisitor<void> {
+	readonly #valueVisitorInterpret: ValueVisitorInterpret;
+
+
 	public constructor(private readonly interp: Interpreter) {
 		super();
+		this.#valueVisitorInterpret = new ValueVisitorInterpret(interp);
 	}
 
 
 	public override visitDrop(instr: Drop): void {
-		return this.interp.pushDrop(instr.value.interpret(this.interp));
+		return this.interp.pushDrop(this.#valueVisitorInterpret.visit(instr.value));
 	}
 
 	public override visitDecl(instr: Decl): void {
 		if (instr.target instanceof SymbolSchemaVar) {
 			// @ts-expect-error --- FIXME: function params do not have an initial value
-			this.interp.setLocalValue(instr.target, instr.value?.interpret(this.interp));
+			this.interp.setLocalValue(instr.target, instr.value && this.#valueVisitorInterpret.visit(instr.value));
 		} else if (instr.target.value) {
-			this.interp.setLocalValue(instr.target, instr.target.value.interpret(this.interp));
+			this.interp.setLocalValue(instr.target, this.#valueVisitorInterpret.visit(instr.target.value));
 		}
 	}
 
 	public override visitSet(instr: OpSet): void {
-		this.interp.setLocalValue(instr.target, instr.value.interpret(this.interp));
+		this.interp.setLocalValue(instr.target, this.#valueVisitorInterpret.visit(instr.value));
 	}
 
 	public override visitCollectionDynamicSet(instr: CollectionDynamicSet): void {
-		const base:     VALUE.Value = instr.collection .interpret(this.interp);
-		const accessor: VALUE.Value = instr.accessor   .interpret(this.interp);
-		const newvalue: VALUE.Value = instr.value      .interpret(this.interp);
+		const base:     VALUE.Value = this.#valueVisitorInterpret.visit(instr.collection);
+		const accessor: VALUE.Value = this.#valueVisitorInterpret.visit(instr.accessor);
+		const newvalue: VALUE.Value = this.#valueVisitorInterpret.visit(instr.value);
 		switch (instr.name) {
 			case TypeName.LIST: {
 				assert_instanceof(base, VALUE.List);
@@ -81,8 +86,8 @@ export class OpcodeVisitorInterpret extends OpcodeVisitor<void> {
 	}
 
 	public override visitCollectionDynamicCopy(instr: CollectionDynamicCopy): void {
-		const dest: VALUE.Value = instr.destination.interpret(this.interp);
-		const src:  VALUE.Value = instr.source     .interpret(this.interp);
+		const dest: VALUE.Value = this.#valueVisitorInterpret.visit(instr.destination);
+		const src:  VALUE.Value = this.#valueVisitorInterpret.visit(instr.source);
 		switch (instr.name) {
 			case TypeName.LIST: {
 				assert_instanceof(dest, VALUE.List);
@@ -205,7 +210,7 @@ export class OpcodeVisitorInterpret extends OpcodeVisitor<void> {
 	}
 
 	public override visitGotoConditional(term: GotoConditional): void {
-		const condition: VALUE.Value = term.condition.interpret(this.interp);
+		const condition: VALUE.Value = this.#valueVisitorInterpret.visit(term.condition);
 		return this.interp.interpretNextBlock((
 			condition.equal(VALUE.TRUE)  ? term.labelIfTrue :
 			condition.equal(VALUE.FALSE) ? term.labelIfFalse :

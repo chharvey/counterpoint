@@ -1,11 +1,7 @@
 import type * as binaryen from 'binaryen.ts';
 import type {CodeGenerator} from '../../index.ts';
 import {memoizeMethod} from '../../lib/index.ts';
-import type {
-	VALUE,
-	TYPE,
-} from '../../typer/index.ts';
-import type {Interpreter} from '../Interpreter.ts';
+import type {TYPE} from '../../typer/index.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
 import type {ValueTac} from './ValueTac.ts';
@@ -24,10 +20,6 @@ export class Call extends Value {
 
 	public override toString(): string {
 		return super.toString(this.callable, ...this.args);
-	}
-
-	public override interpret(_interp: Interpreter): VALUE.Value {
-		throw new Error('`OP.Call#interpret` is not yet supported.');
 	}
 
 	@memoizeMethod

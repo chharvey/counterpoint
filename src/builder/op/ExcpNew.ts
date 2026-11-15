@@ -1,14 +1,7 @@
 import type * as binaryen from 'binaryen.ts';
 import type {CodeGenerator} from '../../index.ts';
-import {
-	assert_instanceof,
-	memoizeMethod,
-} from '../../lib/index.ts';
-import {
-	VALUE,
-	TYPE,
-} from '../../typer/index.ts';
-import type {Interpreter} from '../Interpreter.ts';
+import {memoizeMethod} from '../../lib/index.ts';
+import {TYPE} from '../../typer/index.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
 import type {ValueTac} from './ValueTac.ts';
@@ -27,18 +20,6 @@ export class ExcpNew extends Value {
 
 	public override toString(): string {
 		return super.toString(this.message, this.cause ?? '');
-	}
-
-	public override interpret(interp: Interpreter): VALUE.Exception {
-		const message: VALUE.Value             = this.message.interpret(interp);
-		const cause:   VALUE.Value | undefined = this.cause?.interpret(interp);
-		assert_instanceof(message, VALUE.String);
-		if (cause) {
-			assert_instanceof(cause, VALUE.Exception);
-			return new VALUE.Exception(message, cause);
-		} else {
-			return new VALUE.Exception(message);
-		}
 	}
 
 	@memoizeMethod

@@ -43,3 +43,4 @@ export * from './EndProgram.ts';
 
 export {OpcodeVisitorValidate} from './visitors/OpcodeVisitorValidate.ts';
 export {OpcodeVisitorInterpret} from './visitors/OpcodeVisitorInterpret.ts';
+export {ValueVisitorInterpret} from './visitors/ValueVisitorInterpret.ts';

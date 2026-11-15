@@ -1,11 +1,7 @@
 import type * as binaryen from 'binaryen.ts';
 import type {CodeGenerator} from '../../index.ts';
 import {memoizeMethod} from '../../lib/index.ts';
-import {
-	VALUE,
-	TYPE,
-} from '../../typer/index.ts';
-import type {Interpreter} from '../Interpreter.ts';
+import {TYPE} from '../../typer/index.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
 import type {ValueTac} from './ValueTac.ts';
@@ -26,12 +22,6 @@ export class ResultNew extends Value {
 
 	public override toString(): string {
 		return super.toString(...(this.isOk ? [this.argument, 'nil'] : ['nil', this.argument]));
-	}
-
-	public override interpret(interp: Interpreter): VALUE.Result {
-		const argument: VALUE.Value = this.argument.interpret(interp);
-		const {typeargFailure, typeargSuccess} = this.type as TYPE.Result;
-		return this.isOk ? new VALUE.Ok(argument, typeargFailure) : new VALUE.Fail(typeargSuccess, argument as VALUE.Exception);
 	}
 
 	@memoizeMethod

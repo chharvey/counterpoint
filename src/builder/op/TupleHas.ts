@@ -1,14 +1,7 @@
 import type * as binaryen from 'binaryen.ts';
 import type {CodeGenerator} from '../../index.ts';
-import {
-	assert_instanceof,
-	memoizeMethod,
-} from '../../lib/index.ts';
-import {
-	VALUE,
-	TYPE,
-} from '../../typer/index.ts';
-import type {Interpreter} from '../Interpreter.ts';
+import {memoizeMethod} from '../../lib/index.ts';
+import {TYPE} from '../../typer/index.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
 import type {ValueTac} from './ValueTac.ts';
@@ -18,20 +11,14 @@ import type {ValueTac} from './ValueTac.ts';
 /** Determine whether a tuple has an entry. */
 export class TupleHas extends Value {
 	public constructor(
-		public  readonly tuple:    ValueTac,
-		private readonly accessor: bigint,
+		public readonly tuple:    ValueTac,
+		public readonly accessor: bigint,
 	) {
 		super(OpCode.TUPLE_HAS, TYPE.BOOL);
 	}
 
 	public override toString(): string {
 		return super.toString(this.accessor, this.tuple); // static accessor before collection
-	}
-
-	public override interpret(interp: Interpreter): VALUE.Boolean {
-		const base: VALUE.Value = this.tuple.interpret(interp);
-		assert_instanceof(base, VALUE.Tuple);
-		return VALUE.Boolean.fromBoolean(base.has(this.accessor));
 	}
 
 	@memoizeMethod

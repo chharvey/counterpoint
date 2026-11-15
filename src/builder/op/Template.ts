@@ -4,11 +4,7 @@ import type {
 	Local,
 } from '../../index.ts';
 import {memoizeMethod} from '../../lib/index.ts';
-import {
-	type VALUE,
-	TYPE,
-} from '../../typer/index.ts';
-import type {Interpreter} from '../Interpreter.ts';
+import {TYPE} from '../../typer/index.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
 import type {ValueTac} from './ValueTac.ts';
@@ -23,10 +19,6 @@ export class Template extends Value {
 
 	public override toString(): string {
 		return super.toString(...this.items);
-	}
-
-	public override interpret(interp: Interpreter): VALUE.String {
-		return this.items.map((value) => value.interpret(interp).toCplString()).reduce((a, b) => a.concatenate(b));
 	}
 
 	@memoizeMethod

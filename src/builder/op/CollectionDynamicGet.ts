@@ -3,19 +3,12 @@ import type {
 	CodeGenerator,
 	Local,
 } from '../../index.ts';
-import {
-	assert_instanceof,
-	memoizeMethod,
-} from '../../lib/index.ts';
-import {
-	VALUE,
-	type TYPE,
-} from '../../typer/index.ts';
+import {memoizeMethod} from '../../lib/index.ts';
+import type {TYPE} from '../../typer/index.ts';
 import {
 	TypeName,
 	type CollectionDynamicName,
 } from './utils-public.ts';
-import type {Interpreter} from '../Interpreter.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
 import type {ValueTac} from './ValueTac.ts';
@@ -40,40 +33,6 @@ export class CollectionDynamicGet extends Value {
 
 	public override toString(): string {
 		return super.toString(this.collection, this.accessor); // dynamic accessor after collection
-	}
-
-	public override interpret(interp: Interpreter): VALUE.Value {
-		const base:     VALUE.Value = this.collection.interpret(interp);
-		const accessor: VALUE.Value = this.accessor.interpret(interp);
-		switch (this.name) {
-			case TypeName.LIST: {
-				assert_instanceof(base, VALUE.List);
-				try {
-					assert_instanceof(accessor, VALUE.Integer);
-				} catch {
-					assert_instanceof(accessor, VALUE.Natural);
-				}
-				return base.get(accessor.toBigInt());
-			}
-			case TypeName.DICT: {
-				assert_instanceof(base, VALUE.Dict);
-				try {
-					assert_instanceof(accessor, VALUE.Symbol);
-				} catch {
-					assert_instanceof(accessor, VALUE.String);
-					throw new Error('String keys for dict access are not yet supported.');
-				}
-				return base.get(accessor.id);
-			}
-			case TypeName.SET: {
-				assert_instanceof(base, VALUE.Set);
-				return base.get(accessor);
-			}
-			case TypeName.MAP: {
-				assert_instanceof(base, VALUE.Map);
-				return base.get(accessor);
-			}
-		}
 	}
 
 	@memoizeMethod

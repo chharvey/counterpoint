@@ -1,7 +1,6 @@
 import type * as binaryen from 'binaryen.ts';
 import type {CodeGenerator} from '../../index.ts';
 import {memoizeMethod} from '../../lib/index.ts';
-import type {VALUE} from '../../typer/index.ts';
 import {drop_then} from './utils-private.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
@@ -37,10 +36,6 @@ class Phi extends Value {
 			`"${this.labelThen}"->${this.valueThen}`,
 			`"${this.labelElse}"->${this.valueElse}`,
 		);
-	}
-
-	public interpret(): VALUE.Value {
-		throw new Error('`Phi#interpret` is not supported.');
 	}
 
 	@memoizeMethod

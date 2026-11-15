@@ -1,11 +1,7 @@
 import type * as binaryen from 'binaryen.ts';
 import type {CodeGenerator} from '../../index.ts';
 import {memoizeMethod} from '../../lib/index.ts';
-import {
-	VALUE,
-	type TYPE,
-} from '../../typer/index.ts';
-import type {Interpreter} from '../Interpreter.ts';
+import type {TYPE} from '../../typer/index.ts';
 import {TypeName} from './utils-public.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
@@ -29,15 +25,6 @@ export class CollectionLinearNew extends Value {
 
 	public override toString(): string {
 		return super.toString(...this.items);
-	}
-
-	public override interpret(interp: Interpreter): VALUE.Tuple | VALUE.List | VALUE.Set {
-		const items: readonly VALUE.Value[] = this.items.map((value) => value.interpret(interp));
-		switch (this.name) {
-			case TypeName.TUPLE: { return new VALUE.Tuple(items); }
-			case TypeName.LIST:  { return new VALUE.List(items); }
-			case TypeName.SET:   { return new VALUE.Set(new Set<VALUE.Value>(items)); }
-		}
 	}
 
 	@memoizeMethod

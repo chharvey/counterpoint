@@ -40,10 +40,11 @@ test.suite('Opcode', () => {
 			const VALUE_FLOAT_N0 = new VALUE.Float(-0.0);
 
 			test.test('Trap always throws.', () => {
-				assert.throws(() => new OP.Trap().interpret(), /Trap\./);
+				assert.throws(() => new OP.ValueVisitorInterpret(new Interpreter()).visit(new OP.Trap()), /Trap\./);
 			});
 
 			test.test('Const returns interpreter value.', () => {
+				const value_visitor = new OP.ValueVisitorInterpret(new Interpreter());
 				xjs.Array.forEachAggregated([
 					VALUE.NULL,
 					VALUE.FALSE,
@@ -55,7 +56,7 @@ test.suite('Opcode', () => {
 					new VALUE.Natural(42n),
 					new VALUE.Float(4.2),
 					new VALUE.String('hello'),
-				], (val) => assert.ok(new OP.Const(val).interpret().identical(val)));
+				], (val) => assert.ok(value_visitor.visit(new OP.Const(val)).identical(val)));
 			});
 
 			test.suite('Get', () => {
@@ -225,22 +226,22 @@ test.suite('Opcode', () => {
 			});
 
 			test.test('MaybeNew', () => {
-				const interp = new Interpreter();
+				const value_visitor = new OP.ValueVisitorInterpret(new Interpreter());
 				return assert_equal_values([
 					new OP.MaybeNew(TYPE.STR),
 					new OP.MaybeNew(TYPE.STR, new OP.Const(new VALUE.String('hello'))),
-				].map((opcode) => opcode.interpret(interp)), [
+				].map((opcode) => value_visitor.visit(opcode)), [
 					new VALUE.None(TYPE.STR),
 					new VALUE.Some(new VALUE.String('hello')),
 				]);
 			});
 
 			test.test('ResultNew', () => {
-				const interp = new Interpreter();
+				const value_visitor = new OP.ValueVisitorInterpret(new Interpreter());
 				return assert_equal_values([
 					new OP.ResultNew(false, TYPE.INT, TYPE.EXCP, new OP.ExcpNew(new OP.Const(new VALUE.String('message')))),
 					new OP.ResultNew(true,  TYPE.INT, TYPE.EXCP, new OP.Const(new VALUE.Integer(42n))),
-				].map((opcode) => opcode.interpret(interp)), [
+				].map((opcode) => value_visitor.visit(opcode)), [
 					new VALUE.Fail(TYPE.INT, new VALUE.Exception(new VALUE.String('message'))),
 					new VALUE.Ok(new VALUE.Integer(42n)),
 				]);
@@ -248,21 +249,21 @@ test.suite('Opcode', () => {
 
 			test.test('TupleHas', () => {
 				// there exists no syntax for Tuple has, so constructing it manually
-				const tuple  = new AST.ExprVisitorBuild(new Builder()).visit(AST.EXPR.Tuple.fromSource('(10, 20)'));
-				const interp = new Interpreter();
-				return assert_equal_values(new Map<VALUE.Boolean, VALUE.Boolean>([
-					[new OP.TupleHas(tuple, 1n).interpret(interp), VALUE.TRUE],
-					[new OP.TupleHas(tuple, 2n).interpret(interp), VALUE.FALSE],
+				const tuple         = new AST.ExprVisitorBuild(new Builder()).visit(AST.EXPR.Tuple.fromSource('(10, 20)'));
+				const value_visitor = new OP.ValueVisitorInterpret(new Interpreter());
+				return assert_equal_values(new Map<VALUE.Value, VALUE.Boolean>([
+					[value_visitor.visit(new OP.TupleHas(tuple, 1n)), VALUE.TRUE],
+					[value_visitor.visit(new OP.TupleHas(tuple, 2n)), VALUE.FALSE],
 				]));
 			});
 
 			test.test('RecordHas', () => {
 				// there exists no syntax for Record has, so constructing it manually
-				const record = new AST.ExprVisitorBuild(new Builder()).visit(AST.EXPR.Record.fromSource('(a= 10, c= 20)'));
-				const interp = new Interpreter();
-				return assert_equal_values(new Map<VALUE.Boolean, VALUE.Boolean>([
-					[new OP.RecordHas(record, {keyid: Validator.keyId('a'), keysrc: 'a'}).interpret(interp), VALUE.TRUE],
-					[new OP.RecordHas(record, {keyid: Validator.keyId('b'), keysrc: 'b'}).interpret(interp), VALUE.FALSE],
+				const record        = new AST.ExprVisitorBuild(new Builder()).visit(AST.EXPR.Record.fromSource('(a= 10, c= 20)'));
+				const value_visitor = new OP.ValueVisitorInterpret(new Interpreter());
+				return assert_equal_values(new Map<VALUE.Value, VALUE.Boolean>([
+					[value_visitor.visit(new OP.RecordHas(record, {keyid: Validator.keyId('a'), keysrc: 'a'})), VALUE.TRUE],
+					[value_visitor.visit(new OP.RecordHas(record, {keyid: Validator.keyId('b'), keysrc: 'b'})), VALUE.FALSE],
 				]));
 			});
 
@@ -516,16 +517,17 @@ test.suite('Opcode', () => {
 								e;
 								f;
 							}`, {codegen: false});
-							const expr_visitor = new AST.ExprVisitorBuild(builder);
-							const interp       = new Interpreter();
-							const code_visitor = new OP.OpcodeVisitorInterpret(interp);
+							const expr_visitor  = new AST.ExprVisitorBuild(builder);
+							const interp        = new Interpreter();
+							const code_visitor  = new OP.OpcodeVisitorInterpret(interp);
+							const value_visitor = new OP.ValueVisitorInterpret(interp);
 							builder.instructions.slice(0, 8).map((instr) => code_visitor.visit(instr)); // instr index 5 is the decl for the Exception argument
 							// there exists no syntax for “is None”/“is Fail”, so constructing it manually
-							return assert_equal_values(stmts.slice(7).map((stmt) => new OP.Unop(
+							return assert_equal_values(stmts.slice(7).map((stmt) => value_visitor.visit(new OP.Unop(
 								operator,
 								expr_visitor.visit((stmt as AST.STMT.StatementExpression).expr!) as OP.Get,
 								TYPE.BOOL,
-							).interpret(interp)), [
+							))), [
 								[VALUE.TRUE, VALUE.FALSE, VALUE.TRUE, ...repeat(VALUE.FALSE, 3)],
 								[...repeat(VALUE.FALSE, 4), VALUE.TRUE, VALUE.FALSE],
 							][i]);
@@ -1112,7 +1114,7 @@ test.suite('Opcode', () => {
 				const typ: TYPE.Type = (stmts[0] as AST.STMT.StatementExpression).expr!.type;
 				assert_instanceof(typ, TYPE.Function);
 				return assert.deepStrictEqual(
-					(builder.instructions[0] as OP.Drop).value.interpret(new Interpreter()),
+					new OP.ValueVisitorInterpret(new Interpreter()).visit((builder.instructions[0] as OP.Drop).value),
 					new VALUE.Function(typ, '\\(x: int): void { x; return; }'),
 				);
 			});

@@ -4,16 +4,12 @@ import {
 	type CodeGenerator,
 	NanErrorDivZero,
 } from '../../index.ts';
+import {memoizeMethod} from '../../lib/index.ts';
 import {
-	assert_instanceof,
-	memoizeMethod,
-} from '../../lib/index.ts';
-import {
-	VALUE,
+	type VALUE,
 	TYPE,
 } from '../../typer/index.ts';
 import {drop_then} from './utils-private.ts';
-import type {Interpreter} from '../Interpreter.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
 import type {ValueTac} from './ValueTac.ts';
@@ -65,41 +61,6 @@ export class Binop extends Value {
 
 	public override toString(): string {
 		return super.toString(this.operand0, this.operand1);
-	}
-
-	public override interpret(interp: Interpreter): VALUE.Value {
-		const [operand0, operand1]: [VALUE.Value, VALUE.Value] = [this.operand0.interpret(interp), this.operand1.interpret(interp)];
-		switch (this.operator) {
-			case OpCode.INT_ADD: { return (operand0 as VALUE.Integer).plus   (operand1 as VALUE.Integer); }
-			case OpCode.INT_SUB: { return (operand0 as VALUE.Integer).minus  (operand1 as VALUE.Integer); }
-			case OpCode.INT_MUL: { return (operand0 as VALUE.Integer).times  (operand1 as VALUE.Integer); }
-			case OpCode.INT_DIV: { return (operand0 as VALUE.Integer).divide (operand1 as VALUE.Integer); }
-			case OpCode.INT_EXP: { return (operand0 as VALUE.Integer).exp    (operand1 as VALUE.Integer); }
-
-			case OpCode.NAT_ADD: { return (operand0 as VALUE.Natural).plus   (operand1 as VALUE.Natural); }
-			case OpCode.NAT_SUB: { return (operand0 as VALUE.Natural).minus  (operand1 as VALUE.Natural); }
-			case OpCode.NAT_MUL: { return (operand0 as VALUE.Natural).times  (operand1 as VALUE.Natural); }
-			case OpCode.NAT_DIV: { return (operand0 as VALUE.Natural).divide (operand1 as VALUE.Natural); }
-			case OpCode.NAT_EXP: { return (operand0 as VALUE.Natural).exp    (operand1 as VALUE.Natural); }
-
-			case OpCode.FLOAT_ADD: { return (operand0 as VALUE.Float).plus   (operand1 as VALUE.Float); }
-			case OpCode.FLOAT_SUB: { return (operand0 as VALUE.Float).minus  (operand1 as VALUE.Float); }
-			case OpCode.FLOAT_MUL: { return (operand0 as VALUE.Float).times  (operand1 as VALUE.Float); }
-			case OpCode.FLOAT_DIV: { return (operand0 as VALUE.Float).divide (operand1 as VALUE.Float); }
-			case OpCode.FLOAT_EXP: { return (operand0 as VALUE.Float).exp    (operand1 as VALUE.Float); }
-
-			case OpCode.LT: { return VALUE.Boolean.fromBoolean((operand0 as VALUE.Number).lt(operand1 as VALUE.Number)); }
-			case OpCode.GT: { return VALUE.Boolean.fromBoolean((operand1 as VALUE.Number).lt(operand0 as VALUE.Number)); }
-			case OpCode.LE: { return VALUE.Boolean.fromBoolean((operand0 as VALUE.Number).equal(operand1) || (operand0 as VALUE.Number).lt(operand1 as VALUE.Number)); }
-			case OpCode.GE: { return VALUE.Boolean.fromBoolean((operand1 as VALUE.Number).equal(operand0) || (operand1 as VALUE.Number).lt(operand0 as VALUE.Number)); }
-
-			case OpCode.ID: { return VALUE.Boolean.fromBoolean(operand0.identical(operand1)); }
-			case OpCode.EQ: { return VALUE.Boolean.fromBoolean(operand0.equal(operand1)); }
-			case OpCode.IS: {
-				assert_instanceof(operand1, VALUE.Class);
-				return VALUE.Boolean.fromBoolean(operand0 instanceof operand1.nativeClass);
-			}
-		}
 	}
 
 	@memoizeMethod

@@ -34,10 +34,6 @@ export class Const extends ValueTac {
 		return super.toString(this.interpreterValue);
 	}
 
-	public override interpret(): VALUE.Primitive {
-		return this.interpreterValue;
-	}
-
 	@memoizeMethod
 	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
 		return this.interpreterValue.codegen(cg);

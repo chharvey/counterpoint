@@ -1,15 +1,7 @@
 import type * as binaryen from 'binaryen.ts';
 import type {CodeGenerator} from '../../index.ts';
-import {
-	assert_instanceof,
-	memoizeMethod,
-} from '../../lib/index.ts';
-import {
-	VALUE,
-	TYPE,
-	CLASS_CLASS,
-} from '../../typer/index.ts';
-import type {Interpreter} from '../Interpreter.ts';
+import {memoizeMethod} from '../../lib/index.ts';
+import {TYPE} from '../../typer/index.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
 import type {ValueTac} from './ValueTac.ts';
@@ -46,17 +38,6 @@ export class ObjectNew extends Value {
 
 	public override toString(): string {
 		return super.toString(this.isClass ? '<Class>' : '', this.class_ ?? '');
-	}
-
-	public override interpret(interp: Interpreter): VALUE.Value {
-		const class_: VALUE.Value | undefined = this.class_?.interpret(interp);
-		if (class_) {
-			assert_instanceof(class_, VALUE.Class);
-			// @ts-expect-error --- deprecated usage
-			return this.isClass ? new VALUE.Class(TYPE.OBJ, class_) : new VALUE.Object(0n, class_);
-		} else {
-			return CLASS_CLASS;
-		}
 	}
 
 	@memoizeMethod

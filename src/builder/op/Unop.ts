@@ -1,12 +1,7 @@
-import * as assert from 'node:assert';
 import type * as binaryen from 'binaryen.ts';
 import type {CodeGenerator} from '../../index.ts';
 import {memoizeMethod} from '../../lib/index.ts';
-import {
-	VALUE,
-	TYPE,
-} from '../../typer/index.ts';
-import type {Interpreter} from '../Interpreter.ts';
+import {TYPE} from '../../typer/index.ts';
 import {drop_then} from './utils-private.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
@@ -52,32 +47,6 @@ export class Unop extends Value {
 
 	public override toString(): string {
 		return super.toString(this.operand);
-	}
-
-	public override interpret(interp: Interpreter): VALUE.Value {
-		const operand: VALUE.Value = this.operand.interpret(interp);
-		switch (this.operator) {
-			case OpCode.BOOL_FROM:  { return VALUE.Boolean.fromBoolean(operand.isTruthy); }
-			case OpCode.INT_FROM:   { return (operand as VALUE.Number).toInt(); }
-			case OpCode.NAT_FROM:   { return (operand as VALUE.Number).toNat(); }
-			case OpCode.FLOAT_FROM: { return (operand as VALUE.Number).toFloat(); }
-			case OpCode.STR_FROM:   { return operand.toCplString(); }
-
-			case OpCode.NOT: { return VALUE.Boolean.fromBoolean(!operand.isTruthy); }
-			case OpCode.EMP: { return VALUE.Boolean.fromBoolean(operand.isEmpty); }
-			case OpCode.NEG: { return (operand as VALUE.Integer | VALUE.Float).neg(); }
-
-			case OpCode.LIST_COUNT: { return new VALUE.Natural((operand as VALUE.List).count); }
-			case OpCode.DICT_COUNT: { return new VALUE.Natural((operand as VALUE.Dict).count); }
-			case OpCode.SET_COUNT:  { return new VALUE.Natural((operand as VALUE.Set).count); }
-			case OpCode.MAP_COUNT:  { return new VALUE.Natural((operand as VALUE.Map).count); }
-
-			case OpCode.NONE_IS:        { return VALUE.Boolean.fromBoolean(operand instanceof VALUE.None); }
-			case OpCode.FAIL_IS:        { return VALUE.Boolean.fromBoolean(operand instanceof VALUE.Fail); }
-			case OpCode.MAYBE_UNWRAP:   { return operand instanceof VALUE.Some ? operand.value  : assert.fail(new TypeError('Unwrapped a None value.')); }
-			case OpCode.RESULT_UNWRAP:  { return operand instanceof VALUE.Ok   ? operand.value  : assert.fail(new TypeError('Unwrapped a Fail value.')); }
-			case OpCode.RESULT_EXTRACT: { return operand instanceof VALUE.Fail ? operand.reason : assert.fail(new TypeError('Extracted from an Ok value.')); }
-		}
 	}
 
 	@memoizeMethod

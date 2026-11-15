@@ -1,8 +1,5 @@
 import type * as binaryen from 'binaryen.ts';
-import {
-	type CodeGenerator,
-	ErrorCode,
-} from '../../index.ts';
+import type {CodeGenerator} from '../../index.ts';
 import {
 	noopMethod,
 	memoizeMethod,
@@ -17,10 +14,6 @@ import {ValueTac} from './ValueTac.ts';
 export class Trap extends ValueTac {
 	public constructor() {
 		super(OpCode.TRAP, TYPE.NOTHING);
-	}
-
-	public override interpret(): never {
-		throw new ErrorCode('Trap.');
 	}
 
 	@noopMethod(memoizeMethod)

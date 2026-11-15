@@ -6,10 +6,7 @@ import {
 	CoreLibName,
 	CORE_LIB_NAMES,
 } from '../../parser/index.ts';
-import {
-	VALUE,
-	type TYPE,
-} from '../../typer/index.ts';
+import type {TYPE} from '../../typer/index.ts';
 import {
 	SymbolSchemaVar,
 	SymbolSchemaClass,
@@ -18,7 +15,6 @@ import type {
 	Temp,
 	BuilderLocalSymbol,
 } from '../Builder.ts';
-import type {Interpreter} from '../Interpreter.ts';
 import {OpCode} from './Opcode.ts';
 import {ValueTac} from './ValueTac.ts';
 
@@ -26,8 +22,6 @@ import {ValueTac} from './ValueTac.ts';
 
 /** Read the value of a variable/local. */
 export class Get extends ValueTac {
-	#interpretedValue?: VALUE.Value;
-
 	public readonly targetName: string;
 
 
@@ -41,41 +35,6 @@ export class Get extends ValueTac {
 
 	public override toString(): string {
 		return super.toString(this.targetName);
-	}
-
-	public override interpret(interp: Interpreter): VALUE.Value {
-		if (
-			this.target instanceof SymbolSchemaClass &&
-			CORE_LIB_NAMES.includes(this.target.source as CoreLibName)
-		) {
-			let native_class: VALUE.Class['nativeClass'];
-			switch (this.target.source as CoreLibName) {
-				case CoreLibName.NULL:      { native_class = VALUE.Null;      break; }
-				case CoreLibName.BOOLEAN:   { native_class = VALUE.Boolean;   break; }
-				case CoreLibName.SYMBOL:    { native_class = VALUE.Symbol;    break; }
-				case CoreLibName.INTEGER:   { native_class = VALUE.Integer;   break; }
-				case CoreLibName.NATURAL:   { native_class = VALUE.Natural;   break; }
-				case CoreLibName.FLOAT:     { native_class = VALUE.Float;     break; }
-				case CoreLibName.STRING:    { native_class = VALUE.String;    break; }
-				case CoreLibName.OBJECT:    { native_class = VALUE.Object;    break; }
-				case CoreLibName.LIST:      { native_class = VALUE.List;      break; }
-				case CoreLibName.DICT:      { native_class = VALUE.Dict;      break; }
-				case CoreLibName.SET:       { native_class = VALUE.Set;       break; }
-				case CoreLibName.MAP:       { native_class = VALUE.Map;       break; }
-				case CoreLibName.EXCEPTION: { native_class = VALUE.Exception; break; }
-				case CoreLibName.MAYBE:     { native_class = VALUE.Maybe;     break; }
-				case CoreLibName.NONE:      { native_class = VALUE.None;      break; }
-				case CoreLibName.SOME:      { native_class = VALUE.Some;      break; }
-				case CoreLibName.RESULT:    { native_class = VALUE.Result;    break; }
-				case CoreLibName.FAIL:      { native_class = VALUE.Fail;      break; }
-				case CoreLibName.OK:        { native_class = VALUE.Ok;        break; }
-				case CoreLibName.FUNCTION:  { native_class = VALUE.Function;  break; }
-				case CoreLibName.CLASS:     { native_class = VALUE.Class;     break; }
-			}
-			this.#interpretedValue ??= new VALUE.Class(this.target.classSignature.instanceType, native_class);
-			return this.#interpretedValue;
-		}
-		return interp.getLocalValue(this.target) ?? assert.fail(new ReferenceError(`Local variable \`${this.targetName}\` must be set first!`));
 	}
 
 	@memoizeMethod

@@ -1,11 +1,10 @@
 import type * as binaryen from 'binaryen.ts';
 import type {CodeGenerator} from '../../index.ts';
 import {memoizeMethod} from '../../lib/index.ts';
-import {
+import type {
 	VALUE,
-	type TYPE,
+	TYPE,
 } from '../../typer/index.ts';
-import type {Interpreter} from '../Interpreter.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
 import type {ValueTac} from './ValueTac.ts';
@@ -23,13 +22,6 @@ export class DictNew extends Value {
 
 	public override toString(): string {
 		return super.toString(...[...this.props].map(([sym, value]) => `${sym}->${value}`));
-	}
-
-	public override interpret(interp: Interpreter): VALUE.Dict {
-		return new VALUE.Dict(new Map<bigint, VALUE.Value>([...this.props].map(([{id}, value]) => [
-			id,
-			value.interpret(interp),
-		])));
 	}
 
 	@memoizeMethod

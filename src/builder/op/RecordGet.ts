@@ -1,14 +1,7 @@
 import type * as binaryen from 'binaryen.ts';
 import type {CodeGenerator} from '../../index.ts';
-import {
-	assert_instanceof,
-	memoizeMethod,
-} from '../../lib/index.ts';
-import {
-	VALUE,
-	type TYPE,
-} from '../../typer/index.ts';
-import type {Interpreter} from '../Interpreter.ts';
+import {memoizeMethod} from '../../lib/index.ts';
+import type {TYPE} from '../../typer/index.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
 import type {ValueTac} from './ValueTac.ts';
@@ -18,8 +11,8 @@ import type {ValueTac} from './ValueTac.ts';
 /** Read an entry of a record. */
 export class RecordGet extends Value {
 	public constructor(
-		public  readonly record:   ValueTac,
-		private readonly accessor: {readonly keyid: bigint, readonly keysrc?: string},
+		public readonly record:   ValueTac,
+		public readonly accessor: {readonly keyid: bigint, readonly keysrc?: string},
 		entry_type: TYPE.Type,
 	) {
 		super(OpCode.RECORD_GET, entry_type);
@@ -31,12 +24,6 @@ export class RecordGet extends Value {
 			`@${this.accessor.keysrc || `\\x${this.accessor.keyid.toString(16)}`}`, // static accessor before collection
 			this.record,
 		);
-	}
-
-	public override interpret(interp: Interpreter): VALUE.Value {
-		const base: VALUE.Value = this.record.interpret(interp);
-		assert_instanceof(base, VALUE.Record);
-		return base.get(this.accessor.keyid);
 	}
 
 	@memoizeMethod
