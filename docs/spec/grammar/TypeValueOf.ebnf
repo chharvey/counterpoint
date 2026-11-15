@@ -10,8 +10,7 @@ Type! TypeValueOf(SemanticTypeAlias var) :=
 		1. *Return:* `symbol.typevalue`.
 	3. *Else:*
 		1. *Assert:* `symbol` is an instance of `SymbolSchemaClass`.
-		2. *Assert:* `symbol.signature` does not have generic parameters.
-		3. *Return:* `symbol.signature.instanceType`.
+		2. *Return:* `symbol.signature.instanceType`.
 ;
 
 

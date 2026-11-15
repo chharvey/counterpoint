@@ -77,11 +77,7 @@ Nil TypeCheck(SemanticType typexpr) :=
 ;
 
 Nil TypeCheck(SemanticTypeCall ::= SemanticType__0 SemanticType__1+) :=
-	1. *If* `SemanticType__0` is a `SemanticTypeAlias` *and* `SemanticType__0.isTypefuncRef` is `true`:
-		1. Fall through.
-	2. *Else:*
-		1. *Perform:* *Unwrap:* `TypeCheck(SemanticType__0)`.
-	3. *For each* `it` in `SemanticType__1+`:
+	3. *For each* `it` in `SemanticType__0 SemanticType__1+`:
 		1. *Perform:* *Unwrap:* `TypeCheck(it)`.
 	4. *Perform:* *Unwrap:* `TypeValueOf(SemanticTypeCall)`.
 		1. *Note:* The result of this step is not used; it is only performed to rethrow any TypeErrors.
@@ -97,11 +93,7 @@ Nil! TypeCheck(SemanticExpression expr) :=
 ;
 
 Nil! TypeCheck(SemanticExpressionCall ::= SemanticExpression__0 SemanticType* SemanticExpression__1* SemanticProperty*) :=
-	1. *If* `SemanticExpression__0` is a `SemanticExpressionVariable` *and* `SemanticExpression__0.isFuncRef` is `true`:
-		1. Fall through.
-	2. *Else:*
-		1. *Perform:* *Unwrap:* `TypeCheck(SemanticExpression__0)`.
-	3. *For each* `it` in `[SemanticType*, SemanticExpression__1*, SemanticProperty*]`:
+	3. *For each* `it` in `[SemanticExpression__0, SemanticType*, SemanticExpression__1*, SemanticProperty*]`:
 		1. *Perform:* *Unwrap:* `TypeCheck(it)`.
 	4. *Perform:* *Unwrap:* `TypeOf(SemanticExpressionCall)`.
 		1. *Note:* The result of this step is not used; it is only performed to rethrow any TypeErrors.

@@ -117,9 +117,11 @@ Nil! VarCheck(SemanticTypeAlias var) :=
 	// TODO: Throw a ReferenceErrorDeadZone if the variable is declared further down in source.
 	2. *If* `symbol` is an instance of `SymbolSchemaVar` *or* `symbol` is an instance of `SymbolSchemaFunc`:
 		1. *Throw:* a new ReferenceErrorKind.
-	3. *If* `symbol` is an instance of `SymbolSchemaClass` *and* `symbol.signature` has generic parameters:
-		1. *Set* `var.isTypefuncRef` to `true`.
-		2. *Throw:* a new ReferenceErrorKind.
+	3. *If* `symbol` is an instance of `SymbolSchemaClass` *and* `symbol.signature` has generic parameters *and*
+		the parent node of `var` does not match "SemanticTypeCall ::= `var` SemanticType+":
+		1. *Throw:* a new ReferenceErrorKind.
+	4. *Else:*
+		1. *Return.*
 ;
 
 
@@ -127,10 +129,7 @@ Nil! VarCheck(SemanticTypeAlias var) :=
 Nil! VarCheck(SemanticTypeCall ::= SemanticType__0 SemanticType__1+) :=
 	1. *Let* `check_base` be `VarCheck(SemanticType__0)`.
 	2. *If* `check_base` is an abrupt completion:
-		1. *If* `SemanticType__0` is a `SemanticTypeAlias` *and* `SemanticType__0.isTypefuncRef` is `true`:
-			1. Fall through.
-		2. *Else:*
-			1. *Return:* `check_base`.
+		1. *Return:* `check_base`.
 	3. *Else:*
 		1. Fall through.
 	4. *For each* `it` in `SemanticType__1+`:
@@ -158,9 +157,11 @@ Nil! VarCheck(SemanticExpressionVariable var) :=
 	// TODO: Throw a ReferenceErrorDeadZone if the variable is declared further down in source.
 	2. *If* `symbol` is an instance of `SymbolSchemaType`:
 		1. *Throw:* a new ReferenceErrorKind.
-	3. *If* `symbol` is an instance of `SymbolSchemaFunc`:
-		1. *Set* `var.isFuncRef` to `true`.
-		2. *Throw:* a new ReferenceErrorKind.
+	3. *If* `symbol` is an instance of `SymbolSchemaFunc` *and*
+		the parent node of `var` does not match "SemanticExpressionCall ::= `var` SemanticType* SemanticExpression* SemanticProperty*":
+		1. *Throw:* a new ReferenceErrorKind.
+	4. *Else:*
+		1. *Return.*
 ;
 
 
@@ -168,10 +169,7 @@ Nil! VarCheck(SemanticExpressionVariable var) :=
 Nil! VarCheck(SemanticExpressionCall ::= SemanticExpression__0 SemanticType* SemanticExpression__1* SemanticProperty*) :=
 	1. *Let* `check_base` be `VarCheck(SemanticExpression__0)`.
 	2. *If* `check_base` is an abrupt completion:
-		1. *If* `SemanticExpression__0` is a `SemanticExpressionVariable` *and* `SemanticExpression__0.isFuncRef` is `true`:
-			1. Fall through.
-		2. *Else:*
-			1. *Return:* `check_base`.
+		1. *Return:* `check_base`.
 	3. *Else:*
 		1. Fall through.
 	4. *For each* `it` in `[SemanticType*, SemanticExpression__1*, SemanticProperty*]`:

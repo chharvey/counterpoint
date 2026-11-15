@@ -53,7 +53,6 @@ export class TypeVisitorTypevalue extends AST_TYPE.TypeVisitor<TYPE.Type> {
 			return symbol.typevalue;
 		} else {
 			assert_instanceof(symbol, SymbolSchemaClass);
-			assert.ok(!symbol.classSignature.genericParams);
 			return symbol.classSignature.instanceType;
 		}
 	}

@@ -88,8 +88,7 @@ export class AstNodeVisitorRefCheck extends AstNodeVisitor<void> {
 			throw new ReferenceErrorKind(typenode, SymbolKind.VALUE, SymbolKind.TYPE);
 			// TODO: When Type objects are allowed as runtime values, this should be removed and checked by the type checker.
 		}
-		if (symbol instanceof SymbolSchemaClass && symbol.classSignature.genericParams) {
-			typenode.isTypefuncRef = true;
+		if (symbol instanceof SymbolSchemaClass && symbol.classSignature.genericParams && !(typenode.parent instanceof AST_TYPE.Call && typenode.parent.base === typenode)) {
 			throw new ReferenceErrorKind(typenode, SymbolKind.TYPEFUNC, SymbolKind.TYPE);
 		}
 	}
@@ -100,14 +99,7 @@ export class AstNodeVisitorRefCheck extends AstNodeVisitor<void> {
 	}
 
 	public override visitTypeCall(typenode: AST_TYPE.Call): void {
-		try {
-			this.visit(typenode.base);
-		} catch (err) {
-			if (!(typenode.base instanceof AST_TYPE.TypeAlias && typenode.base.isTypefuncRef)) {
-				throw err;
-			}
-		}
-		return xjs.Array.forEachAggregated(typenode.args, (arg) => this.visit(arg));
+		return xjs.Array.forEachAggregated([typenode.base, ...typenode.args], (arg) => this.visit(arg));
 	}
 
 	public override visitTypeFunction(typenode: AST_TYPE.Function): void {
@@ -124,8 +116,7 @@ export class AstNodeVisitorRefCheck extends AstNodeVisitor<void> {
 			throw new ReferenceErrorKind(expr, SymbolKind.TYPE, SymbolKind.VALUE);
 			// TODO: When Type objects are allowed as runtime values, this should be removed and checked by the type checker.
 		}
-		if (symbol instanceof SymbolSchemaFunc) {
-			expr.isFuncRef = true;
+		if (symbol instanceof SymbolSchemaFunc && !(expr.parent instanceof EXPR.Call && expr.parent.base === expr)) {
 			throw new ReferenceErrorKind(expr, SymbolKind.FUNC, SymbolKind.VALUE);
 		}
 	}
@@ -141,14 +132,8 @@ export class AstNodeVisitorRefCheck extends AstNodeVisitor<void> {
 	}
 
 	public override visitExprCall(expr: EXPR.Call): void {
-		try {
-			this.visit(expr.base);
-		} catch (err) {
-			if (!(expr.base instanceof EXPR.Variable && expr.base.isFuncRef)) {
-				throw err;
-			}
-		}
 		return xjs.Array.forEachAggregated([
+			expr.base,
 			...expr.typeargs,
 			...expr.exprargsPosit,
 			...expr.exprargsNamed,

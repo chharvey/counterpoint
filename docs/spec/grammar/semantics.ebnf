@@ -67,7 +67,7 @@ SemanticType =:=
 SemanticTypeConstant[value: Type]
 	::= ();
 
-SemanticTypeAlias[id: RealNumber][isTypefuncRef: Boolean]
+SemanticTypeAlias[id: RealNumber]
 	::= ();
 
 SemanticTypeCollection =:=
@@ -124,7 +124,7 @@ SemanticExpressionConstant[value: Null | Boolean | Symbol | Number | String]
 SemanticExpressionTemplate
 	::= (SemanticExpressionConstant SemanticExpression?)* SemanticExpressionConstant;
 
-SemanticExpressionVariable[id: RealNumber][isFuncRef: Boolean]
+SemanticExpressionVariable[id: RealNumber]
 	::= ();
 
 SemanticExpressionTemplatePartial

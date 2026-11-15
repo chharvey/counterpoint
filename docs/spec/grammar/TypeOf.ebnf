@@ -24,7 +24,11 @@ Type TypeOf(SemanticExpressionVariable var) :=
 			1. *Return:* `Maybe(symbol.type)`.
 		2. *Else:*
 			1. *Return:* `symbol.type`.
-	3. *Else*:
+	3. *Else If* `symbol` is an instance of `SymbolSchemaFunc`:
+		1. *Assert:* The parent node of `var` matches "SemanticExpressionCall ::= `var` SemanticType* SemanticExpression* SemanticProperty*".
+		2. *Note:* The «TypeOf(SemanticExpressionCall)» algorithm does not use this return value.
+		3. *Return:* `Nothing`.
+	4. *Else*:
 		1. *Assert:* `symbol` is an instance of `SymbolSchemaClass`.
 		2. *Return:* `Class`.
 ;

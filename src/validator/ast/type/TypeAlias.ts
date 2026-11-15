@@ -19,8 +19,6 @@ export class TypeAlias extends Type {
 
 	public readonly id: bigint = Validator.cookTokenIdentifier(this.start_node.text);
 
-	public isTypefuncRef: boolean = false;
-
 
 	public constructor(start_node: SyntaxNodeType<'identifier'>) {
 		super(start_node);

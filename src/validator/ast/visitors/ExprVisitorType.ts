@@ -83,6 +83,8 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type | null> {
 		const symbol: SymbolSchema = expr.validator.getSymbol(expr.id)!;
 		if (symbol instanceof SymbolSchemaVar) {
 			return symbol.isUninitialized ? new TYPE.Maybe(symbol.type) : symbol.type;
+		} else if (symbol instanceof SymbolSchemaFunc) {
+			return TYPE.NOTHING; // not used in `this.visitCall`
 		} else {
 			assert_instanceof(symbol, SymbolSchemaClass);
 			return TYPE.CLASS;

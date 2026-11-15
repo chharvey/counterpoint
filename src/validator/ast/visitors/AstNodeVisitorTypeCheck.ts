@@ -36,7 +36,7 @@ import {Key} from '../Key.ts';
 import type {ParameterFunction} from '../ParameterFunction.ts';
 import type {Capture} from '../Capture.ts';
 import type {Block} from '../Block.ts';
-import * as AST_TYPE from '../type/index.ts';
+import type * as AST_TYPE from '../type/index.ts';
 import * as EXPR from '../expression/index.ts';
 import type * as STMT from '../statement/index.ts';
 import {AstNodeVisitorCompletion} from './AstNodeVisitorCompletion.ts';
@@ -88,10 +88,7 @@ export class AstNodeVisitorTypeCheck extends AstNodeVisitor<void> {
 	public override visitTypeAccess          (typenode: AST_TYPE.Access):          void { return this.visitType(typenode); }
 
 	public override visitTypeCall(typenode: AST_TYPE.Call): void {
-		if (!(typenode.base instanceof AST_TYPE.TypeAlias && typenode.base.isTypefuncRef)) {
-			return this.visit(typenode.base);
-		}
-		xjs.Array.forEachAggregated(typenode.args, (arg) => this.visit(arg));
+		xjs.Array.forEachAggregated([typenode.base, ...typenode.args], (arg) => this.visit(arg));
 		this.#typeVisitorTypevalue.visit(typenode);
 	}
 
@@ -119,10 +116,8 @@ export class AstNodeVisitorTypeCheck extends AstNodeVisitor<void> {
 	public override visitExprAccess   (expr: EXPR.Access):          void { return this.visitExpression(expr); }
 
 	public override visitExprCall(expr: EXPR.Call): void {
-		if (!(expr.base instanceof EXPR.Variable && expr.base.isFuncRef)) {
-			return this.visit(expr.base);
-		}
 		xjs.Array.forEachAggregated([
+			expr.base,
 			...expr.typeargs,
 			...expr.exprargsPosit,
 			...expr.exprargsNamed,
