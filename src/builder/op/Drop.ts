@@ -1,7 +1,6 @@
 import type * as binaryen from 'binaryen.ts';
 import type {CodeGenerator} from '../../index.ts';
 import {memoizeMethod} from '../../lib/index.ts';
-import type {Interpreter} from '../Interpreter.ts';
 import {OpCode} from './Opcode.ts';
 import {Instruction} from './Instruction.ts';
 import type {Value} from './Value.ts';
@@ -16,10 +15,6 @@ export class Drop extends Instruction {
 
 	public override toString(): string {
 		return super.toString(this.value);
-	}
-
-	public override interpret(interp: Interpreter): void {
-		return interp.pushDrop(this.value.interpret(interp));
 	}
 
 	@memoizeMethod

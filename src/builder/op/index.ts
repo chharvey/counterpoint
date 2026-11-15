@@ -42,3 +42,4 @@ export * from './GotoConditional.ts';
 export * from './EndProgram.ts';
 
 export {OpcodeVisitorValidate} from './visitors/OpcodeVisitorValidate.ts';
+export {OpcodeVisitorInterpret} from './visitors/OpcodeVisitorInterpret.ts';

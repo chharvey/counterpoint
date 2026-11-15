@@ -1,7 +1,6 @@
 import type * as binaryen from 'binaryen.ts';
 import type {CodeGenerator} from '../../index.ts';
 import {runOnceSetter} from '../../lib/index.ts';
-import type {Interpreter} from '../Interpreter.ts';
 import {
 	Goto,
 	GotoConditional,
@@ -49,12 +48,6 @@ export abstract class Terminator extends Opcode {
 	public set containerLabel(label: string) {
 		this._containerLabel = label;
 	}
-
-	/**
-	 * Execute the interpreter.
-	 * @param interp an Interpreter
-	 */
-	public abstract interpret(interp: Interpreter): void;
 
 	/**
 	 * Generate assembly code.

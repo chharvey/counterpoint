@@ -1,9 +1,6 @@
-import * as assert from 'node:assert';
 import type * as binaryen from 'binaryen.ts';
 import type {CodeGenerator} from '../../index.ts';
 import {memoizeMethod} from '../../lib/index.ts';
-import {VALUE} from '../../typer/index.ts';
-import type {Interpreter} from '../Interpreter.ts';
 import {OpCode} from './Opcode.ts';
 import {Terminator} from './Terminator.ts';
 import type {Value} from './Value.ts';
@@ -21,24 +18,15 @@ export class GotoConditional extends Terminator {
 	 * @param label_if_false the label to jump to if the condition is false
 	 */
 	public constructor(
-		public  readonly condition:    Value,
-		private readonly labelIfTrue:  string,
-		private readonly labelIfFalse: string,
+		public readonly condition:    Value,
+		public readonly labelIfTrue:  string,
+		public readonly labelIfFalse: string,
 	) {
 		super(OpCode.GOTO_IF);
 	}
 
 	public override toString(): string {
 		return super.toString(this.condition, `"${this.labelIfTrue}"`, `"${this.labelIfFalse}"`);
-	}
-
-	public override interpret(interp: Interpreter): void {
-		const condition: VALUE.Value = this.condition.interpret(interp);
-		return interp.interpretNextBlock((
-			condition.equal(VALUE.TRUE)  ? this.labelIfTrue :
-			condition.equal(VALUE.FALSE) ? this.labelIfFalse :
-			assert.fail(new TypeError('Expected condition of a `GotoConditional` to be of type `Boolean`.'))
-		));
 	}
 
 	@memoizeMethod

@@ -63,8 +63,9 @@ export class CfgNode {
 	}
 
 	public interpret(interp: Interpreter): void {
-		this.#instructions.forEach((instr) => instr.interpret(interp));
-		return this.#terminator!.interpret(interp);
+		const code_visitor = new OP.OpcodeVisitorInterpret(interp);
+		this.#instructions.forEach((instr) => code_visitor.visit(instr));
+		return code_visitor.visit(this.#terminator!);
 	}
 
 	@memoizeMethod

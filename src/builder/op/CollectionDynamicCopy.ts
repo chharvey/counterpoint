@@ -1,15 +1,8 @@
 import * as assert from 'node:assert';
 import type * as binaryen from 'binaryen.ts';
 import type {CodeGenerator} from '../../index.ts';
-import {
-	assert_instanceof,
-	memoizeMethod,
-} from '../../lib/index.ts';
-import {
-	VALUE,
-	TYPE,
-} from '../../typer/index.ts';
-import type {Interpreter} from '../Interpreter.ts';
+import {memoizeMethod} from '../../lib/index.ts';
+import {TYPE} from '../../typer/index.ts';
 import {
 	TypeName,
 	type CollectionDynamicName,
@@ -37,121 +30,6 @@ export class CollectionDynamicCopy extends Instruction {
 
 	public override toString(): string {
 		return super.toString(this.destination, this.source);
-	}
-
-	public override interpret(interp: Interpreter): void {
-		const dest: VALUE.Value = this.destination.interpret(interp);
-		const src:  VALUE.Value = this.source     .interpret(interp);
-		switch (this.name) {
-			case TypeName.LIST: {
-				assert_instanceof(dest, VALUE.List);
-				dest.clear();
-				switch (true) {
-					// List.<T>((t, t, t));
-					// List.<T>([t, t, t]);
-					// List.<T>(List.<T>((t, t, t)));
-					case src instanceof VALUE.CollectionIndexed: {
-						return src.items.forEach((it, i) => dest.set(BigInt(i), it));
-					}
-					// List.<T>({t, t, t});
-					// List.<T>(Set.<T>((t, t, t)));
-					case src instanceof VALUE.Set: {
-						return src.elements.forEach((el, i) => dest.set(BigInt(i), el));
-					}
-					default: {
-						throw new TypeError(`Expected \`${src}\` to be of type \`Tuple | List | Set\`.`);
-					}
-				}
-			}
-			case TypeName.DICT: {
-				assert_instanceof(dest, VALUE.Dict);
-				dest.clear();
-				switch (true) {
-					// Dict.<T>(( (@a, t), (@b, t), (@c, t) ));
-					// Dict.<T>([ (@a, t), (@b, t), (@c, t) ]);
-					// Dict.<T>(List.<(sym, T)>(( (@a, t), (@b, t), (@c, t) )));
-					case src instanceof VALUE.CollectionIndexed: {
-						return src.items.forEach((it) => dest.set(
-							((it as VALUE.Tuple).get(0n) as VALUE.Symbol).id,
-							(it as VALUE.Tuple).get(1n),
-						));
-					}
-					// Dict.<T>((a= t, b= t, c= t));
-					// Dict.<T>([a= t, b= t, c= t]);
-					// Dict.<T>(Dict.<T>( (a= t, b= t, c= t) ));
-					case src instanceof VALUE.CollectionKeyed: {
-						return src.properties.forEach((val, keyid) => dest.set(keyid, val));
-					}
-					// Dict.<T>({ (@a, t), (@b, t), (@c, t) });
-					// Dict.<T>(Set.<(sym, T)>(( (@a, t), (@b, t), (@c, t) )));
-					case src instanceof VALUE.Set: {
-						return src.elements.forEach((el) => dest.set(
-							((el as VALUE.Tuple).get(0n) as VALUE.Symbol).id,
-							(el as VALUE.Tuple).get(1n),
-						));
-					}
-					// Dict.<T>({@a -> t, @b -> t, @c -> t});
-					// Dict.<T>(Map.<sym, T>(( (@a, t), (@b, t), (@c, t) )));
-					case src instanceof VALUE.Map: {
-						return src.cases.forEach((val, key) => dest.set((key as VALUE.Symbol).id, val));
-					}
-					default: {
-						throw new TypeError(`Expected \`${src}\` to be of type \`Tuple | Record | List | Dict | Set | Map\`.`);
-					}
-				}
-			}
-			case TypeName.SET: {
-				assert_instanceof(dest, VALUE.Set);
-				dest.clear();
-				switch (true) {
-					// Set.<T>((t, t, t));
-					// Set.<T>([t, t, t]);
-					// Set.<T>(List.<T>((t, t, t)));
-					case src instanceof VALUE.CollectionIndexed: {
-						return src.items.forEach((it) => dest.put(it));
-					}
-					// Set.<T>({t, t, t});
-					// Set.<T>(Set.<T>((t, t, t)));
-					case src instanceof VALUE.Set: {
-						return src.elements.forEach((el) => dest.put(el));
-					}
-					default: {
-						throw new TypeError(`Expected \`${src}\` to be of type \`Tuple | List | Set\`.`);
-					}
-				}
-			}
-			case TypeName.MAP: {
-				assert_instanceof(dest, VALUE.Map);
-				dest.clear();
-				switch (true) {
-					// Map.<K, V>(( (k, v), (k, v), (k, v) ));
-					// Map.<K, V>([ (k, v), (k, v), (k, v) ]);
-					// Map.<K, V>(List.<(K, V)>(( (k, v), (k, v), (k, v) )));
-					case src instanceof VALUE.CollectionIndexed: {
-						return src.items.forEach((it) => dest.set(
-							(it as VALUE.Tuple).get(0n),
-							(it as VALUE.Tuple).get(1n),
-						));
-					}
-					// Map.<K, V>({ (k, v), (k, v), (k, v) });
-					// Map.<K, V>(Set.<(K, V)>(( (k, v), (k, v), (k, v) )));
-					case src instanceof VALUE.Set: {
-						return src.elements.forEach((el) => dest.set(
-							(el as VALUE.Tuple).get(0n),
-							(el as VALUE.Tuple).get(1n),
-						));
-					}
-					// Map.<K, V>({k -> v, k -> v, k -> v});
-					// Map.<K, V>(Map.<K, V>(( (k, v), (k, v), (k, v) )));
-					case src instanceof VALUE.Map: {
-						return src.cases.forEach((val, key) => dest.set(key, val));
-					}
-					default: {
-						throw new TypeError(`Expected \`${src}\` to be of type \`Tuple | List | Set | Map\`.`);
-					}
-				}
-			}
-		}
 	}
 
 	@memoizeMethod

@@ -187,8 +187,9 @@ test.suite('Opcode', () => {
 			});
 
 			test.test('ObjectNew', () => {
-				const builder = new Builder();
-				const interp  = new Interpreter();
+				const builder      = new Builder();
+				const interp       = new Interpreter();
+				const code_visitor = new OP.OpcodeVisitorInterpret(interp);
 
 				/** The class named `Class` — it has a null `class_` field. */
 				const the_class_class = new OP.ObjectNew(true);
@@ -201,7 +202,7 @@ test.suite('Opcode', () => {
 				builder.pushInstruction(new OP.Drop(the_object_class));
 				builder.pushInstruction(new OP.Drop(new_object));
 
-				builder.instructions.forEach((instr) => instr.interpret(interp));
+				builder.instructions.forEach((instr) => code_visitor.visit(instr));
 				assert_instanceof(interp.drops[0], VALUE.Class);
 				assert_instanceof(interp.drops[1], VALUE.Class);
 				assert_instanceof(interp.drops[2], VALUE.Object);
@@ -458,8 +459,9 @@ test.suite('Opcode', () => {
 					]);
 				});
 				test.test('[operator={LIST,DICT,SET,MAP}_COUNT]', () => {
-					const builder = new Builder();
-					const interp  = new Interpreter();
+					const builder      = new Builder();
+					const interp       = new Interpreter();
+					const code_visitor = new OP.OpcodeVisitorInterpret(interp);
 					const items: readonly OP.ValueTac[] = [
 						new OP.Const(VALUE.INT_1),
 						new OP.Const(new VALUE.Float(2.0)),
@@ -493,7 +495,7 @@ test.suite('Opcode', () => {
 						]), new TYPE.Map(TYPE.SYM, TYPE.ANYTHING)).asTac(builder),
 						TYPE.NAT,
 					)));
-					builder.instructions.forEach((instr) => instr.interpret(interp));
+					builder.instructions.forEach((instr) => code_visitor.visit(instr));
 					return assert_equal_values(interp.drops, repeat(new VALUE.Natural(3n), 4));
 				});
 				test.suite('instance of None/Fail.', () => {
@@ -516,7 +518,8 @@ test.suite('Opcode', () => {
 							}`, {codegen: false});
 							const expr_visitor = new AST.ExprVisitorBuild(builder);
 							const interp       = new Interpreter();
-							builder.instructions.slice(0, 8).map((instr) => instr.interpret(interp)); // instr index 5 is the decl for the Exception argument
+							const code_visitor = new OP.OpcodeVisitorInterpret(interp);
+							builder.instructions.slice(0, 8).map((instr) => code_visitor.visit(instr)); // instr index 5 is the decl for the Exception argument
 							// there exists no syntax for “is None”/“is Fail”, so constructing it manually
 							return assert_equal_values(stmts.slice(7).map((stmt) => new OP.Unop(
 								operator,
@@ -535,9 +538,9 @@ test.suite('Opcode', () => {
 							val mut x?: str;
 							x~?;
 						}`, {codegen: false}).builder.instructions;
-						const interp = new Interpreter();
-						instrs[0].interpret(interp);
-						return assert.throws(() => instrs[1].interpret(interp), /Unwrapped a None value/);
+						const code_visitor = new OP.OpcodeVisitorInterpret(new Interpreter());
+						code_visitor.visit(instrs[0]);
+						return assert.throws(() => code_visitor.visit(instrs[1]), /Unwrapped a None value/);
 					});
 					test.test('returns the value when operand is a Some.', () => {
 						assert_equal_values(interpret_extracted_drops(`{
@@ -553,10 +556,10 @@ test.suite('Opcode', () => {
 							val x: int! = Fail.<int>(Exception.("42"));
 							x~!;
 						}`, {codegen: false}).builder.instructions;
-						const interp = new Interpreter();
-						instrs[0].interpret(interp);
-						instrs[1].interpret(interp);
-						return assert.throws(() => instrs[2].interpret(interp), /Unwrapped a Fail value/);
+						const code_visitor = new OP.OpcodeVisitorInterpret(new Interpreter());
+						code_visitor.visit(instrs[0]);
+						code_visitor.visit(instrs[1]);
+						return assert.throws(() => code_visitor.visit(instrs[2]), /Unwrapped a Fail value/);
 					});
 					test.test('returns the value when operand is an Ok.', () => {
 						assert_equal_values(interpret_extracted_drops(`{
@@ -572,21 +575,22 @@ test.suite('Opcode', () => {
 				});
 				test.suite('[operator=RESULT_EXTRACT]', () => {
 					test.test('throws when operand is an Ok.', () => {
-						const builder = new Builder();
-						const interp  = new Interpreter();
+						const builder      = new Builder();
+						const code_visitor = new OP.OpcodeVisitorInterpret(new Interpreter());
 						builder.pushInstruction(new OP.Drop(new OP.Unop(
 							OP.OpCode.RESULT_EXTRACT,
 							new OP.ResultNew(true, TYPE.INT, TYPE.EXCP, new OP.Const(VALUE.INT_1)).asTac(builder),
 							TYPE.EXCP,
 						)));
 						assert.strictEqual(builder.instructions.length, 2);
-						builder.instructions[0].interpret(interp);
-						return assert.throws(() => builder.instructions[1].interpret(interp), /Extracted from an Ok value/);
+						code_visitor.visit(builder.instructions[0]);
+						return assert.throws(() => code_visitor.visit(builder.instructions[1]), /Extracted from an Ok value/);
 					});
 					test.test('returns the reason when operand is a Fail.', () => {
-						const builder = new Builder();
-						const interp  = new Interpreter();
-						const message = new VALUE.String('message');
+						const builder      = new Builder();
+						const interp       = new Interpreter();
+						const code_visitor = new OP.OpcodeVisitorInterpret(interp);
+						const message      = new VALUE.String('message');
 						builder.pushInstruction(new OP.Drop(new OP.Unop(
 							OP.OpCode.RESULT_EXTRACT,
 							new OP.ResultNew(
@@ -597,7 +601,7 @@ test.suite('Opcode', () => {
 							).asTac(builder),
 							TYPE.EXCP,
 						)));
-						builder.instructions.forEach((instr) => instr.interpret(interp));
+						builder.instructions.forEach((instr) => code_visitor.visit(instr));
 						return assert_equal_values(interp.drops, [new VALUE.Exception(message)]);
 					});
 				});
@@ -1037,8 +1041,9 @@ test.suite('Opcode', () => {
 						const builder      = new Builder();
 						const interp       = new Interpreter();
 						const expr_visitor = new AST.ExprVisitorBuild(builder);
+						const code_visitor = new OP.OpcodeVisitorInterpret(interp);
 						srcs.forEach((src) => builder.pushInstruction(new OP.Drop(expr_visitor.visit(AST.EXPR.Expression.fromSource(src)).asTac(builder))));
-						builder.instructions.forEach((instr) => instr.interpret(interp));
+						builder.instructions.forEach((instr) => code_visitor.visit(instr));
 						expecteds = interp.drops;
 					});
 					test.suite('returns native `instanceof`.', () => {

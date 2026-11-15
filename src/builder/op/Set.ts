@@ -5,7 +5,6 @@ import {memoizeMethod} from '../../lib/index.ts';
 import {SymbolSchemaVar} from '../../validator/index.ts';
 import type {TYPE} from '../../typer/index.ts';
 import type {Temp} from '../Builder.ts';
-import type {Interpreter} from '../Interpreter.ts';
 import {OpCode} from './Opcode.ts';
 import {Instruction} from './Instruction.ts';
 import type {Value} from './Value.ts';
@@ -40,10 +39,6 @@ class OpSet extends Instruction {
 
 	public override toString(): string {
 		return super.toString(this.targetName, this.value);
-	}
-
-	public override interpret(interp: Interpreter): void {
-		interp.setLocalValue(this.target, this.value.interpret(interp));
 	}
 
 	@memoizeMethod

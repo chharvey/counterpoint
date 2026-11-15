@@ -4,7 +4,6 @@ import {memoizeMethod} from '../../lib/index.ts';
 import {SymbolSchemaVar} from '../../validator/index.ts';
 import type {TYPE} from '../../typer/index.ts';
 import type {Temp} from '../Builder.ts';
-import type {Interpreter} from '../Interpreter.ts';
 import {
 	TypeName,
 	ast_type_name,
@@ -71,15 +70,6 @@ export class Decl extends Instruction {
 			this.target instanceof SymbolSchemaVar ? this.target.source : this.target.name,
 			this.value ?? '',
 		);
-	}
-
-	public override interpret(interp: Interpreter): void {
-		if (this.target instanceof SymbolSchemaVar) {
-			// @ts-expect-error --- FIXME: function params do not have an initial value
-			interp.setLocalValue(this.target, this.value?.interpret(interp));
-		} else if (this.target.value) {
-			interp.setLocalValue(this.target, this.target.value.interpret(interp));
-		}
 	}
 
 	@memoizeMethod
