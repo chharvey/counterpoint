@@ -6,7 +6,7 @@ import {
 	memoizeMethod,
 	runOnceMethod,
 } from '../lib/index.ts';
-import type {OP} from './index.ts';
+import {OP} from './index.ts';
 import type {Builder} from './Builder.ts';
 import type {Interpreter} from './Interpreter.ts';
 
@@ -54,19 +54,23 @@ export class CfgNode {
 
 	@runOnceMethod
 	public validate(builder: Builder): void {
-		xjs.Array.forEachAggregated(this.#instructions, (instr) => instr.validate(builder));
+		const code_visitor = new OP.OpcodeVisitorValidate(builder);
+
+		xjs.Array.forEachAggregated(this.#instructions, (instr) => code_visitor.visit(instr));
 
 		assert.ok(this.#terminator, 'Block should already be terminated.');
-		return this.#terminator.validate(builder);
+		return code_visitor.visit(this.#terminator);
 	}
 
 	public interpret(interp: Interpreter): void {
-		this.#instructions.forEach((instr) => instr.interpret(interp));
-		return this.#terminator!.interpret(interp);
+		const code_visitor = new OP.OpcodeVisitorInterpret(interp);
+		this.#instructions.forEach((instr) => code_visitor.visit(instr));
+		return code_visitor.visit(this.#terminator!);
 	}
 
 	@memoizeMethod
 	public codegen(cg: CodeGenerator, relooper: binaryen.Relooper): binaryen.RelooperBlockRef {
-		return relooper.addBlock(cg.mod.wasm.block(this.label, this.#instructions.map((instr) => instr.codegen(cg)))); // leaving off terminator for branching later
+		const instr_visitor = new OP.InstrVisitorCodegen(cg);
+		return relooper.addBlock(cg.mod.wasm.block(this.label, this.#instructions.map((instr) => instr_visitor.visit(instr)))); // leaving off terminator for branching later
 	}
 }

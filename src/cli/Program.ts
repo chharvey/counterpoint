@@ -29,7 +29,7 @@ export class Program {
 	@memoizeMethod
 	#build(): Builder {
 		const builder = new Builder();
-		this.#astGoal.varCheck();
+		new AST.AstNodeVisitorRefCheck().visit(this.#astGoal);
 		new AST.AstNodeVisitorTypeCheck().visit(this.#astGoal);
 		new AST.AstNodeVisitorBuild(builder).visit(this.#astGoal);
 		return builder;

@@ -40,18 +40,20 @@ import type * as AST_TYPE from '../type/index.ts';
 import * as EXPR from '../expression/index.ts';
 import type * as STMT from '../statement/index.ts';
 import {AstNodeVisitorCompletion} from './AstNodeVisitorCompletion.ts';
+import {TypeVisitorTypevalue} from './TypeVisitorTypevalue.ts';
 import {ExprVisitorType} from './ExprVisitorType.ts';
 
 
 
 export class AstNodeVisitorTypeCheck extends AstNodeVisitor<void> {
 	readonly #astNodeVisitorCompletion = new AstNodeVisitorCompletion();
+	readonly #typeVisitorTypevalue     = new TypeVisitorTypevalue();
 	readonly #exprVisitorType          = new ExprVisitorType();
 
 
 	public override visitParameterFunction(node: ParameterFunction): void {
 		this.defaultVisit(node);
-		const param_type: TYPE.Type = node.typenode.eval();
+		const param_type: TYPE.Type = this.#typeVisitorTypevalue.visit(node.typenode);
 		node.expr && typecheck_assign(this.#exprVisitorType, node.expr, param_type, node);
 		if (node.identifier) {
 			const block: Block = (node.parent as Functionlike).block;
@@ -84,14 +86,7 @@ export class AstNodeVisitorTypeCheck extends AstNodeVisitor<void> {
 	public override visitTypeSet             (typenode: AST_TYPE.Set):             void { return this.visitType(typenode); }
 	public override visitTypeMap             (typenode: AST_TYPE.Map):             void { return this.visitType(typenode); }
 	public override visitTypeAccess          (typenode: AST_TYPE.Access):          void { return this.visitType(typenode); }
-
-	public override visitTypeCall(typenode: AST_TYPE.Call): void {
-		// NOTE: ignore type-checking `typenode.base` for now, as semantics is determined by syntax.
-		// (`typenode.base.source` must be a `CallableInterfaceName`)
-		xjs.Array.forEachAggregated(typenode.args, (arg) => this.visit(arg));
-		typenode.eval();
-	}
-
+	public override visitTypeCall            (typenode: AST_TYPE.Call):            void { return this.visitType(typenode); }
 	public override visitTypeOperationUnary  (typenode: AST_TYPE.OperationUnary):  void { return this.visitType(typenode); }
 	public override visitTypeOperationBinary (typenode: AST_TYPE.OperationBinary): void { return this.visitType(typenode); }
 	public override visitTypeFunction        (typenode: AST_TYPE.Function):        void { return this.visitType(typenode); }
@@ -99,34 +94,22 @@ export class AstNodeVisitorTypeCheck extends AstNodeVisitor<void> {
 
 	public override visitType(typenode: AST_TYPE.Type): void {
 		this.defaultVisit(typenode);
-		typenode.eval();
+		this.#typeVisitorTypevalue.visit(typenode);
 	}
 
 	/* eslint-disable @stylistic/space-before-function-paren */
-	public override visitExprConstant (expr: EXPR.Constant):        void { return this.visitExpression(expr); }
-	public override visitTemplate     (expr: EXPR.Template):        void { return this.visitExpression(expr); }
-	public override visitVariable     (expr: EXPR.Variable):        void { return this.visitExpression(expr); }
-	public override visitExprTuple    (expr: EXPR.Tuple):           void { return this.visitExpression(expr); }
-	public override visitExprRecord   (expr: EXPR.Record):          void { return this.visitExpression(expr); }
-	public override visitExprList     (expr: EXPR.List):            void { return this.visitExpression(expr); }
-	public override visitExprDict     (expr: EXPR.Dict):            void { return this.visitExpression(expr); }
-	public override visitExprSet      (expr: EXPR.Set):             void { return this.visitExpression(expr); }
-	public override visitExprMap      (expr: EXPR.Map):             void { return this.visitExpression(expr); }
-	public override visitExprBlock    (expr: EXPR.ExpressionBlock): void { return this.visitExpression(expr); }
-	public override visitExprAccess   (expr: EXPR.Access):          void { return this.visitExpression(expr); }
-
-	public override visitExprCall(expr: EXPR.Call): void {
-		if (!(expr.base instanceof EXPR.Variable && expr.base.isFuncRef)) {
-			this.visit(expr.base);
-		}
-		xjs.Array.forEachAggregated([
-			...expr.typeargs,
-			...expr.exprargsPosit,
-			...expr.exprargsNamed,
-		], (arg) => this.visit(arg));
-		this.#exprVisitorType.visit(expr);
-	}
-
+	public override visitExprConstant                   (expr: EXPR.Constant):                   void { return this.visitExpression(expr); }
+	public override visitTemplate                       (expr: EXPR.Template):                   void { return this.visitExpression(expr); }
+	public override visitVariable                       (expr: EXPR.Variable):                   void { return this.visitExpression(expr); }
+	public override visitExprTuple                      (expr: EXPR.Tuple):                      void { return this.visitExpression(expr); }
+	public override visitExprRecord                     (expr: EXPR.Record):                     void { return this.visitExpression(expr); }
+	public override visitExprList                       (expr: EXPR.List):                       void { return this.visitExpression(expr); }
+	public override visitExprDict                       (expr: EXPR.Dict):                       void { return this.visitExpression(expr); }
+	public override visitExprSet                        (expr: EXPR.Set):                        void { return this.visitExpression(expr); }
+	public override visitExprMap                        (expr: EXPR.Map):                        void { return this.visitExpression(expr); }
+	public override visitExprBlock                      (expr: EXPR.ExpressionBlock):            void { return this.visitExpression(expr); }
+	public override visitExprAccess                     (expr: EXPR.Access):                     void { return this.visitExpression(expr); }
+	public override visitExprCall                       (expr: EXPR.Call):                       void { return this.visitExpression(expr); }
 	public override visitExprClaim                      (expr: EXPR.Claim):                      void { return this.visitExpression(expr); }
 	public override visitOperationExprUnary             (expr: EXPR.OperationUnary):             void { return this.visitExpression(expr); }
 	public override visitOperationExprBinaryCast        (expr: EXPR.OperationBinaryCast):        void { return this.visitExpression(expr); }
@@ -145,7 +128,7 @@ export class AstNodeVisitorTypeCheck extends AstNodeVisitor<void> {
 	}
 
 	public override visitDeclType(stmt: STMT.DeclarationType): void {
-		const typevalue: TYPE.Type = stmt.assigned.eval(); // evaluate first before checking, to rethrow any errors
+		const typevalue: TYPE.Type = this.#typeVisitorTypevalue.visit(stmt.assigned); // evaluate first before checking, to rethrow any errors
 		if (stmt.assignee) {
 			assert.ok(stmt.validator.hasSymbol(stmt.id!), `The validator symbol table should include ${stmt.id}.`);
 			const symbol = stmt.validator.getSymbol(stmt.id!) as SymbolSchemaType;
@@ -158,7 +141,7 @@ export class AstNodeVisitorTypeCheck extends AstNodeVisitor<void> {
 		if (!stmt.typenode && !this.#isExprInferrable(stmt.assigned ?? undefined)) {
 			throw new AssignmentErrorMissingType(stmt);
 		}
-		const assignee_type: TYPE.Type = stmt.typenode?.eval() ?? (
+		const assignee_type: TYPE.Type = stmt.typenode ? this.#typeVisitorTypevalue.visit(stmt.typenode) : (
 			stmt.writable && ([
 				EXPR.Constant,
 				EXPR.Tuple,
@@ -193,7 +176,7 @@ export class AstNodeVisitorTypeCheck extends AstNodeVisitor<void> {
 	public override visitStmtClaim(stmt: STMT.StatementClaim): void {
 		this.defaultVisit(stmt);
 		const computed_type: TYPE.Type = this.#exprVisitorType.throwIfVoid(stmt.assignee);
-		const claimed_type:  TYPE.Type = stmt.claimed_type.eval();
+		const claimed_type:  TYPE.Type = this.#typeVisitorTypevalue.visit(stmt.claimed_type);
 		/* Type claim statements can only narrow the expression’s type. */
 		if (!claimed_type.isSubtypeOf(computed_type)) {
 			throw new TypeErrorNotNarrow(claimed_type, computed_type, stmt.line_index, stmt.col_index);
@@ -258,7 +241,7 @@ export class AstNodeVisitorTypeCheck extends AstNodeVisitor<void> {
 	}
 
 	public override visitStmtIteration(stmt: STMT.StatementIteration): void {
-		const assignee_type: TYPE.Type = stmt.typenode.eval();
+		const assignee_type: TYPE.Type = this.#typeVisitorTypevalue.visit(stmt.typenode);
 		const iterable_type: TYPE.Type = this.#exprVisitorType.throwIfVoid(stmt.iterable);
 		if (!(iterable_type instanceof TYPE.List)) {
 			throw new TypeErrorNotAssignable(stmt.iterable, new TYPE.List(TYPE.ANYTHING));
@@ -285,7 +268,7 @@ export class AstNodeVisitorTypeCheck extends AstNodeVisitor<void> {
 		if (!parent) {
 			return;
 		}
-		const return_type: TYPE.Type | undefined = parent.returnType?.eval();
+		const return_type: TYPE.Type | undefined = parent.returnType ? this.#typeVisitorTypevalue.visit(parent.returnType) : undefined;
 		if (stmt.expression) {
 			if (return_type) {
 				return typecheck_assign(this.#exprVisitorType, stmt.expression, return_type, stmt);

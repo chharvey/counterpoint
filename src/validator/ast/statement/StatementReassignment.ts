@@ -1,15 +1,10 @@
-import {
-	AssignmentErrorReassignment,
-	AssignmentErrorDeletion,
-} from '../../../index.ts';
 import {assert_instanceof} from '../../../lib/index.ts';
 import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../../core/index.ts';
-import type {SymbolSchemaVar} from '../../index.ts';
 import type {SyntaxNodeFamily} from '../../utils-private.ts';
-import * as EXPR from '../expression/index.ts';
+import type * as EXPR from '../expression/index.ts';
 import {Statement} from './Statement.ts';
 
 
@@ -31,20 +26,5 @@ export class StatementReassignment extends Statement {
 		public readonly assigned?: EXPR.Expression,
 	) {
 		super(start_node, {}, [assignee, ...(assigned ? [assigned] : [])]);
-	}
-
-
-	public override varCheck(): void {
-		super.varCheck(); // runtime asserts the var is in the symbol table and is a SymbolSchemaVar
-		if (this.assignee instanceof EXPR.Variable) {
-			const schema = this.validator.getSymbol(this.assignee.id) as SymbolSchemaVar;
-			if (this.assigned) {
-				if (!schema.isWritable) {
-					throw new AssignmentErrorReassignment(this.assignee);
-				}
-			} else if (!schema.isUninitialized) {
-				throw new AssignmentErrorDeletion(this.assignee);
-			}
-		}
 	}
 }

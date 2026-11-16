@@ -198,14 +198,14 @@ export class ExprVisitorBuild extends EXPR.ExprVisitor<OP.Value> {
 			}
 			case CoreLibName.NONE:
 			case CoreLibName.SOME: {
-				return new OP.MaybeNew(expr.typeargs[0].eval(), expr.exprargsPosit[0] ? this.visit(expr.exprargsPosit[0]).asTac(this.builder) : undefined);
+				return new OP.MaybeNew(expr.typeargs[0].typevalue, expr.exprargsPosit[0] ? this.visit(expr.exprargsPosit[0]).asTac(this.builder) : undefined);
 			}
 			case CoreLibName.FAIL:
 			case CoreLibName.OK: {
 				return new OP.ResultNew(
 					base_source === CoreLibName.OK,
-					expr.typeargs[0].eval(),
-					expr.typeargs[1]?.eval() ?? TYPE.EXCP,
+					expr.typeargs[0].typevalue,
+					expr.typeargs[1]?.typevalue ?? TYPE.EXCP,
 					this.visit(expr.exprargsPosit[0]).asTac(this.builder),
 				);
 			}

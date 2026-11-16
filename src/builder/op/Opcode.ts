@@ -1,4 +1,3 @@
-import type {Builder} from '../Builder.ts';
 import {
 	Value,
 	Trap,
@@ -10,7 +9,9 @@ import {
 	DictNew,
 	MapNew,
 	ObjectNew,
+	ExcpNew,
 	MaybeNew,
+	ResultNew,
 	TupleHas,
 	RecordHas,
 	TupleGet,
@@ -163,7 +164,9 @@ export abstract class OpcodeVisitor<T> {
 	public visitDictNew              (val: DictNew):              T { return this.defaultVisit(val); }
 	public visitMapNew               (val: MapNew):               T { return this.defaultVisit(val); }
 	public visitObjectNew            (val: ObjectNew):            T { return this.defaultVisit(val); }
+	public visitExcpNew              (val: ExcpNew):              T { return this.defaultVisit(val); }
 	public visitMaybeNew             (val: MaybeNew):             T { return this.defaultVisit(val); }
+	public visitResultNew            (val: ResultNew):            T { return this.defaultVisit(val); }
 	public visitTupleHas             (val: TupleHas):             T { return this.defaultVisit(val); }
 	public visitRecordHas            (val: RecordHas):            T { return this.defaultVisit(val); }
 	public visitTupleGet             (val: TupleGet):             T { return this.defaultVisit(val); }
@@ -180,7 +183,7 @@ export abstract class OpcodeVisitor<T> {
 	public visitSet                   (instr: OpSet):                 T { return this.defaultVisit(instr); }
 	public visitCollectionDynamicSet  (instr: CollectionDynamicSet):  T { return this.defaultVisit(instr); }
 	public visitCollectionDynamicCopy (instr: CollectionDynamicCopy): T { return this.defaultVisit(instr); }
-	public visitReturn                (term: Return):                 T { return this.defaultVisit(term); }
+	public visitReturn                (instr: Return):                T { return this.defaultVisit(instr); }
 	public visitInstruction           (instr: Instruction):           T { return this.defaultVisit(instr); }
 
 	public visitGoto            (term: Goto):            T { return this.defaultVisit(term); }
@@ -194,26 +197,28 @@ export abstract class OpcodeVisitor<T> {
 	/** @final */
 	public visit(op: Opcode): T {
 		switch (op.constructor) {
-			case Trap:                  { return this.visitTrap                 (op as Trap); }
-			case Const:                 { return this.visitConst                (op as Const); }
-			case Get:                   { return this.visitGet                  (op as Get); }
-			case Template:              { return this.visitTemplate             (op as Template); }
-			case CollectionLinearNew:   { return this.visitCollectionLinearNew  (op as CollectionLinearNew); }
-			case RecordNew:             { return this.visitRecordNew            (op as RecordNew); }
-			case DictNew:               { return this.visitDictNew              (op as DictNew); }
-			case MapNew:                { return this.visitMapNew               (op as MapNew); }
-			case ObjectNew:             { return this.visitObjectNew            (op as ObjectNew); }
-			case MaybeNew:              { return this.visitMaybeNew             (op as MaybeNew); }
-			case TupleHas:              { return this.visitTupleHas             (op as TupleHas); }
-			case RecordHas:             { return this.visitRecordHas            (op as RecordHas); }
-			case TupleGet:              { return this.visitTupleGet             (op as TupleGet); }
-			case RecordGet:             { return this.visitRecordGet            (op as RecordGet); }
-			case CollectionDynamicGet:  { return this.visitCollectionDynamicGet (op as CollectionDynamicGet); }
-			case Call:                  { return this.visitCall                 (op as Call); }
-			case Unop:                  { return this.visitUnop                 (op as Unop); }
-			case Binop:                 { return this.visitBinop                (op as Binop); }
-			case OpFunction:            { return this.visitFunction             (op as OpFunction); }
-			case Value:                 { return this.visitValue                (op as Value); }
+			case Trap:                 { return this.visitTrap                 (op as Trap); }
+			case Const:                { return this.visitConst                (op as Const); }
+			case Get:                  { return this.visitGet                  (op as Get); }
+			case Template:             { return this.visitTemplate             (op as Template); }
+			case CollectionLinearNew:  { return this.visitCollectionLinearNew  (op as CollectionLinearNew); }
+			case RecordNew:            { return this.visitRecordNew            (op as RecordNew); }
+			case DictNew:              { return this.visitDictNew              (op as DictNew); }
+			case MapNew:               { return this.visitMapNew               (op as MapNew); }
+			case ObjectNew:            { return this.visitObjectNew            (op as ObjectNew); }
+			case ExcpNew:              { return this.visitExcpNew              (op as ExcpNew); }
+			case MaybeNew:             { return this.visitMaybeNew             (op as MaybeNew); }
+			case ResultNew:            { return this.visitResultNew            (op as ResultNew); }
+			case TupleHas:             { return this.visitTupleHas             (op as TupleHas); }
+			case RecordHas:            { return this.visitRecordHas            (op as RecordHas); }
+			case TupleGet:             { return this.visitTupleGet             (op as TupleGet); }
+			case RecordGet:            { return this.visitRecordGet            (op as RecordGet); }
+			case CollectionDynamicGet: { return this.visitCollectionDynamicGet (op as CollectionDynamicGet); }
+			case Call:                 { return this.visitCall                 (op as Call); }
+			case Unop:                 { return this.visitUnop                 (op as Unop); }
+			case Binop:                { return this.visitBinop                (op as Binop); }
+			case OpFunction:           { return this.visitFunction             (op as OpFunction); }
+			case Value:                { return this.visitValue                (op as Value); }
 
 			case Drop:                  { return this.visitDrop                  (op as Drop); }
 			case Decl:                  { return this.visitDecl                  (op as Decl); }
@@ -221,12 +226,12 @@ export abstract class OpcodeVisitor<T> {
 			case CollectionDynamicSet:  { return this.visitCollectionDynamicSet  (op as CollectionDynamicSet); }
 			case CollectionDynamicCopy: { return this.visitCollectionDynamicCopy (op as CollectionDynamicCopy); }
 			case Return:                { return this.visitReturn                (op as Return); }
-			case Instruction:           { return this.visitInstruction           (op as Instruction); }
+			case Instruction:           { return this.visitInstruction           (op as Instruction); } // eslint-disable-line @typescript-eslint/no-unnecessary-type-assertion
 
-			case Goto:                  { return this.visitGoto            (op as Goto); }
-			case GotoConditional:       { return this.visitGotoConditional (op as GotoConditional); }
-			case EndProgram:            { return this.visitEndProgram      (op as EndProgram); }
-			case Terminator:            { return this.visitTerminator      (op as Terminator); }
+			case Goto:            { return this.visitGoto            (op as Goto); }
+			case GotoConditional: { return this.visitGotoConditional (op as GotoConditional); }
+			case EndProgram:      { return this.visitEndProgram      (op as EndProgram); }
+			case Terminator:      { return this.visitTerminator      (op as Terminator); }
 
 			default: { return this.defaultVisit(op); }
 		}
@@ -250,10 +255,5 @@ export abstract class Opcode {
 			OpCode[this.opCode].replace(/_/, '.'),
 			...args.filter((s) => s === 0 || s === 0n || !!s),
 		].join(' ')})`;
-	}
-
-	/** Type-validate this Opcode. Throws if invalid. */
-	public validate(_builder: Builder): void {
-		return;
 	}
 }

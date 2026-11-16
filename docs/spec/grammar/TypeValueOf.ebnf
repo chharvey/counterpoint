@@ -5,11 +5,12 @@ Type! TypeValueOf(SemanticTypeConstant const) :=
 
 
 Type! TypeValueOf(SemanticTypeAlias var) :=
-	1. *If* `var.source` is "Object" or "Class" or "Exception" or "Function":
-		1. *Return:* `Object` or `Exception` or `Function` or `Class` respectively.
-	2. *Assert:* The validator’s symbol table contains a SymbolSchema `symbol` whose `id` is `var.id`.
-	3. *Assert:* `symbol` is an instance of `SymbolSchemaType`.
-	4. *Return:* `symbol.typevalue`.
+	1. *Assert:* The validator’s symbol table contains a SymbolSchema `symbol` whose `id` is `var.id`.
+	2. *If* `symbol` is an instance of `SymbolSchemaType`:
+		1. *Return:* `symbol.typevalue`.
+	3. *Else:*
+		1. *Assert:* `symbol` is an instance of `SymbolSchemaClass`.
+		2. *Return:* `symbol.signature.instanceType`.
 ;
 
 
@@ -89,9 +90,26 @@ Type! TypeValueOf(SemanticTypeAccess ::= SemanticType (SemanticIndex | SemanticK
 
 Type! TypeValueOf(SemanticTypeCall ::= SemanticType__0 SemanticType__1+) :=
 	1. *If* `SemanticType__0` is not a SemanticTypeAlias:
-		1. *Note:* Currently, the only allowed generic calls are Callable Interface Names.
+		1. *Note:* Currently, only type alias expressions may be called.
+			In a future version, we may allow type operations, accesses, and other type calls to be callable.
 		2. *Throw:* a new TypeErrorNotCallable.
-	2. See Class API.
+	2. *Else:*
+		1. Fall through.
+	3. *Assert:* The validator’s symbol table contains a SymbolSchema `symbol` whose `id` is `SemanticType__0.id`.
+	4. *If* `symbol` is not an instance of `SymbolSchemaClass`:
+		1. *Throw:* a new TypeErrorNotCallable.
+	5. *Else:*
+		1. Fall through.
+	6. *For each* `it` in `SemanticType__1*`:
+		1. *Let* `arg_type` be *Unwrap:* `TypeValueOf(it)`.
+		2. *If* *UnwrapAffirm:* `IsBottomType(arg_type)` is `true`:
+			1. *Return:* `Nothing`.
+		3. *Else:*
+			1. Fall through.
+	7. *If* `symbol.signature` allows for the given arguments:
+		1. *Return:* the designated return type of `symbol.signature`.
+	8. *Else:*
+		1. *Throw:* a new TypeError.
 ;
 
 

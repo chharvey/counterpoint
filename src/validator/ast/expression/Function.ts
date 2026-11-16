@@ -4,10 +4,7 @@ import {
 	CONFIG_DEFAULT,
 } from '../../../core/index.ts';
 import type {SyntaxNodeType} from '../../utils-private.ts';
-import {
-	type Functionlike,
-	Functionlike_varCheck,
-} from '../Functionlike.ts';
+import type {Functionlike} from '../Functionlike.ts';
 import type {ParameterFunction} from '../ParameterFunction.ts';
 import type {Capture} from '../Capture.ts';
 import type {Block} from '../Block.ts';
@@ -32,11 +29,6 @@ class ExpressionFunction extends Expression implements Functionlike {
 		public readonly block:      Block,
 	) {
 		super(start_node, {}, [...parameters, ...captures, ...(returnType ? [returnType] : []), block]);
-	}
-
-
-	public override varCheck(): void {
-		return Functionlike_varCheck.call(this);
 	}
 }
 export {ExpressionFunction as Function};

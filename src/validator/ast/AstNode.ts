@@ -1,4 +1,3 @@
-import * as xjs from 'extrajs';
 import type {SyntaxNode} from 'tree-sitter';
 import {TypeErrorNotAssignable} from '../../index.ts';
 import {memoizeGetter} from '../../lib/index.ts';
@@ -308,15 +307,5 @@ export class AstNode implements Serializable {
 		});
 		const contents: string = this.children.map((child) => child.serialize()).join('');
 		return `<${this.tagname} ${stringifyAttributes(attributes)}${contents ? `>${contents}</${this.tagname}>` : '/>'}`;
-	}
-
-	/**
-	 * Perform definite assignment phase of semantic analysis:
-	 * - Check that all variables have been assigned before being used.
-	 * - Check that no varaible is declared more than once.
-	 * - Check that read-only variables are not reassigned.
-	 */
-	public varCheck(): void {
-		return xjs.Array.forEachAggregated(this.children, (c) => c.varCheck());
 	}
 }
