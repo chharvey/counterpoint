@@ -120,9 +120,9 @@ export class InstrVisitorCodegen extends InstrVisitor<binaryen.ExpressionRef /* 
 
 		switch (instr.name) {
 			case TypeName.LIST: {
-				switch (true) { // using `ast_type_name()` is too expensive // TODO: use instr.source.constructor
+				switch (instr.source.type.constructor) {
 					// List.<T>((t, t, t));
-					case instr.source.type instanceof TYPE.Tuple: {
+					case TYPE.Tuple: {
 						return List.copyFromTuple(
 							VmValue.asList(code_dest),
 							VmValue.asTuple(code_src),
@@ -130,7 +130,7 @@ export class InstrVisitorCodegen extends InstrVisitor<binaryen.ExpressionRef /* 
 					}
 					// List.<T>([t, t, t]);
 					// List.<T>(List.<T>((t, t, t)));
-					case instr.source.type instanceof TYPE.List: {
+					case TYPE.List: {
 						return List.copyFromList(
 							VmValue.asList(code_dest),
 							VmValue.asList(code_src),
@@ -138,7 +138,7 @@ export class InstrVisitorCodegen extends InstrVisitor<binaryen.ExpressionRef /* 
 					}
 					// List.<T>({t, t, t});
 					// List.<T>(Set.<T>((t, t, t)));
-					case instr.source.type instanceof TYPE.Set: {
+					case TYPE.Set: {
 						return List.fillFromSet(
 							VmValue.asList(code_dest),
 							VmValue.asMap(code_src),
@@ -150,16 +150,16 @@ export class InstrVisitorCodegen extends InstrVisitor<binaryen.ExpressionRef /* 
 				}
 			}
 			case TypeName.DICT: {
-				switch (true) { // using `ast_type_name()` is too expensive // TODO: use instr.source.constructor
+				switch (instr.source.type.constructor) {
 					// Dict.<T>(( (@a, t), (@b, t), (@c, t) ));
-					case instr.source.type instanceof TYPE.Tuple: {
+					case TYPE.Tuple: {
 						return Dict.fillFromTuple(
 							VmValue.asDict(code_dest),
 							VmValue.asTuple(code_src),
 						);
 					}
 					// Dict.<T>((a= t, b= t, c= t));
-					case instr.source.type instanceof TYPE.Record: {
+					case TYPE.Record: {
 						return Dict.copyFromRecord(
 							VmValue.asDict(code_dest),
 							VmValue.asRecord(code_src),
@@ -167,7 +167,7 @@ export class InstrVisitorCodegen extends InstrVisitor<binaryen.ExpressionRef /* 
 					}
 					// Dict.<T>([ (@a, t), (@b, t), (@c, t) ]);
 					// Dict.<T>(List.<(sym, T)>(( (@a, t), (@b, t), (@c, t) )));
-					case instr.source.type instanceof TYPE.List: {
+					case TYPE.List: {
 						return Dict.fillFromList(
 							VmValue.asDict(code_dest),
 							VmValue.asList(code_src),
@@ -175,7 +175,7 @@ export class InstrVisitorCodegen extends InstrVisitor<binaryen.ExpressionRef /* 
 					}
 					// Dict.<T>([a= t, b= t, c= t]);
 					// Dict.<T>(Dict.<T>( (a= t, b= t, c= t) ));
-					case instr.source.type instanceof TYPE.Dict: {
+					case TYPE.Dict: {
 						return Dict.copyFromDict(
 							VmValue.asDict(code_dest),
 							VmValue.asDict(code_src),
@@ -183,7 +183,7 @@ export class InstrVisitorCodegen extends InstrVisitor<binaryen.ExpressionRef /* 
 					}
 					// Dict.<T>({ (@a, t), (@b, t), (@c, t) });
 					// Dict.<T>(Set.<(sym, T)>(( (@a, t), (@b, t), (@c, t) )));
-					case instr.source.type instanceof TYPE.Set: {
+					case TYPE.Set: {
 						return Dict.fillFromSet(
 							VmValue.asDict(code_dest),
 							VmValue.asMap(code_src),
@@ -191,7 +191,7 @@ export class InstrVisitorCodegen extends InstrVisitor<binaryen.ExpressionRef /* 
 					}
 					// Dict.<T>({@a -> t, @b -> t, @c -> t});
 					// Dict.<T>(Map.<sym, T>(( (@a, t), (@b, t), (@c, t) )));
-					case instr.source.type instanceof TYPE.Map: {
+					case TYPE.Map: {
 						return Dict.fillFromMap(
 							VmValue.asDict(code_dest),
 							VmValue.asMap(code_src),
@@ -203,9 +203,9 @@ export class InstrVisitorCodegen extends InstrVisitor<binaryen.ExpressionRef /* 
 				}
 			}
 			case TypeName.SET: {
-				switch (true) { // using `ast_type_name()` is too expensive // TODO: use instr.source.constructor
+				switch (instr.source.type.constructor) {
 					// Set.<T>((t, t, t));
-					case instr.source.type instanceof TYPE.Tuple: {
+					case TYPE.Tuple: {
 						return VmMap.fillSetFromTuple(
 							VmValue.asMap(code_dest),
 							VmValue.asTuple(code_src),
@@ -213,7 +213,7 @@ export class InstrVisitorCodegen extends InstrVisitor<binaryen.ExpressionRef /* 
 					}
 					// Set.<T>([t, t, t]);
 					// Set.<T>(List.<T>((t, t, t)));
-					case instr.source.type instanceof TYPE.List: {
+					case TYPE.List: {
 						return VmMap.fillSetFromList(
 							VmValue.asMap(code_dest),
 							VmValue.asList(code_src),
@@ -221,7 +221,7 @@ export class InstrVisitorCodegen extends InstrVisitor<binaryen.ExpressionRef /* 
 					}
 					// Set.<T>({t, t, t});
 					// Set.<T>(Set.<T>((t, t, t)));
-					case instr.source.type instanceof TYPE.Set: {
+					case TYPE.Set: {
 						return VmMap.copyFromMap(
 							VmValue.asMap(code_dest),
 							VmValue.asMap(code_src),
@@ -233,9 +233,9 @@ export class InstrVisitorCodegen extends InstrVisitor<binaryen.ExpressionRef /* 
 				}
 			}
 			case TypeName.MAP: {
-				switch (true) { // using `ast_type_name()` is too expensive // TODO: use instr.source.constructor
+				switch (instr.source.type.constructor) {
 					// Map.<K, V>(( (k, v), (k, v), (k, v) ));
-					case instr.source.type instanceof TYPE.Tuple: {
+					case TYPE.Tuple: {
 						return VmMap.fillFromTuple(
 							VmValue.asMap(code_dest),
 							VmValue.asTuple(code_src),
@@ -243,7 +243,7 @@ export class InstrVisitorCodegen extends InstrVisitor<binaryen.ExpressionRef /* 
 					}
 					// Map.<K, V>([ (k, v), (k, v), (k, v) ]);
 					// Map.<K, V>(List.<(K, V)>(( (k, v), (k, v), (k, v) )));
-					case instr.source.type instanceof TYPE.List: {
+					case TYPE.List: {
 						return VmMap.fillFromList(
 							VmValue.asMap(code_dest),
 							VmValue.asList(code_src),
@@ -251,7 +251,7 @@ export class InstrVisitorCodegen extends InstrVisitor<binaryen.ExpressionRef /* 
 					}
 					// Map.<K, V>({ (k, v), (k, v), (k, v) });
 					// Map.<K, V>(Set.<(K, V)>(( (k, v), (k, v), (k, v) )));
-					case instr.source.type instanceof TYPE.Set: {
+					case TYPE.Set: {
 						return VmMap.fillFromSet(
 							VmValue.asMap(code_dest),
 							VmValue.asMap(code_src),
@@ -259,7 +259,7 @@ export class InstrVisitorCodegen extends InstrVisitor<binaryen.ExpressionRef /* 
 					}
 					// Map.<K, V>({k -> v, k -> v, k -> v});
 					// Map.<K, V>(Map.<K, V>(( (k, v), (k, v), (k, v) )));
-					case instr.source.type instanceof TYPE.Map: {
+					case TYPE.Map: {
 						return VmMap.copyFromMap(
 							VmValue.asMap(code_dest),
 							VmValue.asMap(code_src),
