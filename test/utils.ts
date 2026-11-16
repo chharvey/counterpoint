@@ -48,6 +48,7 @@ export function assert_shallowStrictEqual<T>(actual: unknown[], expected: T[], m
 type ValidationObject = {cons: ConstructorType<Error>} & (
 	| {message: string}
 	| {errors: ValidationObject[]}
+	| {cause:  ValidationObject}
 );
 export function assertAssignable(actual: Error, validation: ValidationObject): void {
 	assert_instanceof(actual, validation.cons);

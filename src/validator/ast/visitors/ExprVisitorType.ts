@@ -13,6 +13,9 @@ import {assert_instanceof} from '../../../lib/index.ts';
 import {
 	type EntryType,
 	TYPE,
+	type GenericArgs,
+	type ClassSignature,
+	CLASS_API,
 } from '../../../typer/index.ts';
 import {CoreLibName} from '../../../parser/index.ts';
 import {
@@ -24,15 +27,11 @@ import {
 import {Operator} from '../../Operator.ts';
 import {
 	only_errors_of_type,
-	type CallableClassName,
-	type ConstructorSchema,
-	CLASS_API,
 	get_entry_info,
 } from '../utils-private.ts';
 import {CompletionKind} from '../CompletionKind.ts';
 import {typecheck_assign} from '../AstNode.ts';
 import type {Functionlike} from '../Functionlike.ts';
-import type {Property} from '../Property.ts';
 import * as EXPR from '../expression/index.ts';
 import * as STMT from '../statement/index.ts';
 import {
@@ -59,6 +58,7 @@ function memoizeExpressionType<Param extends EXPR.Expression>(
 
 
 
+/** If `null` is returned instead of a Type, the expression is a “void expression”. */
 export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type | null> {
 	readonly #astNodeVisitorCompletion = new AstNodeVisitorCompletion();
 	readonly #typeVisitorTypevalue     = new TypeVisitorTypevalue();
@@ -83,6 +83,8 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type | null> {
 		const symbol: SymbolSchema = expr.validator.getSymbol(expr.id)!;
 		if (symbol instanceof SymbolSchemaVar) {
 			return symbol.isUninitialized ? new TYPE.Maybe(symbol.type) : symbol.type;
+		} else if (symbol instanceof SymbolSchemaFunc) {
+			return TYPE.NOTHING; // not used in `this.visitCall`
 		} else {
 			assert_instanceof(symbol, SymbolSchemaClass);
 			return TYPE.CLASS;
@@ -212,7 +214,18 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type | null> {
 	@memoizeExpressionType
 	public override visitCall(expr: EXPR.Call): TYPE.Type | null {
 		const symbol: SymbolSchema | undefined = expr.base instanceof EXPR.Variable ? expr.validator.getSymbol(expr.base.id) : undefined;
-		const base_types: readonly TYPE.Type[] = symbol instanceof SymbolSchemaFunc ? symbol.types : [this.throwIfVoid(expr.base, new TypeErrorInvalidOperation(expr))];
+		const base_types: readonly TYPE.Type[] = (
+			symbol instanceof SymbolSchemaFunc  ? symbol.types :
+			symbol instanceof SymbolSchemaClass ? symbol.classSignature.overloads ? (() => {
+				const return_type: TYPE.Type = this.#computeSignatureReturnType(expr, symbol.classSignature);
+				return symbol.classSignature.overloads(this.#typeVisitorTypevalue.checkGenericArgs(expr, symbol.classSignature.genericParams)).map((overload) => new TYPE.Function(
+					overload.positional,
+					overload.named,
+					return_type,
+				));
+			})() : [] :
+			[this.throwIfVoid(expr.base, new TypeErrorInvalidOperation(expr))]
+		);
 		if (base_types.some((t) => t.isBottomType)) {
 			return TYPE.NOTHING;
 		}
@@ -227,48 +240,36 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type | null> {
 		}
 		assert.ok(base_types.length);
 
-		if (base_types[0] !== TYPE.CLASS) {
-			/* Throw and aggregate if any overload is not a function;
-			otherwise, map to return types or errors as a result of type-checking. */
-			const overload_calls: readonly [TYPE.Function, TYPE.Type | null | Error][] = xjs.Array.mapAggregated(base_types, (t) => {
-				if (t instanceof TYPE.Function) {
-					return [t, this.#typeFunctionCall(expr, t)];
-				} else {
-					throw new TypeErrorNotCallable(t, expr.base);
-				}
-			});
-			const successes = overload_calls.filter(([_, result]) => !result || result instanceof TYPE.Type) as readonly [TYPE.Function, TYPE.Type | null][];
-			const errors: readonly Error[] = overload_calls.map(([_, result]) => result).filter((result) => result instanceof Error);
-
-			/* If multiple overloads match: if a maximally specific overload is found, return it; else throw a TypeErrorAmbiguousOverload.
-			Else if there are multiple failures, throw a TypeErrorAmbiguousOverload containing the failures.
-			Else return a single failure. */
-			if (successes.length) {
-				const maximally_specific: readonly [TYPE.Function, TYPE.Type | null][] = successes.filter(([ovl1]) => successes.every(([ovl2]) => ovl1 === ovl2 || ovl1.isMoreSpecificThan(ovl2)));
-				if (maximally_specific.length === 1) {
-					return maximally_specific[0][1];
-				} else {
-					throw new TypeErrorAmbiguousOverload(expr);
-				}
-			} else if (errors.length > 1) {
-				throw new TypeErrorAmbiguousOverload(expr, new AggregateError(errors));
+		/* Throw and aggregate if any overload is not a function;
+		otherwise, map to return types or errors as a result of type-checking. */
+		const overload_calls: readonly [TYPE.Function, TYPE.Type | null | Error][] = xjs.Array.mapAggregated(base_types, (t) => {
+			if (t instanceof TYPE.Function) {
+				return [t, this.#typeFunctionCall(expr, t)];
 			} else {
-				assert.ok(errors.length);
+				throw new TypeErrorNotCallable(t, expr.base);
+			}
+		});
+		const successes = overload_calls.filter(([_, result]) => !result || result instanceof TYPE.Type) as readonly [TYPE.Function, TYPE.Type | null][];
+		const errors: readonly Error[] = overload_calls.map(([_, result]) => result).filter((result) => result instanceof Error);
+
+		/* If multiple overloads match: if a maximally specific overload is found, return it; else throw a TypeErrorAmbiguousOverload.
+		Else if there are multiple failures, throw a TypeErrorAmbiguousOverload containing the failures.
+		Else return a single failure. */
+		if (successes.length) {
+			const maximally_specific: readonly [TYPE.Function, TYPE.Type | null][] = successes.filter(([ovl1]) => successes.every(([ovl2]) => ovl1 === ovl2 || ovl1.isMoreSpecificThan(ovl2)));
+			if (maximally_specific.length === 1) {
+				return maximally_specific[0][1];
+			} else {
+				throw new TypeErrorAmbiguousOverload(expr);
+			}
+		} else if (errors.length > 1) {
+			if (errors.every((err) => err instanceof TypeErrorArgCount)) {
+				// FIXME: should report whole AggregateError
 				throw errors[0];
 			}
-		}
-		const constructor_schema:    ConstructorSchema = CLASS_API.get(expr.base.source as CallableClassName)!;
-		const resolved_generic_args: TYPE.Type[]       = this.#typeVisitorTypevalue.checkGenericArgs(constructor_schema, expr.typeargs, expr);
-		try {
-			this.checkFunctionArgs(expr, constructor_schema, resolved_generic_args);
-		} catch (err) {
-			if (err instanceof TypeErrorArgCount) {
-				throw err;
-			} else if (err instanceof AggregateError && err.errors.every((suberr) => suberr instanceof TypeErrorArgCount)) {
-				// FIXME: should report whole AggregateError
-				throw err.errors[0];
-			}
-			switch (expr.base.source as CallableClassName) {
+			const err = new TypeErrorAmbiguousOverload(expr, new AggregateError(errors));
+			// try brute-forcing tuple/record argument assignment based on name of callee
+			switch (expr.base.source) {
 				case CoreLibName.LIST: {
 					// If function overload checking failed, `arg` is either a tuple literal or an expression with a tuple type.
 					const itemtype: TYPE.Type       = this.#typeVisitorTypevalue.visit(expr.typeargs[0]);
@@ -359,9 +360,11 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type | null> {
 					throw err;
 				}
 			}
+			return this.#computeSignatureReturnType(expr, CLASS_API.get(expr.base.source)!);
+		} else {
+			assert.ok(errors.length);
+			throw errors[0];
 		}
-		const return_type: TYPE.Type = constructor_schema.returnType(resolved_generic_args);
-		return return_type instanceof TYPE.ReferenceType ? return_type.mutableOf() : return_type;
 	}
 
 	@memoizeExpressionType
@@ -593,6 +596,12 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type | null> {
 		);
 	}
 
+	#computeSignatureReturnType(expr: EXPR.Call, signature: ClassSignature): TYPE.Type {
+		const generic_args: GenericArgs = this.#typeVisitorTypevalue.checkGenericArgs(expr, signature.genericParams);
+		const return_type:  TYPE.Type   = signature.returnType(generic_args);
+		return return_type instanceof TYPE.ReferenceType ? return_type.mutableOf() : return_type;
+	}
+
 	#typeFunctionCall(call: EXPR.Call, t: TYPE.Function): TYPE.Type | null | Error {
 		const expected_function = {
 			min: t.typeargParamsPosit.minCount,
@@ -616,52 +625,5 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type | null> {
 			}
 		}
 		return t.typeargReturn ?? null;
-	}
-
-	/**
-	 * Type-checks assignment of function arguments to a constructor call.
-	 * @param constructor_schema    the name of the class constructor’s schema
-	 * @param resolved_generic_args the resolved type arguments, returned by {@link TypeVisitorTypevalue#checkGenericArgs}
-	 */
-	private checkFunctionArgs(call: EXPR.Call, constructor_schema: ConstructorSchema, resolved_generic_args: readonly TYPE.Type[]): void {
-		if (!constructor_schema.overloads.length) {
-			throw new TypeErrorNotCallable(
-				this.visit(call.base)!,
-				call.base,
-			);
-		}
-		xjs.Array.forEither(constructor_schema.overloads, (func_params) => {
-			/* Argument Counting. Throws if the number of given args does not match the number of expected parameters. */
-			const expected_function = {
-				min: BigInt(func_params.positional?.filter((param) => !param.optional).length ?? 0),
-				max: BigInt(func_params.positional?.length ?? 0),
-			} as const;
-			const actual_function: bigint = BigInt(call.exprargsPosit.length);
-			// TODO: throw AggregateError if both
-			if (actual_function < expected_function.min) {
-				throw new TypeErrorArgCount(actual_function, expected_function.min, false, call);
-			}
-			if (actual_function > expected_function.max) {
-				throw new TypeErrorArgCount(actual_function, expected_function.max, false, call);
-			}
-
-			/* Argument Typing. Handles optionality and default values. Also checks if each argument matches the constraints given. */
-			func_params.positional?.forEach((param, i) => {
-				const argnode: EXPR.Expression | undefined = call.exprargsPosit.at(i);
-				if (argnode) {
-					typecheck_assign(this, argnode, param.type.call(null, resolved_generic_args), call);
-				} else {
-					assert.ok(param.optional); // we can assert this due to argument counting above
-				}
-			});
-			func_params.named?.forEach((param, id) => {
-				const argnode: Property | undefined = call.exprargsNamed.find((prop) => prop.key.id === id);
-				if (argnode) {
-					typecheck_assign(this, argnode.val, param.type.call(null, resolved_generic_args), call);
-				} else if (!param.optional) {
-					throw new TypeError(`Missing argument for requierd named parameter ${id}.`); // TODO: new class of CplTypeError
-				}
-			});
-		});
 	}
 }

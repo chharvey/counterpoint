@@ -359,14 +359,6 @@ test.suite('AstNodeVisitorRefCheck#visit', () => {
 
 
 	test.suite('TypeAlias', () => {
-		test.test('does not throw when referencing built-in identifiers.', () => {
-			setupScript(`{
-				type T = Object;
-				type E = Exception;
-				val obj: Object = 42;
-				val ex: Exception = Exception.("hello");
-			}`, {typeCheck: false}); // assert does not throw
-		});
 		test.test('throws if the validator does not contain a record for the identifier.', () => {
 			setupScript(`{
 				type T = int;
@@ -390,7 +382,39 @@ test.suite('AstNodeVisitorRefCheck#visit', () => {
 				type T = int;
 			}`, {typeCheck: false}), ReferenceErrorDeadZone);
 		});
-		test.test('throws if was declared as a value variable.', () => {
+		test.test('allows core lib class references if they are not generic.', () => {
+			setupScript(`{
+				type Nu = Null;
+				type Bo = Boolean;
+				type Sy = Symbol;
+				type In = Integer;
+				type Na = Natural;
+				type Fl = Float;
+				type St = String;
+				type Ob = Object;
+				type Ex = Exception;
+				type Fu = Function;
+				type Cl = Class;
+			}`, {typeCheck: false}); // assert does not throw
+		});
+		test.test('throws if core lib generic class references are referenced with no generic arguments.', () => {
+			xjs.Array.forEachAggregated(extract_lines`
+				List
+				Dict
+				Set
+				Map
+				Maybe
+				None
+				Some
+				Result
+				Fail
+				Ok
+			`, (src) => {
+				const alias: AST.TYPE.TypeAlias = AST.TYPE.TypeAlias.fromSource(src);
+				return assert.throws(() => new AST.AstNodeVisitorRefCheck().visit(alias), ReferenceErrorKind);
+			});
+		});
+		test.test('throws if referencing a variable declaration.', () => {
 			assert.throws(() => setupScript(`{
 				val FOO: int = 42;
 				type _ = FOO | float;
@@ -400,6 +424,14 @@ test.suite('AstNodeVisitorRefCheck#visit', () => {
 					type _ = FOO | float;
 				};
 			}`, {typeCheck: false}), ReferenceErrorKind);
+		});
+		test.test('throws if referencing a function declaration.', () => {
+			const {stmts, visitors} = setupScript(`{
+				func f(): void { return; }
+				type U = f;
+			}`, {refCheck: false});
+			visitors.refCheck.visit(stmts[0]);
+			return assert.throws(() => visitors.refCheck.visit(((stmts[1] as AST.STMT.DeclarationType).assigned)), ReferenceErrorKind);
 		});
 	});
 
@@ -471,12 +503,17 @@ test.suite('AstNodeVisitorRefCheck#visit', () => {
 
 
 	test.suite('TYPE.Call', () => {
-		test.test('throws if base is not one of the allowed strings.', () => {
-			xjs.Array.forEachAggregated(extract_lines`
-				SET.<str>
-				Mapping.<bool>
-			`, (src) => {
-				assert.throws(() => new AST.AstNodeVisitorRefCheck().visit(AST.TYPE.Call.fromSource(src)), SyntaxError);
+		test.test('catches ReferenceErrorKind thrown by `TypeAlias#varCheck`.', () => {
+			new AST.AstNodeVisitorRefCheck().visit(AST.TYPE.Call.fromSource('List.<int>')); // assert does not throw
+			return assert.throws(() => new AST.AstNodeVisitorRefCheck().visit(AST.TYPE.Type.fromSource('List | Dict')), (err) => {
+				assertAssignable(err as Error, {
+					cons:   AggregateError,
+					errors: [
+						{cons: ReferenceErrorKind, message: '`List` refers to a type function, but is used as a type.'},
+						{cons: ReferenceErrorKind, message: '`Dict` refers to a type function, but is used as a type.'},
+					],
+				});
+				return true;
 			});
 		});
 	});

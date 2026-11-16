@@ -66,12 +66,30 @@ test.suite('TypeVisitorTypevalue#visit', () => {
 
 	test.suite('TypeAlias', () => {
 		test.test('computes the value of reserved types.', () => {
-			assertEqualTypes([
-				'Object',
-				'Exception',
-			].map((src) => VISITOR.visit(AST.TYPE.TypeAlias.fromSource(src))), [
+			assertEqualTypes(extract_lines`
+				Null
+				Boolean
+				Symbol
+				Integer
+				Natural
+				Float
+				String
+				Object
+				Exception
+				Function
+				Class
+			`.map((src) => VISITOR.visit(AST.TYPE.TypeAlias.fromSource(src))), [
+				TYPE.NULL,
+				TYPE.BOOL,
+				TYPE.SYM,
+				TYPE.INT,
+				TYPE.NAT,
+				TYPE.FLOAT,
+				TYPE.STR,
 				TYPE.OBJ,
 				TYPE.EXCP,
+				TYPE.FUNCTION,
+				TYPE.CLASS,
 			]);
 		});
 		test.test('computes the value of a type alias.', () => {

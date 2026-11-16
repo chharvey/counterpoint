@@ -8,15 +8,14 @@ import {
 	AssignmentErrorReassignment,
 	AssignmentErrorDeletion,
 } from '../../../index.ts';
-import {CoreLibName} from '../../../parser/index.ts';
 import {
 	SymbolKind,
 	type SymbolSchema,
 	SymbolSchemaType,
 	SymbolSchemaVar,
 	SymbolSchemaFunc,
+	SymbolSchemaClass,
 } from '../../index.ts';
-import {validate_callable_interface_name} from '../utils-private.ts';
 import {
 	AstNodeVisitor,
 	type AstNode,
@@ -26,7 +25,7 @@ import type {Key} from '../Key.ts';
 import type {ParameterFunction} from '../ParameterFunction.ts';
 import type {Capture} from '../Capture.ts';
 import type {Block} from '../Block.ts';
-import type * as AST_TYPE from '../type/index.ts';
+import * as AST_TYPE from '../type/index.ts';
 import * as EXPR from '../expression/index.ts';
 import * as STMT from '../statement/index.ts';
 
@@ -81,34 +80,22 @@ export class AstNodeVisitorRefCheck extends AstNodeVisitor<void> {
 	}
 
 	public override visitTypeAlias(typenode: AST_TYPE.TypeAlias): void {
-		// NOTE: ignore ref-checking `this` for now if source is a built-in identifier, as semantics is determined by syntax.
-		if (([
-			CoreLibName.OBJECT,
-			CoreLibName.EXCEPTION,
-			CoreLibName.FUNCTION,
-			CoreLibName.CLASS,
-		] as readonly string[]).includes(typenode.source)) {
-			return;
-		}
 		if (!typenode.validator.hasSymbol(typenode.id)) {
 			throw new ReferenceErrorUndeclared(typenode);
 		}
-		if (!(typenode.validator.getSymbol(typenode.id) instanceof SymbolSchemaType)) {
+		const symbol: SymbolSchema = typenode.validator.getSymbol(typenode.id)!;
+		if (symbol instanceof SymbolSchemaVar || symbol instanceof SymbolSchemaFunc) {
 			throw new ReferenceErrorKind(typenode, SymbolKind.VALUE, SymbolKind.TYPE);
 			// TODO: When Type objects are allowed as runtime values, this should be removed and checked by the type checker.
+		}
+		if (symbol instanceof SymbolSchemaClass && symbol.classSignature.genericParams && !(typenode.parent instanceof AST_TYPE.Call && typenode.parent.base === typenode)) {
+			throw new ReferenceErrorKind(typenode, SymbolKind.TYPEFUNC, SymbolKind.TYPE);
 		}
 	}
 
 	public override visitTypeRecord(typenode: AST_TYPE.Record): void {
 		check_unique_keys(typenode.children.map((prop) => prop.key));
 		return this.defaultVisit(typenode);
-	}
-
-	public override visitTypeCall(typenode: AST_TYPE.Call): void {
-		// NOTE: ignore ref-checking `this.base` for now, as semantics is determined by syntax.
-		// (`this.base.source` must be a `CallableInterfaceName`)
-		validate_callable_interface_name(typenode.base.source);
-		return xjs.Array.forEachAggregated(typenode.args, (arg) => this.visit(arg));
 	}
 
 	public override visitTypeFunction(typenode: AST_TYPE.Function): void {
@@ -125,8 +112,7 @@ export class AstNodeVisitorRefCheck extends AstNodeVisitor<void> {
 			throw new ReferenceErrorKind(expr, SymbolKind.TYPE, SymbolKind.VALUE);
 			// TODO: When Type objects are allowed as runtime values, this should be removed and checked by the type checker.
 		}
-		if (symbol instanceof SymbolSchemaFunc) {
-			expr.isFuncRef = true;
+		if (symbol instanceof SymbolSchemaFunc && !(expr.parent instanceof EXPR.Call && expr.parent.base === expr)) {
 			throw new ReferenceErrorKind(expr, SymbolKind.FUNC, SymbolKind.VALUE);
 		}
 	}
@@ -139,21 +125,6 @@ export class AstNodeVisitorRefCheck extends AstNodeVisitor<void> {
 	public override visitExprDict(expr: EXPR.Dict): void {
 		check_unique_keys(expr.children.map((prop) => prop.key));
 		return this.defaultVisit(expr);
-	}
-
-	public override visitExprCall(expr: EXPR.Call): void {
-		try {
-			this.visit(expr.base);
-		} catch (err) {
-			if (!(expr.base instanceof EXPR.Variable && expr.base.isFuncRef)) {
-				throw err;
-			}
-		}
-		return xjs.Array.forEachAggregated([
-			...expr.typeargs,
-			...expr.exprargsPosit,
-			...expr.exprargsNamed,
-		], (arg) => this.visit(arg));
 	}
 
 	public override visitExprFunction(expr: EXPR.Function): void {

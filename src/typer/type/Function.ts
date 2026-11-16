@@ -26,7 +26,7 @@ class TypeFunction extends ReferenceType {
 	 * Construct a new TypeFunction object.
 	 * @param typeargParamsPosit the types of the positional parameters
 	 * @param typeargParamsNamed the types of the named parameters
-	 * @param typeargReturn      the return type
+	 * @param typeargReturn      the return type; `undefined` means a void function
 	 */
 	public constructor(
 		public readonly typeargParamsPosit: Tuple  = new Tuple(),
