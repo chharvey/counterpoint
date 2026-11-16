@@ -1732,7 +1732,7 @@ test.suite('ExprVisitorType#visit', () => {
 						val mut f2: float = 3.1;
 
 						${['i1', 'n1', 'f1'].flatMap((left) => ['i2', 'n2', 'f2'].flatMap((right) => ['<', '>', '<=', '>=', '!<', '!>'].map((op) => `${left} ${op} ${right};`))).join('\n')}
-					}`).stmts.slice(6).map((stmt) => VISITOR.visit((stmt as AST.STMT.StatementExpression).expr!)),
+					}`, {build: false}).stmts.slice(6).map((stmt) => VISITOR.visit((stmt as AST.STMT.StatementExpression).expr!)),
 					repeat(TYPE.BOOL, 3 * 3 * 6),
 				);
 			});
@@ -1766,7 +1766,7 @@ test.suite('ExprVisitorType#visit', () => {
 						i1 == i2;
 						n1 == n2;
 						f1 == f2;
-					}`).stmts.slice(6).map((stmt) => VISITOR.visit((stmt as AST.STMT.StatementExpression).expr!)),
+					}`, {build: false}).stmts.slice(6).map((stmt) => VISITOR.visit((stmt as AST.STMT.StatementExpression).expr!)),
 					repeat(TYPE.BOOL, 6),
 				);
 				test.test('for numeric literals, returns `false` for different values.', () => {
@@ -1832,7 +1832,7 @@ test.suite('ExprVisitorType#visit', () => {
 							i1 === n1;
 							i1 === f1;
 							n1 === f1;
-						}`).stmts.slice(3).map((stmt) => VISITOR.visit((stmt as AST.STMT.StatementExpression).expr!)),
+						}`, {build: false}).stmts.slice(3).map((stmt) => VISITOR.visit((stmt as AST.STMT.StatementExpression).expr!)),
 						repeat(TYPE.FALSE, 3),
 					);
 				});
@@ -1848,7 +1848,7 @@ test.suite('ExprVisitorType#visit', () => {
 							i1 == n1;
 							i1 == f1;
 							n1 == f1;
-						}`).stmts.slice(3).map((stmt) => VISITOR.visit((stmt as AST.STMT.StatementExpression).expr!)),
+						}`, {build: false}).stmts.slice(3).map((stmt) => VISITOR.visit((stmt as AST.STMT.StatementExpression).expr!)),
 						repeat(TYPE.BOOL, 3),
 					);
 				});
