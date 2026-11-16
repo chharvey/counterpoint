@@ -128,9 +128,10 @@ export class Builder {
 	@memoizeMethod
 	public codegen(cg: CodeGenerator): binaryen.ExpressionRef {
 		assert.ok(!this.currentBlock, 'Should not codegen Builder with active block set. Try calling `Builder#terminateBlock` first.');
-		const relooper = new binaryen.Relooper(cg.mod);
+		const relooper     = new binaryen.Relooper(cg.mod);
+		const term_visitor = new OP.TermVisitorCodegen(cg, relooper);
 		this.#blocks.forEach((block) => cg.registerBlockRef(block.label, block.codegen(cg, relooper))); // code-gen & register all blocks before code-genning terminators
-		this.#blocks.forEach((block) => block.terminator!.codegen(cg, relooper));
+		this.#blocks.forEach((block) => term_visitor.visit(block.terminator!));
 		return relooper.renderAndDispose(cg.getBlockRef('block-0'), cg.getAllLocals().length);
 	}
 

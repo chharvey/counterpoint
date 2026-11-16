@@ -171,12 +171,12 @@ export class AstNodeVisitorRefCheck extends AstNodeVisitor<void> {
 	}
 
 	public override visitStmtLoop(stmt: STMT.StatementLoop): void {
-		// Do not call `this.defaultVisit(stmt)` as we VarCheck children in a different order.
+		// Do not call `this.defaultVisit(stmt)` as we RefCheck children in a different order.
 		return xjs.Array.forEachAggregated(stmt.doFirst ? [stmt.block, stmt.condition] : [stmt.condition, stmt.block], (c) => this.visit(c));
 	}
 
 	public override visitStmtIteration(stmt: STMT.StatementIteration): void {
-		// Do not call `this.defaultVisit(stmt)` as we want to VarCheck `stmt.block` at the end.
+		// Do not call `this.defaultVisit(stmt)` as we want to RefCheck `stmt.block` at the end.
 		xjs.Array.forEachAggregated([stmt.typenode, stmt.iterable], (c) => this.visit(c));
 		if (stmt.assignee) {
 			if (stmt.block.validator.hasSymbol(stmt.id!)) {

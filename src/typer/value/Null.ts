@@ -52,7 +52,7 @@ export class Null extends Primitive {
 	}
 
 	@noopMethod(memoizeMethod)
-	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
+	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef /* (ref $Value) */ {
 		return cg.vm.Value.NULL;
 	}
 }
