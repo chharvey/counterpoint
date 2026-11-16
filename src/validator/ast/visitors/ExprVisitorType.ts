@@ -58,6 +58,7 @@ function memoizeExpressionType<Param extends EXPR.Expression>(
 
 
 
+/** If `null` is returned instead of a Type, the expression is a “void expression”. */
 export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type | null> {
 	readonly #astNodeVisitorCompletion = new AstNodeVisitorCompletion();
 	readonly #typeVisitorTypevalue     = new TypeVisitorTypevalue();
