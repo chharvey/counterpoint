@@ -29,5 +29,5 @@ export abstract class Primitive extends Value {
 	 * @param cg the CodeGenerator
 	 * @return   the binaryen expression
 	 */
-	public abstract codegen(cg: CodeGenerator): binaryen.ExpressionRef;
+	public abstract codegen(cg: CodeGenerator): binaryen.ExpressionRef/* (ref $Value) */;
 }

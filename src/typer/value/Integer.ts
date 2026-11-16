@@ -70,7 +70,7 @@ export class Integer extends ValueNumber<Integer> {
 	}
 
 	@memoizeMethod
-	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
+	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef /* (ref $Value) */ {
 		return cg.vm.Value.fromInt(cg.vm.Vect.newInt(cg.mod.wasm.i64.const(this.data)));
 	}
 

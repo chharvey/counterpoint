@@ -1,23 +1,15 @@
 import * as assert from 'node:assert';
 import * as binaryen from 'binaryen.ts';
-import * as xjs from 'extrajs';
 import {
 	type CodeGenerator,
 	NanErrorDivZero,
 } from '../../index.ts';
 import {
-	assert_instanceof,
-	memoizeMethod,
-	runOnceMethod,
-} from '../../lib/index.ts';
-import {
-	VALUE,
+	type VALUE,
 	TYPE,
 } from '../../typer/index.ts';
 import {drop_then} from './utils-private.ts';
-import type {Builder} from '../Builder.ts';
-import type {Interpreter} from '../Interpreter.ts';
-import {OpCode} from './Opcode.ts';
+import type {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
 import type {ValueTac} from './ValueTac.ts';
 
@@ -58,9 +50,9 @@ export type OpCodeBin = (
 /** A binary operation of 2 values. */
 export class Binop extends Value {
 	public constructor(
-		private readonly operator: OpCodeBin,
-		private readonly operand0: ValueTac,
-		private readonly operand1: ValueTac,
+		public readonly operator: OpCodeBin,
+		public readonly operand0: ValueTac,
+		public readonly operand1: ValueTac,
 		typ: TYPE.Type,
 	) {
 		super(operator, typ);
@@ -68,109 +60,6 @@ export class Binop extends Value {
 
 	public override toString(): string {
 		return super.toString(this.operand0, this.operand1);
-	}
-
-	@runOnceMethod
-	public override validate(builder: Builder): void {
-		const operands = [this.operand0, this.operand1] as const;
-		xjs.Array.forEachAggregated(operands, (arg) => {
-			arg.validate(builder);
-			switch (this.operator) {
-				case OpCode.INT_ADD: { return assert.ok(arg.type.isSubtypeOf(TYPE.INT)); }
-				case OpCode.INT_SUB: { return assert.ok(arg.type.isSubtypeOf(TYPE.INT)); }
-				case OpCode.INT_MUL: { return assert.ok(arg.type.isSubtypeOf(TYPE.INT)); }
-				case OpCode.INT_DIV: { return assert.ok(arg.type.isSubtypeOf(TYPE.INT)); }
-				case OpCode.INT_EXP: { return assert.ok(arg.type.isSubtypeOf(TYPE.INT)); }
-
-				case OpCode.NAT_ADD: { return assert.ok(arg.type.isSubtypeOf(TYPE.NAT)); }
-				case OpCode.NAT_SUB: { return assert.ok(arg.type.isSubtypeOf(TYPE.NAT)); }
-				case OpCode.NAT_MUL: { return assert.ok(arg.type.isSubtypeOf(TYPE.NAT)); }
-				case OpCode.NAT_DIV: { return assert.ok(arg.type.isSubtypeOf(TYPE.NAT)); }
-				case OpCode.NAT_EXP: { return assert.ok(arg.type.isSubtypeOf(TYPE.NAT)); }
-
-				case OpCode.FLOAT_ADD: { return assert.ok(arg.type.isSubtypeOf(TYPE.FLOAT)); }
-				case OpCode.FLOAT_SUB: { return assert.ok(arg.type.isSubtypeOf(TYPE.FLOAT)); }
-				case OpCode.FLOAT_MUL: { return assert.ok(arg.type.isSubtypeOf(TYPE.FLOAT)); }
-				case OpCode.FLOAT_DIV: { return assert.ok(arg.type.isSubtypeOf(TYPE.FLOAT)); }
-				case OpCode.FLOAT_EXP: { return assert.ok(arg.type.isSubtypeOf(TYPE.FLOAT)); }
-
-				case OpCode.LT: { return assert.ok(arg.type.isSubtypeOf(TYPE.NUMBER)); }
-				case OpCode.GT: { return assert.ok(arg.type.isSubtypeOf(TYPE.NUMBER)); }
-				case OpCode.LE: { return assert.ok(arg.type.isSubtypeOf(TYPE.NUMBER)); }
-				case OpCode.GE: { return assert.ok(arg.type.isSubtypeOf(TYPE.NUMBER)); }
-			}
-		});
-		if (this.operator === OpCode.IS) {
-			assert.ok(operands[1].type.isSubtypeOf(TYPE.CLASS));
-		}
-	}
-
-	public override interpret(interp: Interpreter): VALUE.Value {
-		const [operand0, operand1]: [VALUE.Value, VALUE.Value] = [this.operand0.interpret(interp), this.operand1.interpret(interp)];
-		switch (this.operator) {
-			case OpCode.INT_ADD: { return (operand0 as VALUE.Integer).plus   (operand1 as VALUE.Integer); }
-			case OpCode.INT_SUB: { return (operand0 as VALUE.Integer).minus  (operand1 as VALUE.Integer); }
-			case OpCode.INT_MUL: { return (operand0 as VALUE.Integer).times  (operand1 as VALUE.Integer); }
-			case OpCode.INT_DIV: { return (operand0 as VALUE.Integer).divide (operand1 as VALUE.Integer); }
-			case OpCode.INT_EXP: { return (operand0 as VALUE.Integer).exp    (operand1 as VALUE.Integer); }
-
-			case OpCode.NAT_ADD: { return (operand0 as VALUE.Natural).plus   (operand1 as VALUE.Natural); }
-			case OpCode.NAT_SUB: { return (operand0 as VALUE.Natural).minus  (operand1 as VALUE.Natural); }
-			case OpCode.NAT_MUL: { return (operand0 as VALUE.Natural).times  (operand1 as VALUE.Natural); }
-			case OpCode.NAT_DIV: { return (operand0 as VALUE.Natural).divide (operand1 as VALUE.Natural); }
-			case OpCode.NAT_EXP: { return (operand0 as VALUE.Natural).exp    (operand1 as VALUE.Natural); }
-
-			case OpCode.FLOAT_ADD: { return (operand0 as VALUE.Float).plus   (operand1 as VALUE.Float); }
-			case OpCode.FLOAT_SUB: { return (operand0 as VALUE.Float).minus  (operand1 as VALUE.Float); }
-			case OpCode.FLOAT_MUL: { return (operand0 as VALUE.Float).times  (operand1 as VALUE.Float); }
-			case OpCode.FLOAT_DIV: { return (operand0 as VALUE.Float).divide (operand1 as VALUE.Float); }
-			case OpCode.FLOAT_EXP: { return (operand0 as VALUE.Float).exp    (operand1 as VALUE.Float); }
-
-			case OpCode.LT: { return VALUE.Boolean.fromBoolean((operand0 as VALUE.Number).lt(operand1 as VALUE.Number)); }
-			case OpCode.GT: { return VALUE.Boolean.fromBoolean((operand1 as VALUE.Number).lt(operand0 as VALUE.Number)); }
-			case OpCode.LE: { return VALUE.Boolean.fromBoolean((operand0 as VALUE.Number).equal(operand1) || (operand0 as VALUE.Number).lt(operand1 as VALUE.Number)); }
-			case OpCode.GE: { return VALUE.Boolean.fromBoolean((operand1 as VALUE.Number).equal(operand0) || (operand1 as VALUE.Number).lt(operand0 as VALUE.Number)); }
-
-			case OpCode.ID: { return VALUE.Boolean.fromBoolean(operand0.identical(operand1)); }
-			case OpCode.EQ: { return VALUE.Boolean.fromBoolean(operand0.equal(operand1)); }
-			case OpCode.IS: {
-				assert_instanceof(operand1, VALUE.Class);
-				return VALUE.Boolean.fromBoolean(operand0 instanceof operand1.nativeClass);
-			}
-		}
-	}
-
-	@memoizeMethod
-	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
-		const [code0, code1]: [binaryen.ExpressionRef, binaryen.ExpressionRef] = [this.operand0.codegen(cg), this.operand1.codegen(cg)];
-		switch (this.operator) {
-			case OpCode.INT_ADD: { return cg.vm.op.intAdd(code0, code1); }
-			case OpCode.INT_SUB: { return cg.vm.op.intSub(code0, code1); }
-			case OpCode.INT_MUL: { return cg.vm.op.intMul(code0, code1); }
-			case OpCode.INT_DIV: { return cg.vm.op.intDiv(code0, code1); }
-			case OpCode.INT_EXP: { return cg.vm.op.intExp(code0, code1); }
-
-			case OpCode.NAT_ADD: { return cg.vm.op.natAdd(code0, code1); }
-			case OpCode.NAT_SUB: { return cg.vm.op.natSub(code0, code1); }
-			case OpCode.NAT_MUL: { return cg.vm.op.natMul(code0, code1); }
-			case OpCode.NAT_DIV: { return cg.vm.op.natDiv(code0, code1); }
-			case OpCode.NAT_EXP: { return cg.vm.op.natExp(code0, code1); }
-
-			case OpCode.FLOAT_ADD: { return cg.vm.op.floatAdd(code0, code1); }
-			case OpCode.FLOAT_SUB: { return cg.vm.op.floatSub(code0, code1); }
-			case OpCode.FLOAT_MUL: { return cg.vm.op.floatMul(code0, code1); }
-			case OpCode.FLOAT_DIV: { return cg.vm.op.floatDiv(code0, code1); }
-			case OpCode.FLOAT_EXP: { return cg.vm.op.floatExp(code0, code1); }
-
-			case OpCode.LT: { return cg.vm.op.lt(code0, code1); }
-			case OpCode.GT: { return cg.vm.op.gt(code0, code1); }
-			case OpCode.LE: { return cg.vm.op.le(code0, code1); }
-			case OpCode.GE: { return cg.vm.op.ge(code0, code1); }
-
-			case OpCode.ID: { return cg.vm.op.id(code0, code1); }
-			case OpCode.EQ: { return cg.vm.op.eq(code0, code1); }
-			case OpCode.IS: { return cg.vm.op.is(code0, code1); }
-		}
 	}
 
 	/* eslint-disable */

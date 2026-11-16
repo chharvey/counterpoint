@@ -26,14 +26,14 @@ test.suite('ExprVisitorBuild#visit', () => {
 
 	test.suite('Variable', () => {
 		test.test('returns an OP.Get.', () => {
-			const {stmts} = setupScript(`{
+			const {stmts, visitors: {build: {expr: VISITOR}}} = setupScript(`{
 				val mut x: int = 42;
 				x;
 			}`, {codegen: false});
 			const expr = (stmts[1] as AST.STMT.StatementExpression).expr as AST.EXPR.Variable;
 			const symbol: SymbolSchema | undefined = expr.validator.getSymbol(expr.id);
 			assert_instanceof(symbol, SymbolSchemaVar);
-			return assert.deepStrictEqual(new AST.ExprVisitorBuild(new Builder()).visit(expr), new OP.Get(symbol, typeUnit(42n)));
+			return assert.deepStrictEqual(VISITOR.visit(expr), new OP.Get(symbol, typeUnit(42n)));
 		});
 
 		test.test('gets core lib class references.', () => {
@@ -1375,23 +1375,21 @@ test.suite('ExprVisitorBuild#visit', () => {
 
 	test.suite('Claim', () => {
 		test.test('returns the operand.', () => {
-			const {stmts, builder} = setupScript(`{
+			const {stmts, visitors: {build: {expr: VISITOR}}} = setupScript(`{
 				42 as <int>;
 			}`, {codegen: false});
-			const expr_visitor = new AST.ExprVisitorBuild(builder);
 			const expr = (stmts[0] as AST.STMT.StatementExpression).expr as AST.EXPR.Claim;
-			return assert.deepStrictEqual(expr_visitor.visit(expr), expr_visitor.visit(expr.operand));
+			return assert.deepStrictEqual(VISITOR.visit(expr), VISITOR.visit(expr.operand));
 		});
 		test.test('repeated calls are idempotent.', () => {
-			const {stmts, builder} = setupScript(`{
+			const {stmts, builder, visitors: {build: {expr: VISITOR}}} = setupScript(`{
 				(42 + 42 + 42) as <int | float>;
 			}`, {build: false});
-			const expr_visitor = new AST.ExprVisitorBuild(builder);
 			assert.strictEqual(builder.instructions.length, 0);
 			const expr = (stmts[0] as AST.STMT.StatementExpression).expr as AST.EXPR.Claim;
-			expr_visitor.visit(expr.operand);
+			VISITOR.visit(expr.operand);
 			assert.strictEqual(builder.instructions.length, 1);
-			expr_visitor.visit(expr);
+			VISITOR.visit(expr);
 			assert.strictEqual(builder.instructions.length, 1);
 		});
 	});

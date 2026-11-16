@@ -1,6 +1,3 @@
-import type * as binaryen from 'binaryen.ts';
-import type {CodeGenerator} from '../../index.ts';
-import type {Interpreter} from '../Interpreter.ts';
 import {
 	Drop,
 	Decl,
@@ -54,16 +51,4 @@ export abstract class InstrVisitor<T> {
  * - Return
  */
 export abstract class Instruction extends Opcode {
-	/**
-	 * Execute the interpreter.
-	 * @param interp an Interpreter
-	 */
-	public abstract interpret(interp: Interpreter): void;
-
-	/**
-	 * Generate assembly code.
-	 * @param  cg code-generator
-	 * @return    a binaryen expression of empty type (“`binaryen.none`”, not the WASM `none` heap type)
-	 */
-	public abstract codegen(cg: CodeGenerator): binaryen.ExpressionRef;
 }

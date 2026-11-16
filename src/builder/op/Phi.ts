@@ -1,13 +1,5 @@
-import * as xjs from 'extrajs';
-import type * as binaryen from 'binaryen.ts';
 import type {CodeGenerator} from '../../index.ts';
-import {
-	memoizeMethod,
-	runOnceMethod,
-} from '../../lib/index.ts';
-import type {VALUE} from '../../typer/index.ts';
 import {drop_then} from './utils-private.ts';
-import type {Builder} from '../Builder.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
 import type {ValueTac} from './ValueTac.ts';
@@ -42,20 +34,6 @@ class Phi extends Value {
 			`"${this.labelThen}"->${this.valueThen}`,
 			`"${this.labelElse}"->${this.valueElse}`,
 		);
-	}
-
-	@runOnceMethod
-	public override validate(builder: Builder): void {
-		return xjs.Array.forEachAggregated([this.valueThen, this.valueElse], (value) => value.validate(builder));
-	}
-
-	public interpret(): VALUE.Value {
-		throw new Error('`Phi#interpret` is not supported.');
-	}
-
-	@memoizeMethod
-	public override codegen(_: CodeGenerator): binaryen.ExpressionRef {
-		throw new Error('not yet supported.');
 	}
 
 	/* eslint-disable */

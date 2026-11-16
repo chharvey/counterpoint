@@ -9,6 +9,7 @@ import {
 	VALUE,
 	TYPE,
 	Builder,
+	OP,
 	CodeGenerator,
 } from '../src/index.ts';
 
@@ -261,15 +262,24 @@ export function setupScript(
 	source: string,
 	opts:   {refCheck?: boolean, typeCheck?: boolean, build?: boolean, codegen?: boolean} = {},
 ): {
-	readonly goal:     AST.Goal,
-	readonly stmts:    AST.Block['children'],
-	readonly builder:  Builder,
-	readonly cg:       CodeGenerator,
-	readonly wasm:     binaryen.ExpressionBuilder,
+	readonly goal:    AST.Goal,
+	readonly stmts:   AST.Block['children'],
+	readonly builder: Builder,
+	readonly cg:      CodeGenerator,
+	readonly wasm:    binaryen.ExpressionBuilder,
+
 	readonly visitors: {
 		readonly refCheck:  AST.AstNodeVisitorRefCheck,
 		readonly typeCheck: AST.AstNodeVisitorTypeCheck,
-		readonly build:     AST.AstNodeVisitorBuild,
+
+		readonly build: {
+			readonly node: AST.AstNodeVisitorBuild,
+			readonly expr: AST.ExprVisitorBuild,
+		},
+		readonly codegen: {
+			readonly value: OP.ValueVisitorCodegen,
+			readonly instr: OP.InstrVisitorCodegen,
+		},
 	},
 } {
 	const goal: AST.Goal     = AST.Goal.fromSource(source);
@@ -291,12 +301,21 @@ export function setupScript(
 		goal,
 		builder,
 		cg,
-		stmts:    goal.block.children,
-		wasm:     cg.mod.wasm,
+		stmts: goal.block.children,
+		wasm:  cg.mod.wasm,
+
 		visitors: {
 			refCheck:  visitor_ref_check,
 			typeCheck: visitor_type_check,
-			build:     visitor_build,
+
+			build: {
+				node: visitor_build,
+				expr: new AST.ExprVisitorBuild(builder),
+			},
+			codegen: {
+				value: new OP.ValueVisitorCodegen(cg),
+				instr: new OP.InstrVisitorCodegen(cg),
+			},
 		},
 	};
 }

@@ -1,18 +1,4 @@
-import * as assert from 'node:assert';
-import type * as binaryen from 'binaryen.ts';
-import type {CodeGenerator} from '../../index.ts';
-import {
-	assert_instanceof,
-	memoizeMethod,
-	runOnceMethod,
-} from '../../lib/index.ts';
-import {
-	VALUE,
-	TYPE,
-	CLASS_CLASS,
-} from '../../typer/index.ts';
-import type {Builder} from '../Builder.ts';
-import type {Interpreter} from '../Interpreter.ts';
+import {TYPE} from '../../typer/index.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
 import type {ValueTac} from './ValueTac.ts';
@@ -40,8 +26,8 @@ export class ObjectNew extends Value {
 	public constructor(is_class: true);
 	public constructor(is_class: boolean, class_: ValueTac);
 	public constructor(
-		private readonly isClass: boolean,
-		private readonly class_?: ValueTac,
+		public readonly isClass: boolean,
+		public readonly class_?: ValueTac,
 	) {
 		super(OpCode.OBJECT_NEW, isClass ? TYPE.CLASS : TYPE.OBJ);
 	}
@@ -49,29 +35,5 @@ export class ObjectNew extends Value {
 
 	public override toString(): string {
 		return super.toString(this.isClass ? '<Class>' : '', this.class_ ?? '');
-	}
-
-	@runOnceMethod
-	public override validate(builder: Builder): void {
-		assert.ok(!!this.class_ || this.isClass);
-		assert.ok(this.class_?.type.isSubtypeOf(TYPE.CLASS) ?? true);
-		return this.class_?.validate(builder);
-	}
-
-	public override interpret(interp: Interpreter): VALUE.Value {
-		const class_: VALUE.Value | undefined = this.class_?.interpret(interp);
-		if (class_) {
-			assert_instanceof(class_, VALUE.Class);
-			// @ts-expect-error --- deprecated usage
-			return this.isClass ? new VALUE.Class(TYPE.OBJ, class_) : new VALUE.Object(0n, class_);
-		} else {
-			return CLASS_CLASS;
-		}
-	}
-
-	@memoizeMethod
-	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
-		const class_: binaryen.ExpressionRef /* (ref $Class) */ | undefined = this.class_ && cg.mod.wasm.ref.cast(this.class_.codegen(cg), cg.vm.reftype.Class);
-		return this.isClass ? cg.codegenClass(class_) : cg.codegenObject(class_!);
 	}
 }
