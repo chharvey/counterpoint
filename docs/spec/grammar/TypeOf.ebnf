@@ -184,32 +184,34 @@ Type?! TypeOf(SemanticExpressionCall ::= SemanticExpression__0 SemanticType* Sem
 		1. *Assert:* The validator’s symbol table contains a SymbolSchema `symbol` whose `id` is `SemanticExpression__0.id`.
 	2. *Else:*
 		1. Fall through.
-	3. *If* `symbol` is set and an instance of `SymbolSchemaFunc`:
+	3. *If* `symbol` is set and is an instance of `SymbolSchemaFunc`:
 		1. *Let* `base_types` be `symbol.types`.
-	4. *Else:*
+	4. *Else If* `symbol` is set and is an instance of `SymbolSchemaClass`:
+		1. *Let* `base_types` be an array of Function types constructed from the overloads allowed by `symbol.signature`.
+	5. *Else:*
 		1. *Let* `basetype` be *Unwrap:* `ThrowIfVoid(SemanticExpression__0, TypeErrorInvalidOperation)`.
 		2. *Let* `base_types` be a new Sequence [`basetype`].
-	5. *For each* `type` in `base_types`:
+	6. *For each* `type` in `base_types`:
 		1. *If* *UnwrapAffirm:* `IsBottomType(type)` is `true`:
 			1. *Return:* `Nothing`.
 		2. *Else:*
 			1. Fall through.
-	6. *For each* `it` in `SemanticExpression__1*`:
+	7. *For each* `it` in `SemanticExpression__1*`:
 		1. *Let* `arg_type` be *Unwrap:* `ThrowIfVoid(it)`.
 		2. *If* *UnwrapAffirm:* `IsBottomType(arg_type)` is `true`:
 			1. *Return:* `Nothing`.
 		3. *Else:*
 			1. Fall through.
-	7. *For each* `it ::= SemanticKey SemanticExpression__2` in `SemanticProperty*`:
+	8. *For each* `it ::= SemanticKey SemanticExpression__2` in `SemanticProperty*`:
 		1. *Let* `arg_type` be *Unwrap:* `ThrowIfVoid(SemanticExpression__2)`.
 		2. *If* *UnwrapAffirm:* `IsBottomType(arg_type)` is `true`:
 			1. *Return:* `Nothing`.
 		3. *Else:*
 			1. Fall through.
-	8. *Assert:* `base_types.count` is greater than *0*.
-	9. *Let* `successes` be an empty Sequence.
-	10. *Let* `failures` be an empty Sequence.
-	11. *For each* `type` in `base_types`:
+	9. *Assert:* `base_types.count` is greater than *0*.
+	10. *Let* `successes` be an empty Sequence.
+	11. *Let* `failures` be an empty Sequence.
+	12. *For each* `type` in `base_types`:
 		1. *Perform:* the following substeps and save the result:
 			1. *If* `type` is not a Function type:
 				1. *Throw:* a new TypeErrorNotCallable.
@@ -237,15 +239,15 @@ Type?! TypeOf(SemanticExpressionCall ::= SemanticExpression__0 SemanticType* Sem
 			1. Push the result to `successes`.
 		3. *Else:*
 			1. Push the result to `failures`.
-	12. *If* `successes.count` is greater than *0*:
+	13. *If* `successes.count` is greater than *0*:
 		1. *Let* `maximal` be the unique maximally specific overload, if it exists.
 		2. *If* `maximal` is not *nil*:
 			1. *Return:* the corresponding item in `successes`.
 		3. *Else:*
 			1. *Throw:* a new TypeErrorAmbiguousOverload.
-	13. *Else If* `failures.count` is greater than *1*:
+	14. *Else If* `failures.count` is greater than *1*:
 		1. *Throw:* a new TypeErrorAmbiguousOverload.
-	14. *Else:*
+	15. *Else:*
 		1. *Assert*: `failures.count` is *1*.
 		2. *Throw:* `failures.0`.
 ;

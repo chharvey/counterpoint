@@ -5,9 +5,9 @@ import {CoreLibName} from '../parser/index.ts';
 
 
 /** Schema for generic arguments provided in a class call, generic function call, or type function call. */
-type GenericArgs = {
+export type GenericArgs = {
 	readonly positional: readonly TYPE.Type[],
-	readonly named:      ReadonlyMap<bigint, TYPE.Type[]>,
+	readonly named:      ReadonlyMap<bigint, TYPE.Type>,
 };
 
 
@@ -31,7 +31,7 @@ type GenericParameter = {
 
 
 /** Schema defining a class’s generic parameters. */
-type GenericParams = {
+export type GenericParams = {
 	readonly positional?: readonly GenericParameter[],
 	readonly named?:      ReadonlyMap<bigint, GenericParameter>,
 };
@@ -42,7 +42,7 @@ type GenericParams = {
  * Schema for defining the parameters of a single constructor overload.
  * Takes generic parameters Effectively a function type, but without the return.
  */
-type ConstructorOverload = {
+export type ConstructorOverload = {
 	readonly positional?: TYPE.Tuple,
 	readonly named?:      TYPE.Record,
 };
@@ -61,8 +61,8 @@ type ConstructorOverload = {
  */
 export type ClassSignature = {
 	readonly genericParams?: GenericParams,
-	readonly overloads?:     (generic_params: GenericArgs) => readonly ConstructorOverload[],
-	readonly returnType:     (generic_params: GenericArgs) => TYPE.Type,
+	readonly overloads?:     (generic_args: GenericArgs) => readonly ConstructorOverload[],
+	readonly returnType:     (generic_args: GenericArgs) => TYPE.Type,
 	readonly instanceType:   TYPE.Type,
 };
 
@@ -85,7 +85,7 @@ const VARIANCE = {
 /**
  * API for all core lib classes.
  */
-export const CLASS_API = new Map<CoreLibName, ClassSignature>([
+export const CLASS_API: ReadonlyMap<CoreLibName, ClassSignature> = new Map<CoreLibName, ClassSignature>([
 	[CoreLibName.NULL, {
 		returnType:   () => TYPE.NULL,
 		instanceType: TYPE.NULL,
@@ -131,7 +131,7 @@ export const CLASS_API = new Map<CoreLibName, ClassSignature>([
 			{positional: TYPE.Tuple.fromTypes([new TYPE.List(t)])},
 			{positional: TYPE.Tuple.fromTypes([new TYPE.Set(t)])},
 		],
-		returnType:   ({positional: [t]}) => new TYPE.List(t, true),
+		returnType:   ({positional: [t]}) => new TYPE.List(t),
 		instanceType: new TYPE.List(TYPE.ANYTHING),
 	}],
 	[CoreLibName.DICT, {
@@ -143,7 +143,7 @@ export const CLASS_API = new Map<CoreLibName, ClassSignature>([
 			{positional: TYPE.Tuple.fromTypes([new TYPE.Set(TYPE.Tuple.fromTypes([TYPE.SYM, t]))])},
 			{positional: TYPE.Tuple.fromTypes([new TYPE.Map(TYPE.SYM, t)])},
 		],
-		returnType:   ({positional: [t]}) => new TYPE.Dict(t, true),
+		returnType:   ({positional: [t]}) => new TYPE.Dict(t),
 		instanceType: new TYPE.Dict(TYPE.ANYTHING),
 	}],
 	[CoreLibName.SET, {
@@ -153,7 +153,7 @@ export const CLASS_API = new Map<CoreLibName, ClassSignature>([
 			{positional: TYPE.Tuple.fromTypes([new TYPE.List(t)])},
 			{positional: TYPE.Tuple.fromTypes([new TYPE.Set(t)])},
 		],
-		returnType:   ({positional: [t]}) => new TYPE.Set(t, true),
+		returnType:   ({positional: [t]}) => new TYPE.Set(t),
 		instanceType: new TYPE.Set(TYPE.ANYTHING),
 	}],
 	[CoreLibName.MAP, {
@@ -169,7 +169,7 @@ export const CLASS_API = new Map<CoreLibName, ClassSignature>([
 			{positional: TYPE.Tuple.fromTypes([new TYPE.Set  (TYPE.Tuple.fromTypes([k, v]))])},
 			{positional: TYPE.Tuple.fromTypes([new TYPE.Map  (k, v)])},
 		],
-		returnType:   ({positional: [k, v]}) => new TYPE.Map(k, v, true),
+		returnType:   ({positional: [k, v]}) => new TYPE.Map(k, v),
 		instanceType: new TYPE.Map(TYPE.ANYTHING, TYPE.ANYTHING),
 	}],
 	[CoreLibName.EXCEPTION, {

@@ -1183,19 +1183,14 @@ test.suite('ExprVisitorType#visit', () => {
 			visitors.typeCheck.visit(stmts[1]);
 			xjs.Array.forEachAggregated(stmts.slice(2), (stmt) => assert.throws(() => visitors.typeCheck.visit((stmt as AST.STMT.StatementExpression).expr!), TypeErrorArgCount));
 			xjs.Array.forEachAggregated(extract_lines`
-				Integer.()
 				Integer.(1, 2)
-				Natural.()
 				Natural.(1, 2)
-				Float.()
 				Float.(1, 2)
-				String.()
 				String.(1, 2)
 				List.<int>((), ())
 				Dict.<int>((), ())
 				Set.<int>((), ())
 				Map.<int, int>((), ())
-				Map.<int>()
 				None.<int>(42)
 				Some.<int>()
 			`, (src) => assert.throws(() => VISITOR.visit(AST.EXPR.Call.fromSource(src)), TypeErrorArgCount));
@@ -1232,14 +1227,17 @@ test.suite('ExprVisitorType#visit', () => {
 				() => VISITOR.visit(AST.EXPR.Call.fromSource(src)),
 				(err) => {
 					assertAssignable(err as Error, {
-						cons:   AggregateError,
-						errors: [
-							{cons: TypeErrorArgCount, message: 'Got 1 arguments, but expected 0.'},
-							...allowed_types.map((allowed_type) => ({
-								cons:    TypeErrorNotAssignable,
-								message: `Expression \`${argexpr}\` is not assignable to type \`${allowed_type}\`.`,
-							})),
-						],
+						cons:  TypeErrorAmbiguousOverload,
+						cause: {
+							cons:   AggregateError,
+							errors: [
+								{cons: TypeErrorArgCount, message: 'Got 1 arguments, but expected 0.'},
+								...allowed_types.map((allowed_type) => ({
+									cons:    TypeErrorNotAssignable,
+									message: `Expression \`${argexpr}\` is not assignable to type \`${allowed_type}\`.`,
+								})),
+							],
+						},
 					});
 					return true;
 				},

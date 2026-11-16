@@ -9,19 +9,17 @@ import {assert_instanceof} from '../../../lib/index.ts';
 import {
 	type EntryType,
 	TYPE,
+	type GenericArgs,
+	type GenericParams,
 } from '../../../typer/index.ts';
 import {
+	Validator,
 	type SymbolSchema,
 	SymbolSchemaType,
 	SymbolSchemaClass,
 } from '../../index.ts';
 import {Operator} from '../../Operator.ts';
-import {
-	type CallableInterfaceName,
-	type ConstructorSchema,
-	CLASS_API,
-	get_entry_info,
-} from '../utils-private.ts';
+import {get_entry_info} from '../utils-private.ts';
 import * as AST_TYPE from '../type/index.ts';
 import type * as EXPR from '../expression/index.ts';
 
@@ -107,8 +105,11 @@ export class TypeVisitorTypevalue extends AST_TYPE.TypeVisitor<TYPE.Type> {
 		if (!(typenode.base instanceof AST_TYPE.TypeAlias)) {
 			throw new TypeErrorNotCallable(this.visit(typenode.base), typenode.base);
 		}
-		const constructor_schema: ConstructorSchema = CLASS_API.get(typenode.base.source as CallableInterfaceName)!;
-		return constructor_schema.returnType(this.checkGenericArgs(constructor_schema, typenode.args, typenode));
+		const symbol: SymbolSchema = typenode.validator.getSymbol(typenode.base.id)!;
+		if (!(symbol instanceof SymbolSchemaClass)) {
+			throw new TypeErrorNotCallable(this.visit(typenode.base), typenode.base);
+		}
+		return symbol.classSignature.returnType(this.checkGenericArgs(typenode, symbol.classSignature.genericParams));
 	}
 
 	@memoizeTypeTypevalue
@@ -155,46 +156,70 @@ export class TypeVisitorTypevalue extends AST_TYPE.TypeVisitor<TYPE.Type> {
 	}
 
 	/**
-	 * Type-checks assignment of generic arguments to a type call or generic constructor call, and resolves unprovided generic arguments.
-	 * @param constructor_schema the name of the class constructor’s schema
-	 * @param args               the actual generic argument nodes provided
-	 * @param call_node          the type/function call
-	 * @return                   a list of resolved generic parameter assignments
+	 * Type-checks assignment of generic argument nodes to a type call or generic constructor call, and resolves unprovided generic arguments.
+	 * @param call           the type/function call node
+	 * @param generic_params the generic parameter signature of the class, interface, or type function
+	 * @return               resolved generic parameter assignments
 	 */
-	public checkGenericArgs(constructor_schema: ConstructorSchema, args: readonly AST_TYPE.Type[], call_node: AST_TYPE.Call | EXPR.Call): TYPE.Type[] {
-		const {genericParams: generic_params}: ConstructorSchema = constructor_schema;
+	public checkGenericArgs(call: AST_TYPE.Call | EXPR.Call, generic_params?: GenericParams): GenericArgs {
+		const args_posit: readonly AST_TYPE.Type[]           = call instanceof AST_TYPE.Call ? call.args : call.typeargs;
+		const args_named: ReadonlyMap<bigint, AST_TYPE.Type> = new Map();
 
 		/* Argument Counting. Throws if the number of given args does not match the number of expected parameters. */
 		const expected_generic = {
 			min: BigInt(generic_params?.positional?.filter((param) => !param.default).length ?? 0),
 			max: BigInt(generic_params?.positional?.length ?? 0),
 		} as const;
-		const actual_generic: bigint = BigInt(args.length);
+		const actual_generic: bigint = BigInt(args_posit.length);
 		// TODO: throw AggregateError if both
 		if (actual_generic < expected_generic.min) {
-			throw new TypeErrorArgCount(actual_generic, expected_generic.min, true, call_node);
+			throw new TypeErrorArgCount(actual_generic, expected_generic.min, true, call);
 		}
 		if (actual_generic > expected_generic.max) {
-			throw new TypeErrorArgCount(actual_generic, expected_generic.max, true, call_node);
+			throw new TypeErrorArgCount(actual_generic, expected_generic.max, true, call);
 		}
 
 		/* Argument Typing. Handles optionality and default values. Also checks if each argument matches the constraints given. */
-		const generic_args: TYPE.Type[] = args.map((t_arg) => this.visit(t_arg));
+		const returned_positional: TYPE.Type[] = args_posit.map((argnode) => this.visit(argnode));
 		generic_params?.positional?.forEach((param, i) => {
-			if (!args.at(i)) {
-				assert.ok(param.default); // we can assert this due to argument counting above
-				generic_args[i] = param.default.call(null, generic_args);
+			const argnode: AST_TYPE.Type | undefined = args_posit.at(i);
+			if (!argnode) {
+				assert.ok(param.default); // we can assert param is optional due to argument counting above
+				returned_positional[i] = param.default;
 			}
 			if (param.constraint) {
-				const arg:             TYPE.Type = generic_args.at(i)!;
-				const constraint_type: TYPE.Type = param.constraint.type.call(null, generic_args);
-				if (param.constraint.direction === 'narrows' && !arg.isSubtypeOf(constraint_type)) {
-					throw new TypeErrorNotNarrow(arg, constraint_type, call_node.line_index, call_node.col_index);
-				} else if (param.constraint.direction === 'widens' && !constraint_type.isSubtypeOf(arg)) {
-					throw new TypeErrorNotNarrow(constraint_type, arg, call_node.line_index, call_node.col_index);
+				const arg: TYPE.Type = returned_positional.at(i)!;
+				const [constraint_direction, constraint_type] = param.constraint;
+				if (constraint_direction === 'narrows' && !arg.isSubtypeOf(constraint_type)) {
+					throw new TypeErrorNotNarrow(arg, constraint_type, call.line_index, call.col_index);
+				} else if (constraint_direction === 'widens' && !constraint_type.isSubtypeOf(arg)) {
+					throw new TypeErrorNotNarrow(constraint_type, arg, call.line_index, call.col_index);
 				}
 			}
 		});
-		return [...generic_args];
+		const returned_named = new Map<bigint, TYPE.Type>([...args_named].map(([argnode_id, argnode_type]) => [argnode_id, this.visit(argnode_type)]));
+		generic_params?.named?.forEach((param, id) => {
+			const argnode: [bigint, AST_TYPE.Type] | undefined = [...args_named].find(([argnode_id]) => argnode_id === id);
+			if (!argnode) {
+				// we cannot assert param is optional because argument counting above only applies to positional parameters
+				if (!param.default) {
+					throw new TypeError(`Missing argument for required named parameter \`${Validator.unhashIdentifierId(id)}\`.`); // TODO: new class of CplTypeError
+				}
+				returned_named.set(id, param.default);
+			}
+			if (param.constraint) {
+				const arg: TYPE.Type = returned_named.get(id)!;
+				const [constraint_direction, constraint_type] = param.constraint;
+				if (constraint_direction === 'narrows' && !arg.isSubtypeOf(constraint_type)) {
+					throw new TypeErrorNotNarrow(arg, constraint_type, call.line_index, call.col_index);
+				} else if (constraint_direction === 'widens' && !constraint_type.isSubtypeOf(arg)) {
+					throw new TypeErrorNotNarrow(constraint_type, arg, call.line_index, call.col_index);
+				}
+			}
+		});
+		return {
+			positional: returned_positional,
+			named:      returned_named,
+		};
 	}
 }
