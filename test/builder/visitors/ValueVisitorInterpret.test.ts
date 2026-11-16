@@ -39,7 +39,7 @@ test.suite('ValueVisitorInterpret#visit', () => {
 
 
 	test.test('Const returns interpreter value.', () => {
-		const value_visitor = new OP.ValueVisitorInterpret(new Interpreter());
+		const VISITOR = new OP.ValueVisitorInterpret(new Interpreter());
 		xjs.Array.forEachAggregated([
 			VALUE.NULL,
 			VALUE.FALSE,
@@ -51,7 +51,7 @@ test.suite('ValueVisitorInterpret#visit', () => {
 			new VALUE.Natural(42n),
 			new VALUE.Float(4.2),
 			new VALUE.String('hello'),
-		], (val) => assert.ok(value_visitor.visit(new OP.Const(val)).identical(val)));
+		], (val) => assert.ok(VISITOR.visit(new OP.Const(val)).identical(val)));
 	});
 
 
@@ -227,11 +227,11 @@ test.suite('ValueVisitorInterpret#visit', () => {
 
 
 	test.test('MaybeNew', () => {
-		const value_visitor = new OP.ValueVisitorInterpret(new Interpreter());
+		const VISITOR = new OP.ValueVisitorInterpret(new Interpreter());
 		return assert_equal_values([
 			new OP.MaybeNew(TYPE.STR),
 			new OP.MaybeNew(TYPE.STR, new OP.Const(new VALUE.String('hello'))),
-		].map((opcode) => value_visitor.visit(opcode)), [
+		].map((opcode) => VISITOR.visit(opcode)), [
 			new VALUE.None(TYPE.STR),
 			new VALUE.Some(new VALUE.String('hello')),
 		]);
@@ -239,11 +239,11 @@ test.suite('ValueVisitorInterpret#visit', () => {
 
 
 	test.test('ResultNew', () => {
-		const value_visitor = new OP.ValueVisitorInterpret(new Interpreter());
+		const VISITOR = new OP.ValueVisitorInterpret(new Interpreter());
 		return assert_equal_values([
 			new OP.ResultNew(false, TYPE.INT, TYPE.EXCP, new OP.ExcpNew(new OP.Const(new VALUE.String('message')))),
 			new OP.ResultNew(true,  TYPE.INT, TYPE.EXCP, new OP.Const(new VALUE.Integer(42n))),
-		].map((opcode) => value_visitor.visit(opcode)), [
+		].map((opcode) => VISITOR.visit(opcode)), [
 			new VALUE.Fail(TYPE.INT, new VALUE.Exception(new VALUE.String('message'))),
 			new VALUE.Ok(new VALUE.Integer(42n)),
 		]);
@@ -252,22 +252,22 @@ test.suite('ValueVisitorInterpret#visit', () => {
 
 	test.test('TupleHas', () => {
 		// there exists no syntax for Tuple has, so constructing it manually
-		const tuple         = new AST.ExprVisitorBuild(new Builder()).visit(AST.EXPR.Tuple.fromSource('(10, 20)'));
-		const value_visitor = new OP.ValueVisitorInterpret(new Interpreter());
+		const tuple: OP.Value = new AST.ExprVisitorBuild(new Builder()).visit(AST.EXPR.Tuple.fromSource('(10, 20)'));
+		const VISITOR         = new OP.ValueVisitorInterpret(new Interpreter());
 		return assert_equal_values(new Map<VALUE.Value, VALUE.Boolean>([
-			[value_visitor.visit(new OP.TupleHas(tuple, 1n)), VALUE.TRUE],
-			[value_visitor.visit(new OP.TupleHas(tuple, 2n)), VALUE.FALSE],
+			[VISITOR.visit(new OP.TupleHas(tuple, 1n)), VALUE.TRUE],
+			[VISITOR.visit(new OP.TupleHas(tuple, 2n)), VALUE.FALSE],
 		]));
 	});
 
 
 	test.test('RecordHas', () => {
 		// there exists no syntax for Record has, so constructing it manually
-		const record        = new AST.ExprVisitorBuild(new Builder()).visit(AST.EXPR.Record.fromSource('(a= 10, c= 20)'));
-		const value_visitor = new OP.ValueVisitorInterpret(new Interpreter());
+		const record: OP.Value = new AST.ExprVisitorBuild(new Builder()).visit(AST.EXPR.Record.fromSource('(a= 10, c= 20)'));
+		const VISITOR          = new OP.ValueVisitorInterpret(new Interpreter());
 		return assert_equal_values(new Map<VALUE.Value, VALUE.Boolean>([
-			[value_visitor.visit(new OP.RecordHas(record, {keyid: Validator.keyId('a'), keysrc: 'a'})), VALUE.TRUE],
-			[value_visitor.visit(new OP.RecordHas(record, {keyid: Validator.keyId('b'), keysrc: 'b'})), VALUE.FALSE],
+			[VISITOR.visit(new OP.RecordHas(record, {keyid: Validator.keyId('a'), keysrc: 'a'})), VALUE.TRUE],
+			[VISITOR.visit(new OP.RecordHas(record, {keyid: Validator.keyId('b'), keysrc: 'b'})), VALUE.FALSE],
 		]));
 	});
 
@@ -510,7 +510,7 @@ test.suite('ValueVisitorInterpret#visit', () => {
 		test.suite('instance of None/Fail.', () => {
 			([OP.OpCode.NONE_IS, OP.OpCode.FAIL_IS] as const).forEach((operator, i) => {
 				test.test(`[operator=${OP.OpCode[operator]}]`, () => {
-					const {stmts, builder} = setupScript(`{
+					const {stmts, builder, visitors} = setupScript(`{
 						val mut a?: str;
 						val mut b?: str;
 						set b = "hello";
@@ -525,15 +525,14 @@ test.suite('ValueVisitorInterpret#visit', () => {
 						e;
 						f;
 					}`, {codegen: false});
-					const expr_visitor  = new AST.ExprVisitorBuild(builder);
-					const interp        = new Interpreter();
-					const code_visitor  = new OP.OpcodeVisitorInterpret(interp);
-					const value_visitor = new OP.ValueVisitorInterpret(interp);
+					const interp       = new Interpreter();
+					const code_visitor = new OP.OpcodeVisitorInterpret(interp);
+					const VISITOR      = new OP.ValueVisitorInterpret(interp);
 					builder.instructions.slice(0, 8).map((instr) => code_visitor.visit(instr)); // instr index 5 is the decl for the Exception argument
 					// there exists no syntax for “is None”/“is Fail”, so constructing it manually
-					return assert_equal_values(stmts.slice(7).map((stmt) => value_visitor.visit(new OP.Unop(
+					return assert_equal_values(stmts.slice(7).map((stmt) => VISITOR.visit(new OP.Unop(
 						operator,
-						expr_visitor.visit((stmt as AST.STMT.StatementExpression).expr!) as OP.Get,
+						visitors.build.expr.visit((stmt as AST.STMT.StatementExpression).expr!) as OP.Get,
 						TYPE.BOOL,
 					))), [
 						[VALUE.TRUE, VALUE.FALSE, VALUE.TRUE, ...repeat(VALUE.FALSE, 3)],

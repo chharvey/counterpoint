@@ -29,7 +29,7 @@ test.suite('Opcode', () => {
 			});
 
 			test.test('Const returns (struct.new $Value).', () => {
-				const {stmts, builder, cg} = setupScript(`{
+				const {stmts, cg, visitors, visitors: {codegen: {value: VISITOR}}} = setupScript(`{
 					null;
 					false;
 					@hello;
@@ -37,10 +37,8 @@ test.suite('Opcode', () => {
 					4.2;
 					"hello";
 				}`, {codegen: false});
-				const expr_visitor  = new AST.ExprVisitorBuild(builder);
-				const value_visitor = new OP.ValueVisitorCodegen(cg);
 				return assertEqualBins(
-					stmts.map((stmt) => value_visitor.visit(expr_visitor.visit((stmt as AST.STMT.StatementExpression).expr!))),
+					stmts.map((stmt) => VISITOR.visit(visitors.build.expr.visit((stmt as AST.STMT.StatementExpression).expr!))),
 					[
 						genConst(cg),
 						genConst(cg, false),
@@ -54,7 +52,7 @@ test.suite('Opcode', () => {
 
 			test.suite('Get', () => {
 				test.test('variables return (local.get).', () => {
-					const {stmts, builder, cg, wasm} = setupScript(`{
+					const {stmts, cg, wasm, visitors, visitors: {codegen: {value: VISITOR}}} = setupScript(`{
 						val mut a: null  = null;
 						val mut b: bool  = false;
 						val mut c: sym   = @hello;
@@ -69,21 +67,17 @@ test.suite('Opcode', () => {
 						e;
 						f;
 					}`);
-					const expr_visitor  = new AST.ExprVisitorBuild(builder);
-					const value_visitor = new OP.ValueVisitorCodegen(cg);
 					return assertEqualBins(
-						stmts.slice(6).map((stmt) => value_visitor.visit(expr_visitor.visit((stmt as AST.STMT.StatementExpression).expr!))),
+						stmts.slice(6).map((stmt) => VISITOR.visit(visitors.build.expr.visit((stmt as AST.STMT.StatementExpression).expr!))),
 						Array.from(new Array(6), (_, i) => wasm.local.get(i, cg.vm.reftype.Value)),
 					);
 				});
 				test.test('core lib classes return (global.get).', () => {
-					const {stmts, builder, cg} = setupScript(`{
+					const {stmts, cg, visitors, visitors: {codegen: {value: VISITOR}}} = setupScript(`{
 						${CORE_LIB_NAMES.join(';')};
 					}`);
 					const {vm: {Class: VmClass}} = cg;
-					const expr_visitor  = new AST.ExprVisitorBuild(builder);
-					const value_visitor = new OP.ValueVisitorCodegen(cg);
-					return assertEqualBins(stmts.map((stmt) => value_visitor.visit(expr_visitor.visit((stmt as AST.STMT.StatementExpression).expr!))), [
+					return assertEqualBins(stmts.map((stmt) => VISITOR.visit(visitors.build.expr.visit((stmt as AST.STMT.StatementExpression).expr!))), [
 						VmClass.NULL,
 						VmClass.BOOLEAN,
 						VmClass.SYMBOL,
@@ -110,12 +104,11 @@ test.suite('Opcode', () => {
 			});
 
 			test.test('Template returns (block) containing static repetition of (array.copy).', () => {
-				const {builder, cg, wasm} = setupScript(`{
+				const {builder, cg, wasm, visitors} = setupScript(`{
 					val user: (name: str) = (name= "Alan");
 					"""Hello, {{user.name}}, you have {{2 * 3}} new messages.""";
 				}`);
 				const {heaptype, reftype, Value} = cg.vm;
-				const instr_visitor = new OP.InstrVisitorCodegen(cg);
 
 				const strings = [
 					genConst(cg, 'Hello, '),
@@ -143,7 +136,7 @@ test.suite('Opcode', () => {
 				const result_get: binaryen.ExpressionRef = wasm.local.get(RESULT_IDX, reftype.String);
 				const offset_get: binaryen.ExpressionRef = wasm.local.get(OFFSET_IDX, binaryen.Type.i32);
 				return assertEqualBins(
-					instr_visitor.visit(builder.instructions.at(-1)!),
+					visitors.codegen.instr.visit(builder.instructions.at(-1)!),
 					wasm.drop(wasm.block(null, [
 						wasm.local.set(4, strings[0]),
 						wasm.local.set(5, strings[1]),
@@ -184,21 +177,21 @@ test.suite('Opcode', () => {
 
 			test.suite('CollectionLinearNew', () => {
 				test.test('empty TUPLE.NEW', () => {
-					const {stmts, builder, cg} = setupScript(`{
+					const {stmts, cg, visitors, visitors: {codegen: {value: VISITOR}}} = setupScript(`{
 						();
 					}`);
 					return assertEqualBins(
-						new OP.ValueVisitorCodegen(cg).visit(new AST.ExprVisitorBuild(builder).visit((stmts[0] as AST.STMT.StatementExpression).expr!)),
+						VISITOR.visit(visitors.build.expr.visit((stmts[0] as AST.STMT.StatementExpression).expr!)),
 						cg.vm.Value.fromTuple(cg.codegenTuple()),
 					);
 				});
 				test.test('nonempty TUPLE.NEW', () => {
-					const {stmts, builder, cg, wasm} = setupScript(`{
+					const {stmts, cg, wasm, visitors, visitors: {codegen: {value: VISITOR}}} = setupScript(`{
 						val mut x: int = 42;
 						(x, 4.2, (null,));
 					}`);
 					return assertEqualBins(
-						new OP.ValueVisitorCodegen(cg).visit(new AST.ExprVisitorBuild(builder).visit((stmts[1] as AST.STMT.StatementExpression).expr!)),
+						VISITOR.visit(visitors.build.expr.visit((stmts[1] as AST.STMT.StatementExpression).expr!)),
 						cg.vm.Value.fromTuple(cg.codegenTuple([
 							wasm.local.get(0, cg.vm.reftype.Value),
 							genConst(cg, 4.2),
@@ -207,21 +200,21 @@ test.suite('Opcode', () => {
 					);
 				});
 				test.test('empty LIST.NEW', () => {
-					const {stmts, builder, cg} = setupScript(`{
+					const {stmts, cg, visitors, visitors: {codegen: {value: VISITOR}}} = setupScript(`{
 						[];
 					}`);
 					return assertEqualBins(
-						new OP.ValueVisitorCodegen(cg).visit(new AST.ExprVisitorBuild(builder).visit((stmts[0] as AST.STMT.StatementExpression).expr!)),
+						VISITOR.visit(visitors.build.expr.visit((stmts[0] as AST.STMT.StatementExpression).expr!)),
 						cg.vm.Value.fromList(cg.codegenList()),
 					);
 				});
 				test.test('nonempty LIST.NEW', () => {
-					const {stmts, builder, cg, wasm} = setupScript(`{
+					const {stmts, cg, wasm, visitors, visitors: {codegen: {value: VISITOR}}} = setupScript(`{
 						val mut x: int = 42;
 						[x, 4.2, (null,), x/2, @e];
 					}`);
 					return assertEqualBins(
-						new OP.ValueVisitorCodegen(cg).visit(new AST.ExprVisitorBuild(builder).visit((stmts[1] as AST.STMT.StatementExpression).expr!)),
+						VISITOR.visit(visitors.build.expr.visit((stmts[1] as AST.STMT.StatementExpression).expr!)),
 						cg.vm.Value.fromList(cg.codegenList([
 							wasm.local.get(0, cg.vm.reftypeNull.Value),
 							genConst(cg, 4.2),
@@ -232,21 +225,21 @@ test.suite('Opcode', () => {
 					);
 				});
 				test.test('empty SET.NEW', () => {
-					const {stmts, builder, cg} = setupScript(`{
+					const {stmts, cg, visitors, visitors: {codegen: {value: VISITOR}}} = setupScript(`{
 						{};
 					}`);
 					return assert.strictEqual(
-						binaryen.emitText(new OP.ValueVisitorCodegen(cg).visit(new AST.ExprVisitorBuild(builder).visit((stmts[0] as AST.STMT.StatementExpression).expr!))),
+						binaryen.emitText(VISITOR.visit(visitors.build.expr.visit((stmts[0] as AST.STMT.StatementExpression).expr!))),
 						binaryen.emitText(cg.vm.Value.fromMap(cg.codegenSet())).replaceAll('$1', '$0'),
 					);
 				});
 				test.test('nonempty SET.NEW', () => {
-					const {stmts, builder, cg, wasm} = setupScript(`{
+					const {stmts, cg, wasm, visitors, visitors: {codegen: {value: VISITOR}}} = setupScript(`{
 						val mut x: int = 42;
 						{x, 4.2, (null,), x/2, @e};
 					}`);
 					return assert.strictEqual(
-						binaryen.emitText(new OP.ValueVisitorCodegen(cg).visit(new AST.ExprVisitorBuild(builder).visit((stmts[1] as AST.STMT.StatementExpression).expr!))),
+						binaryen.emitText(VISITOR.visit(visitors.build.expr.visit((stmts[1] as AST.STMT.StatementExpression).expr!))),
 						binaryen.emitText(cg.vm.Value.fromMap(cg.codegenSet([
 							wasm.local.get(0, cg.vm.reftype.Value),
 							genConst(cg, 4.2),
@@ -268,7 +261,7 @@ test.suite('Opcode', () => {
 					);
 				});
 				test.test('nonempty RECORD.NEW', () => {
-					const {stmts, builder, cg, wasm} = setupScript(`{
+					const {stmts, cg, wasm, visitors, visitors: {codegen: {value: VISITOR}}} = setupScript(`{
 						val mut x: int = 42;
 						(a= x, b= 4.2, c= (null,), d= x/2, e= @e);
 					}`);
@@ -278,7 +271,7 @@ test.suite('Opcode', () => {
 					const id_d: bigint = Validator.keyId('d');
 					const id_e: bigint = Validator.keyId('e');
 					return assertEqualBins(
-						new OP.ValueVisitorCodegen(cg).visit(new AST.ExprVisitorBuild(builder).visit((stmts[1] as AST.STMT.StatementExpression).expr!)),
+						VISITOR.visit(visitors.build.expr.visit((stmts[1] as AST.STMT.StatementExpression).expr!)),
 						cg.vm.Value.fromRecord(cg.codegenRecord(new Map([
 							[id_a, cg.newProperty(id_a, wasm.local.get(0, cg.vm.reftype.Value))],
 							[id_b, cg.newProperty(id_b, genConst(cg, 4.2))],
@@ -289,13 +282,11 @@ test.suite('Opcode', () => {
 					);
 				});
 				test.test('inserts keys in source order.', () => {
-					const {stmts, builder, cg} = setupScript(`{
+					const {stmts, cg, visitors, visitors: {codegen: {value: VISITOR}}} = setupScript(`{
 						(a= 42, aa= false, b= 4.2);
 						(aa= true, c= null, a= 42);
 						(b= 42, bb= 4.2, bbb= null);
 					}`);
-					const expr_visitor  = new AST.ExprVisitorBuild(builder);
-					const value_visitor = new OP.ValueVisitorCodegen(cg);
 					const id_b:   bigint = Validator.keyId('b');
 					const id_c:   bigint = Validator.keyId('c');
 					const id_a:   bigint = Validator.keyId('a');
@@ -303,7 +294,7 @@ test.suite('Opcode', () => {
 					const id_aa:  bigint = Validator.keyId('aa');
 					const id_bbb: bigint = Validator.keyId('bbb');
 					return assertEqualBins(
-						stmts.map((stmt) => value_visitor.visit(expr_visitor.visit((stmt as AST.STMT.StatementExpression).expr!))),
+						stmts.map((stmt) => VISITOR.visit(visitors.build.expr.visit((stmt as AST.STMT.StatementExpression).expr!))),
 						[new Map([
 							[id_a,  cg.newProperty(id_a,  genConst(cg, 42n))],
 							[id_aa, cg.newProperty(id_aa, genConst(cg, false))],
@@ -331,7 +322,7 @@ test.suite('Opcode', () => {
 					);
 				});
 				test.test('nonempty DICT.NEW', () => {
-					const {stmts, builder, cg, wasm} = setupScript(`{
+					const {stmts, cg, wasm, visitors, visitors: {codegen: {value: VISITOR}}} = setupScript(`{
 						val mut x: int = 42;
 						[a= x, b= 4.2, c= (null,), d= x/2, e= @e];
 					}`);
@@ -341,7 +332,7 @@ test.suite('Opcode', () => {
 					const id_d: bigint = Validator.keyId('d');
 					const id_e: bigint = Validator.keyId('e');
 					return assertEqualBins(
-						new OP.ValueVisitorCodegen(cg).visit(new AST.ExprVisitorBuild(builder).visit((stmts[1] as AST.STMT.StatementExpression).expr!)),
+						VISITOR.visit(visitors.build.expr.visit((stmts[1] as AST.STMT.StatementExpression).expr!)),
 						cg.vm.Value.fromDict(cg.codegenDict(new Map([
 							[id_a, cg.newProperty(id_a, wasm.local.get(0, cg.vm.reftype.Value))],
 							[id_b, cg.newProperty(id_b, genConst(cg, 4.2))],
@@ -352,20 +343,18 @@ test.suite('Opcode', () => {
 					);
 				});
 				test.test('inserts keys in source order.', () => {
-					const {stmts, builder, cg} = setupScript(`{
+					const {stmts, cg, visitors, visitors: {codegen: {value: VISITOR}}} = setupScript(`{
 						[a= 42, aa= false, b= 4.2];
 						[aa= true, c= null, a= 42];
 						[b= 42, c= 4.2, aaa= null];
 					}`);
-					const expr_visitor  = new AST.ExprVisitorBuild(builder);
-					const value_visitor = new OP.ValueVisitorCodegen(cg);
 					const id_b:   bigint = Validator.keyId('b');
 					const id_c:   bigint = Validator.keyId('c');
 					const id_a:   bigint = Validator.keyId('a');
 					const id_aa:  bigint = Validator.keyId('aa');
 					const id_aaa: bigint = Validator.keyId('aaa');
 					return assertEqualBins(
-						stmts.map((stmt) => value_visitor.visit(expr_visitor.visit((stmt as AST.STMT.StatementExpression).expr!))),
+						stmts.map((stmt) => VISITOR.visit(visitors.build.expr.visit((stmt as AST.STMT.StatementExpression).expr!))),
 						[new Map([
 							[id_a,  cg.newProperty(id_a,  genConst(cg, 42n))],
 							[id_aa, cg.newProperty(id_aa, genConst(cg, false))],
@@ -393,12 +382,12 @@ test.suite('Opcode', () => {
 					);
 				});
 				test.test('nonempty MAP.NEW', () => {
-					const {stmts, builder, cg, wasm} = setupScript(`{
+					const {stmts, cg, wasm, visitors, visitors: {codegen: {value: VISITOR}}} = setupScript(`{
 						val mut x: int = 42;
 						{1.1 -> x, 2.2 -> 4.2, 3.3 -> (null,), 4.4 -> x/2, 5.5 -> @e};
 					}`);
 					return assert.strictEqual(
-						binaryen.emitText(new OP.ValueVisitorCodegen(cg).visit(new AST.ExprVisitorBuild(builder).visit((stmts[1] as AST.STMT.StatementExpression).expr!))),
+						binaryen.emitText(VISITOR.visit(visitors.build.expr.visit((stmts[1] as AST.STMT.StatementExpression).expr!))),
 						binaryen.emitText(cg.vm.Value.fromMap(cg.codegenMap(new Map([
 							[genConst(cg, 1.1), wasm.local.get(0, cg.vm.reftype.Value)],
 							[genConst(cg, 2.2), genConst(cg, 4.2)],
@@ -413,7 +402,7 @@ test.suite('Opcode', () => {
 			test.test('ObjectNew', () => {
 				const cg = new CodeGenerator();
 				const {mod: {wasm}, vm: {reftype}} = cg;
-				const value_visitor = new OP.ValueVisitorCodegen(cg);
+				const VISITOR = new OP.ValueVisitorCodegen(cg);
 
 				/** The class named `Class` — it has a null `class_` field. */
 				const the_class_class = new OP.ObjectNew(true);
@@ -429,7 +418,7 @@ test.suite('Opcode', () => {
 					the_class_class,
 					the_object_class,
 					new_object,
-				].map((opcode) => value_visitor.visit(opcode)), [
+				].map((opcode) => VISITOR.visit(opcode)), [
 					expected0,
 					expected1,
 					cg.codegenObject(wasm.ref.cast(expected1, reftype.Class)),
@@ -439,13 +428,13 @@ test.suite('Opcode', () => {
 			test.test('ExcpNew', () => {
 				const cg = new CodeGenerator();
 				const {mod: {wasm}, vm: {reftype}} = cg;
-				const value_visitor = new OP.ValueVisitorCodegen(cg);
+				const VISITOR = new OP.ValueVisitorCodegen(cg);
 				const actual = new OP.ExcpNew(new OP.Const(new VALUE.String('hello')));
 				const expected: binaryen.ExpressionRef /* (ref $Exception) */ = cg.codegenException(wasm.ref.cast(genConst(cg, 'hello'), reftype.CplString));
 				return assertEqualBins([
 					actual,
 					new OP.ExcpNew(new OP.Const(new VALUE.String('world')), actual),
-				].map((opcode) => value_visitor.visit(opcode)), [
+				].map((opcode) => VISITOR.visit(opcode)), [
 					expected,
 					cg.codegenException(
 						wasm.ref.cast(genConst(cg, 'world'), reftype.CplString),
@@ -456,11 +445,11 @@ test.suite('Opcode', () => {
 
 			test.test('MaybeNew', () => {
 				const cg = new CodeGenerator();
-				const value_visitor = new OP.ValueVisitorCodegen(cg);
+				const VISITOR = new OP.ValueVisitorCodegen(cg);
 				return assertEqualBins([
 					new OP.MaybeNew(TYPE.STR),
 					new OP.MaybeNew(TYPE.STR, new OP.Const(new VALUE.String('hello'))),
-				].map((opcode) => value_visitor.visit(opcode)), [
+				].map((opcode) => VISITOR.visit(opcode)), [
 					cg.codegenMaybe(),
 					cg.codegenMaybe(new VALUE.String('hello').codegen(cg)),
 				]);
@@ -469,15 +458,15 @@ test.suite('Opcode', () => {
 			test.test('ResultNew', () => {
 				const cg = new CodeGenerator();
 				const {mod: {wasm}, vm: {reftype}} = cg;
-				const value_visitor = new OP.ValueVisitorCodegen(cg);
+				const VISITOR = new OP.ValueVisitorCodegen(cg);
 				const excp = new OP.ExcpNew(new OP.Const(new VALUE.String('message')));
 				const value = new OP.Const(new VALUE.Integer(42n));
 				return assertEqualBins([
 					new OP.ResultNew(false, TYPE.INT, TYPE.EXCP, excp),
 					new OP.ResultNew(true,  TYPE.INT, TYPE.EXCP, value),
-				].map((opcode) => value_visitor.visit(opcode)), [
-					cg.codegenResult(false, wasm.ref.cast(value_visitor.visit(excp), reftype.Exception)),
-					cg.codegenResult(true, value_visitor.visit(value)),
+				].map((opcode) => VISITOR.visit(opcode)), [
+					cg.codegenResult(false, wasm.ref.cast(VISITOR.visit(excp), reftype.Exception)),
+					cg.codegenResult(true, VISITOR.visit(value)),
 				]);
 			});
 
@@ -486,12 +475,12 @@ test.suite('Opcode', () => {
 				const tuple = new AST.ExprVisitorBuild(new Builder()).visit(AST.EXPR.Tuple.fromSource('(10, 20)'));
 				const cg    = new CodeGenerator();
 				const {vm: {Value}, mod: {wasm}} = cg;
-				const value_visitor = new OP.ValueVisitorCodegen(cg);
+				const VISITOR = new OP.ValueVisitorCodegen(cg);
 				xjs.Array.forEachAggregated([1n, 2n], (idx) => assertEqualBins(
-					value_visitor.visit(new OP.TupleHas(tuple, idx)),
+					VISITOR.visit(new OP.TupleHas(tuple, idx)),
 					Value.boolFromI32(wasm.i32.lt_u(
 						wasm.i32.const(Number(idx)),
-						wasm.array.len(Value.asTuple(value_visitor.visit(tuple))),
+						wasm.array.len(Value.asTuple(VISITOR.visit(tuple))),
 					)),
 				));
 			});
@@ -501,13 +490,13 @@ test.suite('Opcode', () => {
 				const record = new AST.ExprVisitorBuild(new Builder()).visit(AST.EXPR.Record.fromSource('(a= 10, c= 20)'));
 				const cg     = new CodeGenerator();
 				const {vm: {Value, Record}, mod: {wasm}} = cg;
-				const value_visitor = new OP.ValueVisitorCodegen(cg);
+				const VISITOR = new OP.ValueVisitorCodegen(cg);
 				return xjs.Array.forEachAggregated(['a', 'b'], (keysrc) => {
 					const keyid: bigint = Validator.keyId(keysrc);
 					return assertEqualBins(
-						value_visitor.visit(new OP.RecordHas(record, {keyid, keysrc})),
+						VISITOR.visit(new OP.RecordHas(record, {keyid, keysrc})),
 						Value.boolFromI32(Record.hasKey(
-							Value.asRecord(value_visitor.visit(record)),
+							Value.asRecord(VISITOR.visit(record)),
 							wasm.i64.const(keyid),
 						)),
 					);
@@ -515,7 +504,7 @@ test.suite('Opcode', () => {
 			});
 
 			test.test('TupleGet returns (array.get).', () => {
-				const {builder, cg, wasm} = setupScript(`{
+				const {builder, cg, wasm, visitors} = setupScript(`{
 					val mut x:   int                = 42;
 					val mut tup: (int, int, ?: int) = (42, 43);
 
@@ -524,8 +513,7 @@ test.suite('Opcode', () => {
 					tup.1;
 				}`);
 				const {reftype, Value} = cg.vm;
-				const instr_visitor = new OP.InstrVisitorCodegen(cg);
-				return assertEqualBins(builder.instructions.slice(3).map((instr) => instr_visitor.visit(instr)), [
+				return assertEqualBins(builder.instructions.slice(3).map((instr) => visitors.codegen.instr.visit(instr)), [
 					wasm.drop(wasm.array.get(
 						Value.asTuple(wasm.local.get(2, reftype.Value)),
 						wasm.i32.const(2),
@@ -545,7 +533,7 @@ test.suite('Opcode', () => {
 			});
 
 			test.test('RecordGet returns (call $Record.get).', () => {
-				const {builder, cg, wasm} = setupScript(`{
+				const {builder, cg, wasm, visitors} = setupScript(`{
 					val mut x:   int                       = 42;
 					val mut rec: (a: int, b: int, c?: int) = (a= 42, b= 43);
 
@@ -554,8 +542,7 @@ test.suite('Opcode', () => {
 					rec.b;
 				}`);
 				const {reftype, Value, Record} = cg.vm;
-				const instr_visitor = new OP.InstrVisitorCodegen(cg);
-				return assertEqualBins(builder.instructions.slice(3).map((instr) => instr_visitor.visit(instr)), [
+				return assertEqualBins(builder.instructions.slice(3).map((instr) => visitors.codegen.instr.visit(instr)), [
 					wasm.drop(Record.get(
 						Value.asRecord(wasm.local.get(2, reftype.Value)),
 						wasm.i64.const(Validator.keyId('c')),
@@ -573,7 +560,7 @@ test.suite('Opcode', () => {
 
 			test.suite('CollectionDynamicGet', () => {
 				test.test('LIST.GET', () => {
-					const {builder, cg, wasm} = setupScript(`{
+					const {builder, cg, wasm, visitors} = setupScript(`{
 						val mut x:    int   = 42;
 						val mut list: [int] = [42, 43];
 
@@ -583,9 +570,8 @@ test.suite('Opcode', () => {
 						list.[-1];
 					}`);
 					const {reftype, Vect, Value, List} = cg.vm;
-					const instr_visitor = new OP.InstrVisitorCodegen(cg);
 					const list_cast: binaryen.ExpressionRef = Value.asList(wasm.local.get(1, reftype.Value));
-					return assertEqualBins(builder.instructions.slice(4).map((instr) => instr_visitor.visit(instr)), [
+					return assertEqualBins(builder.instructions.slice(4).map((instr) => visitors.codegen.instr.visit(instr)), [
 						wasm.drop(List.get(
 							Value.asList(wasm.local.get(2, reftype.Value)),
 							wasm.i32.wrap(Vect.asInt(Value.asPrimitive(wasm.local.get(3, reftype.Value)))),
@@ -605,7 +591,7 @@ test.suite('Opcode', () => {
 					]);
 				});
 				test.test('DICT.GET', () => {
-					const {builder, cg, wasm} = setupScript(`{
+					const {builder, cg, wasm, visitors} = setupScript(`{
 						val mut x:    int    = 42;
 						val mut dict: [:int] = [a= 42, c= 43];
 
@@ -614,9 +600,8 @@ test.suite('Opcode', () => {
 						dict.[@c];
 					}`);
 					const {reftype, Vect, Value, Dict} = cg.vm;
-					const instr_visitor = new OP.InstrVisitorCodegen(cg);
 					const dict_cast: binaryen.ExpressionRef = Value.asDict(wasm.local.get(1, reftype.Value));
-					return assertEqualBins(builder.instructions.slice(3).map((instr) => instr_visitor.visit(instr)), [
+					return assertEqualBins(builder.instructions.slice(3).map((instr) => visitors.codegen.instr.visit(instr)), [
 						wasm.drop(Dict.get(
 							Value.asDict(wasm.local.get(2, reftype.Value)),
 							Vect.asNat(Value.asPrimitive(genConst(cg, 'b', 'sym'))),
@@ -632,17 +617,16 @@ test.suite('Opcode', () => {
 					]);
 				});
 				test.test('SET.GET', () => {
-					const {builder, cg, wasm} = setupScript(`{
+					const {builder, cg, wasm, visitors} = setupScript(`{
 						val 'set': {float} = {4.2, 2.4};
 						'set'.[4.2];
 						'set'.[3.3];
 					}`);
 					const {reftype, reftypeNull, Value, Case, Map: VmMap} = cg.vm;
-					const instr_visitor = new OP.InstrVisitorCodegen(cg);
 					const base:         binaryen.ExpressionRef = wasm.local.get(1, reftype.Value); // index 0 = nonempty map setup (implementation of Set)
 					const nullish_case_0: binaryen.ExpressionRef = wasm.local.get(2, reftypeNull.Case);
 					const nullish_case_1: binaryen.ExpressionRef = wasm.local.get(3, reftypeNull.Case);
-					return assertEqualBins(builder.instructions.slice(1).map((instr) => instr_visitor.visit(instr)), [
+					return assertEqualBins(builder.instructions.slice(1).map((instr) => visitors.codegen.instr.visit(instr)), [
 						wasm.drop(wasm.block(null, [
 							wasm.local.set(2, wasm.tuple.extract(VmMap.find(
 								Value.asMap(base),
@@ -674,15 +658,14 @@ test.suite('Opcode', () => {
 					]);
 				});
 				test.test('MAP.GET', () => {
-					const {builder, cg, wasm} = setupScript(`{
+					const {builder, cg, wasm, visitors} = setupScript(`{
 						val map: {float -> int} = {4.2 -> 42, 2.4 -> 24};
 						map.[4.2];
 						map.[3.3];
 					}`);
 					const {reftype, Value, Map: VmMap} = cg.vm;
-					const instr_visitor = new OP.InstrVisitorCodegen(cg);
 					const map_cast: binaryen.ExpressionRef = Value.asMap(wasm.local.get(1, reftype.Value)); // index 0 = nonempty map setup
-					return assertEqualBins(builder.instructions.slice(1).map((instr) => instr_visitor.visit(instr)), [
+					return assertEqualBins(builder.instructions.slice(1).map((instr) => visitors.codegen.instr.visit(instr)), [
 						wasm.drop(VmMap.get(
 							map_cast,
 							genConst(cg, 4.2),
@@ -697,7 +680,7 @@ test.suite('Opcode', () => {
 
 			test.suite('Unop', () => {
 				test.test('Returns custom WASM functions.', () => {
-					const {stmts, builder, cg} = setupScript(`{
+					const {stmts, cg, visitors, visitors: {codegen: {value: VISITOR}}} = setupScript(`{
 						Boolean.(null);
 						Boolean.(false);
 						Boolean.(true);
@@ -736,11 +719,9 @@ test.suite('Opcode', () => {
 						-(42);
 						-(4.2);
 					}`, {codegen: false});
-					const expr_visitor  = new AST.ExprVisitorBuild(builder);
-					const value_visitor = new OP.ValueVisitorCodegen(cg);
 					const id_hello = Validator.keyId('hello');
 					return assertEqualBins(
-						stmts.map((stmt) => value_visitor.visit(expr_visitor.visit((stmt as AST.STMT.StatementExpression).expr!))),
+						stmts.map((stmt) => VISITOR.visit(visitors.build.expr.visit((stmt as AST.STMT.StatementExpression).expr!))),
 						[
 							cg.vm.op.not(cg.vm.op.not(genConst(cg, null))),
 							cg.vm.op.not(cg.vm.op.not(genConst(cg, false))),
@@ -783,73 +764,69 @@ test.suite('Opcode', () => {
 					);
 				});
 				test.test('LIST.COUNT', () => {
-					const {stmts, builder, cg, wasm} = setupScript(`{
+					const {stmts, cg, wasm, visitors, visitors: {codegen: {value: VISITOR}}} = setupScript(`{
 						val mut x: int = 42;
 						val list: [int] = [x, 43, 44];
 						list;
 					}`);
 					const {Vect, Value, List} = cg.vm;
-					const value_visitor = new OP.ValueVisitorCodegen(cg);
 					// there exists no syntax for List count, so constructing it manually
-					const list = new AST.ExprVisitorBuild(builder).visit((stmts[2] as AST.STMT.StatementExpression).expr!) as OP.Get;
+					const list = visitors.build.expr.visit((stmts[2] as AST.STMT.StatementExpression).expr!) as OP.Get;
 					const unop = new OP.Unop(OP.OpCode.LIST_COUNT, list, TYPE.NAT);
 					return assertEqualBins(
-						value_visitor.visit(unop),
-						Value.fromNat(Vect.newNat(wasm.i64.extend_i32_u(List.count(Value.asList(value_visitor.visit(list)))))),
+						VISITOR.visit(unop),
+						Value.fromNat(Vect.newNat(wasm.i64.extend_i32_u(List.count(Value.asList(VISITOR.visit(list)))))),
 					);
 				});
 				test.test('DICT.COUNT', () => {
-					const {stmts, builder, cg, wasm} = setupScript(`{
+					const {stmts, cg, wasm, visitors, visitors: {codegen: {value: VISITOR}}} = setupScript(`{
 						val mut x: int = 42;
 						val dict: [:int] = [a= x, b= 43, c= 44];
 						dict;
 					}`);
 					const {Vect, Value, Dict} = cg.vm;
-					const value_visitor = new OP.ValueVisitorCodegen(cg);
 					// there exists no syntax for Dict count, so constructing it manually
-					const dict = new AST.ExprVisitorBuild(builder).visit((stmts[2] as AST.STMT.StatementExpression).expr!) as OP.Get;
+					const dict = visitors.build.expr.visit((stmts[2] as AST.STMT.StatementExpression).expr!) as OP.Get;
 					const unop = new OP.Unop(OP.OpCode.DICT_COUNT, dict, TYPE.NAT);
 					return assertEqualBins(
-						value_visitor.visit(unop),
-						Value.fromNat(Vect.newNat(wasm.i64.extend_i32_u(Dict.count(Value.asDict(value_visitor.visit(dict)))))),
+						VISITOR.visit(unop),
+						Value.fromNat(Vect.newNat(wasm.i64.extend_i32_u(Dict.count(Value.asDict(VISITOR.visit(dict)))))),
 					);
 				});
 				test.test('SET.COUNT', () => {
-					const {stmts, builder, cg, wasm} = setupScript(`{
+					const {stmts, cg, wasm, visitors, visitors: {codegen: {value: VISITOR}}} = setupScript(`{
 						val mut x: int = 42;
 						val 'set': {int} = {x, 43, 44};
 						'set';
 					}`);
 					const {Vect, Value, Map: VmMap} = cg.vm;
-					const value_visitor = new OP.ValueVisitorCodegen(cg);
 					// there exists no syntax for Set count, so constructing it manually
-					const set  = new AST.ExprVisitorBuild(builder).visit((stmts[2] as AST.STMT.StatementExpression).expr!) as OP.Get;
+					const set  = visitors.build.expr.visit((stmts[2] as AST.STMT.StatementExpression).expr!) as OP.Get;
 					const unop = new OP.Unop(OP.OpCode.SET_COUNT, set, TYPE.NAT);
 					return assertEqualBins(
-						value_visitor.visit(unop),
-						Value.fromNat(Vect.newNat(wasm.i64.extend_i32_u(VmMap.count(Value.asMap(value_visitor.visit(set)))))),
+						VISITOR.visit(unop),
+						Value.fromNat(Vect.newNat(wasm.i64.extend_i32_u(VmMap.count(Value.asMap(VISITOR.visit(set)))))),
 					);
 				});
 				test.test('MAP.COUNT', () => {
-					const {stmts, builder, cg, wasm} = setupScript(`{
+					const {stmts, cg, wasm, visitors, visitors: {codegen: {value: VISITOR}}} = setupScript(`{
 						val mut x: int = 42;
 						val map: {float -> int} = {1.1 -> x, 2.2 -> 43, 3.3 -> 44};
 						map;
 					}`);
 					const {Vect, Value, Map: VmMap} = cg.vm;
-					const value_visitor = new OP.ValueVisitorCodegen(cg);
 					// there exists no syntax for Map count, so constructing it manually
-					const map  = new AST.ExprVisitorBuild(builder).visit((stmts[2] as AST.STMT.StatementExpression).expr!) as OP.Get;
+					const map  = visitors.build.expr.visit((stmts[2] as AST.STMT.StatementExpression).expr!) as OP.Get;
 					const unop = new OP.Unop(OP.OpCode.MAP_COUNT, map, TYPE.NAT);
 					return assertEqualBins(
-						value_visitor.visit(unop),
-						Value.fromNat(Vect.newNat(wasm.i64.extend_i32_u(VmMap.count(Value.asMap(value_visitor.visit(map)))))),
+						VISITOR.visit(unop),
+						Value.fromNat(Vect.newNat(wasm.i64.extend_i32_u(VmMap.count(Value.asMap(VISITOR.visit(map)))))),
 					);
 				});
 				test.suite('instance of None/Fail.', () => {
 					([OP.OpCode.NONE_IS, OP.OpCode.FAIL_IS] as const).forEach((operator, i) => {
 						test.test(`[operator=${OP.OpCode[operator]}]`, () => {
-							const {stmts, builder, cg, wasm} = setupScript(`{
+							const {stmts, cg, wasm, visitors, visitors: {codegen: {value: VISITOR}}} = setupScript(`{
 								val mut a?: str;
 								val mut b?: str;
 								set b = "hello";
@@ -865,19 +842,17 @@ test.suite('Opcode', () => {
 								f;
 							}`);
 							const {reftype, op} = cg.vm;
-							const expr_visitor  = new AST.ExprVisitorBuild(builder);
-							const value_visitor = new OP.ValueVisitorCodegen(cg);
 							// there exists no syntax for “is None”/“is Fail”, so constructing it manually
-							return assertEqualBins(stmts.slice(7).map((stmt) => value_visitor.visit(new OP.Unop(
+							return assertEqualBins(stmts.slice(7).map((stmt) => VISITOR.visit(new OP.Unop(
 								operator,
-								expr_visitor.visit((stmt as AST.STMT.StatementExpression).expr!) as OP.Get,
+								visitors.build.expr.visit((stmt as AST.STMT.StatementExpression).expr!) as OP.Get,
 								TYPE.BOOL,
 							))), [0, 1, 2, 3, 5, 6].map((j) => [op.isNone, op.isFail][i](wasm.local.get(j, reftype.Value)))); // local index 4 is the decl for the Exception argument
 						});
 					});
 				});
 				test.test('MAYBE.UNWRAP', () => {
-					const {builder, cg, wasm} = setupScript(`{
+					const {builder, cg, wasm, visitors} = setupScript(`{
 						val mut x?: str;
 						val mut y?: int;
 						set y = 42;
@@ -885,8 +860,7 @@ test.suite('Opcode', () => {
 						y~?;
 					}`);
 					const {reftype, op} = cg.vm;
-					const instr_visitor = new OP.InstrVisitorCodegen(cg);
-					return assertEqualBins(builder.instructions.map((instr) => instr_visitor.visit(instr)), [
+					return assertEqualBins(builder.instructions.map((instr) => visitors.codegen.instr.visit(instr)), [
 						wasm.local.set(0, cg.codegenMaybe()),
 						wasm.local.set(1, cg.codegenMaybe()),
 						wasm.local.set(1, cg.codegenMaybe(genConst(cg, 42n))),
@@ -895,7 +869,7 @@ test.suite('Opcode', () => {
 					]);
 				});
 				test.test('RESULT.UNWRAP', () => {
-					const {builder, cg, wasm} = setupScript(`{
+					const {builder, cg, wasm, visitors} = setupScript(`{
 						val x: int! = Fail.<int>(Exception.("42"));
 						val y: Result.<nat> = Ok.<nat>(+42);
 						val z: Result.<float, Exception> = Ok.<float>(4.2);
@@ -904,9 +878,8 @@ test.suite('Opcode', () => {
 						z~!;
 					}`);
 					const {reftype, op} = cg.vm;
-					const instr_visitor = new OP.InstrVisitorCodegen(cg);
 					const excp: binaryen.ExpressionRef /* (ref $Exception) */ = cg.codegenException(wasm.ref.cast(genConst(cg, '42'), reftype.CplString));
-					return assertEqualBins(builder.instructions.map((instr) => instr_visitor.visit(instr)), [
+					return assertEqualBins(builder.instructions.map((instr) => visitors.codegen.instr.visit(instr)), [
 						wasm.local.set(0, excp),
 						wasm.local.set(1, cg.codegenResult(false, wasm.ref.cast(wasm.local.get(0, binaryen.getExpressionType(excp)), reftype.Exception))), // HACK: issue with struct literals having “exact” types prevents passing `reftype.Exception` to `local.get()`
 						wasm.local.set(2, cg.codegenResult(true, genConst(cg, 42n, 'nat'))),
@@ -915,7 +888,7 @@ test.suite('Opcode', () => {
 					]);
 				});
 				test.test('RESULT.EXTRACT', () => {
-					const {stmts, builder, cg, wasm} = setupScript(`{
+					const {stmts, cg, wasm, visitors, visitors: {codegen: {value: VISITOR}}} = setupScript(`{
 						val x: int! = Fail.<int>(Exception.("42"));
 						val y: Result.<nat> = Ok.<nat>(+42);
 						val z: Result.<float, Exception> = Ok.<float>(4.2);
@@ -924,19 +897,17 @@ test.suite('Opcode', () => {
 						z;
 					}`);
 					const {reftype, op} = cg.vm;
-					const expr_visitor  = new AST.ExprVisitorBuild(builder);
-					const value_visitor = new OP.ValueVisitorCodegen(cg);
 					// there exists no syntax for Result extract, so constructing it manually
-					return assertEqualBins([3, 4, 5].map((i) => value_visitor.visit(new OP.Unop(
+					return assertEqualBins([3, 4, 5].map((i) => VISITOR.visit(new OP.Unop(
 						OP.OpCode.RESULT_EXTRACT,
-						expr_visitor.visit((stmts[i] as AST.STMT.StatementExpression).expr!) as OP.Get,
+						visitors.build.expr.visit((stmts[i] as AST.STMT.StatementExpression).expr!) as OP.Get,
 						TYPE.EXCP,
 					))), [1, 2, 3].map((i) => op.extractResult(wasm.local.get(i, reftype.Value))));
 				});
 			});
 
 			test.test('Binop: custom WASM arithmetic/comparative functions.', () => {
-				const {stmts, builder, cg} = setupScript(`{
+				const {stmts, cg, visitors, visitors: {codegen: {value: VISITOR}}} = setupScript(`{
 					2 + 3;
 					2 - 3;
 					2 * 3;
@@ -963,10 +934,8 @@ test.suite('Opcode', () => {
 					2.0 === 3;
 					2.0 ==  3;
 				}`, {codegen: false});
-				const expr_visitor  = new AST.ExprVisitorBuild(builder);
-				const value_visitor = new OP.ValueVisitorCodegen(cg);
 				return assertEqualBins(
-					stmts.map((stmt) => value_visitor.visit(expr_visitor.visit((stmt as AST.STMT.StatementExpression).expr!))),
+					stmts.map((stmt) => VISITOR.visit(visitors.build.expr.visit((stmt as AST.STMT.StatementExpression).expr!))),
 					[
 						cg.vm.op.intAdd(genConst(cg, 2n), genConst(cg, 3n)),
 						cg.vm.op.intSub(genConst(cg, 2n), genConst(cg, 3n)),
@@ -998,13 +967,12 @@ test.suite('Opcode', () => {
 			});
 			test.suite('Binop', () => {
 				test.test('[operator=IS]', () => {
-					const {builder, cg, wasm} = setupScript(`{
+					const {builder, cg, wasm, visitors} = setupScript(`{
 						${CORE_LIB_NAMES.map((classname) => `null is ${classname};`).join('\n')};
 					}`);
 					const {vm: {op, Class: VmClass}} = cg;
-					const instr_visitor = new OP.InstrVisitorCodegen(cg);
 					const operand: binaryen.ExpressionRef = genConst(cg);
-					return assertEqualBins(builder.instructions.map((instr) => instr_visitor.visit(instr)), [
+					return assertEqualBins(builder.instructions.map((instr) => visitors.codegen.instr.visit(instr)), [
 						VmClass.NULL,
 						VmClass.BOOLEAN,
 						VmClass.SYMBOL,
@@ -1031,14 +999,14 @@ test.suite('Opcode', () => {
 			});
 
 			test.test('OpFunction', () => {
-				const {stmts, builder, cg} = setupScript(`{
+				const {stmts, cg, visitors, visitors: {codegen: {value: VISITOR}}} = setupScript(`{
 					\\(x: int, $y: int, zulu= z: int): void {
 						x * y + z;
 						return;
 					};
 				}`);
 				return assertEqualBins(
-					new OP.ValueVisitorCodegen(cg).visit(new AST.ExprVisitorBuild(builder).visit((stmts[0] as AST.STMT.StatementExpression).expr!)),
+					VISITOR.visit(visitors.build.expr.visit((stmts[0] as AST.STMT.StatementExpression).expr!)),
 					cg.codegenFunction(3n),
 				);
 			});
@@ -1050,16 +1018,15 @@ test.suite('Opcode', () => {
 	test.suite('Instruction', () => {
 		test.suite('#codegen', () => {
 			test.test('Drop returns (drop).', () => {
-				const {builder, cg, wasm} = setupScript(`{
+				const {builder, cg, wasm, visitors: {codegen: {instr: VISITOR}}} = setupScript(`{
 					null;
 					false;
 					@hello;
 					42;
 					4.2;
 				}`, {codegen: false});
-				const instr_visitor = new OP.InstrVisitorCodegen(cg);
 				return assertEqualBins(
-					builder.instructions.map((instr) => instr_visitor.visit(instr)),
+					builder.instructions.map((instr) => VISITOR.visit(instr)),
 					[
 						wasm.drop(genConst(cg)),
 						wasm.drop(genConst(cg, false)),
@@ -1071,7 +1038,7 @@ test.suite('Opcode', () => {
 			});
 
 			test.test('Decl & Set both return (local.set).', () => {
-				const {builder, cg, wasm} = setupScript(`{
+				const {builder, cg, wasm, visitors: {codegen: {instr: VISITOR}}} = setupScript(`{
 					val mut a: null  = null;
 					val mut b: bool  = false;
 					val mut c: sym   = @hello;
@@ -1087,9 +1054,8 @@ test.suite('Opcode', () => {
 					set f = "hello";
 					delete f;
 				}`, {codegen: false});
-				const instr_visitor = new OP.InstrVisitorCodegen(cg);
 				return assertEqualBins(
-					builder.instructions.map((instr) => instr_visitor.visit(instr)),
+					builder.instructions.map((instr) => VISITOR.visit(instr)),
 					[
 						wasm.local.set(0, genConst(cg)),
 						wasm.local.set(1, genConst(cg, false)),
@@ -1112,16 +1078,16 @@ test.suite('Opcode', () => {
 			test.test('uninitialized Decl returns (local.set) with (struct.new_default).', () => {
 				// there exists no syntax for empty Decls, so constructing it manually
 				const cg = new CodeGenerator();
-				const instr_visitor = new OP.InstrVisitorCodegen(cg);
+				const VISITOR = new OP.InstrVisitorCodegen(cg);
 				assertEqualBins(
-					instr_visitor.visit(new OP.Decl(new Builder().newTemp(TYPE.INT))),
+					VISITOR.visit(new OP.Decl(new Builder().newTemp(TYPE.INT))),
 					cg.mod.wasm.local.set(0, cg.mod.wasm.struct.new_default(cg.vm.heaptype.Value)),
 				);
 			});
 
 			test.suite('CollectionDynamicSet', () => {
 				test.test('LIST.SET', () => {
-					const {builder, cg, wasm} = setupScript(`{
+					const {builder, cg, wasm, visitors: {codegen: {instr: VISITOR}}} = setupScript(`{
 						val mut x:    int       = 42;
 						val mut list: mut [int] = [42, 43];
 
@@ -1130,8 +1096,7 @@ test.suite('Opcode', () => {
 						set list.[2] = 47;
 					}`);
 					const {reftype, Vect, Value, List} = cg.vm;
-					const instr_visitor = new OP.InstrVisitorCodegen(cg);
-					return assertEqualBins(builder.instructions.slice(4).map((instr) => instr_visitor.visit(instr)), [
+					return assertEqualBins(builder.instructions.slice(4).map((instr) => VISITOR.visit(instr)), [
 						List.set(
 							Value.asList(wasm.local.get(2, reftype.Value)),
 							wasm.i32.wrap_i64(Vect.asInt(Value.asPrimitive(wasm.local.get(3, reftype.Value)))),
@@ -1150,7 +1115,7 @@ test.suite('Opcode', () => {
 					]);
 				});
 				test.test('DICT.SET', () => {
-					const {builder, cg, wasm} = setupScript(`{
+					const {builder, cg, wasm, visitors: {codegen: {instr: VISITOR}}} = setupScript(`{
 						val mut x:    int        = 42;
 						val mut dict: mut [:int] = [a= 42, c= 43];
 
@@ -1159,8 +1124,7 @@ test.suite('Opcode', () => {
 						set dict.[@c] = 47;
 					}`);
 					const {reftype, Vect, Value, Dict} = cg.vm;
-					const instr_visitor = new OP.InstrVisitorCodegen(cg);
-					return assertEqualBins(builder.instructions.slice(3).map((instr) => instr_visitor.visit(instr)), [
+					return assertEqualBins(builder.instructions.slice(3).map((instr) => VISITOR.visit(instr)), [
 						Dict.set(
 							Value.asDict(wasm.local.get(2, reftype.Value)),
 							Vect.asNat(Value.asPrimitive(genConst(cg, 'b', 'sym'))),
@@ -1179,20 +1143,19 @@ test.suite('Opcode', () => {
 					]);
 				});
 				test.test('SET.SET', () => {
-					const {builder, cg, wasm} = setupScript(`{
+					const {builder, cg, wasm, visitors: {codegen: {instr: VISITOR}}} = setupScript(`{
 						val 'set': mut {float} = {4.2, 2.4};
 						set 'set'.[4.2] = false;
 						set 'set'.[3.3] = true;
 					}`, {codegen: false});
 					const {reftype, Vect, Value, Map: VmMap} = cg.vm;
-					const instr_visitor = new OP.InstrVisitorCodegen(cg);
 					const base:           binaryen.ExpressionRef = wasm.local.get(1, reftype.Value); // index 0 = nonempty map setup (implementation of Set)
 					const base_get_0:     binaryen.ExpressionRef = wasm.local.get(2, reftype.Map);
 					const accessor_get_0: binaryen.ExpressionRef = wasm.local.get(3, reftype.Value);
 					const base_get_1:     binaryen.ExpressionRef = wasm.local.get(4, reftype.Map);
 					const accessor_get_1: binaryen.ExpressionRef = wasm.local.get(5, reftype.Value);
-					instr_visitor.visit(builder.instructions[0]);
-					return assertEqualBins(builder.instructions.slice(1).map((instr) => instr_visitor.visit(instr)), [
+					VISITOR.visit(builder.instructions[0]);
+					return assertEqualBins(builder.instructions.slice(1).map((instr) => VISITOR.visit(instr)), [
 						wasm.block(null, [
 							wasm.local.set(2, Value.asMap(base)),
 							wasm.local.set(3, genConst(cg, 4.2)),
@@ -1214,15 +1177,14 @@ test.suite('Opcode', () => {
 					]);
 				});
 				test.test('MAP.SET', () => {
-					const {builder, cg, wasm} = setupScript(`{
+					const {builder, cg, wasm, visitors: {codegen: {instr: VISITOR}}} = setupScript(`{
 						val map: mut {float -> int} = {4.2 -> 42, 2.4 -> 24};
 						set map.[4.2] = 21;
 						set map.[3.3] = 21;
 					}`);
 					const {reftype, Value, Map: VmMap} = cg.vm;
-					const instr_visitor = new OP.InstrVisitorCodegen(cg);
 					const base: binaryen.ExpressionRef = wasm.local.get(1, reftype.Value); // index 0 = nonempty map setup
-					return assertEqualBins(builder.instructions.slice(1).map((instr) => instr_visitor.visit(instr)), [
+					return assertEqualBins(builder.instructions.slice(1).map((instr) => VISITOR.visit(instr)), [
 						VmMap.set(Value.asMap(base), genConst(cg, 4.2), genConst(cg, 21n)),
 						VmMap.set(Value.asMap(base), genConst(cg, 3.3), genConst(cg, 21n)),
 					]);
@@ -1232,14 +1194,13 @@ test.suite('Opcode', () => {
 			test.suite('CollectionDynamicCopy', () => {
 				test.suite('LIST.COPY', () => {
 					test.test('tuple argument.', () => {
-						const {builder, cg, wasm} = setupScript(`{
+						const {builder, cg, wasm, visitors: {codegen: {instr: VISITOR}}} = setupScript(`{
 							List.<int>((2, 3, 5));
 						}`, {codegen: false});
 						const {reftype, Value, List} = cg.vm;
-						const instr_visitor = new OP.InstrVisitorCodegen(cg);
-						builder.instructions.slice(0, 2).forEach((instr) => instr_visitor.visit(instr));
+						builder.instructions.slice(0, 2).forEach((instr) => VISITOR.visit(instr));
 						return assertEqualBins(
-							instr_visitor.visit(builder.instructions[2]),
+							VISITOR.visit(builder.instructions[2]),
 							List.copyFromTuple(
 								Value.asList (wasm.local.get(0, reftype.Value)),
 								Value.asTuple(wasm.local.get(1, reftype.Value)),
@@ -1247,14 +1208,13 @@ test.suite('Opcode', () => {
 						);
 					});
 					test.test('List argument.', () => {
-						const {builder, cg, wasm} = setupScript(`{
+						const {builder, cg, wasm, visitors: {codegen: {instr: VISITOR}}} = setupScript(`{
 							List.<int>([2, 3, 5]);
 						}`, {codegen: false});
 						const {reftype, Value, List} = cg.vm;
-						const instr_visitor = new OP.InstrVisitorCodegen(cg);
-						builder.instructions.slice(0, 2).forEach((instr) => instr_visitor.visit(instr));
+						builder.instructions.slice(0, 2).forEach((instr) => VISITOR.visit(instr));
 						return assertEqualBins(
-							instr_visitor.visit(builder.instructions[2]),
+							VISITOR.visit(builder.instructions[2]),
 							List.copyFromList(
 								Value.asList(wasm.local.get(0, reftype.Value)),
 								Value.asList(wasm.local.get(1, reftype.Value)),
@@ -1262,14 +1222,13 @@ test.suite('Opcode', () => {
 						);
 					});
 					test.test('Set argument.', () => {
-						const {builder, cg, wasm} = setupScript(`{
+						const {builder, cg, wasm, visitors: {codegen: {instr: VISITOR}}} = setupScript(`{
 							List.<int>({2, 3, 5});
 						}`, {codegen: false});
 						const {reftype, Value, List} = cg.vm;
-						const instr_visitor = new OP.InstrVisitorCodegen(cg);
-						builder.instructions.slice(0, 2).forEach((instr) => instr_visitor.visit(instr));
+						builder.instructions.slice(0, 2).forEach((instr) => VISITOR.visit(instr));
 						return assertEqualBins(
-							instr_visitor.visit(builder.instructions[2]),
+							VISITOR.visit(builder.instructions[2]),
 							List.fillFromSet(
 								Value.asList(wasm.local.get(0, reftype.Value)),
 								Value.asMap (wasm.local.get(2, reftype.Value)), // index 1 = nonempty map setup (implementation of Set)
@@ -1279,14 +1238,13 @@ test.suite('Opcode', () => {
 				});
 				test.suite('DICT.COPY', () => {
 					test.test('tuple argument.', () => {
-						const {builder, cg, wasm} = setupScript(`{
+						const {builder, cg, wasm, visitors: {codegen: {instr: VISITOR}}} = setupScript(`{
 							Dict.<int>(( (@a, 2), (@b, 3), (@c, 5) ));
 						}`, {codegen: false});
 						const {reftype, Value, Dict} = cg.vm;
-						const instr_visitor = new OP.InstrVisitorCodegen(cg);
-						builder.instructions.slice(0, 5).forEach((instr) => instr_visitor.visit(instr));
+						builder.instructions.slice(0, 5).forEach((instr) => VISITOR.visit(instr));
 						return assertEqualBins(
-							instr_visitor.visit(builder.instructions[5]),
+							VISITOR.visit(builder.instructions[5]),
 							Dict.fillFromTuple(
 								Value.asDict (wasm.local.get(0, reftype.Value)),
 								Value.asTuple(wasm.local.get(4, reftype.Value)),
@@ -1294,14 +1252,13 @@ test.suite('Opcode', () => {
 						);
 					});
 					test.test('record argument.', () => {
-						const {builder, cg, wasm} = setupScript(`{
+						const {builder, cg, wasm, visitors: {codegen: {instr: VISITOR}}} = setupScript(`{
 							Dict.<int>((a= 2, b= 3, c= 5));
 						}`, {codegen: false});
 						const {reftype, Value, Dict} = cg.vm;
-						const instr_visitor = new OP.InstrVisitorCodegen(cg);
-						builder.instructions.slice(0, 2).forEach((instr) => instr_visitor.visit(instr));
+						builder.instructions.slice(0, 2).forEach((instr) => VISITOR.visit(instr));
 						return assertEqualBins(
-							instr_visitor.visit(builder.instructions[2]),
+							VISITOR.visit(builder.instructions[2]),
 							Dict.copyFromRecord(
 								Value.asDict  (wasm.local.get(0, reftype.Value)),
 								Value.asRecord(wasm.local.get(1, reftype.Value)),
@@ -1309,14 +1266,13 @@ test.suite('Opcode', () => {
 						);
 					});
 					test.test('List argument.', () => {
-						const {builder, cg, wasm} = setupScript(`{
+						const {builder, cg, wasm, visitors: {codegen: {instr: VISITOR}}} = setupScript(`{
 							Dict.<int>([ (@a, 2), (@b, 3), (@c, 5) ]);
 						}`, {codegen: false});
 						const {reftype, Value, Dict} = cg.vm;
-						const instr_visitor = new OP.InstrVisitorCodegen(cg);
-						builder.instructions.slice(0, 5).forEach((instr) => instr_visitor.visit(instr));
+						builder.instructions.slice(0, 5).forEach((instr) => VISITOR.visit(instr));
 						return assertEqualBins(
-							instr_visitor.visit(builder.instructions[5]),
+							VISITOR.visit(builder.instructions[5]),
 							Dict.fillFromList(
 								Value.asDict(wasm.local.get(0, reftype.Value)),
 								Value.asList(wasm.local.get(4, reftype.Value)),
@@ -1324,14 +1280,13 @@ test.suite('Opcode', () => {
 						);
 					});
 					test.test('Dict argument.', () => {
-						const {builder, cg, wasm} = setupScript(`{
+						const {builder, cg, wasm, visitors: {codegen: {instr: VISITOR}}} = setupScript(`{
 							Dict.<int>([a= 2, b= 3, c= 5]);
 						}`, {codegen: false});
 						const {reftype, Value, Dict} = cg.vm;
-						const instr_visitor = new OP.InstrVisitorCodegen(cg);
-						builder.instructions.slice(0, 2).forEach((instr) => instr_visitor.visit(instr));
+						builder.instructions.slice(0, 2).forEach((instr) => VISITOR.visit(instr));
 						return assertEqualBins(
-							instr_visitor.visit(builder.instructions[2]),
+							VISITOR.visit(builder.instructions[2]),
 							Dict.copyFromDict(
 								Value.asDict(wasm.local.get(0, reftype.Value)),
 								Value.asDict(wasm.local.get(1, reftype.Value)),
@@ -1339,14 +1294,13 @@ test.suite('Opcode', () => {
 						);
 					});
 					test.test('Set argument.', () => {
-						const {builder, cg, wasm} = setupScript(`{
+						const {builder, cg, wasm, visitors: {codegen: {instr: VISITOR}}} = setupScript(`{
 							Dict.<int>({ (@a, 2), (@b, 3), (@c, 5) });
 						}`, {codegen: false});
 						const {reftype, Value, Dict} = cg.vm;
-						const instr_visitor = new OP.InstrVisitorCodegen(cg);
-						builder.instructions.slice(0, 5).forEach((instr) => instr_visitor.visit(instr));
+						builder.instructions.slice(0, 5).forEach((instr) => VISITOR.visit(instr));
 						return assertEqualBins(
-							instr_visitor.visit(builder.instructions[5]),
+							VISITOR.visit(builder.instructions[5]),
 							Dict.fillFromSet(
 								Value.asDict(wasm.local.get(0, reftype.Value)),
 								Value.asMap (wasm.local.get(5, reftype.Value)), // index 4 = nonempty map setup (implementation of Set)
@@ -1354,14 +1308,13 @@ test.suite('Opcode', () => {
 						);
 					});
 					test.test('Map argument.', () => {
-						const {builder, cg, wasm} = setupScript(`{
+						const {builder, cg, wasm, visitors: {codegen: {instr: VISITOR}}} = setupScript(`{
 							Dict.<int>({@a -> 2, @b -> 3, @c -> 5});
 						}`, {codegen: false});
 						const {reftype, Value, Dict} = cg.vm;
-						const instr_visitor = new OP.InstrVisitorCodegen(cg);
-						builder.instructions.slice(0, 2).forEach((instr) => instr_visitor.visit(instr));
+						builder.instructions.slice(0, 2).forEach((instr) => VISITOR.visit(instr));
 						return assertEqualBins(
-							instr_visitor.visit(builder.instructions[2]),
+							VISITOR.visit(builder.instructions[2]),
 							Dict.fillFromMap(
 								Value.asDict(wasm.local.get(0, reftype.Value)),
 								Value.asMap (wasm.local.get(2, reftype.Value)), // index 1 = nonempty map setup
@@ -1371,14 +1324,13 @@ test.suite('Opcode', () => {
 				});
 				test.suite('SET.COPY', () => {
 					test.test('tuple argument.', () => {
-						const {builder, cg, wasm} = setupScript(`{
+						const {builder, cg, wasm, visitors: {codegen: {instr: VISITOR}}} = setupScript(`{
 							Set.<int>((2, 3, 5));
 						}`, {codegen: false});
 						const {reftype, Value, Map: VmMap} = cg.vm;
-						const instr_visitor = new OP.InstrVisitorCodegen(cg);
-						builder.instructions.slice(0, 2).forEach((instr) => instr_visitor.visit(instr));
+						builder.instructions.slice(0, 2).forEach((instr) => VISITOR.visit(instr));
 						return assertEqualBins(
-							instr_visitor.visit(builder.instructions[2]),
+							VISITOR.visit(builder.instructions[2]),
 							VmMap.fillSetFromTuple(
 								Value.asMap  (wasm.local.get(0, reftype.Value)),
 								Value.asTuple(wasm.local.get(1, reftype.Value)),
@@ -1386,14 +1338,13 @@ test.suite('Opcode', () => {
 						);
 					});
 					test.test('List argument.', () => {
-						const {builder, cg, wasm} = setupScript(`{
+						const {builder, cg, wasm, visitors: {codegen: {instr: VISITOR}}} = setupScript(`{
 							Set.<int>([2, 3, 5]);
 						}`, {codegen: false});
 						const {reftype, Value, Map: VmMap} = cg.vm;
-						const instr_visitor = new OP.InstrVisitorCodegen(cg);
-						builder.instructions.slice(0, 2).forEach((instr) => instr_visitor.visit(instr));
+						builder.instructions.slice(0, 2).forEach((instr) => VISITOR.visit(instr));
 						return assertEqualBins(
-							instr_visitor.visit(builder.instructions[2]),
+							VISITOR.visit(builder.instructions[2]),
 							VmMap.fillSetFromList(
 								Value.asMap (wasm.local.get(0, reftype.Value)),
 								Value.asList(wasm.local.get(1, reftype.Value)),
@@ -1401,14 +1352,13 @@ test.suite('Opcode', () => {
 						);
 					});
 					test.test('Set argument.', () => {
-						const {builder, cg, wasm} = setupScript(`{
+						const {builder, cg, wasm, visitors: {codegen: {instr: VISITOR}}} = setupScript(`{
 							Set.<int>({2, 3, 5});
 						}`, {codegen: false});
 						const {reftype, Value, Map: VmMap} = cg.vm;
-						const instr_visitor = new OP.InstrVisitorCodegen(cg);
-						builder.instructions.slice(0, 2).forEach((instr) => instr_visitor.visit(instr));
+						builder.instructions.slice(0, 2).forEach((instr) => VISITOR.visit(instr));
 						return assertEqualBins(
-							instr_visitor.visit(builder.instructions[2]),
+							VISITOR.visit(builder.instructions[2]),
 							VmMap.copyFromMap(
 								Value.asMap(wasm.local.get(0, reftype.Value)),
 								Value.asMap(wasm.local.get(2, reftype.Value)),
@@ -1418,14 +1368,13 @@ test.suite('Opcode', () => {
 				});
 				test.suite('MAP.COPY', () => {
 					test.test('tuple argument.', () => {
-						const {builder, cg, wasm} = setupScript(`{
+						const {builder, cg, wasm, visitors: {codegen: {instr: VISITOR}}} = setupScript(`{
 							Map.<float, int>(( (1.414, 2), (1.732, 3), (2.236, 5) ));
 						}`, {codegen: false});
 						const {reftype, Value, Map: VmMap} = cg.vm;
-						const instr_visitor = new OP.InstrVisitorCodegen(cg);
-						builder.instructions.slice(0, 5).forEach((instr) => instr_visitor.visit(instr));
+						builder.instructions.slice(0, 5).forEach((instr) => VISITOR.visit(instr));
 						return assertEqualBins(
-							instr_visitor.visit(builder.instructions[5]),
+							VISITOR.visit(builder.instructions[5]),
 							VmMap.fillFromTuple(
 								Value.asMap  (wasm.local.get(0, reftype.Value)),
 								Value.asTuple(wasm.local.get(4, reftype.Value)),
@@ -1433,14 +1382,13 @@ test.suite('Opcode', () => {
 						);
 					});
 					test.test('List argument.', () => {
-						const {builder, cg, wasm} = setupScript(`{
+						const {builder, cg, wasm, visitors: {codegen: {instr: VISITOR}}} = setupScript(`{
 							Map.<float, int>([ (1.414, 2), (1.732, 3), (2.236, 5) ]);
 						}`, {codegen: false});
 						const {reftype, Value, Map: VmMap} = cg.vm;
-						const instr_visitor = new OP.InstrVisitorCodegen(cg);
-						builder.instructions.slice(0, 5).forEach((instr) => instr_visitor.visit(instr));
+						builder.instructions.slice(0, 5).forEach((instr) => VISITOR.visit(instr));
 						return assertEqualBins(
-							instr_visitor.visit(builder.instructions[5]),
+							VISITOR.visit(builder.instructions[5]),
 							VmMap.fillFromList(
 								Value.asMap (wasm.local.get(0, reftype.Value)),
 								Value.asList(wasm.local.get(4, reftype.Value)),
@@ -1448,14 +1396,13 @@ test.suite('Opcode', () => {
 						);
 					});
 					test.test('Set argument.', () => {
-						const {builder, cg, wasm} = setupScript(`{
+						const {builder, cg, wasm, visitors: {codegen: {instr: VISITOR}}} = setupScript(`{
 							Map.<float, int>({ (1.414, 2), (1.732, 3), (2.236, 5) });
 						}`, {codegen: false});
 						const {reftype, Value, Map: VmMap} = cg.vm;
-						const instr_visitor = new OP.InstrVisitorCodegen(cg);
-						builder.instructions.slice(0, 5).forEach((instr) => instr_visitor.visit(instr));
+						builder.instructions.slice(0, 5).forEach((instr) => VISITOR.visit(instr));
 						return assertEqualBins(
-							instr_visitor.visit(builder.instructions[5]),
+							VISITOR.visit(builder.instructions[5]),
 							VmMap.fillFromSet(
 								Value.asMap(wasm.local.get(0, reftype.Value)),
 								Value.asMap(wasm.local.get(5, reftype.Value)), // index 4 = nonempty map setup (implementation of Set)
@@ -1463,14 +1410,13 @@ test.suite('Opcode', () => {
 						);
 					});
 					test.test('Map argument.', () => {
-						const {builder, cg, wasm} = setupScript(`{
+						const {builder, cg, wasm, visitors: {codegen: {instr: VISITOR}}} = setupScript(`{
 							Map.<float, int>({1.414 -> 2, 1.732 -> 3, 2.236 -> 5});
 						}`, {codegen: false});
 						const {reftype, Value, Map: VmMap} = cg.vm;
-						const instr_visitor = new OP.InstrVisitorCodegen(cg);
-						builder.instructions.slice(0, 2).forEach((instr) => instr_visitor.visit(instr));
+						builder.instructions.slice(0, 2).forEach((instr) => VISITOR.visit(instr));
 						return assertEqualBins(
-							instr_visitor.visit(builder.instructions[2]),
+							VISITOR.visit(builder.instructions[2]),
 							VmMap.copyFromMap(
 								Value.asMap(wasm.local.get(0, reftype.Value)),
 								Value.asMap(wasm.local.get(2, reftype.Value)),
@@ -1481,7 +1427,7 @@ test.suite('Opcode', () => {
 			});
 
 			test.test('Return returns (return).', () => {
-				const {stmts, builder, cg, wasm, visitors} = setupScript(`{
+				const {stmts, builder, cg, wasm, visitors, visitors: {codegen: {instr: VISITOR}}} = setupScript(`{
 					\\(): anything => null;
 					\\(): anything => false;
 					\\(): anything => @hello;
@@ -1490,13 +1436,12 @@ test.suite('Opcode', () => {
 					panic Exception.("hello");
 				}`, {build: false});
 				const {heaptype, reftype} = cg.vm;
-				const instr_visitor = new OP.InstrVisitorCodegen(cg);
-				stmts.slice(0, 5).forEach((stmt) => visitors.build.visit(((stmt as AST.STMT.StatementExpression).expr as AST.EXPR.Function).block.children[0]));
-				visitors.build.visit(stmts[5]);
-				builder.instructions.map((instr) => instr_visitor.visit(instr));
+				stmts.slice(0, 5).forEach((stmt) => visitors.build.node.visit(((stmt as AST.STMT.StatementExpression).expr as AST.EXPR.Function).block.children[0]));
+				visitors.build.node.visit(stmts[5]);
+				builder.instructions.map((instr) => VISITOR.visit(instr));
 				const ref_null_Exception: binaryen.ExpressionRef = wasm.ref.null(heaptype.Exception);
 				return assertEqualBins(
-					builder.instructions.filter((instr) => instr instanceof OP.Return).map((instr) => instr_visitor.visit(instr)),
+					builder.instructions.filter((instr) => instr instanceof OP.Return).map((instr) => VISITOR.visit(instr)),
 					[
 						wasm.return(wasm.tuple.make([genConst(cg),                        ref_null_Exception])),
 						wasm.return(wasm.tuple.make([genConst(cg, false),                 ref_null_Exception])),
