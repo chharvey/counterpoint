@@ -120,11 +120,11 @@ function tokenWorthFloat(text: string): number {
 	const exppart:    string = expindex < 0 ? '0'                        : text.slice(expindex   + 1);
 	const wholevalue: number = Number(tokenWorthInt(wholepart, RADIX_DEFAULT));
 	const fracvalue:  number = Number(tokenWorthInt(fracpart,  RADIX_DEFAULT)) * base ** -fracpart.length;
-	const expvalue:   number = parseFloat(( // HACK: `` parseFloat(`1e${...}`) `` is more accurate than `base ** tokenWorthInt(...)`
+	const expvalue:   number = parseFloat( // HACK: `` parseFloat(`1e${...}`) `` is more accurate than `base ** tokenWorthInt(...)`
 		exppart.startsWith(Punctuator.PLUS)  ? `1e+${tokenWorthInt(exppart.slice(1), RADIX_DEFAULT)}` :
 		exppart.startsWith(Punctuator.MINUS) ? `1e-${tokenWorthInt(exppart.slice(1), RADIX_DEFAULT)}` :
-		                                       `1e${ tokenWorthInt(exppart,          RADIX_DEFAULT)}` // eslint-disable-line @stylistic/indent
-	));
+		                                       `1e${ tokenWorthInt(exppart,          RADIX_DEFAULT)}`, // eslint-disable-line @stylistic/indent
+	);
 	return (wholevalue + fracvalue) * expvalue;
 }
 
@@ -140,7 +140,7 @@ function tokenWorthString(text: string): CodeUnit[] {
 			DELIM_STRING,
 			ESCAPER,
 			COMMENTER_LINE,
-			's', 't', 'n', 'r', // eslint-disable-line @stylistic/array-element-newline
+			's', 't', 'n', 'r', // eslint-disable-line @stylistic/list-style
 		].includes(text[1])) {
 			/* an escaped character literal */
 			return [

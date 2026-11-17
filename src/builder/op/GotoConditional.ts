@@ -47,11 +47,11 @@ export class GotoConditional extends Terminator {
 
 	public override interpret(interp: Interpreter): void {
 		const condition: VALUE.Value = this.condition.interpret(interp);
-		return interp.interpretNextBlock((
+		return interp.interpretNextBlock(
 			condition.equal(VALUE.TRUE)  ? this.labelIfTrue :
 			condition.equal(VALUE.FALSE) ? this.labelIfFalse :
-			assert.fail(new TypeError('Expected condition of a `GotoConditional` to be of type `Boolean`.'))
-		));
+			assert.fail(new TypeError('Expected condition of a `GotoConditional` to be of type `Boolean`.')),
+		);
 	}
 
 	@memoizeMethod
