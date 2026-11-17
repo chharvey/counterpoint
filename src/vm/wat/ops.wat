@@ -821,9 +821,9 @@
 		(then (return (i32.const 1)))
 	)
 
-	;; compare $List.$size since two equal Lists may have different internal array lengths
+	;; compare $List.count since two equal Lists may have different internal array lengths
 	(if
-		(i32.ne (struct.get $List $size (local.get $list0)) (struct.get $List $size (local.get $list1)))
+		(i32.ne (call $List.count (local.get $list0)) (call $List.count (local.get $list1)))
 		(then (return (i32.const 0)))
 	)
 
@@ -901,9 +901,9 @@
 		(then (return (i32.const 1)))
 	)
 
-	;; compare $Dict.$size since two equal Dicts may have different internal array lengths
+	;; compare $Dict.count since two equal Dicts may have different internal array lengths, and we don’t want to count tombstones
 	(if
-		(i32.ne (struct.get $Dict $size (local.get $dict0)) (struct.get $Dict $size (local.get $dict1)))
+		(i32.ne (call $Dict.count (local.get $dict0)) (call $Dict.count (local.get $dict1)))
 		(then (return (i32.const 0)))
 	)
 
@@ -967,9 +967,9 @@
 		(then (return (i32.const 1)))
 	)
 
-	;; compare $Map.$size since two equal Maps may have different internal array lengths
+	;; compare $Map.$size since two equal Maps may have different internal array lengths, and we don’t want to count tombstones
 	(if
-		(i32.ne (struct.get $Map $size (local.get $map0)) (struct.get $Map $size (local.get $map1)))
+		(i32.ne (call $Map.count (local.get $map0)) (call $Map.count (local.get $map1)))
 		(then (return (i32.const 0)))
 	)
 

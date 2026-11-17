@@ -250,7 +250,7 @@
 			(ref.is_null (local.get $case))
 			(ref.eq (local.get $case) (global.get $Case.TOMBSTONE))
 		)
-		(then (return (ref.null $Case)))
+		(then (return (ref.null $Value)))
 	)
 
 	;; replace the case with a tombstone
