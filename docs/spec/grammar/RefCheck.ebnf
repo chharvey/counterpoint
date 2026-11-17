@@ -118,7 +118,7 @@ Nil! RefCheck(SemanticTypeAlias var) :=
 	2. *If* `symbol` is an instance of `SymbolSchemaVar` *or* `symbol` is an instance of `SymbolSchemaFunc`:
 		1. *Throw:* a new ReferenceErrorKind.
 	3. *If* `symbol` is an instance of `SymbolSchemaClass` *and* `symbol.signature` has generic parameters *and*
-		the parent node of `var` does not match "SemanticTypeCall ::= `var` SemanticType+":
+		the parent node of `var` does not match "SemanticTypeCall ::= `var` SemanticType* SemanticPropertyType*":
 		1. *Throw:* a new ReferenceErrorKind.
 	4. *Else:*
 		1. *Return.*
@@ -146,7 +146,7 @@ Nil! RefCheck(SemanticExpressionVariable var) :=
 	2. *If* `symbol` is an instance of `SymbolSchemaType`:
 		1. *Throw:* a new ReferenceErrorKind.
 	3. *If* `symbol` is an instance of `SymbolSchemaFunc` *and*
-		the parent node of `var` does not match "SemanticExpressionCall ::= `var` SemanticType* SemanticExpression* SemanticProperty*":
+		the parent node of `var` does not match "SemanticExpressionCall ::= `var` SemanticType* SemanticPropertyType* SemanticExpression* SemanticProperty*":
 		1. *Throw:* a new ReferenceErrorKind.
 	4. *Else:*
 		1. *Return.*

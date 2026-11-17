@@ -272,7 +272,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type | null> {
 			switch (expr.base.source) {
 				case CoreLibName.LIST: {
 					// If function overload checking failed, `arg` is either a tuple literal or an expression with a tuple type.
-					const itemtype: TYPE.Type       = this.#typeVisitorTypevalue.visit(expr.typeargs[0]);
+					const itemtype: TYPE.Type       = this.#typeVisitorTypevalue.visit(expr.typeargsPosit[0]);
 					const arg:      EXPR.Expression = expr.exprargsPosit[0];
 					if (arg instanceof EXPR.Tuple) {
 						xjs.Array.forEachAggregated(arg.children, (item) => typecheck_assign(this, item, itemtype, item));
@@ -291,7 +291,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type | null> {
 				}
 				case CoreLibName.DICT: {
 					// If function overload checking failed, `arg` is either a tuple/record literal or an expression with a tuple/record type.
-					const valuetype: TYPE.Type  = this.#typeVisitorTypevalue.visit(expr.typeargs[0]);
+					const valuetype: TYPE.Type  = this.#typeVisitorTypevalue.visit(expr.typeargsPosit[0]);
 					const entrytype: TYPE.Tuple = TYPE.Tuple.fromTypes([TYPE.SYM, valuetype]);
 					const arg:       EXPR.Expression = expr.exprargsPosit[0];
 					if (arg instanceof EXPR.Tuple) {
@@ -318,7 +318,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type | null> {
 				}
 				case CoreLibName.SET: {
 					// If function overload checking failed, `arg` is either a tuple literal or an expression with a tuple type.
-					const eltype: TYPE.Type       = this.#typeVisitorTypevalue.visit(expr.typeargs[0]);
+					const eltype: TYPE.Type       = this.#typeVisitorTypevalue.visit(expr.typeargsPosit[0]);
 					const arg:    EXPR.Expression = expr.exprargsPosit[0];
 					if (arg instanceof EXPR.Tuple) {
 						xjs.Array.forEachAggregated(arg.children, (item) => typecheck_assign(this, item, eltype, item));
@@ -337,8 +337,8 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type | null> {
 				}
 				case CoreLibName.MAP: {
 					// If function overload checking failed, `arg` is either a tuple literal or an expression with a tuple type.
-					const anttype:   TYPE.Type  = this.#typeVisitorTypevalue.visit(expr.typeargs[0]);
-					const contype:   TYPE.Type  = expr.typeargs[1] ? this.#typeVisitorTypevalue.visit(expr.typeargs[1]) : anttype;
+					const anttype:   TYPE.Type  = this.#typeVisitorTypevalue.visit(expr.typeargsPosit[0]);
+					const contype:   TYPE.Type  = expr.typeargsPosit[1] ? this.#typeVisitorTypevalue.visit(expr.typeargsPosit[1]) : anttype;
 					const entrytype: TYPE.Tuple = TYPE.Tuple.fromTypes([anttype, contype]);
 					const arg:       EXPR.Expression = expr.exprargsPosit[0];
 					if (arg instanceof EXPR.Tuple) {

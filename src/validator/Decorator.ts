@@ -238,7 +238,8 @@ export class Decorator {
 				) : new AST.TYPE.Call(
 					node as SyntaxNodeType<'type_compound'>,
 					this.decorateTypeNode(type_0),
-					node.childForFieldName('arguments_generic_0')!.namedChildren.map((c) => this.decorateTypeNode(c as SyntaxNodeSupertype<'type'>)) as NonemptyArray<AST.TYPE.Type>,
+					node.childForFieldName('arguments_generic_0')!.namedChildren.map((c) => this.decorateTypeNode(c as SyntaxNodeSupertype<'type'>)),
+					[],
 				);
 			}],
 
@@ -382,6 +383,7 @@ export class Decorator {
 					node as SyntaxNodeType<'expression_compound'>,
 					this.decorateExprNode(expression_0),
 					node.childForFieldName('arguments_generic_0')  ?.namedChildren                                                                      .map((c) => this.decorateTypeNode(c as SyntaxNodeSupertype<'type'>)) ?? [],
+					[],
 					node.childForFieldName('arguments_function_0') ?.namedChildren.filter((c) => isSyntaxNodeSupertype(c, 'expression'))                .map((c) => this.decorateExprNode(c))                                ?? [],
 					node.childForFieldName('arguments_function_0') ?.namedChildren.filter((c) => isSyntaxNodeFamily(c, 'property', ['break', 'return'])).map((c) => this.decorate(c))                                        ?? [],
 				) : new AST.EXPR.OperationUnary(

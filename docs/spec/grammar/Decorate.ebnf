@@ -220,6 +220,7 @@ Decorate(TypeCompound ::= TypeCompound "." "<" ArgumentsGeneric ">") -> Semantic
 	:= (SemanticTypeCall
 		Decorate(TypeCompound)
 		...Decorate(ArgumentsGeneric)
+		...[]
 	);
 
 
@@ -654,11 +655,13 @@ Decorate(ExpressionCompound<Block, Break, Return> ::= ExpressionCompound<?Block>
 	:= (SemanticExpressionCall
 		Decorate(ExpressionCompound<?Block><?Break><?Return>)
 		...Decorate(ArgumentsGeneric)
+		...[]
 	);
 Decorate(ExpressionCompound<Block, Break, Return> ::= ExpressionCompound<?Block><?Break><?Return> "." "<" ArgumentsGeneric ">" "(" ArgumentsFunction<?Break><?Return> ")") -> SemanticExpressionCall
 	:= (SemanticExpressionCall
 		Decorate(ExpressionCompound<?Block><?Break><?Return>)
 		...Decorate(ArgumentsGeneric)
+		...[]
 		...Decorate(ArgumentsFunction<?Break><?Return>).0
 		...Decorate(ArgumentsFunction<?Break><?Return>).1
 	);

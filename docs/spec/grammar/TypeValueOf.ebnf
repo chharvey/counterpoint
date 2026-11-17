@@ -88,7 +88,7 @@ Type! TypeValueOf(SemanticTypeAccess ::= SemanticType (SemanticIndex | SemanticK
 
 
 
-Type! TypeValueOf(SemanticTypeCall ::= SemanticType__0 SemanticType__1+) :=
+Type! TypeValueOf(SemanticTypeCall ::= SemanticType__0 SemanticType__1* SemanticPropertyType*) :=
 	1. *If* `SemanticType__0` is not a SemanticTypeAlias:
 		1. *Note:* Currently, only type alias expressions may be called.
 			In a future version, we may allow type operations, accesses, and other type calls to be callable.
