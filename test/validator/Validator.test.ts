@@ -101,7 +101,7 @@ test.suite('Validator', () => {
 
 	test.suite('.cookTokenNumber', () => {
 		new Map<string, [string, readonly bigint[] | readonly number[]]>([
-			/* eslint-disable @stylistic/array-element-newline */
+			/* eslint-disable @stylistic/list-style */
 			['implicit radix integers', [
 				`
 					370  037  +9037  -9037  +06  -06
@@ -120,8 +120,8 @@ test.suite('Validator', () => {
 					\\xe70  \\x0e7  +\\x90e7  -\\x90e7  +\\x06  -\\x06
 					\\ze70  \\z0e7  +\\z90e7  -\\z90e7  +\\z06  -\\z06
 				`,
-				/* eslint-disable @stylistic/indent */
 				[
+					/* eslint-disable @stylistic/indent */
 					    4,  1,       8,      -8, 1, -1,
 					   56, 14,      78,     -78, 3, -3,
 					  120, 20,     380,    -416, 3, -3,
@@ -129,8 +129,8 @@ test.suite('Validator', () => {
 					  370, 37,    9037,   -9037, 6, -6,
 					 3696, 231,  37095,  -37095, 6, -6,
 					18396, 511, 420415, -420415, 6, -6,
+					/* eslint-enable @stylistic/indent */
 				].map((n) => BigInt(n)),
-				/* eslint-enable @stylistic/indent */
 			]],
 			['implicit radix integers with separators', [
 				`
@@ -150,8 +150,8 @@ test.suite('Validator', () => {
 					\\xe_70  \\x0_e7  +\\x9_0e7  -\\x9_0e7  +\\x0_6  -\\x0_6
 					\\ze_70  \\z0_e7  +\\z9_0e7  -\\z9_0e7  +\\z0_6  -\\z0_6
 				`,
-				/* eslint-disable @stylistic/indent */
 				[
+					/* eslint-disable @stylistic/indent */
 					    4,  1,       8,      -8, 1, -1,
 					   56, 14,      78,     -78, 3, -3,
 					  120, 20,     380,    -416, 3, -3,
@@ -159,8 +159,8 @@ test.suite('Validator', () => {
 					  370, 37,    9037,   -9037, 6, -6,
 					 3696, 231,  37095,  -37095, 6, -6,
 					18396, 511, 420415, -420415, 6, -6,
+					/* eslint-enable @stylistic/indent */
 				].map((n) => BigInt(n)),
-				/* eslint-enable @stylistic/indent */
 			]],
 			['floats', [
 				`
@@ -174,7 +174,7 @@ test.suite('Validator', () => {
 					-0.0, 6.8, 6.8, 0.0, -0.0,
 				],
 			]],
-			/* eslint-enable @stylistic/array-element-newline */
+			/* eslint-enable @stylistic/list-style */
 		]).forEach(([source, values], description) => {
 			test.test(`numerical value: ${description}.`, () => {
 				assert.deepStrictEqual(

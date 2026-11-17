@@ -84,7 +84,7 @@ test.suite('Expression', () => {
 					w;
 					x;
 				}`, {build: false});
-				assert.ok( (stmts[0] as AST.STMT.DeclarationVariable).assigned);
+				assert.ok( (stmts[0] as AST.STMT.DeclarationVariable).assigned); // eslint-disable-line @stylistic/list-style
 				assert.ok(!(stmts[1] as AST.STMT.DeclarationVariable).assigned);
 				return assertEqualTypes(
 					stmts.slice(2).map((stmt) => VISITOR.visit((stmt as AST.STMT.StatementExpression).expr!)),
@@ -235,7 +235,7 @@ test.suite('Expression', () => {
 		});
 
 
-		/* eslint-disable @stylistic/array-element-newline */
+		/* eslint-disable @stylistic/list-style */
 		test.suite('#interpreterValue', () => {
 			test.test('computes null, boolean, and symbol values.', () => {
 				assert.deepStrictEqual(extract_tokens(`
@@ -287,7 +287,7 @@ test.suite('Expression', () => {
 				);
 			});
 		});
-		/* eslint-enable @stylistic/array-element-newline */
+		/* eslint-enable @stylistic/list-style */
 	});
 
 
