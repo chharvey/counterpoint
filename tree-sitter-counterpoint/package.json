@@ -35,6 +35,7 @@
     "test": "tree-sitter test --show-diff-markers",
     "prebuild": "npm run compile && npm run generate && npm run test",
     "build": "prebuildify --napi --strip",
+    "sync": "npm run generate && npm run build --ignore-scripts",
     "install": "node-gyp-build"
   },
   "dependencies": {
