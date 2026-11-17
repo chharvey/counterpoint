@@ -209,8 +209,6 @@
 	(local $index i32)
 	;; found property at the specified index.
 	(local $prop (ref null $Property))
-	;; capacity needed for adjustment.
-	(local $new-capacity i32)
 
 	(local.set $index (local.set $prop (call $Dict.find (local.get $dict) (local.get $key))))
 

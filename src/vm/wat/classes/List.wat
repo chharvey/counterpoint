@@ -86,8 +86,6 @@
 	(local $internal (ref $ListArray))
 	;; item at the specified index.
 	(local $item (ref $Value))
-	;; capacity needed for adjustment.
-	(local $new-capacity i32)
 
 	(if
 		(i32.ge_u (local.get $index) (struct.get $List $size (local.get $list)))

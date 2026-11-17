@@ -240,8 +240,6 @@
 	(local $index i32)
 	;; found case at the specified index.
 	(local $case (ref null $Case))
-	;; capacity needed for adjustment.
-	(local $new-capacity i32)
 
 	(local.set $index (local.set $case (call $Map.find (local.get $map) (local.get $ant))))
 
