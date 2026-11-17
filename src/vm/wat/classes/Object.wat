@@ -9,6 +9,15 @@
 
 
 
+(func $Object.has-field (export "Object#hasField") (param $obj (ref $Object)) (param $key i64) (result i32)
+	(local $fields (ref null $Dict))
+	(local.set $fields (struct.get $Object $fields (local.get $obj)))
+	(if
+		(ref.is_null (local.get $fields))
+		(then (return (i32.const 0)))
+		(else (return_call $Dict.has-key (ref.as_non_null (local.get $fields)) (local.get $key)))
+	)
+)
 (func $Object.get-field (export "Object#getField") (param $obj (ref $Object)) (param $key i64) (result (ref $Value))
 	(return_call $Dict.get (ref.as_non_null (struct.get $Object $fields (local.get $obj))) (local.get $key))
 )
