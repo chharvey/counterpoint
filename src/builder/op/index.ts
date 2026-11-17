@@ -40,3 +40,10 @@ export * from './Terminator.ts';
 export * from './Goto.ts';
 export * from './GotoConditional.ts';
 export * from './EndProgram.ts';
+
+export {OpcodeVisitorValidate} from './visitors/OpcodeVisitorValidate.ts';
+export {OpcodeVisitorInterpret} from './visitors/OpcodeVisitorInterpret.ts';
+export {ValueVisitorInterpret} from './visitors/ValueVisitorInterpret.ts';
+export {ValueVisitorCodegen} from './visitors/ValueVisitorCodegen.ts';
+export {InstrVisitorCodegen} from './visitors/InstrVisitorCodegen.ts';
+export {TermVisitorCodegen} from './visitors/TermVisitorCodegen.ts';

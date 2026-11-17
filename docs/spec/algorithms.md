@@ -180,7 +180,7 @@ RealNumber! UTF8Decoding(Sequence<RealNumber> codeunits) :=
 
 
 
-## VarCheck
+## RefCheck
 Performs the definite assignment piece during semantic analysis.
 
 

@@ -34,7 +34,7 @@ test.suite('AstNodeVisitorBuild#visit', () => {
 
 
 	test.test('DeclarationVariable pushes (DECL+SET)/DROP instruction depending on presence of child nodes.', () => {
-		const {stmts, builder, visitors} = setupScript(`{
+		const {stmts, builder, visitors: {build: {node: VISITOR}}} = setupScript(`{
 			% Foldable cases:
 			val _:          int = 42; % \`(DROP (INT.CONST 42))\`
 			val assignee_a: int = 42; % \`(DECL <int> assignee_a (INT.CONST 42))\`
@@ -54,7 +54,7 @@ test.suite('AstNodeVisitorBuild#visit', () => {
 			val mut _:       int = assignee_c;
 			%%
 		}`, {codegen: false});
-		stmts.forEach((stmt) => visitors.build.visit(stmt));
+		stmts.forEach((stmt) => VISITOR.visit(stmt));
 		return assert.strictEqual(builder.print(), xjs.String.dedent`
 			"block-0":
 				(DROP (INT.CONST 42))
@@ -216,18 +216,18 @@ test.suite('AstNodeVisitorBuild#visit', () => {
 
 
 	test.test('StatementExpression pushes OP.Drop instruction if expression exists.', () => {
-		const {stmts, builder, visitors} = setupScript(`{
+		const {stmts, builder, visitors: {build: {node: VISITOR}}} = setupScript(`{
 			val mut x: int = 42;
 			x;
 			42;
 			;
 		}`, {build: false});
 		assert.strictEqual(builder.instructions.length, 0);
-		visitors.build.visit(stmts[1]);
+		VISITOR.visit(stmts[1]);
 		assert.strictEqual(builder.instructions.length, 1);
-		visitors.build.visit(stmts[2]);
+		VISITOR.visit(stmts[2]);
 		assert.strictEqual(builder.instructions.length, 2);
-		visitors.build.visit(stmts[3]);
+		VISITOR.visit(stmts[3]);
 		assert.strictEqual(builder.instructions.length, 2);
 		return assert.strictEqual(builder.print(), xjs.String.dedent`
 			"block-0":
@@ -238,11 +238,11 @@ test.suite('AstNodeVisitorBuild#visit', () => {
 
 
 	test.test('StatementClaim pushes OP.Drop.', () => {
-		const {stmts, builder, visitors} = setupScript(`{%
+		const {stmts, builder, visitors: {build: {node: VISITOR}}} = setupScript(`{%
 			val mut x: int | float = 42;
 			claim x: int;
 		}`, {build: false});
-		visitors.build.visit(stmts[1]);
+		VISITOR.visit(stmts[1]);
 		return assert.strictEqual(builder.print(), xjs.String.dedent`
 			"block-0":
 				(DROP (GET x))
@@ -252,13 +252,13 @@ test.suite('AstNodeVisitorBuild#visit', () => {
 
 	test.suite('StatementReassignment', () => {
 		test.test('for variables: pushes (SET) with a value.', () => {
-			const {stmts, builder, visitors} = setupScript(`{
+			const {stmts, builder, visitors: {build: {node: VISITOR}}} = setupScript(`{
 				val mut x: int = 42;
 				set x = 43;
 				set x = 44;
 				set x = -42;
 			}`, {build: false});
-			stmts.slice(1).forEach((stmt) => visitors.build.visit(stmt));
+			stmts.slice(1).forEach((stmt) => VISITOR.visit(stmt));
 			return assert.strictEqual(builder.print(), xjs.String.dedent`
 				"block-0":
 					(SET x (INT.CONST 43))
@@ -267,22 +267,22 @@ test.suite('AstNodeVisitorBuild#visit', () => {
 			`.trim());
 		});
 		test.test('for optional variables: wraps value in (MAYBE.NEW).', () => {
-			const {stmts, builder, visitors} = setupScript(`{
+			const {stmts, builder, visitors: {build: {node: VISITOR}}} = setupScript(`{
 				val mut x?: int;
 				set x = 42;
 			}`, {build: false});
-			stmts.slice(1).forEach((stmt) => visitors.build.visit(stmt));
+			stmts.slice(1).forEach((stmt) => VISITOR.visit(stmt));
 			return assert.strictEqual(builder.print(), xjs.String.dedent`
 				"block-0":
 					(SET x (MAYBE.NEW (INT.CONST 42)))
 			`.trim());
 		});
 		test.test('deletion: pushes (SET) with an empty (MAYBE.NEW).', () => {
-			const {stmts, builder, visitors} = setupScript(`{
+			const {stmts, builder, visitors: {build: {node: VISITOR}}} = setupScript(`{
 				val mut x?: int;
 				delete x;
 			}`, {build: false});
-			stmts.slice(1).forEach((stmt) => visitors.build.visit(stmt));
+			stmts.slice(1).forEach((stmt) => VISITOR.visit(stmt));
 			return assert.strictEqual(builder.print(), xjs.String.dedent`
 				"block-0":
 					(SET x (MAYBE.NEW))

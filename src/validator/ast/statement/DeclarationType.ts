@@ -1,11 +1,9 @@
-import {AssignmentErrorDuplicateDeclaration} from '../../../index.ts';
 import {assert_instanceof} from '../../../lib/index.ts';
 import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../../core/index.ts';
 import type {Serializable} from '../../../parser/index.ts';
-import {SymbolSchemaType} from '../../index.ts';
 import type {SyntaxNodeType} from '../../utils-private.ts';
 import {Validator} from '../../Validator.ts';
 import type * as AST_TYPE from '../type/index.ts';
@@ -32,17 +30,6 @@ export class DeclarationType extends Statement {
 		super(start_node, {}, [assigned]);
 		if (this.assignee) {
 			this.id = Validator.cookTokenIdentifier(this.assignee.source);
-		}
-	}
-
-
-	public override varCheck(): void {
-		super.varCheck();
-		if (this.assignee) {
-			if (this.validator.hasSymbol(this.id!)) {
-				throw new AssignmentErrorDuplicateDeclaration(this.assignee);
-			}
-			this.validator.addSymbol(new SymbolSchemaType(this.id!, this.assignee));
 		}
 	}
 }

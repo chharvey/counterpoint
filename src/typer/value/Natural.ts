@@ -68,7 +68,7 @@ export class Natural extends ValueNumber<Natural> {
 	}
 
 	@memoizeMethod
-	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
+	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef /* (ref $Value) */ {
 		return cg.vm.Value.fromNat(cg.vm.Vect.newNat(cg.mod.wasm.i64.const(this.data)));
 	}
 

@@ -1,17 +1,4 @@
-import * as assert from 'node:assert';
-import type * as binaryen from 'binaryen.ts';
-import type {CodeGenerator} from '../../index.ts';
-import {
-	assert_instanceof,
-	memoizeMethod,
-	runOnceMethod,
-} from '../../lib/index.ts';
-import {
-	VALUE,
-	TYPE,
-} from '../../typer/index.ts';
-import type {Builder} from '../Builder.ts';
-import type {Interpreter} from '../Interpreter.ts';
+import {TYPE} from '../../typer/index.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
 import type {ValueTac} from './ValueTac.ts';
@@ -21,7 +8,7 @@ import type {ValueTac} from './ValueTac.ts';
 /** Create a Result. */
 export class ResultNew extends Value {
 	public constructor(
-		private readonly isOk: boolean,
+		public readonly isOk: boolean,
 		success_type: TYPE.Type,
 		failure_type: TYPE.Type,
 		public readonly argument: ValueTac,
@@ -32,29 +19,5 @@ export class ResultNew extends Value {
 
 	public override toString(): string {
 		return super.toString(...(this.isOk ? [this.argument, 'nil'] : ['nil', this.argument]));
-	}
-
-	@runOnceMethod
-	public override validate(builder: Builder): void {
-		assert_instanceof(this.type, TYPE.Result);
-		if (!this.isOk) {
-			assert.ok(this.argument.type.isSubtypeOf(TYPE.EXCP));
-		}
-		return this.argument.validate(builder);
-	}
-
-	public override interpret(interp: Interpreter): VALUE.Result {
-		const argument: VALUE.Value = this.argument.interpret(interp);
-		const {typeargFailure, typeargSuccess} = this.type as TYPE.Result;
-		return this.isOk ? new VALUE.Ok(argument, typeargFailure) : new VALUE.Fail(typeargSuccess, argument as VALUE.Exception);
-	}
-
-	@memoizeMethod
-	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
-		let argument: binaryen.ExpressionRef /* (ref $Value) */ = this.argument.codegen(cg);
-		if (!this.isOk) {
-			argument /* (ref $Exception) */ = cg.vm.mod.wasm.ref.cast(argument, cg.vm.reftype.Exception);
-		}
-		return cg.codegenResult(this.isOk, argument);
 	}
 }

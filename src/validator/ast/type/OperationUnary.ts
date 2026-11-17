@@ -1,19 +1,10 @@
-import * as assert from 'node:assert';
-import {TypeErrorInvalidOperation} from '../../../index.ts';
-import {
-	assert_instanceof,
-	memoizeMethod,
-} from '../../../lib/index.ts';
+import {assert_instanceof} from '../../../lib/index.ts';
 import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../../core/index.ts';
-import {TYPE} from '../../../typer/index.ts';
 import type {SyntaxNodeType} from '../../utils-private.ts';
-import {
-	Operator,
-	type ValidTypeOperator,
-} from '../../Operator.ts';
+import type {ValidTypeOperator} from '../../Operator.ts';
 import type {Type} from './Type.ts';
 import {Operation} from './Operation.ts';
 
@@ -32,19 +23,8 @@ export class OperationUnary extends Operation {
 			| SyntaxNodeType<'type_unary_keyword'>,
 
 		operator: ValidTypeOperator,
-		private readonly operand: Type,
+		public readonly operand: Type,
 	) {
 		super(start_node, operator, [operand]);
-	}
-
-	@memoizeMethod
-	public override eval(): TYPE.Type {
-		const t: TYPE.Type = this.operand.eval();
-		return (
-			this.operator === Operator.MAYBE   ? new TYPE.Maybe(t) :
-			this.operator === Operator.RESULT  ? new TYPE.Result(t) :
-			this.operator === Operator.MUTABLE ? t instanceof TYPE.ReferenceType ? t.mutableOf() : assert.fail(new TypeErrorInvalidOperation(this)) :
-			assert.fail(`TypeOperationUnary#eval did not expect the operator \`${Operator[this.operator]}\`.`)
-		);
 	}
 }

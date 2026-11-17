@@ -11,7 +11,6 @@ import {
 import {TYPE} from '../../../typer/index.ts';
 import type {SyntaxNodeFamily} from '../../utils-private.ts';
 import type {ExprVisitorType} from '../index.ts';
-import {check_unique_keys} from '../utils-private.ts';
 import {typecheck_assign} from '../AstNode.ts';
 import type {Property} from '../Property.ts';
 import {Expression} from './Expression.ts';
@@ -36,10 +35,6 @@ export class Dict extends Collection {
 		super(start_node, children);
 	}
 
-	public override varCheck(): void {
-		check_unique_keys(this.children.map((prop) => prop.key));
-		return super.varCheck();
-	}
 
 	@assignToDeco
 	public override assignTo(visitor: ExprVisitorType, assignee: TYPE.Type): void {

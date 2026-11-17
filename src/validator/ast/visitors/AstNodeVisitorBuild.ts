@@ -149,7 +149,7 @@ export class AstNodeVisitorBuild extends AstNodeVisitor<void> {
 				this.#exprVisitorBuild.visit(stmt.assigned)          .asTac(this.builder),
 			));
 		}
-		return assert.fail('Expected `StatementReassignment#typeCheck` to throw by now.');
+		return assert.fail('Expected `TypeCheck(SemanticStatementReassignment)` to throw by now.');
 	}
 
 	@runOncePerNode
