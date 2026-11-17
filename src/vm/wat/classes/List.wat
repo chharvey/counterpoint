@@ -27,6 +27,13 @@
 
 
 
+;; NOTE: will be called by the CPL `List` class’s methods.
+(func $Dict.has-index (param $list (ref $List)) (param $index i32) (result i32)
+	(i32.lt_u (local.get $index) (call $List.count (local.get $list)))
+)
+
+
+
 (func $List.get (export "List#get") (param $list (ref $List)) (param $index i32) (result (ref $Value))
 	;; item at the specified index.
 	(local $item (ref null $Value))

@@ -135,6 +135,19 @@
 
 
 
+;; NOTE: will be called by the CPL `Set` and `Map` classes’ methods.
+(func $Map.has-ant (param $map (ref $Map)) (param $ant (ref $Value)) (result i32)
+	;; case at the specified antecedent.
+	(local $case (ref null $Case))
+	(drop (local.set $case (call $Map.find (local.get $map) (local.get $ant))))
+	(i32.eqz (i32.or
+		(ref.is_null (local.get $case))
+		(ref.eq (local.get $case) (global.get $Case.TOMBSTONE))
+	))
+)
+
+
+
 (func $Map.get (export "Map#get") (param $map (ref $Map)) (param $ant (ref $Value)) (result (ref $Value))
 	;; case at the specified antecedent.
 	(local $case (ref null $Case))

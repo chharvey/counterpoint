@@ -135,6 +135,19 @@
 
 
 
+;; NOTE: will be called by the CPL `Dict` class’s methods.
+(func $Dict.has-key (param $dict (ref $Dict)) (param $key i64) (result i32)
+	;; property at the specified key.
+	(local $prop (ref null $Property))
+	(drop (local.set $prop (call $Dict.find (local.get $dict) (local.get $key))))
+	(i32.eqz (i32.or
+		(ref.is_null (local.get $prop))
+		(ref.eq (local.get $prop) (global.get $Property.TOMBSTONE))
+	))
+)
+
+
+
 (func $Dict.get (export "Dict#get") (param $dict (ref $Dict)) (param $key i64) (result (ref $Value))
 	;; property at the specified key.
 	(local $prop (ref null $Property))

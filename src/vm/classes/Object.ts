@@ -20,6 +20,11 @@ class VmObject implements HasFuncData {
 		return new Map<string, FuncImportData>([
 			['Object#ctrPlusPlus', {name: 'Object.ctr-plus-plus', param: binaryen.Type.none, result: binaryen.Type.i64}],
 
+			['Object#hasField', {
+				name:   'Object.has-field',
+				param:  binaryen.createType([reftype.Object, binaryen.Type.i64]),
+				result: binaryen.Type.i32,
+			}],
 			['Object#getField', {
 				name:   'Object.get-field',
 				param:  binaryen.createType([reftype.Object, binaryen.Type.i64]),
@@ -45,6 +50,11 @@ class VmObject implements HasFuncData {
 	 */
 	public ctrPlusPlus(): binaryen.ExpressionRef /* i64 */ {
 		return this.vm.mod.wasm.call('Object.ctr-plus-plus', [], binaryen.Type.i64);
+	}
+
+	/** Return whether the Object has the given field. */
+	public hasField(obj: binaryen.ExpressionRef /* (ref $Object) */, field_id: binaryen.ExpressionRef /* i64 */): binaryen.ExpressionRef /* i32 */ {
+		return this.vm.mod.wasm.call('$Object.has-field', [obj, field_id], binaryen.Type.i32);
 	}
 
 	/**
