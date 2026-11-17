@@ -410,14 +410,14 @@ test.suite('Value', () => {
 
 		test.suite('Float', () => {
 			test.test('generates `(f64.const)`.', () => {
-				/* eslint-disable @stylistic/array-element-newline */
 				const data: number[] = [
+					/* eslint-disable @stylistic/list-style */
 					55, -55, 33, -33, 2.007, -2.007,
 					91.27e4, -91.27e4, 91.27e-4, -91.27e-4,
 					6.8, 6.8,
 					3.0 - 2.7,
+					/* eslint-enable @stylistic/list-style */
 				];
-				/* eslint-enable @stylistic/array-element-newline */
 				const cg = new CodeGenerator();
 				const {vm: {Vect, Value}, mod: {wasm}} = cg;
 				return assertEqualBins(

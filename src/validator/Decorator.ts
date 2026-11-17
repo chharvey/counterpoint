@@ -87,7 +87,7 @@ export class Decorator {
 	public constructor(private readonly config: CplConfig = CONFIG_DEFAULT) {
 	}
 
-	/* eslint-disable @typescript-eslint/unified-signatures */
+	/* eslint-disable @stylistic/list-style, @typescript-eslint/unified-signatures */
 	public decorate(syntaxnode: SyntaxNodeType<'identifier'>):                                             AST.TYPE.TypeAlias | AST.EXPR.Variable;
 	public decorate(syntaxnode: SyntaxNodeType<'keyword_type'>):                                           AST.TYPE.Constant;
 	public decorate(syntaxnode: SyntaxNodeType<'word'>):                                                   AST.Key;
@@ -156,7 +156,7 @@ export class Decorator {
 	public decorate(syntaxnode: SyntaxNodeSupertype<'declaration'>):                                       AST.STMT.Declaration;
 	public decorate(syntaxnode: SyntaxNodeType<'source_file'>):                                            AST.Goal;
 	public decorate(syntaxnode: SyntaxNode):                                                               AST.AstNode;
-	/* eslint-enable @typescript-eslint/unified-signatures */
+	/* eslint-enable @stylistic/list-style, @typescript-eslint/unified-signatures */
 	public decorate(syntaxnode: SyntaxNode): AST.AstNode {
 		const decorators = new Map<string | RegExp, (node: SyntaxNode) => AST.AstNode>([
 			['source_file', (node) => new AST.Goal(

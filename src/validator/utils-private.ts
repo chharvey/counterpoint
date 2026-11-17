@@ -72,6 +72,7 @@ type Category = (
 
 
 
+/* eslint-disable @stylistic/list-style */
 export type SyntaxNodeSupertype<C extends Category> = C extends 'type' ? (
 	| SyntaxNodeType<'identifier'>
 	| SyntaxNodeType<'keyword_type'>
@@ -130,6 +131,7 @@ export type SyntaxNodeSupertype<C extends Category> = C extends 'type' ? (
 	| SyntaxNodeFamily<'declaration_variable', ['break', 'return']>
 	| SyntaxNodeType<'declaration_function'>
 ) : never;
+/* eslint-enable @stylistic/list-style */
 
 
 

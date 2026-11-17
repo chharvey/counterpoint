@@ -100,7 +100,7 @@ test.suite('ExprVisitorType#visit', () => {
 				w;
 				x;
 			}`, {build: false});
-			assert.ok( (stmts[0] as AST.STMT.DeclarationVariable).assigned);
+			assert.ok( (stmts[0] as AST.STMT.DeclarationVariable).assigned); // eslint-disable-line @stylistic/list-style
 			assert.ok(!(stmts[1] as AST.STMT.DeclarationVariable).assigned);
 			return assertEqualTypes(
 				stmts.slice(2).map((stmt) => VISITOR.visit((stmt as AST.STMT.StatementExpression).expr!)),

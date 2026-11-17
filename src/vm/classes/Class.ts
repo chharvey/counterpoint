@@ -16,8 +16,7 @@ class VmClass implements HasFuncData {
 	/** @implements HasFuncData */
 	@memoizeGetter
 	public get funcImportDataMap(): ReadonlyMap<string, FuncImportData> {
-		return new Map<string, FuncImportData>([
-		]);
+		return new Map<string, FuncImportData>([]);
 	}
 
 	/** The Counterpoint `Class`     class. */ public get CLASS():     binaryen.ExpressionRef /* (ref $Class) */ { return this.vm.mod.wasm.global.get('Class.CLASS',     this.vm.reftype.Class); }

@@ -638,6 +638,7 @@ test.suite('ValueVisitorInterpret#visit', () => {
 				-(5) ^ +(2 * 3)
 				+5 ^ (+2 * +3)
 			`), [
+				/* eslint-disable @stylistic/list-style */
 				new VALUE.Integer(42n + 420n),
 				new VALUE.Integer(42n + -420n),
 				new VALUE.Integer( 126n /  3n),
@@ -650,6 +651,7 @@ test.suite('ValueVisitorInterpret#visit', () => {
 				new VALUE.Integer(-200n / -3n),
 				new VALUE.Integer((-5n) ** (2n * 3n)),
 				new VALUE.Natural(5n ** (2n * 3n)),
+				/* eslint-enable @stylistic/list-style */
 			]);
 		});
 		test.test('float operations.', () => {

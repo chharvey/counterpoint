@@ -30,7 +30,7 @@ class VmRecord implements HasFuncData {
 	}
 
 
-	/** Return whether the given record has a property amongst its entries with the given key. */
+	/** Return whether the given record has a property with the given key. */
 	public hasKey(record: binaryen.ExpressionRef /* (ref $Record) */, key: binaryen.ExpressionRef /* i64 */): binaryen.ExpressionRef /* i32 */ {
 		return this.vm.mod.wasm.call('Record.has-key', [record, key], binaryen.Type.i32);
 	}

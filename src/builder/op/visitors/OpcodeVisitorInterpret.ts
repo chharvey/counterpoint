@@ -211,11 +211,11 @@ export class OpcodeVisitorInterpret extends OpcodeVisitor<void> {
 
 	public override visitGotoConditional(term: GotoConditional): void {
 		const condition: VALUE.Value = this.#valueVisitorInterpret.visit(term.condition);
-		return this.interp.interpretNextBlock((
+		return this.interp.interpretNextBlock(
 			condition.equal(VALUE.TRUE)  ? term.labelIfTrue :
 			condition.equal(VALUE.FALSE) ? term.labelIfFalse :
-			assert.fail(new TypeError('Expected condition of a `GotoConditional` to be of type `Boolean`.')) // TODO: make a new CplError class for case exhaustion
-		));
+			assert.fail(new TypeError('Expected condition of a `GotoConditional` to be of type `Boolean`.')), // TODO: make a new CplError class for case exhaustion
+		);
 	}
 
 	public override defaultVisit(_op: Opcode): void {

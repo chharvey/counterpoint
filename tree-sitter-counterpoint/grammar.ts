@@ -165,7 +165,7 @@ const STRING_ESCAPE = rc(
 	DELIM_STRING,
 	ESCAPER,
 	COMMENTER_LINE,
-	's', 't', 'n', 'r', // eslint-disable-line @stylistic/function-call-argument-newline
+	's', 't', 'n', 'r', // eslint-disable-line @stylistic/list-style
 	rs('u{', ro(DIGIT_SEQ_HEX), '}'),
 	'\n',
 	/[^"\\%stnru\n]/,
@@ -249,7 +249,7 @@ function uSeq(left: RuleOrLiteral, right: RuleOrLiteral): ChoiceRule {
 
 
 
-/* eslint-disable @stylistic/arrow-parens */
+/* eslint-disable @stylistic/arrow-parens, @stylistic/list-style */
 module.exports = grammar({
 	name: 'counterpoint',
 
@@ -554,7 +554,6 @@ module.exports = grammar({
 			field('expression_1', call($, '_expression', 'block', {break: brk}, {return: rtn})),
 		), 'break', 'return'),
 
-		/* eslint-disable @stylistic/function-call-argument-newline */
 		expression_function: $ => seq(
 			'\\', '(', optional($._parameters_function), ')',
 			optional(call($, '_capture_clause')),
@@ -564,7 +563,6 @@ module.exports = grammar({
 				seq('=>', field('expression_0', call($, '_expression', 'block', {break: false}, 'return'))),
 			),
 		),
-		/* eslint-enable @stylistic/function-call-argument-newline */
 
 		...parameterize('_expression', ({block, break: brk, return: rtn}) => $ => choice(
 			call($, '_expression_unit', {block}, {break: brk}, {return: rtn}),
@@ -656,7 +654,6 @@ module.exports = grammar({
 			seq('val',                          field('mut_0', 'mut'),  field('identifier_0', $.identifier),   '?',              ':', field('type_0', $._type),                                                                                             ';'),
 		), 'break', 'return'),
 
-		/* eslint-disable @stylistic/function-call-argument-newline */
 		declaration_function: $ => seq(
 			'func', choice('_', field('identifier_0', $.identifier)),
 			'(', optional($._parameters_function), ')',
@@ -667,7 +664,6 @@ module.exports = grammar({
 				seq('=>', field('expression_0', call($, '_expression', 'block', {break: false}, 'return')), ';'),
 			),
 		),
-		/* eslint-enable @stylistic/function-call-argument-newline */
 
 		...parameterize('_declaration', ({break: brk, return: rtn}) => $ => choice(
 			$.declaration_type,
@@ -762,4 +758,4 @@ module.exports = grammar({
 		],
 	},
 });
-/* eslint-enable @stylistic/arrow-parens */
+/* eslint-enable @stylistic/arrow-parens, @stylistic/list-style */

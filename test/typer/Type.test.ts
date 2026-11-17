@@ -121,10 +121,12 @@ test.suite('Type', () => {
 	test.suite('#isDefinitelyFalsy', () => {
 		test.test('only a combination of `nothing`, `null`, and `false` are definitely falsy.', () => {
 			[
+				/* eslint-disable @stylistic/list-style */
 				TYPE.NOTHING,
 				TYPE.Union.all(           TYPE.FALSE),
 				TYPE.Union.all(TYPE.NULL            ),
 				TYPE.Union.all(TYPE.NULL, TYPE.FALSE),
+				/* eslint-enable @stylistic/list-style */
 			].forEach((t) => assert.ok(t.isDefinitelyFalsy, `Expected \`${t}\` to be definitely falsy.`));
 		});
 		test.test('any other types are not definitely falsy.', () => {
@@ -148,10 +150,12 @@ test.suite('Type', () => {
 	test.suite('#isDefinitelyTruthy', () => {
 		test.test('all definitely falsy types are not definitely truthy.', () => {
 			[
+				/* eslint-disable @stylistic/list-style */
 				TYPE.NOTHING,
 				TYPE.Union.all(           TYPE.FALSE),
 				TYPE.Union.all(TYPE.NULL            ),
 				TYPE.Union.all(TYPE.NULL, TYPE.FALSE),
+				/* eslint-enable @stylistic/list-style */
 			].forEach((t) => assert.ok(!t.isDefinitelyTruthy, `Expected \`${t}\` to not be definitely truthy.`));
 		});
 		test.test('unions of falsy types are not definitely truthy.', () => {
