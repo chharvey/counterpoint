@@ -238,7 +238,7 @@ test.suite('Decorator', () => {
 			`]],
 			['Decorate(TypeCompound ::= TypeCompound "." "<" ArgumentsGeneric ">") -> SemanticTypeCall', [AST.TYPE.Call, `
 				{
-					type T = List.<U>;
+					type T = List.<U, V= int>;
 				}
 				% (type_compound)
 			`]],
@@ -531,7 +531,7 @@ test.suite('Decorator', () => {
 			`]],
 			['Decorate(ExpressionCompound<Block, Break, Return> ::= ExpressionCompound<?Block><?Break><?Return> "." "<" ArgumentsGeneric ">" "(" ")") -> SemanticExpressionCall', [AST.EXPR.Call, `
 				{
-					List.<T>();
+					List.<T, V= int>();
 				}
 				% (expression_compound)
 			`]],
