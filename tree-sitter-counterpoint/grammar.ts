@@ -386,8 +386,6 @@ module.exports = grammar({
 			);
 		},
 
-		_properties_type: $ => seq(OPT_COM, repCom1(call($, 'entry_type', 'named', ['', 'optional'])), OPT_COM),
-
 		_parameters_type: $ => {
 			const LIST_ENT_OPT: SeqRule = repCom1(call($, 'entry_type', 'optional'));
 			const LIST_ENT_NAM: SeqRule = repCom1(call($, 'entry_type', 'named', ['', 'optional']));
@@ -410,13 +408,13 @@ module.exports = grammar({
 
 		property_accessor_type: $ => choice($.whole_digits, $.word),
 
-		type_grouped:        $ => seq('(', $._type,                            ')'),
-		type_tuple_literal:  $ => seq('(', optional($._items_type),            ')'),
-		type_record_literal: $ => seq('(', $._properties_type,                 ')'),
-		type_list_literal:   $ => seq('[', $._type,                            ']'),
-		type_dict_literal:   $ => seq('[', ':', $._type,                       ']'),
-		type_set_literal:    $ => seq('{', $._type,                            '}'),
-		type_map_literal:    $ => seq('{', $._type, '->', $._type,             '}'),
+		type_grouped:        $ => seq('(', $._type,                                                                     ')'),
+		type_tuple_literal:  $ => seq('(', optional($._items_type),                                                     ')'),
+		type_record_literal: $ => seq('(', OPT_COM, repCom1(call($, 'entry_type', 'named', ['', 'optional'])), OPT_COM, ')'),
+		type_list_literal:   $ => seq('[', $._type,                                                                     ']'),
+		type_dict_literal:   $ => seq('[', ':', $._type,                                                                ']'),
+		type_set_literal:    $ => seq('{', $._type,                                                                     '}'),
+		type_map_literal:    $ => seq('{', $._type, '->', $._type,                                                      '}'),
 
 		_type_unit: $ => choice(
 			$.identifier,

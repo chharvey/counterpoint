@@ -195,7 +195,7 @@ test.suite('Decorator', () => {
 				% (type_tuple_literal)
 			`]],
 
-			['Decorate(TypeRecordLiteral ::= "(" PropertiesType ")") -> SemanticTypeRecord', [AST.TYPE.Record, `
+			['Decorate(TypeRecordLiteral ::= "(" ","? EntryType<+Named><∓Optional># ","? ")") -> SemanticTypeRecord', [AST.TYPE.Record, `
 				{
 					type T = (a?: int, b: float);
 				}

@@ -92,9 +92,6 @@ ItemsType ::=
 	| EntryType<-Named><-Optional>? "," EntryType<-Named><-Optional># (","   EntryType<-Named><+Optional>#)? ","?
 ;
 
-PropertiesType
-	::= ","? EntryType<+Named><∓Optional># ","?;
-
 ParametersType ::=
 	| ","? EntryType<-Named><-Optional># ("," EntryType<-Named><+Optional>#)? ("," EntryType<+Named><∓Optional>#)? ","?
 	| ","?                                    EntryType<-Named><+Optional>#   ("," EntryType<+Named><∓Optional>#)? ","?
@@ -112,13 +109,13 @@ ArgumentsGeneric ::=
 PropertyAccessorType
 	::= WHOLE_DIGITS | Word;
 
-TypeGrouped       ::= "(" Type             ")";
-TypeTupleLiteral  ::= "(" ItemsType?       ")";
-TypeRecordLiteral ::= "(" PropertiesType   ")";
-TypeListLiteral   ::= "[" Type             "]";
-TypeDictLiteral   ::= "[" ":" Type         "]";
-TypeSetLiteral    ::= "{" Type             "}";
-TypeMapLiteral    ::= "{" Type "->" Type   "}";
+TypeGrouped       ::= "(" Type                                    ")";
+TypeTupleLiteral  ::= "(" ItemsType?                              ")";
+TypeRecordLiteral ::= "(" ","? EntryType<+Named><∓Optional># ","? ")";
+TypeListLiteral   ::= "[" Type                                    "]";
+TypeDictLiteral   ::= "[" ":" Type                                "]";
+TypeSetLiteral    ::= "{" Type                                    "}";
+TypeMapLiteral    ::= "{" Type "->" Type                          "}";
 
 TypeUnit ::=
 	| IDENTIFIER

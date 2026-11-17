@@ -270,9 +270,6 @@ function sourceExpressions(...expressions: readonly string[]): string {
 		// ItemsType
 		// tested in #TypeTupleLiteral
 
-		// PropertiesType
-		// tested in #TypeRecordLiteral
-
 		// ParametersType
 		// tested in #TypeFunction
 
