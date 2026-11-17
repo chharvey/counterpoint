@@ -236,7 +236,7 @@ test.suite('Decorator', () => {
 				}
 				% (type_compound)
 			`]],
-			['Decorate(TypeCompound ::= TypeCompound "." GenericArguments) -> SemanticTypeCall', [AST.TYPE.Call, `
+			['Decorate(TypeCompound ::= TypeCompound "." "<" ArgumentsGeneric ">") -> SemanticTypeCall', [AST.TYPE.Call, `
 				{
 					type T = List.<U>;
 				}
@@ -529,13 +529,13 @@ test.suite('Decorator', () => {
 				}
 				% (expression_compound)
 			`]],
-			['Decorate(ExpressionCompound<Block, Break, Return> ::= ExpressionCompound<?Block><?Break><?Return> "." GenericArguments "(" ")") -> SemanticExpressionCall', [AST.EXPR.Call, `
+			['Decorate(ExpressionCompound<Block, Break, Return> ::= ExpressionCompound<?Block><?Break><?Return> "." "<" ArgumentsGeneric ">" "(" ")") -> SemanticExpressionCall', [AST.EXPR.Call, `
 				{
 					List.<T>();
 				}
 				% (expression_compound)
 			`]],
-			['Decorate(ExpressionCompound<Block, Break, Return> ::= ExpressionCompound<?Block><?Break><?Return> "." GenericArguments "(" ArgumentsFunction<?Break><?Return> ")") -> SemanticExpressionCall', [AST.EXPR.Call, `
+			['Decorate(ExpressionCompound<Block, Break, Return> ::= ExpressionCompound<?Block><?Break><?Return> "." "<" ArgumentsGeneric ">" "(" ArgumentsFunction<?Break><?Return> ")") -> SemanticExpressionCall', [AST.EXPR.Call, `
 				{
 					List.<T>(arg);
 				}

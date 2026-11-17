@@ -134,6 +134,18 @@ Decorate(ParametersType ::= ","? EntryType<-Named><-Optional># "," EntryType<-Na
 
 
 
+Decorate(ArgumentGenericNamed ::= Word "=" Type) -> ???
+	:= ???;
+
+Decorate(ArgumentsGeneric ::= ","? Type# ","?) -> Sequence<SemanticType>
+	:= ParseList(Type, SemanticType);
+Decorate(ArgumentsGeneric ::= ","? ArgumentGenericNamed# ","?) -> ???
+	:= ???;
+Decorate(ArgumentsGeneric ::= ","? Type# "," ArgumentGenericNamed# ","?) -> ???
+	:= ???;
+
+
+
 Decorate(PropertyAccessorType ::= WHOLE_DIGITS) -> SemanticIndex
 	:= (SemanticIndex[index=TokenWorth(WHOLE_DIGITS)]);
 Decorate(PropertyAccessorType ::= Word) -> SemanticKey
@@ -177,9 +189,6 @@ Decorate(TypeMapLiteral ::= "{" Type__0 "->" Type__1 "}") -> SemanticTypeMap
 		Decorate(Type__1)
 	);
 
-Decorate(GenericArguments ::= "<" ","? Type# ","? ">") -> Sequence<SemanticType>
-	:= ParseList(Type, SemanticType);
-
 
 
 Decorate(TypeUnit ::= IDENTIFIER) -> SemanticTypeAlias
@@ -212,10 +221,10 @@ Decorate(TypeCompound ::= TypeCompound "." PropertyAccessorType) -> SemanticType
 		Decorate(TypeCompound)
 		Decorate(PropertyAccessorType)
 	);
-Decorate(TypeCompound ::= TypeCompound "." GenericArguments) -> SemanticTypeCall
+Decorate(TypeCompound ::= TypeCompound "." "<" ArgumentsGeneric ">") -> SemanticTypeCall
 	:= (SemanticTypeCall
 		Decorate(TypeCompound)
-		...Decorate(GenericArguments)
+		...Decorate(ArgumentsGeneric)
 	);
 
 
@@ -646,15 +655,15 @@ Decorate(ExpressionCompound<Block, Break, Return> ::= ExpressionCompound<?Block>
 		...Decorate(ArgumentsFunction<?Break><?Return>).0
 		...Decorate(ArgumentsFunction<?Break><?Return>).1
 	);
-Decorate(ExpressionCompound<Block, Break, Return> ::= ExpressionCompound<?Block><?Break><?Return> "." GenericArguments "(" ")") -> SemanticExpressionCall
+Decorate(ExpressionCompound<Block, Break, Return> ::= ExpressionCompound<?Block><?Break><?Return> "." "<" ArgumentsGeneric ">" "(" ")") -> SemanticExpressionCall
 	:= (SemanticExpressionCall
 		Decorate(ExpressionCompound<?Block><?Break><?Return>)
-		...Decorate(GenericArguments)
+		...Decorate(ArgumentsGeneric)
 	);
-Decorate(ExpressionCompound<Block, Break, Return> ::= ExpressionCompound<?Block><?Break><?Return> "." GenericArguments "(" ArgumentsFunction<?Break><?Return> ")") -> SemanticExpressionCall
+Decorate(ExpressionCompound<Block, Break, Return> ::= ExpressionCompound<?Block><?Break><?Return> "." "<" ArgumentsGeneric ">" "(" ArgumentsFunction<?Break><?Return> ")") -> SemanticExpressionCall
 	:= (SemanticExpressionCall
 		Decorate(ExpressionCompound<?Block><?Break><?Return>)
-		...Decorate(GenericArguments)
+		...Decorate(ArgumentsGeneric)
 		...Decorate(ArgumentsFunction<?Break><?Return>).0
 		...Decorate(ArgumentsFunction<?Break><?Return>).1
 	);

@@ -238,7 +238,7 @@ export class Decorator {
 				) : new AST.TYPE.Call(
 					node as SyntaxNodeType<'type_compound'>,
 					this.decorateTypeNode(type_0),
-					node.childForFieldName('generic_arguments_0')!.namedChildren.map((c) => this.decorateTypeNode(c as SyntaxNodeSupertype<'type'>)) as NonemptyArray<AST.TYPE.Type>,
+					node.childForFieldName('arguments_generic_0')!.namedChildren.map((c) => this.decorateTypeNode(c as SyntaxNodeSupertype<'type'>)) as NonemptyArray<AST.TYPE.Type>,
 				);
 			}],
 
@@ -372,7 +372,7 @@ export class Decorator {
 			['expression_compound', (node) => {
 				const expression_0        = node.childForFieldName('expression_0')        as SyntaxNodeSupertype<'expression'>;
 				const property_accessor_0 = node.childForFieldName('property_accessor_0') as SyntaxNodeFamily<'property_accessor', ['break', 'return']> | null;
-				const is_function_call    = !!(node.childForFieldName('generic_arguments_0') ?? node.childForFieldName('arguments_function_0')) || node.children[1].type === Punctuator.DOT;
+				const is_function_call    = !!(node.childForFieldName('arguments_generic_0') ?? node.childForFieldName('arguments_function_0')) || node.children[1].type === Punctuator.DOT;
 				return property_accessor_0 ? new AST.EXPR.Access(
 					node as SyntaxNodeType<'expression_compound'>,
 					Decorator.ACCESSORS.get(node.children[1].type as Punctuator)!,
@@ -381,7 +381,7 @@ export class Decorator {
 				) : is_function_call ? new AST.EXPR.Call(
 					node as SyntaxNodeType<'expression_compound'>,
 					this.decorateExprNode(expression_0),
-					node.childForFieldName('generic_arguments_0')  ?.namedChildren                                                                      .map((c) => this.decorateTypeNode(c as SyntaxNodeSupertype<'type'>)) ?? [],
+					node.childForFieldName('arguments_generic_0')  ?.namedChildren                                                                      .map((c) => this.decorateTypeNode(c as SyntaxNodeSupertype<'type'>)) ?? [],
 					node.childForFieldName('arguments_function_0') ?.namedChildren.filter((c) => isSyntaxNodeSupertype(c, 'expression'))                .map((c) => this.decorateExprNode(c))                                ?? [],
 					node.childForFieldName('arguments_function_0') ?.namedChildren.filter((c) => isSyntaxNodeFamily(c, 'property', ['break', 'return'])).map((c) => this.decorate(c))                                        ?? [],
 				) : new AST.EXPR.OperationUnary(

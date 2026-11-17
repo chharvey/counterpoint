@@ -276,6 +276,12 @@ function sourceExpressions(...expressions: readonly string[]): string {
 		// ParametersType
 		// tested in #TypeFunction
 
+		// ArgumentGenericNamed
+		// tested in #TypeCompound
+
+		// ArgumentsGeneric
+		// tested in #TypeCompound
+
 		// PropertyAccessorType
 		// tested in #TypeCompound
 
@@ -351,7 +357,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 							'type_0',
 							'type_compound',
 							f('type_0', 'identifier'),
-							f('generic_arguments_0', 'generic_arguments', s('keyword_type')),
+							f('arguments_generic_0', 'arguments_generic', s('keyword_type')),
 						),
 					),
 				),
@@ -402,7 +408,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 							'type_0',
 							'type_compound',
 							f('type_0', 'identifier'),
-							f('generic_arguments_0', 'generic_arguments', s('keyword_type')),
+							f('arguments_generic_0', 'arguments_generic', s('keyword_type')),
 						),
 					),
 				),
@@ -480,6 +486,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					type T = RecordType.prop;
 					type T = RecordType._;
 					type T = Set.<T>;
+					type T = Map.<T, V= Object>;
 					type T = SomeType.type;
 					type T = SomeType.bool;
 					type T = SomeType.true;
@@ -515,7 +522,17 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				s(
 					'type_compound',
 					f('type_0', 'identifier'),
-					f('generic_arguments_0', 'generic_arguments', s('identifier')),
+					f('arguments_generic_0', 'arguments_generic', s('identifier')),
+				),
+				s(
+					'type_compound',
+					f('type_0', 'identifier'),
+					f(
+						'arguments_generic_0',
+						'arguments_generic',
+						s('identifier'),
+						s('argument_generic_named', s('word', s('identifier')), s('identifier')),
+					),
 				),
 				s(
 					'type_compound',
@@ -1042,7 +1059,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				s(
 					'expression_compound',
 					f('expression_0', 'identifier'),
-					f('generic_arguments_0', 'generic_arguments', s('identifier')),
+					f('arguments_generic_0', 'arguments_generic', s('identifier')),
 				),
 				s(
 					'expression_compound',

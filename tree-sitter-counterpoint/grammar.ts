@@ -398,6 +398,16 @@ module.exports = grammar({
 			);
 		},
 
+		argument_generic_named: $ => seq($.word, '=', $._type),
+
+		arguments_generic: $ => {
+			const LIST_ARG_NAM: SeqRule = repCom1($.argument_generic_named);
+			return choice(
+				seq(OPT_COM, repCom1($._type), optional(seq(',', LIST_ARG_NAM)), OPT_COM),
+				seq(OPT_COM,                                     LIST_ARG_NAM,   OPT_COM),
+			);
+		},
+
 		property_accessor_type: $ => choice($.whole_digits, $.word),
 
 		type_grouped:        $ => seq('(', $._type,                            ')'),
@@ -407,7 +417,6 @@ module.exports = grammar({
 		type_dict_literal:   $ => seq('[', ':', $._type,                       ']'),
 		type_set_literal:    $ => seq('{', $._type,                            '}'),
 		type_map_literal:    $ => seq('{', $._type, '->', $._type,             '}'),
-		generic_arguments:   $ => seq('<', OPT_COM, repCom1($._type), OPT_COM, '>'),
 
 		_type_unit: $ => choice(
 			$.identifier,
@@ -423,8 +432,8 @@ module.exports = grammar({
 		),
 
 		type_compound: $ => prec(5, seq(field('type_0', $._type), '.', choice(
-			field('property_accessor_type_0', $.property_accessor_type),
-			field('generic_arguments_0',      $.generic_arguments),
+			         field('property_accessor_type_0', $.property_accessor_type), // eslint-disable-line @stylistic/indent
+			seq('<', field('arguments_generic_0',      $.arguments_generic), '>'),
 		))),
 
 		type_unary_symbol:  $ => prec(4, seq($._type, choice('?', '!'))),
@@ -519,7 +528,7 @@ module.exports = grammar({
 			'~?',
 			'~!',
 			seq(choice('.', '?.', '!.'), field('property_accessor_0', call($, 'property_accessor', {break: brk}, {return: rtn}))),
-			seq('.',                     optional(field('generic_arguments_0', $.generic_arguments)), '(', optional(field('arguments_function_0', call($, 'arguments_function', {break: brk}, {return: rtn}))), ')'),
+			seq('.',                     optional(seq('<', field('arguments_generic_0', $.arguments_generic), '>')), '(', optional(field('arguments_function_0', call($, 'arguments_function', {break: brk}, {return: rtn}))), ')'),
 		))), 'block', 'break', 'return'),
 
 		...parameterize('expression_unary_symbol', ({block, break: brk, return: rtn}) => $ => prec(9, seq(choice('!', '?', '+', '-'), call($, '_expression', {block}, {break: brk}, {return: rtn}))), 'block', 'break', 'return'),
@@ -688,6 +697,7 @@ module.exports = grammar({
 		[$.word, $._type_unit],
 		[$._parameters_type],
 		[$._parameters_function],
+		[$.arguments_generic],
 		...familyNameAll('arguments_function', ['break', 'return']).map((rulename) => [$[rulename]]),
 	],
 

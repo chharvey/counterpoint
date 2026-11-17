@@ -101,6 +101,14 @@ ParametersType ::=
 	| ","?                                                                         EntryType<+Named><∓Optional>#   ","?
 ;
 
+ArgumentGenericNamed
+	::= Word "=" Type;
+
+ArgumentsGeneric ::=
+	| ","? Type# ("," ArgumentGenericNamed#)? ","?
+	| ","?            ArgumentGenericNamed#   ","?
+;
+
 PropertyAccessorType
 	::= WHOLE_DIGITS | Word;
 
@@ -111,7 +119,6 @@ TypeListLiteral   ::= "[" Type             "]";
 TypeDictLiteral   ::= "[" ":" Type         "]";
 TypeSetLiteral    ::= "{" Type             "}";
 TypeMapLiteral    ::= "{" Type "->" Type   "}";
-GenericArguments  ::= "<"  ","? Type# ","? ">";
 
 TypeUnit ::=
 	| IDENTIFIER
@@ -128,7 +135,7 @@ TypeUnit ::=
 
 TypeCompound ::=
 	| TypeUnit
-	| TypeCompound "." (PropertyAccessorType | GenericArguments)
+	| TypeCompound "." (PropertyAccessorType | "<" ArgumentsGeneric ">")
 ;
 
 TypeUnarySymbol  ::= TypeCompound    | TypeUnarySymbol ("?" | "!");
@@ -213,7 +220,7 @@ ExpressionCompound<Block, Break, Return> ::=
 	| ExpressionCompound<?Block><?Break><?Return> (
 		| "~?" | "~!"
 		| ("." | "?." | "!.") PropertyAccessor<?Break><?Return>
-		|  "."                GenericArguments? "(" ArgumentsFunction<?Break><?Return>? ")"
+		|  "."                ("<" ArgumentsGeneric ">")? "(" ArgumentsFunction<?Break><?Return>? ")"
 	)
 ;
 
