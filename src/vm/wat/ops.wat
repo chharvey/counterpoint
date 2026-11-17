@@ -987,7 +987,11 @@
 					(local.set $ant (struct.get $Case $ant (local.get $case0)))
 
 					;; if $map1 doesn’t have the key, return false
-					(drop (local.set $case1 (call $Map.find (local.get $map1) (local.get $ant))))
+					(if
+						(local.get $shallow)
+						(then (drop (local.set $case1 (call $Map.find (local.get $map1) (local.get $ant)))))
+						(else (local.set $case1 (call $Map.find-eq (local.get $map1) (local.get $ant))))
+					)
 					(if
 						(i32.or
 							(ref.is_null (local.get $case1))

@@ -86,6 +86,37 @@
 		(br $repeat)
 	)
 )
+;; find the first entry in the Map that has a “deep-equal” antecedent to the one given
+(func $Map.find-eq (export "Map#findEq") (param $map (ref $Map)) (param $ant (ref $Value)) (result (ref null $Case))
+	(local $arr  (ref $MapArray))
+	(local $i    i32)
+	(local $case (ref null $Case))
+
+	(local.set $arr (struct.get $Map $array (local.get $map)))
+
+	(block $exit
+		(local.set $i (i32.const 0))
+		(loop $repeat
+			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $arr))))
+			(local.set $case (array.get $MapArray (local.get $arr) (local.get $i)))
+
+			(if
+				(i32.and
+					(i32.eqz (ref.is_null (local.get $case)))
+					(i32.eqz (ref.eq (local.get $case) (global.get $Case.TOMBSTONE)))
+				)
+				(then (if
+					(call $Value.bool-to-i32 (call $op:eq (struct.get $Case $ant (local.get $case)) (local.get $ant)))
+					(then (return (local.get $case)))
+				))
+			)
+
+			(local.set $i (i32.add (local.get $i) (i32.const 1)))
+			(br $repeat)
+		)
+	)
+	(return (ref.null $Case))
+)
 
 
 
