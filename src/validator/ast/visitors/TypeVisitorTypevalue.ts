@@ -163,7 +163,10 @@ export class TypeVisitorTypevalue extends AST_TYPE.TypeVisitor<TYPE.Type> {
 	 */
 	public checkGenericArgs(call: AST_TYPE.Call | EXPR.Call, generic_params?: GenericParams): GenericArgs {
 		const args_posit: readonly AST_TYPE.Type[]           = call instanceof AST_TYPE.Call ? call.argsPosit : call.typeargsPosit;
-		const args_named: ReadonlyMap<bigint, AST_TYPE.Type> = new Map();
+		const args_named: ReadonlyMap<bigint, AST_TYPE.Type> = new Map((call instanceof AST_TYPE.Call
+			? call.argsNamed
+			: call.typeargsNamed
+		).map((arg) => [arg.key.id, arg.typevalue]));
 
 		/* Argument Counting. Throws if the number of given args does not match the number of expected parameters. */
 		const expected_generic = {
