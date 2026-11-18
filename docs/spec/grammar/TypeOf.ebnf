@@ -179,7 +179,7 @@ Type! TypeOf(SemanticExpressionAccess[kind=RESULT] ::= SemanticExpression__0 (Se
 
 
 
-Type?! TypeOf(SemanticExpressionCall ::= SemanticExpression__0 SemanticType* SemanticPropertyType* SemanticExpression__1* SemanticProperty*) :=
+Type?! TypeOf(SemanticExpressionCall[generic: Boolean] ::= SemanticExpression__0 SemanticType* SemanticPropertyType* SemanticExpression__1* SemanticProperty*) :=
 	1. *If* `SemanticExpression__0` is a SemanticExpressionVariable:
 		1. *Assert:* The validator’s symbol table contains a SymbolSchema `symbol` whose `id` is `SemanticExpression__0.id`.
 	2. *Else:*
@@ -187,7 +187,7 @@ Type?! TypeOf(SemanticExpressionCall ::= SemanticExpression__0 SemanticType* Sem
 	3. *If* `symbol` is set and is an instance of `SymbolSchemaFunc`:
 		1. *Let* `base_types` be `symbol.types`.
 	4. *Else If* `symbol` is set and is an instance of `SymbolSchemaClass`:
-		1. *Let* `base_types` be an array of Function types constructed from the overloads allowed by `symbol.signature`.
+		1. *Let* `base_types` be a Sequence of Function types constructed from the overloads allowed by `symbol.signature`.
 	5. *Else:*
 		1. *Let* `basetype` be *Unwrap:* `ThrowIfVoid(SemanticExpression__0, TypeErrorInvalidOperation)`.
 		2. *Let* `base_types` be a new Sequence [`basetype`].
