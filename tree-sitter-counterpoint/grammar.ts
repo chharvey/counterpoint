@@ -429,9 +429,9 @@ module.exports = grammar({
 			$.type_map_literal,
 		),
 
-		type_compound: $ => prec(5, seq(field('type_0', $._type), '.', choice(
-			                  field('property_accessor_type_0', $.property_accessor_type), // eslint-disable-line @stylistic/indent
-			seq('<', optional(field('arguments_generic_0',      $.arguments_generic)), '>'),
+		type_compound: $ => prec(5, seq(field('type_0', $._type), choice(
+			seq('.', field('property_accessor_type_0', $.property_accessor_type)),
+			seq('.', '<', optional(field('arguments_generic_0', $.arguments_generic)), '>'),
 		))),
 
 		type_unary_symbol:  $ => prec(4, seq($._type, choice('?', '!'))),
