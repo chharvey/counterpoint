@@ -1197,6 +1197,85 @@ test.suite('ExprVisitorType#visit', () => {
 				Some.<int, T= float>(42)
 			`, (src) => assert.throws(() => VISITOR.visit(AST.EXPR.Call.fromSource(src)), TypeErrorArgCount));
 		});
+		test.suite('empty generic arg lists.', () => {
+			test.suite('throws when providing a generic argument list to a non-generic function.', () => {
+				test.test('(old syntax)', {expectFailure: true}, () => {
+					const {stmts, visitors} = setupScript(`{
+						func inc(x: int): int => x + 1;
+						inc.(2); % allowed
+						inc.<>(3);
+					}`, {typeCheck: false});
+					xjs.Array.forEachAggregated(stmts.slice(0, 2), (stmt) => visitors.typeCheck.visit(stmt));
+					return assert.throws(
+						() => visitors.typeCheck.visit((stmts[2] as AST.STMT.StatementExpression).expr!),
+						/non-generic func was called with a generic argument list/,
+					);
+				});
+				test.test('(new syntax)', {expectFailure: true}, () => {
+					const {stmts, visitors} = setupScript(`{
+						func inc(x: int): int => x + 1;
+						inc(2); % allowed
+						inc[](3);
+					}`, {typeCheck: false});
+					xjs.Array.forEachAggregated(stmts.slice(0, 2), (stmt) => visitors.typeCheck.visit(stmt));
+					return assert.throws(
+						() => visitors.typeCheck.visit((stmts[2] as AST.STMT.StatementExpression).expr!),
+						/non-generic func was called with a generic argument list/,
+					);
+				});
+			});
+			test.test('throws when providing a generic argument list to a non-generic class.', () => {
+				const {stmts, visitors} = setupScript(`{
+					Float.(2); % allowed
+					Float.<>(3);
+				}`, {typeCheck: false});
+				visitors.typeCheck.visit(stmts[0]);
+				return assert.throws(
+					() => visitors.typeCheck.visit((stmts[1] as AST.STMT.StatementExpression).expr!),
+					/non-generic function was called with a generic argument list/,
+				);
+			});
+			test.suite('throws when missing a generic argument list to a generic function or class.', () => {
+				test.test('(old syntax)', {expectFailure: true}, () => {
+					const {stmts, visitors} = setupScript(`{
+						func inc<T? = int>(x: T): T => x || 1;
+						class Box<T? narrows Object = Object> {}
+
+						inc.<float>(2);     % allowed
+						inc.<>(2);          % allowed
+						Box.<List.<int>>(); % allowed
+						Box.<>();           % allowed
+
+						inc.(3);
+						Box.();
+					}`, {typeCheck: false});
+					xjs.Array.forEachAggregated(stmts.slice(0, 6), (stmt) => visitors.typeCheck.visit(stmt));
+					return xjs.Array.forEachAggregated(stmts.slice(6), (stmt) => assert.throws(
+						() => visitors.typeCheck.visit((stmt as AST.STMT.StatementExpression).expr!),
+						/generic function was called without a generic argument list/,
+					));
+				});
+				test.test('(new syntax)', {expectFailure: true}, () => {
+					const {stmts, visitors} = setupScript(`{
+						func inc[T? = int](x: T): T => x || 1;
+						class Box[T? narrows Object = Object] {}
+
+						inc[float](2);    % allowed
+						inc[](2);         % allowed
+						Box[List[int]](); % allowed
+						Box[]();          % allowed
+
+						inc(3);
+						Box();
+					}`, {typeCheck: false});
+					xjs.Array.forEachAggregated(stmts.slice(0, 6), (stmt) => visitors.typeCheck.visit(stmt));
+					return xjs.Array.forEachAggregated(stmts.slice(6), (stmt) => assert.throws(
+						() => visitors.typeCheck.visit((stmt as AST.STMT.StatementExpression).expr!),
+						/generic function was called without a generic argument list/,
+					));
+				});
+			});
+		});
 		test.test('throws when providing incorrect type of arguments.', () => {
 			const {stmts, visitors} = setupScript(`{
 				func inc1(x: int): int => x + 1;

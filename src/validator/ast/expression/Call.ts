@@ -22,7 +22,7 @@ export class Call extends Expression {
 	public constructor(
 		start_node: SyntaxNodeType<'expression_compound'>,
 		public readonly base:          Expression,
-		generic: boolean,
+		public readonly generic:       boolean,
 		public readonly typeargsPosit: readonly AST_TYPE.Type[],
 		public readonly typeargsNamed: readonly PropertyType[],
 		public readonly exprargsPosit: readonly Expression[],

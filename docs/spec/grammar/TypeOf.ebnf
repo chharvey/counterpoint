@@ -187,7 +187,13 @@ Type?! TypeOf(SemanticExpressionCall[generic: Boolean] ::= SemanticExpression__0
 	3. *If* `symbol` is set and is an instance of `SymbolSchemaFunc`:
 		1. *Let* `base_types` be `symbol.types`.
 	4. *Else If* `symbol` is set and is an instance of `SymbolSchemaClass`:
-		1. *Let* `base_types` be a Sequence of Function types constructed from the overloads allowed by `symbol.signature`.
+		1. *If* `symbol.signature` has no generic parameters *and* `SemanticExpressionCall.generic` is `true`:
+			1. *Throw:* a new TypeError.
+		2. *Else If* `symbol.signature` has any generic parameters *and* `SemanticExpressionCall.generic` is `false`:
+			1. *Throw:* a new TypeError.
+		3. *Else:*
+			1. Fall through.
+		4. *Let* `base_types` be a Sequence of Function types constructed from the overloads allowed by `symbol.signature`.
 	5. *Else:*
 		1. *Let* `basetype` be *Unwrap:* `ThrowIfVoid(SemanticExpression__0, TypeErrorInvalidOperation)`.
 		2. *Let* `base_types` be a new Sequence [`basetype`].
