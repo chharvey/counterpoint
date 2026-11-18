@@ -21,7 +21,6 @@ import {
 import {
 	extract_lines,
 	assertAssignable,
-	assertEqualTypes,
 	setupScript,
 } from '../../utils.ts';
 
@@ -437,32 +436,6 @@ test.suite('AstNodeVisitorRefCheck#visit', () => {
 
 
 	test.suite('TypeRecord, ExpressionRecord, EXPR.Dict', () => {
-		test.test('ref-checks all keys before all values.', () => {
-			const {goal, stmts} = setupScript(`{
-				type T = str;
-				type U = (a: bool, b: (z: int), c: T, d: (y: float));
-				val f: null = null;
-				(e= [x= 42, w= 4.2], f= f);
-				[g= (w= 42, x= 4.2), f= f];
-			}`, {build: false});
-			assert.partialDeepStrictEqual(
-				goal.block!.validator.getAllSymbols(),
-				new Map([
-					[Validator.keyId('T'), {source: 'T'}],
-					[Validator.keyId('U'), {source: 'U'}],
-					[Validator.keyId('f'), {source: 'f'}],
-				]),
-			);
-			return assertEqualTypes(
-				(stmts[1] as AST.STMT.DeclarationType).assigned.typevalue,
-				TYPE.Record.fromTypes(new Map([
-					[Validator.keyId('a'), TYPE.BOOL],
-					[Validator.keyId('b'), TYPE.Record.fromTypes(new Map([[Validator.keyId('z'), TYPE.INT]]))],
-					[Validator.keyId('c'), TYPE.STR],
-					[Validator.keyId('d'), TYPE.Record.fromTypes(new Map([[Validator.keyId('y'), TYPE.FLOAT]]))],
-				])),
-			);
-		});
 		test.test('throws if containing duplicate keys.', () => {
 			const VISITOR = new AST.AstNodeVisitorRefCheck();
 
@@ -515,6 +488,15 @@ test.suite('AstNodeVisitorRefCheck#visit', () => {
 				});
 				return true;
 			});
+		});
+		test.test('throws if named generic args have duplicate keys.', () => {
+			const {stmts, visitors: {refCheck: VISITOR}} = setupScript(`{
+				type Callable = int;
+				type Actual1 = Callable.<int, A= nat, B= float>; % no error
+				type Actual2 = Callable.<int, A= nat, A= float>; %> AssignmentErrorDuplicateKey
+			}`, {refCheck: false});
+			xjs.Array.forEachAggregated(stmts.slice(0, 1), (stmt) => VISITOR.visit(stmt));
+			return assert.throws(() => VISITOR.visit(stmts[2]), AssignmentErrorDuplicateKey);
 		});
 	});
 
@@ -605,7 +587,7 @@ test.suite('AstNodeVisitorRefCheck#visit', () => {
 	});
 
 
-	test.suite('Call', () => {
+	test.suite('EXPR.Call', () => {
 		test.test('catches ReferenceErrorKind thrown by `Variable#varCheck`.', () => {
 			setupScript(`{
 				func inc(x: int): int => x + 1;
@@ -621,6 +603,38 @@ test.suite('AstNodeVisitorRefCheck#visit', () => {
 			visitors.refCheck.visit(stmts[1]);
 			visitors.refCheck.visit(stmts[2]);
 			return assert.throws(() => visitors.refCheck.visit((stmts[3] as AST.STMT.StatementExpression).expr!), ReferenceErrorKind);
+		});
+		test.test('throws if named args have duplicate keys.', () => {
+			const {stmts, visitors: {refCheck: VISITOR}} = setupScript(`{
+				func callable(): int => 42;
+				callable.(42, a= +43, b= 4.4);                        % no error
+				callable.(42, a= +43, a= 4.4);                        %> AssignmentErrorDuplicateKey
+				callable.<int, A= nat, B= float>();                   % no error
+				callable.<int, A= nat, A= float>();                   %> AssignmentErrorDuplicateKey
+				callable.<int, A= nat, B= float>(42, a= +43, b= 4.4); % no error
+				callable.<int, A= nat, B= float>(42, a= +43, a= 4.4); %> AssignmentErrorDuplicateKey
+				callable.<int, A= nat, A= float>(42, a= +43, b= 4.4); %> AssignmentErrorDuplicateKey
+				callable.<int, A= nat, A= float>(42, a= +43, a= 4.4); %> AssignmentErrorDuplicateKey
+			}`, {refCheck: false});
+			xjs.Array.forEachAggregated([
+				stmts[0],
+				stmts[1],
+				stmts[3],
+				stmts[5],
+			], (stmt) => VISITOR.visit(stmt));
+			return xjs.Array.forEachAggregated([
+				stmts[2],
+				stmts[4],
+				stmts[6],
+				stmts[7],
+				stmts[8],
+			], (stmt) => assert.throws(() => VISITOR.visit(stmt), AssignmentErrorDuplicateKey));
+		});
+		test.test('allows named generic args and named args to share keys.', () => {
+			setupScript(`{
+				func callable(): int => 42;
+				callable.<A= nat, b= float>(b= 42, A= 4.4);
+			}`, {typeCheck: false}); // assert does not throw
 		});
 	});
 

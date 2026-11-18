@@ -6,7 +6,7 @@ Nil! RefCheck(Or<
 	SemanticProperty,
 	SemanticCase,
 	Difference<SemanticType, Or<SemanticTypeAlias, SemanticTypeCall, SemanticTypeFunction>>,
-	Difference<SemanticExpression, Or<SemanticExpressionVariable, SemanticExpressionFunction>>,
+	Difference<SemanticExpression, Or<SemanticExpressionVariable, SemanticExpressionCall, SemanticExpressionFunction>>,
 	SemanticStatementExpression,
 	SemanticStatementClaim,
 	SemanticStatementConditional,
@@ -99,12 +99,14 @@ Nil! RefCheck(SemanticBlock block) :=
 
 
 Nil! RefCheck(Or<SemanticTypeRecord, SemanticExpressionRecord, SemanticExpressionDict> assoc) :=
-	1. *Note:* In keyed collection literals, all keys are var-checked before all values.
+	1. *Note:* In keyed collection literals, all keys are ref-checked before all values.
 	2. *For each* `prop` in `assoc.children`:
 		1. *Let* `key` be `prop.children.0`.
 		2. *Perform:* *Unwrap:* `RefCheck(key)`.
 		3. *If* `assoc.children` already contains a property `prop_dupe` such that `prop_dupe.children.0.id` is `key.id`:
 			1. *Throw:* a new AssignmentErrorDuplicateKey.
+		4. *Else:*
+			1. Fall through.
 	3. *For each* `child` in `assoc.children`:
 		1. *Peform:* *Unwrap:* `RefCheck(child)`.
 ;
@@ -122,6 +124,22 @@ Nil! RefCheck(SemanticTypeAlias var) :=
 		1. *Throw:* a new ReferenceErrorKind.
 	4. *Else:*
 		1. *Return.*
+;
+
+
+
+Nil! RefCheck(SemanticTypeCall ::= SemanticType__0 SemanticType__1* SemanticPropertyType*) :=
+	1. *Peform:* *Unwrap:* `RefCheck(SemanticType__0)`.
+	2. *Note:* In type function and generic interface calls, all named arguments’ keys are ref-checked before their values.
+	3. *For each* `SemanticPropertyType ::= SemanticKey__0 SemanticType__2` in SemanticPropertyType*:
+		1. *Perform:* *Unwrap:* `RefCheck(SemanticKey__0)`.
+		2. *If* SemanticPropertyType* already contains an argument `SemanticPropertyType ::= SemanticKey__1 SemanticType__3`
+			such that `SemanticKey__1.id` is `SemanticKey__0.id`:
+			1. *Throw:* a new AssignmentErrorDuplicateKey.
+		3. *Else:*
+			1. Fall through.
+	4. *For each* `arg` in `SemanticType__1* SemanticPropertyType*`:
+		1. *Peform:* *Unwrap:* `RefCheck(arg)`.
 ;
 
 
@@ -150,6 +168,29 @@ Nil! RefCheck(SemanticExpressionVariable var) :=
 		1. *Throw:* a new ReferenceErrorKind.
 	4. *Else:*
 		1. *Return.*
+;
+
+
+
+Nil! RefCheck(SemanticExpressionCall ::= SemanticExpression__0 SemanticType__0* SemanticPropertyType* SemanticExpression__1* SemanticProperty*) :=
+	1. *Peform:* *Unwrap:* `RefCheck(SemanticExpression__0)`.
+	2. *Note:* In function and class calls, all named arguments’ keys are ref-checked before their values.
+	3. *For each* `SemanticPropertyType ::= SemanticKey__0 SemanticType__1` in SemanticPropertyType*:
+		1. *Perform:* *Unwrap:* `RefCheck(SemanticKey__0)`.
+		2. *If* SemanticPropertyType* already contains an argument `SemanticPropertyType ::= SemanticKey__1 SemanticType__2`
+			such that `SemanticKey__1.id` is `SemanticKey__0.id`:
+			1. *Throw:* a new AssignmentErrorDuplicateKey.
+		3. *Else:*
+			1. Fall through.
+	4. *For each* `SemanticProperty ::= SemanticKey__0 SemanticExpression__2` in SemanticProperty*:
+		1. *Perform:* *Unwrap:* `RefCheck(SemanticKey__0)`.
+		2. *If* SemanticProperty* already contains an argument `SemanticProperty ::= SemanticKey__1 SemanticExpression__3`
+			such that `SemanticKey__1.id` is `SemanticKey__0.id`:
+			1. *Throw:* a new AssignmentErrorDuplicateKey.
+		3. *Else:*
+			1. Fall through.
+	5. *For each* `arg` in `SemanticType__0* SemanticPropertyType* SemanticExpression__1* SemanticProperty*`:
+		1. *Peform:* *Unwrap:* `RefCheck(arg)`.
 ;
 
 
