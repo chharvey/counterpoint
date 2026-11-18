@@ -111,36 +111,41 @@ export class ExprVisitorBuild extends EXPR.ExprVisitor<OP.Value> {
 		const typ:        TYPE.Type   = expr.type;
 		const base_value: OP.ValueTac = this.visit(expr.base).asTac(this.builder);
 
-		if (expr.kind === Operator.DOT_MAYBE) {
-			assert_instanceof(typ, TYPE.Maybe);
-			return OP.conditional_expression(
-				this.builder,
-				typ,
-				() => new OP.Unop(OP.OpCode.NONE_IS, base_value, TYPE.BOOL),
-				() => new OP.MaybeNew(typ.typearg),
-				() => new OP.MaybeNew(typ.typearg, this.#buildUnwrappedGet(
-					expr,
-					// TODO: `base_value.type` should always be `Maybe` once expression access is removed. put the assertion underneath `typ`
-					base_value.type instanceof TYPE.Maybe ? new OP.Unop(OP.OpCode.MAYBE_UNWRAP, base_value, base_value.type.typearg).asTac(this.builder) : base_value,
-					typ.typearg,
-				).asTac(this.builder)),
-			);
-		} else if (expr.kind === Operator.DOT_RESULT) {
-			assert_instanceof(typ,             TYPE.Result);
-			assert_instanceof(base_value.type, TYPE.Result);
-			return OP.conditional_expression(
-				this.builder,
-				typ,
-				() => new OP.Unop(OP.OpCode.FAIL_IS, base_value, TYPE.BOOL),
-				() => new OP.ResultNew(false, typ.typeargSuccess, typ.typeargFailure, new OP.Unop(OP.OpCode.RESULT_EXTRACT, base_value, (base_value.type as TYPE.Result).typeargFailure).asTac(this.builder)),
-				() => new OP.ResultNew(true,  typ.typeargSuccess, typ.typeargFailure, this.#buildUnwrappedGet(
-					expr,
-					new OP.Unop(OP.OpCode.RESULT_UNWRAP, base_value, (base_value.type as TYPE.Result).typeargSuccess).asTac(this.builder),
-					typ.typeargSuccess,
-				).asTac(this.builder)),
-			);
+		switch (expr.kind) {
+			case Operator.DOT: {
+				return this.#buildUnwrappedGet(expr, base_value, typ);
+			}
+			case Operator.DOT_MAYBE: {
+				assert_instanceof(typ, TYPE.Maybe);
+				return OP.conditional_expression(
+					this.builder,
+					typ,
+					() => new OP.Unop(OP.OpCode.NONE_IS, base_value, TYPE.BOOL),
+					() => new OP.MaybeNew(typ.typearg),
+					() => new OP.MaybeNew(typ.typearg, this.#buildUnwrappedGet(
+						expr,
+						// TODO: `base_value.type` should always be `Maybe` once expression access is removed. put the assertion underneath `typ`
+						base_value.type instanceof TYPE.Maybe ? new OP.Unop(OP.OpCode.MAYBE_UNWRAP, base_value, base_value.type.typearg).asTac(this.builder) : base_value,
+						typ.typearg,
+					).asTac(this.builder)),
+				);
+			}
+			case Operator.DOT_RESULT: {
+				assert_instanceof(typ,             TYPE.Result);
+				assert_instanceof(base_value.type, TYPE.Result);
+				return OP.conditional_expression(
+					this.builder,
+					typ,
+					() => new OP.Unop(OP.OpCode.FAIL_IS, base_value, TYPE.BOOL),
+					() => new OP.ResultNew(false, typ.typeargSuccess, typ.typeargFailure, new OP.Unop(OP.OpCode.RESULT_EXTRACT, base_value, (base_value.type as TYPE.Result).typeargFailure).asTac(this.builder)),
+					() => new OP.ResultNew(true,  typ.typeargSuccess, typ.typeargFailure, this.#buildUnwrappedGet(
+						expr,
+						new OP.Unop(OP.OpCode.RESULT_UNWRAP, base_value, (base_value.type as TYPE.Result).typeargSuccess).asTac(this.builder),
+						typ.typeargSuccess,
+					).asTac(this.builder)),
+				);
+			}
 		}
-		return this.#buildUnwrappedGet(expr, base_value, typ);
 	}
 
 	@memoizePerNode
