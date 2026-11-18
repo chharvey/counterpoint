@@ -612,15 +612,15 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type | null> {
 		const actual_named: bigint = BigInt(call.exprargsNamed.length);
 
 		if (actual_posit < expected_posit.min) {
-			return new TypeErrorArgCount(actual_posit, expected_posit.min, false, call);
+			return new TypeErrorArgCount(actual_posit, expected_posit.min, {generic: false, named: false}, call);
 		} else if (actual_posit > expected_posit.max) {
-			return new TypeErrorArgCount(actual_posit, expected_posit.max, false, call);
+			return new TypeErrorArgCount(actual_posit, expected_posit.max, {generic: false, named: false}, call);
 		}
-		const too_few_named_err = new TypeErrorArgCount(actual_named, expected_named.min, false, call);
+		const too_few_named_err = new TypeErrorArgCount(actual_named, expected_named.min, {generic: false, named: true}, call);
 		if (actual_named < expected_named.min) {
 			return too_few_named_err;
 		} else if (actual_named > expected_named.max) {
-			return new TypeErrorArgCount(actual_named, expected_named.max, false, call);
+			return new TypeErrorArgCount(actual_named, expected_named.max, {generic: false, named: true}, call);
 		}
 
 		try {

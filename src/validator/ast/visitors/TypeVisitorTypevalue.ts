@@ -175,14 +175,14 @@ export class TypeVisitorTypevalue extends AST_TYPE.TypeVisitor<TYPE.Type> {
 		const actual_named: bigint = BigInt(args_named.size);
 
 		if (actual_posit < expected_posit.min) {
-			throw new TypeErrorArgCount(actual_posit, expected_posit.min, true, call);
+			throw new TypeErrorArgCount(actual_posit, expected_posit.min, {generic: true, named: false}, call);
 		} else if (actual_posit > expected_posit.max) {
-			throw new TypeErrorArgCount(actual_posit, expected_posit.max, true, call);
+			throw new TypeErrorArgCount(actual_posit, expected_posit.max, {generic: true, named: false}, call);
 		}
 		if (actual_named < expected_named.min) {
-			throw new TypeErrorArgCount(actual_named, expected_named.min, true, call);
+			throw new TypeErrorArgCount(actual_named, expected_named.min, {generic: true, named: true}, call);
 		} else if (actual_named > expected_named.max) {
-			throw new TypeErrorArgCount(actual_named, expected_named.max, true, call);
+			throw new TypeErrorArgCount(actual_named, expected_named.max, {generic: true, named: true}, call);
 		}
 
 		/* Argument Typing. Handles optionality and default values. Also checks if each argument matches the constraints given. */
