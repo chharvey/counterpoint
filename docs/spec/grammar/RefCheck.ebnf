@@ -131,9 +131,9 @@ Nil! RefCheck(SemanticTypeAlias var) :=
 Nil! RefCheck(SemanticTypeCall ::= SemanticType__0 SemanticType__1* SemanticPropertyType*) :=
 	1. *Peform:* *Unwrap:* `RefCheck(SemanticType__0)`.
 	2. *Note:* In type function and generic interface calls, all named arguments’ keys are ref-checked before their values.
-	3. *For each* `SemanticPropertyType ::= SemanticKey__0 SemanticType__2` in SemanticPropertyType*:
+	3. *For each* `SemanticPropertyType ::= SemanticKey__0 SemanticType__2` in `SemanticPropertyType*`:
 		1. *Perform:* *Unwrap:* `RefCheck(SemanticKey__0)`.
-		2. *If* SemanticPropertyType* already contains an argument `SemanticPropertyType ::= SemanticKey__1 SemanticType__3`
+		2. *If* `SemanticPropertyType*` already contains an argument `SemanticPropertyType ::= SemanticKey__1 SemanticType__3`
 			such that `SemanticKey__1.id` is `SemanticKey__0.id`:
 			1. *Throw:* a new AssignmentErrorDuplicateKey.
 		3. *Else:*
@@ -175,16 +175,16 @@ Nil! RefCheck(SemanticExpressionVariable var) :=
 Nil! RefCheck(SemanticExpressionCall ::= SemanticExpression__0 SemanticType__0* SemanticPropertyType* SemanticExpression__1* SemanticProperty*) :=
 	1. *Peform:* *Unwrap:* `RefCheck(SemanticExpression__0)`.
 	2. *Note:* In function and class calls, all named arguments’ keys are ref-checked before their values.
-	3. *For each* `SemanticPropertyType ::= SemanticKey__0 SemanticType__1` in SemanticPropertyType*:
+	3. *For each* `SemanticPropertyType ::= SemanticKey__0 SemanticType__1` in `SemanticPropertyType*`:
 		1. *Perform:* *Unwrap:* `RefCheck(SemanticKey__0)`.
-		2. *If* SemanticPropertyType* already contains an argument `SemanticPropertyType ::= SemanticKey__1 SemanticType__2`
+		2. *If* `SemanticPropertyType*` already contains an argument `SemanticPropertyType ::= SemanticKey__1 SemanticType__2`
 			such that `SemanticKey__1.id` is `SemanticKey__0.id`:
 			1. *Throw:* a new AssignmentErrorDuplicateKey.
 		3. *Else:*
 			1. Fall through.
-	4. *For each* `SemanticProperty ::= SemanticKey__0 SemanticExpression__2` in SemanticProperty*:
+	4. *For each* `SemanticProperty ::= SemanticKey__0 SemanticExpression__2` in `SemanticProperty*`:
 		1. *Perform:* *Unwrap:* `RefCheck(SemanticKey__0)`.
-		2. *If* SemanticProperty* already contains an argument `SemanticProperty ::= SemanticKey__1 SemanticExpression__3`
+		2. *If* `SemanticProperty*` already contains an argument `SemanticProperty ::= SemanticKey__1 SemanticExpression__3`
 			such that `SemanticKey__1.id` is `SemanticKey__0.id`:
 			1. *Throw:* a new AssignmentErrorDuplicateKey.
 		3. *Else:*

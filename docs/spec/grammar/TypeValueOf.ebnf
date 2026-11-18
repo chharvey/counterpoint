@@ -100,7 +100,7 @@ Type! TypeValueOf(SemanticTypeCall ::= SemanticType__0 SemanticType__1* Semantic
 		1. *Throw:* a new TypeErrorNotCallable.
 	5. *Else:*
 		1. Fall through.
-	6. *Note:* This algorithm allows generic arguments to be the Bottom Type, unlike in `TypeOf(SemanticExpressionCall)`.
+	6. *Note:* This algorithm allows generic arguments to be the Bottom Type, unlike `TypeOf(SemanticExpressionCall)`.
 	7. *If* `symbol.signature` allows for the given arguments:
 		1. *Return:* the designated return type of `symbol.signature`.
 	8. *Else:*
