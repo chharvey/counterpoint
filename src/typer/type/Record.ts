@@ -48,7 +48,7 @@ class TypeRecord extends ValueType {
 
 	/** The minimum possible number of properties in this record type. */
 	public get minCount(): bigint {
-		return BigInt([...this.typeargs.values()].filter((val) => !val.optional).length);
+		return BigInt([...this.typeargs.values().filter((val) => !val.optional)].length);
 	}
 
 	public override toString(): string {

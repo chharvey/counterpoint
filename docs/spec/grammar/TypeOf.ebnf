@@ -225,15 +225,21 @@ Type?! TypeOf(SemanticExpressionCall[generic: Boolean] ::= SemanticExpression__0
 				1. *Throw:* a new TypeErrorArgCount.
 			7. *Else:*
 				1. Fall through.
-			8. *Let* `argsPosit` be a new SemanticExpressionTuple containing `SemanticExpression__1*`.
-			9. *Let* `tupleType` be a new Tuple type containing `paramsPosit`.
-			10. *Perform:* *Unwrap:* `AssignTo(argsPosit, tupleType)`.
-			11. *Let* `argsNamed` be a new SemanticExpressionRecord containing `SemanticProperty*`.
-			12. *Let* `recordType` be a new Record type containing `paramsNamed`.
-			13. *Perform:* *Unwrap:* `AssignTo(argsNamed, recordType)`.
-			14. *If* `type` has a return type:
+			8. *If* `SemanticProperty*.count` is less than the number of required named parameters:
+				1. *Throw:* a new TypeErrorArgCount.
+			9. *Else If* `SemanticProperty*.count` is greater than the number of total named parameters:
+				1. *Throw:* a new TypeErrorArgCount.
+			10. *Else:*
+				1. Fall through.
+			11. *Let* `argsPosit` be a new SemanticExpressionTuple containing `SemanticExpression__1*`.
+			12. *Let* `tupleType` be a new Tuple type containing `paramsPosit`.
+			13. *Perform:* *Unwrap:* `AssignTo(argsPosit, tupleType)`.
+			14. *Let* `argsNamed` be a new SemanticExpressionRecord containing `SemanticProperty*`.
+			15. *Let* `recordType` be a new Record type containing `paramsNamed`.
+			16. *Perform:* *Unwrap:* `AssignTo(argsNamed, recordType)`.
+			17. *If* `type` has a return type:
 				1. *Return:* the return type of `type`.
-			15. *Else:*
+			18. *Else:*
 				1. *Return:* *nil*.
 		2. *If* the result of the above substeps is a normal completion:
 			1. Push the result to `successes`.

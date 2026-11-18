@@ -606,20 +606,26 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type | null> {
 	}
 
 	#typeFunctionCall(call: EXPR.Call, t: TYPE.Function): TYPE.Type | null | Error {
-		const expected_function = {
-			min: t.typeargParamsPosit.minCount,
-			max: BigInt(t.typeargParamsPosit.typeargs.length),
-		} as const;
-		const actual_function: bigint = BigInt(call.exprargsPosit.length);
-		const too_few_err = new TypeErrorArgCount(actual_function, expected_function.min, false, call);
-		if (actual_function < expected_function.min) {
-			return too_few_err;
-		} else if (actual_function > expected_function.max) {
-			return new TypeErrorArgCount(actual_function, expected_function.max, false, call);
+		const expected_posit = {min: t.typeargParamsPosit.minCount, max: BigInt(t.typeargParamsPosit.typeargs.length)} as const;
+		const expected_named = {min: t.typeargParamsNamed.minCount, max: BigInt(t.typeargParamsNamed.typeargs.size)}   as const;
+		const actual_posit: bigint = BigInt(call.exprargsPosit.length);
+		const actual_named: bigint = BigInt(call.exprargsNamed.length);
+
+		if (actual_posit < expected_posit.min) {
+			return new TypeErrorArgCount(actual_posit, expected_posit.min, false, call);
+		} else if (actual_posit > expected_posit.max) {
+			return new TypeErrorArgCount(actual_posit, expected_posit.max, false, call);
 		}
+		const too_few_named_err = new TypeErrorArgCount(actual_named, expected_named.min, false, call);
+		if (actual_named < expected_named.min) {
+			return too_few_named_err;
+		} else if (actual_named > expected_named.max) {
+			return new TypeErrorArgCount(actual_named, expected_named.max, false, call);
+		}
+
 		try {
-			EXPR.Tuple.assignExprsToTupleType(this, call.exprargsPosit, t.typeargParamsPosit);
-			EXPR.Record.assignPropsToRecordType(this, call.exprargsNamed, t.typeargParamsNamed, too_few_err);
+			EXPR.Tuple.assignExprsToTupleType   (this, call.exprargsPosit, t.typeargParamsPosit);
+			EXPR.Record.assignPropsToRecordType (this, call.exprargsNamed, t.typeargParamsNamed, too_few_named_err);
 		} catch (err) {
 			if (only_errors_of_type(err as Error, [CplTypeError])) {
 				return err as Error;

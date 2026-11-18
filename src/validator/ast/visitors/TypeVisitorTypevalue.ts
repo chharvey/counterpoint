@@ -169,17 +169,20 @@ export class TypeVisitorTypevalue extends AST_TYPE.TypeVisitor<TYPE.Type> {
 		).map((arg) => [arg.key.id, arg.typevalue]));
 
 		/* Argument Counting. Throws if the number of given args does not match the number of expected parameters. */
-		const expected_generic = {
-			min: BigInt(generic_params?.positional?.filter((param) => !param.default).length ?? 0),
-			max: BigInt(generic_params?.positional?.length ?? 0),
-		} as const;
-		const actual_generic: bigint = BigInt(args_posit.length);
-		// TODO: throw AggregateError if both
-		if (actual_generic < expected_generic.min) {
-			throw new TypeErrorArgCount(actual_generic, expected_generic.min, true, call);
+		const expected_posit = {min: BigInt(generic_params?.positional?.filter((param) => !param.default).length ?? 0),             max: BigInt(generic_params?.positional?.length ?? 0)} as const;
+		const expected_named = {min: BigInt([...(generic_params?.named?.values().filter((param) => !param.default) ?? [])].length), max: BigInt(generic_params?.named?.size        ?? 0)} as const;
+		const actual_posit: bigint = BigInt(args_posit.length);
+		const actual_named: bigint = BigInt(args_named.size);
+
+		if (actual_posit < expected_posit.min) {
+			throw new TypeErrorArgCount(actual_posit, expected_posit.min, true, call);
+		} else if (actual_posit > expected_posit.max) {
+			throw new TypeErrorArgCount(actual_posit, expected_posit.max, true, call);
 		}
-		if (actual_generic > expected_generic.max) {
-			throw new TypeErrorArgCount(actual_generic, expected_generic.max, true, call);
+		if (actual_named < expected_named.min) {
+			throw new TypeErrorArgCount(actual_named, expected_named.min, true, call);
+		} else if (actual_named > expected_named.max) {
+			throw new TypeErrorArgCount(actual_named, expected_named.max, true, call);
 		}
 
 		/* Argument Typing. Handles optionality and default values. Also checks if each argument matches the constraints given. */

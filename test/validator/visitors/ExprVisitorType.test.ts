@@ -1178,6 +1178,7 @@ test.suite('ExprVisitorType#visit', () => {
 				inc2.();
 				inc2.(5);
 				inc2.(y= 6);
+				inc2.(x=6, y= 6);
 			}`, {typeCheck: false});
 			visitors.typeCheck.visit(stmts[0]);
 			visitors.typeCheck.visit(stmts[1]);
@@ -1193,6 +1194,7 @@ test.suite('ExprVisitorType#visit', () => {
 				Map.<int, int>((), ())
 				None.<int>(42)
 				Some.<int>()
+				Some.<int, T= float>(42)
 			`, (src) => assert.throws(() => VISITOR.visit(AST.EXPR.Call.fromSource(src)), TypeErrorArgCount));
 		});
 		test.test('throws when providing incorrect type of arguments.', () => {
