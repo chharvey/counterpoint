@@ -179,7 +179,7 @@ Type! TypeOf(SemanticExpressionAccess[kind=RESULT] ::= SemanticExpression__0 (Se
 
 
 
-Type?! TypeOf(SemanticExpressionCall ::= SemanticExpression__0 SemanticType* SemanticPropertyType* SemanticExpression__1* SemanticProperty*) :=
+Type?! TypeOf(SemanticExpressionCall[generic: Boolean] ::= SemanticExpression__0 SemanticType* SemanticPropertyType* SemanticExpression__1* SemanticProperty*) :=
 	1. *If* `SemanticExpression__0` is a SemanticExpressionVariable:
 		1. *Assert:* The validator’s symbol table contains a SymbolSchema `symbol` whose `id` is `SemanticExpression__0.id`.
 	2. *Else:*
@@ -187,7 +187,13 @@ Type?! TypeOf(SemanticExpressionCall ::= SemanticExpression__0 SemanticType* Sem
 	3. *If* `symbol` is set and is an instance of `SymbolSchemaFunc`:
 		1. *Let* `base_types` be `symbol.types`.
 	4. *Else If* `symbol` is set and is an instance of `SymbolSchemaClass`:
-		1. *Let* `base_types` be an array of Function types constructed from the overloads allowed by `symbol.signature`.
+		1. *If* `symbol.signature` has no generic parameters *and* `SemanticExpressionCall.generic` is `true`:
+			1. *Throw:* a new TypeError.
+		2. *Else If* `symbol.signature` has any generic parameters *and* `SemanticExpressionCall.generic` is `false`:
+			1. *Throw:* a new TypeError.
+		3. *Else:*
+			1. Fall through.
+		4. *Let* `base_types` be a Sequence of Function types constructed from the overloads allowed by `symbol.signature`.
 	5. *Else:*
 		1. *Let* `basetype` be *Unwrap:* `ThrowIfVoid(SemanticExpression__0, TypeErrorInvalidOperation)`.
 		2. *Let* `base_types` be a new Sequence [`basetype`].
@@ -225,15 +231,21 @@ Type?! TypeOf(SemanticExpressionCall ::= SemanticExpression__0 SemanticType* Sem
 				1. *Throw:* a new TypeErrorArgCount.
 			7. *Else:*
 				1. Fall through.
-			8. *Let* `argsPosit` be a new SemanticExpressionTuple containing `SemanticExpression__1*`.
-			9. *Let* `tupleType` be a new Tuple type containing `paramsPosit`.
-			10. *Perform:* *Unwrap:* `AssignTo(argsPosit, tupleType)`.
-			11. *Let* `argsNamed` be a new SemanticExpressionRecord containing `SemanticProperty*`.
-			12. *Let* `recordType` be a new Record type containing `paramsNamed`.
-			13. *Perform:* *Unwrap:* `AssignTo(argsNamed, recordType)`.
-			14. *If* `type` has a return type:
+			8. *If* `SemanticProperty*.count` is less than the number of required named parameters:
+				1. *Throw:* a new TypeErrorArgCount.
+			9. *Else If* `SemanticProperty*.count` is greater than the number of total named parameters:
+				1. *Throw:* a new TypeErrorArgCount.
+			10. *Else:*
+				1. Fall through.
+			11. *Let* `argsPosit` be a new SemanticExpressionTuple containing `SemanticExpression__1*`.
+			12. *Let* `tupleType` be a new Tuple type containing `paramsPosit`.
+			13. *Perform:* *Unwrap:* `AssignTo(argsPosit, tupleType)`.
+			14. *Let* `argsNamed` be a new SemanticExpressionRecord containing `SemanticProperty*`.
+			15. *Let* `recordType` be a new Record type containing `paramsNamed`.
+			16. *Perform:* *Unwrap:* `AssignTo(argsNamed, recordType)`.
+			17. *If* `type` has a return type:
 				1. *Return:* the return type of `type`.
-			15. *Else:*
+			18. *Else:*
 				1. *Return:* *nil*.
 		2. *If* the result of the above substeps is a normal completion:
 			1. Push the result to `successes`.

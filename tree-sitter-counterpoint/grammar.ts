@@ -429,9 +429,9 @@ module.exports = grammar({
 			$.type_map_literal,
 		),
 
-		type_compound: $ => prec(5, seq(field('type_0', $._type), '.', choice(
-			         field('property_accessor_type_0', $.property_accessor_type), // eslint-disable-line @stylistic/indent
-			seq('<', field('arguments_generic_0',      $.arguments_generic), '>'),
+		type_compound: $ => prec(5, seq(field('type_0', $._type), choice(
+			seq('.', field('property_accessor_type_0', $.property_accessor_type)),
+			seq('.', '<', optional(field('arguments_generic_0', $.arguments_generic)), '>'),
 		))),
 
 		type_unary_symbol:  $ => prec(4, seq($._type, choice('?', '!'))),
@@ -526,7 +526,11 @@ module.exports = grammar({
 			'~?',
 			'~!',
 			seq(choice('.', '?.', '!.'), field('property_accessor_0', call($, 'property_accessor', {break: brk}, {return: rtn}))),
-			seq('.',                     optional(seq('<', field('arguments_generic_0', $.arguments_generic), '>')), '(', optional(field('arguments_function_0', call($, 'arguments_function', {break: brk}, {return: rtn}))), ')'),
+			seq(
+				'.',
+				optional(seq('<', optional(field('arguments_generic_0', $.arguments_generic)), '>')),
+				'(', optional(field('arguments_function_0', call($, 'arguments_function', {break: brk}, {return: rtn}))), ')',
+			),
 		))), 'block', 'break', 'return'),
 
 		...parameterize('expression_unary_symbol', ({block, break: brk, return: rtn}) => $ => prec(9, seq(choice('!', '?', '+', '-'), call($, '_expression', {block}, {break: brk}, {return: rtn}))), 'block', 'break', 'return'),

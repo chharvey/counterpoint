@@ -22,11 +22,12 @@ export class Call extends Expression {
 	public constructor(
 		start_node: SyntaxNodeType<'expression_compound'>,
 		public readonly base:          Expression,
+		public readonly generic:       boolean,
 		public readonly typeargsPosit: readonly AST_TYPE.Type[],
 		public readonly typeargsNamed: readonly PropertyType[],
 		public readonly exprargsPosit: readonly Expression[],
 		public readonly exprargsNamed: readonly Property[],
 	) {
-		super(start_node, {}, [base, ...typeargsPosit, ...typeargsNamed, ...exprargsPosit, ...exprargsNamed]);
+		super(start_node, {generic}, [base, ...typeargsPosit, ...typeargsNamed, ...exprargsPosit, ...exprargsNamed]);
 	}
 }

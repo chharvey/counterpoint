@@ -132,7 +132,10 @@ TypeUnit ::=
 
 TypeCompound ::=
 	| TypeUnit
-	| TypeCompound "." (PropertyAccessorType | "<" ArgumentsGeneric ">")
+	| TypeCompound (
+		| "." PropertyAccessorType
+		| "." "<" ArgumentsGeneric? ">"
+	)
 ;
 
 TypeUnarySymbol  ::= TypeCompound    | TypeUnarySymbol ("?" | "!");
@@ -217,7 +220,7 @@ ExpressionCompound<Block, Break, Return> ::=
 	| ExpressionCompound<?Block><?Break><?Return> (
 		| "~?" | "~!"
 		| ("." | "?." | "!.") PropertyAccessor<?Break><?Return>
-		|  "."                ("<" ArgumentsGeneric ">")? "(" ArgumentsFunction<?Break><?Return>? ")"
+		|  "."                ("<" ArgumentsGeneric? ">")? "(" ArgumentsFunction<?Break><?Return>? ")"
 	)
 ;
 

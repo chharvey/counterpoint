@@ -221,7 +221,7 @@ Solution(s): Arguments to a function call must match exactly one overload.
 Cause: A function or generic call was given an incorrect number of arguments.
 ```cpl
 type U<V, W> = V | W;
-type T = U.<V>;       % TypeErrorArgCount: Got 1 type arguments, but expected 2.
+type T = U.<V>;       % TypeErrorArgCount: Got 1 generic arguments, but expected 2.
 
 func x(y: int): int => y + 42;
 x.(2, 4);                      % TypeErrorArgCount: Got 2 arguments, but expected 1.

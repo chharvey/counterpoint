@@ -21,7 +21,7 @@ import {
 import {Operator} from '../../Operator.ts';
 import {get_entry_info} from '../utils-private.ts';
 import * as AST_TYPE from '../type/index.ts';
-import type * as EXPR from '../expression/index.ts';
+import * as EXPR from '../expression/index.ts';
 
 
 
@@ -169,17 +169,55 @@ export class TypeVisitorTypevalue extends AST_TYPE.TypeVisitor<TYPE.Type> {
 		).map((arg) => [arg.key.id, arg.typevalue]));
 
 		/* Argument Counting. Throws if the number of given args does not match the number of expected parameters. */
-		const expected_generic = {
-			min: BigInt(generic_params?.positional?.filter((param) => !param.default).length ?? 0),
-			max: BigInt(generic_params?.positional?.length ?? 0),
-		} as const;
-		const actual_generic: bigint = BigInt(args_posit.length);
-		// TODO: throw AggregateError if both
-		if (actual_generic < expected_generic.min) {
-			throw new TypeErrorArgCount(actual_generic, expected_generic.min, true, call);
+		const expected_posit = {min: BigInt(generic_params?.positional?.filter((param) => !param.default).length ?? 0),             max: BigInt(generic_params?.positional?.length ?? 0)} as const;
+		const expected_named = {min: BigInt([...(generic_params?.named?.values().filter((param) => !param.default) ?? [])].length), max: BigInt(generic_params?.named?.size        ?? 0)} as const;
+		const actual_posit: bigint = BigInt(args_posit.length);
+		const actual_named: bigint = BigInt(args_named.size);
+
+		if (actual_posit < expected_posit.min) {
+			throw new TypeErrorArgCount(actual_posit, expected_posit.min, {generic: true, named: false}, call);
+		} else if (actual_posit > expected_posit.max) {
+			throw new TypeErrorArgCount(actual_posit, expected_posit.max, {generic: true, named: false}, call);
 		}
-		if (actual_generic > expected_generic.max) {
-			throw new TypeErrorArgCount(actual_generic, expected_generic.max, true, call);
+		if (actual_named < expected_named.min) {
+			throw new TypeErrorArgCount(actual_named, expected_named.min, {generic: true, named: true}, call);
+		} else if (actual_named > expected_named.max) {
+			throw new TypeErrorArgCount(actual_named, expected_named.max, {generic: true, named: true}, call);
+		}
+
+		if (call instanceof EXPR.Call) {
+			if (!expected_posit.max && !expected_named.max && call.generic) {
+				/*
+				 * Throw when a non-generic function is called with a generic argument list.
+				 * ```cpl
+				 * claim sum(a: int, b: int): int;
+				 * sum[](2, 3); % TypeError
+				 * sum(2, 3);   % fixed
+				 * ```
+				 * This must be treated separately from argument counting above,
+				 * because `sum[](2, 3)` (given no args, expecting no args) would pass.
+				 *
+				 * This check only applies to call expressions, because type calls always require a generic argument list (even if empty).
+				 * ```cpl
+				 * typefunc Id[T? = int] => T;
+				 * type U = Id[]; % allowed
+				 * type V = Id;   % ReferenceError
+				 * ```
+				 */
+				throw new TypeError('A non-generic function was called with a generic argument list.'); // TODO: create a new CplTypeError class
+			} else if ((expected_posit.max || expected_named.max) && !call.generic) {
+				/*
+				 * Conversely, throw when a generic function is called without a generic argument list.
+				 * ```cpl
+				 * claim sum[T? = int](a: T, b: T): T;
+				 * sum(2, 3);   % TypeError
+				 * sum[](2, 3); % fixed
+				 * ```
+				 * This must be treated separately from argument counting above,
+				 * because `sum(2, 3)` (given no args, expecting 0–1 args) would pass.
+				 */
+				throw new TypeError('A generic function was called without a generic argument list.'); // TODO: create a new CplTypeError class
+			}
 		}
 
 		/* Argument Typing. Handles optionality and default values. Also checks if each argument matches the constraints given. */

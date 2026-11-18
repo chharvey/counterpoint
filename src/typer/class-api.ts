@@ -42,7 +42,7 @@ export type GenericParams = {
  * Schema for defining the parameters of a single constructor overload.
  * Takes generic parameters Effectively a function type, but without the return.
  */
-export type ConstructorOverload = {
+type ConstructorOverload = {
 	readonly positional?: TYPE.Tuple,
 	readonly named?:      TYPE.Record,
 };

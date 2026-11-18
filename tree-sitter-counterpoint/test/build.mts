@@ -482,6 +482,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					type T = TupleType.\\d0;
 					type T = RecordType.prop;
 					type T = RecordType._;
+					type T = No.<>;
 					type T = Set.<T>;
 					type T = Map.<T, V= Object>;
 					type T = SomeType.type;
@@ -515,6 +516,10 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					'type_compound',
 					f('type_0', 'identifier'),
 					f('property_accessor_type_0', 'property_accessor_type', s('word')),
+				),
+				s(
+					'type_compound',
+					f('type_0', 'identifier'),
 				),
 				s(
 					'type_compound',
@@ -958,6 +963,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					list!.[index];
 					List.();
 					Dict.(record);
+					No.<>(x);
 					Set.<T>();
 					call.(a, b= c);
 					record.type;
@@ -1047,6 +1053,11 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				s(
 					'expression_compound',
 					f('expression_0', 'identifier'),
+				),
+				s(
+					'expression_compound',
+					f('expression_0', 'identifier'),
+					f('arguments_function_0', 'arguments_function', s('identifier')),
 				),
 				s(
 					'expression_compound',
