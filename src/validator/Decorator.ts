@@ -239,6 +239,7 @@ export class Decorator {
 			['type_compound', (node) => {
 				const type_0                   = node.childForFieldName('type_0')                   as SyntaxNodeSupertype<'type'>;
 				const property_accessor_type_0 = node.childForFieldName('property_accessor_type_0') as SyntaxNodeType<'property_accessor_type'> | null;
+				const arguments_generic_0      = node.childForFieldName('arguments_generic_0');
 				return property_accessor_type_0 ? new AST.TYPE.Access(
 					node as SyntaxNodeType<'type_compound'>,
 					this.decorateTypeNode(type_0),
@@ -246,8 +247,8 @@ export class Decorator {
 				) : new AST.TYPE.Call(
 					node as SyntaxNodeType<'type_compound'>,
 					this.decorateTypeNode(type_0),
-					node.childForFieldName('arguments_generic_0')!.namedChildren.filter((c) => isSyntaxNodeSupertype(c, 'type'))              .map((c) => this.decorateTypeNode(c)),
-					node.childForFieldName('arguments_generic_0')!.namedChildren.filter((c) => isSyntaxNodeType(c, 'argument_generic_named')) .map((c) => this.decorate(c)),
+					arguments_generic_0?.namedChildren.filter((c) => isSyntaxNodeSupertype(c, 'type'))              .map((c) => this.decorateTypeNode(c)) ?? [],
+					arguments_generic_0?.namedChildren.filter((c) => isSyntaxNodeType(c, 'argument_generic_named')) .map((c) => this.decorate(c))         ?? [],
 				);
 			}],
 
