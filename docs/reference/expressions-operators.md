@@ -168,11 +168,10 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… !> …</code></td>
 		</tr>
 		<tr>
-			<td>TBA</td>
+			<td rowspan="2">Instance-Of</td>
 			<td><code>… is …</code></td>
 		</tr>
 		<tr>
-			<td>TBA</td>
 			<td><code>… !is …</code></td>
 		</tr>
 		<tr>
@@ -535,8 +534,8 @@ This is important to mention because it could also affect how we write
 
 ### Type Cast/Claim
 ```
-<Object>   `as`  <Class>
-<Object>   `as?` <Class>
+<anything> `as`  <Class>
+<anything> `as?` <Class>
 <anything> `as`  `:` <Type> `:`
 <anything> `as!` `:` <Type> `:`
 ```
@@ -768,9 +767,6 @@ The parser receives these tokens and produces the correct expression.
 <Number> `>=` <Number>
 <Number> `!<` <Number>
 <Number> `!>` <Number>
-
-<anything> `is`  <Class>
-<anything> `!is` <Class>
 ```
 The numerical comparative operators,
 
@@ -801,12 +797,26 @@ int --> nat --> float
 Conversions are made only for determining mathematical inequality; the value of the operand does not change.
 Note that conversions may be lossy; see [Numeric Conversions](./built-ins.md#numeric-conversions) for details.
 
-The object comparative operators `is` and `!is` determine whether the left-hand operand (any value)
-is an instance of the right-hand operand (a class).
-```cpl
-x is Null;    % sugar for `x === null`
-x is Boolean; % sugar for `x === false || x === true`
 
+### Instance-Of
+```
+<anything> `is`  <Class>
+<anything> `!is` <Class>
+```
+The expression `expr is Klass` tests whether `expr` is an instance of `Klass`, and returns a boolean.
+The operator `!is` negates the outcome.
+These operators can be used for reference types and value types alike.
+
+“Instance of” means the value was constructed directly by a constructor of `Klass` or one of its descendants.
+This makes instance-of a **nominal** operator —
+a value is not an instance of a class just because it is structurally assignable to it.
+
+For primitive types (`int`, `str`, etc.), the class name must be used as the right-hand operand
+in order to test instance membership (`Integer`, `String`, etc…
+see the spec’s [Core Library chapter](../spec/core-library.md)).
+It is a syntax error to use a type expression as an operand.
+
+```cpl
 42     is Symbol;  %== false
 @hello is Symbol;  %== true
 42     is Integer; %== true
@@ -815,6 +825,8 @@ x is Boolean; % sugar for `x === false || x === true`
 x !is Null;    % sugar for `!(x is Null)`
 x !is Boolean; % sugar for `!(x is Boolean)`
 x !is Integer; % sugar for `!(x is Integer)`
+
+x is Null; % faster to test `x === null`
 ```
 
 
