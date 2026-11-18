@@ -1,5 +1,4 @@
 import {
-	type NonemptyArray,
 	assert_instanceof,
 } from '../../../lib/index.ts';
 import {
@@ -7,6 +6,7 @@ import {
 	CONFIG_DEFAULT,
 } from '../../../core/index.ts';
 import type {SyntaxNodeType} from '../../utils-private.ts';
+import type {PropertyType} from '../PropertyType.ts';
 import {Type} from './Type.ts';
 
 
@@ -22,8 +22,9 @@ export class Call extends Type {
 	public constructor(
 		start_node: SyntaxNodeType<'type_compound'>,
 		public readonly base: Type,
-		public readonly args: Readonly<NonemptyArray<Type>>,
+		public readonly argsPosit: readonly Type[],
+		public readonly argsNamed: readonly PropertyType[],
 	) {
-		super(start_node, {}, [base, ...args]);
+		super(start_node, {}, [base, ...argsPosit, ...argsNamed]);
 	}
 }

@@ -25,7 +25,7 @@ Type TypeOf(SemanticExpressionVariable var) :=
 		2. *Else:*
 			1. *Return:* `symbol.type`.
 	3. *Else If* `symbol` is an instance of `SymbolSchemaFunc`:
-		1. *Assert:* The parent node of `var` matches "SemanticExpressionCall ::= `var` SemanticType* SemanticExpression* SemanticProperty*".
+		1. *Assert:* The parent node of `var` matches "SemanticExpressionCall ::= `var` SemanticType* SemanticPropertyType* SemanticExpression* SemanticProperty*".
 		2. *Note:* The «TypeOf(SemanticExpressionCall)» algorithm does not use this return value.
 		3. *Return:* `Nothing`.
 	4. *Else*:
@@ -179,7 +179,7 @@ Type! TypeOf(SemanticExpressionAccess[kind=RESULT] ::= SemanticExpression__0 (Se
 
 
 
-Type?! TypeOf(SemanticExpressionCall ::= SemanticExpression__0 SemanticType* SemanticExpression__1* SemanticProperty*) :=
+Type?! TypeOf(SemanticExpressionCall ::= SemanticExpression__0 SemanticType* SemanticPropertyType* SemanticExpression__1* SemanticProperty*) :=
 	1. *If* `SemanticExpression__0` is a SemanticExpressionVariable:
 		1. *Assert:* The validator’s symbol table contains a SymbolSchema `symbol` whose `id` is `SemanticExpression__0.id`.
 	2. *Else:*

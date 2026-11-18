@@ -217,8 +217,12 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type | null> {
 		const base_types: readonly TYPE.Type[] = (
 			symbol instanceof SymbolSchemaFunc  ? symbol.types :
 			symbol instanceof SymbolSchemaClass ? symbol.classSignature.overloads ? (() => {
-				const return_type: TYPE.Type = this.#computeSignatureReturnType(expr, symbol.classSignature);
-				return symbol.classSignature.overloads(this.#typeVisitorTypevalue.checkGenericArgs(expr, symbol.classSignature.genericParams)).map((overload) => new TYPE.Function(
+				const generic_args: GenericArgs = this.#typeVisitorTypevalue.checkGenericArgs(expr, symbol.classSignature.genericParams);
+				let return_type: TYPE.Type = symbol.classSignature.returnType(generic_args);
+				if (return_type instanceof TYPE.ReferenceType) {
+					return_type = return_type.mutableOf();
+				}
+				return symbol.classSignature.overloads(generic_args).map((overload) => new TYPE.Function(
 					overload.positional,
 					overload.named,
 					return_type,
@@ -272,7 +276,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type | null> {
 			switch (expr.base.source) {
 				case CoreLibName.LIST: {
 					// If function overload checking failed, `arg` is either a tuple literal or an expression with a tuple type.
-					const itemtype: TYPE.Type       = this.#typeVisitorTypevalue.visit(expr.typeargs[0]);
+					const itemtype: TYPE.Type       = this.#typeVisitorTypevalue.visit(expr.typeargsPosit[0]);
 					const arg:      EXPR.Expression = expr.exprargsPosit[0];
 					if (arg instanceof EXPR.Tuple) {
 						xjs.Array.forEachAggregated(arg.children, (item) => typecheck_assign(this, item, itemtype, item));
@@ -291,7 +295,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type | null> {
 				}
 				case CoreLibName.DICT: {
 					// If function overload checking failed, `arg` is either a tuple/record literal or an expression with a tuple/record type.
-					const valuetype: TYPE.Type  = this.#typeVisitorTypevalue.visit(expr.typeargs[0]);
+					const valuetype: TYPE.Type  = this.#typeVisitorTypevalue.visit(expr.typeargsPosit[0]);
 					const entrytype: TYPE.Tuple = TYPE.Tuple.fromTypes([TYPE.SYM, valuetype]);
 					const arg:       EXPR.Expression = expr.exprargsPosit[0];
 					if (arg instanceof EXPR.Tuple) {
@@ -318,7 +322,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type | null> {
 				}
 				case CoreLibName.SET: {
 					// If function overload checking failed, `arg` is either a tuple literal or an expression with a tuple type.
-					const eltype: TYPE.Type       = this.#typeVisitorTypevalue.visit(expr.typeargs[0]);
+					const eltype: TYPE.Type       = this.#typeVisitorTypevalue.visit(expr.typeargsPosit[0]);
 					const arg:    EXPR.Expression = expr.exprargsPosit[0];
 					if (arg instanceof EXPR.Tuple) {
 						xjs.Array.forEachAggregated(arg.children, (item) => typecheck_assign(this, item, eltype, item));
@@ -337,10 +341,11 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type | null> {
 				}
 				case CoreLibName.MAP: {
 					// If function overload checking failed, `arg` is either a tuple literal or an expression with a tuple type.
-					const anttype:   TYPE.Type  = this.#typeVisitorTypevalue.visit(expr.typeargs[0]);
-					const contype:   TYPE.Type  = expr.typeargs[1] ? this.#typeVisitorTypevalue.visit(expr.typeargs[1]) : anttype;
-					const entrytype: TYPE.Tuple = TYPE.Tuple.fromTypes([anttype, contype]);
-					const arg:       EXPR.Expression = expr.exprargsPosit[0];
+					const entrytype: TYPE.Tuple = TYPE.Tuple.fromTypes([
+						this.#typeVisitorTypevalue.visit(expr.typeargsPosit[0]),
+						this.#typeVisitorTypevalue.visit(expr.typeargsPosit[1]),
+					]);
+					const arg: EXPR.Expression = expr.exprargsPosit[0];
 					if (arg instanceof EXPR.Tuple) {
 						xjs.Array.forEachAggregated(arg.children, (item) => typecheck_assign(this, item, entrytype, item));
 					} else {
@@ -360,7 +365,11 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type | null> {
 					throw err;
 				}
 			}
-			return this.#computeSignatureReturnType(expr, CLASS_API.get(expr.base.source)!);
+			const signature:   ClassSignature = CLASS_API.get(expr.base.source)!;
+			const return_type: TYPE.Type      = signature.returnType(
+				this.#typeVisitorTypevalue.checkGenericArgs(expr, signature.genericParams),
+			);
+			return return_type instanceof TYPE.ReferenceType ? return_type.mutableOf() : return_type;
 		} else {
 			assert.ok(errors.length);
 			throw errors[0];
@@ -594,12 +603,6 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type | null> {
 			]))),
 			node.returnType ? this.#typeVisitorTypevalue.visit(node.returnType) : undefined,
 		);
-	}
-
-	#computeSignatureReturnType(expr: EXPR.Call, signature: ClassSignature): TYPE.Type {
-		const generic_args: GenericArgs = this.#typeVisitorTypevalue.checkGenericArgs(expr, signature.genericParams);
-		const return_type:  TYPE.Type   = signature.returnType(generic_args);
-		return return_type instanceof TYPE.ReferenceType ? return_type.mutableOf() : return_type;
 	}
 
 	#typeFunctionCall(call: EXPR.Call, t: TYPE.Function): TYPE.Type | null | Error {

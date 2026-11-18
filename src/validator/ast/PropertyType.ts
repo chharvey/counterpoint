@@ -1,4 +1,7 @@
-import type {SyntaxNodeFamily} from '../utils-private.ts';
+import type {
+	SyntaxNodeType,
+	SyntaxNodeFamily,
+} from '../utils-private.ts';
 import type {TYPE as AST_TYPE} from './index.ts';
 import {AstNode} from './AstNode.ts';
 import type {Key} from './Key.ts';
@@ -7,7 +10,10 @@ import type {Key} from './Key.ts';
 
 export class PropertyType extends AstNode {
 	public constructor(
-		start_node: SyntaxNodeFamily<'entry_type__named', ['optional']>,
+		start_node: (
+			| SyntaxNodeFamily<'entry_type__named', ['optional']>
+			| SyntaxNodeType<'argument_generic_named'>
+		),
 		public readonly optional: boolean,
 		public readonly key:       Key,
 		public readonly typevalue: AST_TYPE.Type,

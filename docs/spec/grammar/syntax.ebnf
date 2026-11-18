@@ -92,26 +92,30 @@ ItemsType ::=
 	| EntryType<-Named><-Optional>? "," EntryType<-Named><-Optional># (","   EntryType<-Named><+Optional>#)? ","?
 ;
 
-PropertiesType
-	::= ","? EntryType<+Named><∓Optional># ","?;
-
 ParametersType ::=
 	| ","? EntryType<-Named><-Optional># ("," EntryType<-Named><+Optional>#)? ("," EntryType<+Named><∓Optional>#)? ","?
 	| ","?                                    EntryType<-Named><+Optional>#   ("," EntryType<+Named><∓Optional>#)? ","?
 	| ","?                                                                         EntryType<+Named><∓Optional>#   ","?
 ;
 
+ArgumentGenericNamed
+	::= Word "=" Type;
+
+ArgumentsGeneric ::=
+	| ","? Type# ("," ArgumentGenericNamed#)? ","?
+	| ","?            ArgumentGenericNamed#   ","?
+;
+
 PropertyAccessorType
 	::= WHOLE_DIGITS | Word;
 
-TypeGrouped       ::= "(" Type             ")";
-TypeTupleLiteral  ::= "(" ItemsType?       ")";
-TypeRecordLiteral ::= "(" PropertiesType   ")";
-TypeListLiteral   ::= "[" Type             "]";
-TypeDictLiteral   ::= "[" ":" Type         "]";
-TypeSetLiteral    ::= "{" Type             "}";
-TypeMapLiteral    ::= "{" Type "->" Type   "}";
-GenericArguments  ::= "<"  ","? Type# ","? ">";
+TypeGrouped       ::= "(" Type                                    ")";
+TypeTupleLiteral  ::= "(" ItemsType?                              ")";
+TypeRecordLiteral ::= "(" ","? EntryType<+Named><∓Optional># ","? ")";
+TypeListLiteral   ::= "[" Type                                    "]";
+TypeDictLiteral   ::= "[" ":" Type                                "]";
+TypeSetLiteral    ::= "{" Type                                    "}";
+TypeMapLiteral    ::= "{" Type "->" Type                          "}";
 
 TypeUnit ::=
 	| IDENTIFIER
@@ -128,7 +132,7 @@ TypeUnit ::=
 
 TypeCompound ::=
 	| TypeUnit
-	| TypeCompound "." (PropertyAccessorType | GenericArguments)
+	| TypeCompound "." (PropertyAccessorType | "<" ArgumentsGeneric ">")
 ;
 
 TypeUnarySymbol  ::= TypeCompound    | TypeUnarySymbol ("?" | "!");
@@ -213,7 +217,7 @@ ExpressionCompound<Block, Break, Return> ::=
 	| ExpressionCompound<?Block><?Break><?Return> (
 		| "~?" | "~!"
 		| ("." | "?." | "!.") PropertyAccessor<?Break><?Return>
-		|  "."                GenericArguments? "(" ArgumentsFunction<?Break><?Return>? ")"
+		|  "."                ("<" ArgumentsGeneric ">")? "(" ArgumentsFunction<?Break><?Return>? ")"
 	)
 ;
 
