@@ -463,6 +463,10 @@ rec_result~!.item; % unwraps `rec_result` to `(item: int)`; returns type `int`; 
 ```
 
 
+### Function Calls
+See the [Functions](./functions.md) chapter.
+
+
 ### Logical Negation, Emptiness
 ```
 `!` <anything>
@@ -1035,7 +1039,14 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… . …</code></td>
 		</tr>
 		<tr>
-			<th rowspan="2">3</th>
+			<th>3</th>
+			<td>Type Function Calls</td>
+			<td>unary postfix</td>
+			<td>left-to-right</td>
+			<td><code>… .< … ></code></td>
+		</tr>
+		<tr>
+			<th rowspan="2">4</th>
 			<td>To-Maybe</td>
 			<td rowspan="2">unary postfix</td>
 			<td rowspan="2">left-to-right</td>
@@ -1046,21 +1057,21 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… !</code></td>
 		</tr>
 		<tr>
-			<th>4</th>
+			<th>5</th>
 			<td>Mutable</td>
 			<td>unary prefix</td>
 			<td>right-to-left</td>
 			<td><code>mut …</code></td>
 		</tr>
 		<tr>
-			<th>5</th>
+			<th>6</th>
 			<td>Intersection</td>
 			<td>binary infix</td>
 			<td>left-to-right</td>
 			<td><code>… & …</code></td>
 		</tr>
 		<tr>
-			<th>6</th>
+			<th>7</th>
 			<td>Union</td>
 			<td>binary infix</td>
 			<td>left-to-right</td>
@@ -1090,6 +1101,10 @@ type R = (a: bool, b?: int, c: str);
 type Ra = R.a;                       %== bool
 type Rd = R.d;                       %> TypeError
 ```
+
+
+### Type Function Calls
+See the [Functions](./functions.md) chapter.
 
 
 ### To-Maybe
