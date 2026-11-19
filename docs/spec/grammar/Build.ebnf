@@ -313,7 +313,14 @@ Build(SemanticExpressionCall ::= "None" SemanticType* SemanticExpression*)      
 Build(SemanticExpressionCall ::= "Some" SemanticType* SemanticExpression__0 SemanticExpression*) := (MAYBE.NEW `Build(SemanticExpression__0)`);
 Build(SemanticExpressionCall ::= "Fail" SemanticType* SemanticExpression__0 SemanticExpression*) := (RESULT.NEW nil `Build(SemanticExpression__0)`);
 Build(SemanticExpressionCall ::= "Ok"   SemanticType* SemanticExpression__0 SemanticExpression*) := (RESULT.NEW `Build(SemanticExpression__0)` nil);
-Build(SemanticExpressionCall call) := (CALL [`Build(call.0)` `...call.SemanticExpression*.map(Build)`]);
+
+Build(SemanticExpressionCall ::= SemanticExpression__0 SemanticType* SemanticPropertyType* SemanticExpression__1* SemanticProperty*) :=
+	(CALL [
+		`Build(SemanticExpression__0)`
+		`...SemanticExpression__1*.map(Build)`
+		`...(SemanticProperty ::= SemanticKey SemanticExpression__2)*.map(Build(SemanticExpression__2))`
+	])
+;
 
 Build(SemanticExpressionClaim claim) := Build(claim.0);
 

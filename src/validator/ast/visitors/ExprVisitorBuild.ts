@@ -14,7 +14,6 @@ import {
 	type SymbolSchemaClass,
 } from '../../index.ts';
 import {Operator} from '../../Operator.ts';
-import type {CallableClassName} from '../utils-private.ts';
 import {Index} from '../Index-.ts';
 import {Key} from '../Key.ts';
 import * as EXPR from '../expression/index.ts';
@@ -148,16 +147,7 @@ export class ExprVisitorBuild extends EXPR.ExprVisitor<OP.Value> {
 		 * Note: Eventually, calls will be dynamic; all we’d need to return is a new `OP.Call` object.
 		 * But until we get functions and classes, statically build the function calls.
 		 */
-		if (false) { // eslint-disable-line no-constant-condition, @typescript-eslint/no-unnecessary-condition
-			return new OP.Call(
-				this.visit(expr.base).asTac(this.builder),
-				expr.exprargsPosit.map((arg) => this.visit(arg).asTac(this.builder)),
-				expr.type!,
-			);
-		}
-
-		const base_source = expr.base.source as CallableClassName;
-		switch (base_source) {
+		switch (expr.base.source) {
 			case CoreLibName.BOOLEAN:
 			case CoreLibName.INTEGER:
 			case CoreLibName.NATURAL:
@@ -169,7 +159,7 @@ export class ExprVisitorBuild extends EXPR.ExprVisitor<OP.Value> {
 					[CoreLibName.NATURAL, OP.OpCode.NAT_FROM],
 					[CoreLibName.FLOAT,   OP.OpCode.FLOAT_FROM],
 					[CoreLibName.STRING,  OP.OpCode.STR_FROM],
-				]).get(base_source)!, this.visit(expr.exprargsPosit[0]).asTac(this.builder), expr.type!);
+				]).get(expr.base.source)!, this.visit(expr.exprargsPosit[0]).asTac(this.builder), expr.type!);
 			}
 			case CoreLibName.LIST:
 			case CoreLibName.DICT:
@@ -180,7 +170,7 @@ export class ExprVisitorBuild extends EXPR.ExprVisitor<OP.Value> {
 					[CoreLibName.SET,  [OP.TypeName.SET,  () => new OP.CollectionLinearNew(OP.TypeName.SET,  [], expr.type!)]],
 					[CoreLibName.DICT, [OP.TypeName.DICT, () => new OP.DictNew (new Map(), expr.type!)]],
 					[CoreLibName.MAP,  [OP.TypeName.MAP,  () => new OP.MapNew  (new Map(), expr.type!)]],
-				]).get(base_source)!;
+				]).get(expr.base.source)!;
 				const new_obj: OP.Value = ctor();
 				if (!expr.exprargsPosit.length) {
 					return new_obj;
@@ -202,13 +192,19 @@ export class ExprVisitorBuild extends EXPR.ExprVisitor<OP.Value> {
 			case CoreLibName.FAIL:
 			case CoreLibName.OK: {
 				return new OP.ResultNew(
-					base_source === CoreLibName.OK,
+					expr.base.source === CoreLibName.OK,
 					expr.typeargsPosit[0].typevalue,
 					expr.typeargsPosit[1]?.typevalue ?? TYPE.EXCP,
 					this.visit(expr.exprargsPosit[0]).asTac(this.builder),
 				);
 			}
 		}
+		return new OP.Call(
+			this.visit(expr.base).asTac(this.builder),
+			expr.exprargsPosit.map((arg) => this.visit(arg).asTac(this.builder)),
+			new Map(expr.exprargsNamed.map(({key, val}) => [key.id, this.visit(val).asTac(this.builder)])),
+			expr.type ?? TYPE.ANYTHING, // FIXME: function call expression may be void; allow OP.Value to take void type
+		);
 	}
 
 	@memoizePerNode

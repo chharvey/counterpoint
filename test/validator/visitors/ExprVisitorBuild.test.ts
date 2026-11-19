@@ -1162,16 +1162,40 @@ test.suite('ExprVisitorBuild#visit', () => {
 				inc.(42);
 			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
+					(GOTO "block-2")
+				"block-1":
+					(DECL <int> x)
+					(DECL <int> $0 (INT.ADD (GET x) (INT.CONST 1)))
+					(RETURN (GET $0) nil)
+					(GOTO "caller")
+				"unreachable-3":
+					(ENDPROGRAM)
+				"block-2":
+					(SET x (INT.CONST 42))
+					(GOTO "block-1")
+					(DROP)
 					(ENDPROGRAM)
 			`.trim());
 		});
-		test.test('compound base.', {todo: true}, () => {
+		test.test('compound base.', () => {
 			assert.strictEqual(setupScript(`{
 				val inc1: \\(int) => int = \\(x: int): int => x + 1;
 				val inc2: \\(int) => int = \\(x: int): int => x + 2;
 				(inc1 || inc2).(42);
 			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
+					(DECL <Object> inc1 (LAMBDA $0 \\(x: int): int => x + 1))
+					(DECL <Object> inc2 (LAMBDA $1 \\(x: int): int => x + 2))
+					(DECL <Object> $2)
+					(GOTO.IF (BOOL.FROM (GET inc1)) "block-1" "block-2")
+				"block-1":
+					(SET $2 (GET inc1))
+					(GOTO "block-3")
+				"block-2":
+					(SET $2 (GET inc2))
+					(GOTO "block-3")
+				"block-3":
+					(DROP (CALL (GET $2) (INT.CONST 42)))
 					(ENDPROGRAM)
 			`.trim());
 		});
