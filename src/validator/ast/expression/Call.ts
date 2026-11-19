@@ -5,6 +5,7 @@ import {
 } from '../../../core/index.ts';
 import type {SyntaxNodeType} from '../../utils-private.ts';
 import type * as AST_TYPE from '../type/index.ts';
+import type {PropertyType} from '../PropertyType.ts';
 import type {Property} from '../Property.ts';
 import {Expression} from './Expression.ts';
 
@@ -21,10 +22,12 @@ export class Call extends Expression {
 	public constructor(
 		start_node: SyntaxNodeType<'expression_compound'>,
 		public readonly base:          Expression,
-		public readonly typeargs:      readonly AST_TYPE.Type[],
+		public readonly generic:       boolean,
+		public readonly typeargsPosit: readonly AST_TYPE.Type[],
+		public readonly typeargsNamed: readonly PropertyType[],
 		public readonly exprargsPosit: readonly Expression[],
 		public readonly exprargsNamed: readonly Property[],
 	) {
-		super(start_node, {}, [base, ...typeargs, ...exprargsPosit, ...exprargsNamed]);
+		super(start_node, {generic}, [base, ...typeargsPosit, ...typeargsNamed, ...exprargsPosit, ...exprargsNamed]);
 	}
 }

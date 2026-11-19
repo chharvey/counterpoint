@@ -168,11 +168,10 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… !> …</code></td>
 		</tr>
 		<tr>
-			<td>TBA</td>
+			<td rowspan="2">Instance-Of</td>
 			<td><code>… is …</code></td>
 		</tr>
 		<tr>
-			<td>TBA</td>
 			<td><code>… !is …</code></td>
 		</tr>
 		<tr>
@@ -463,6 +462,10 @@ rec_result~!.item; % unwraps `rec_result` to `(item: int)`; returns type `int`; 
 ```
 
 
+### Function Calls
+See the [Functions](./functions.md) chapter.
+
+
 ### Logical Negation, Emptiness
 ```
 `!` <anything>
@@ -535,8 +538,8 @@ This is important to mention because it could also affect how we write
 
 ### Type Cast/Claim
 ```
-<Object>   `as`  <Class>
-<Object>   `as?` <Class>
+<anything> `as`  <Class>
+<anything> `as?` <Class>
 <anything> `as`  `:` <Type> `:`
 <anything> `as!` `:` <Type> `:`
 ```
@@ -768,9 +771,6 @@ The parser receives these tokens and produces the correct expression.
 <Number> `>=` <Number>
 <Number> `!<` <Number>
 <Number> `!>` <Number>
-
-<anything> `is`  <Class>
-<anything> `!is` <Class>
 ```
 The numerical comparative operators,
 
@@ -801,12 +801,26 @@ int --> nat --> float
 Conversions are made only for determining mathematical inequality; the value of the operand does not change.
 Note that conversions may be lossy; see [Numeric Conversions](./built-ins.md#numeric-conversions) for details.
 
-The object comparative operators `is` and `!is` determine whether the left-hand operand (any value)
-is an instance of the right-hand operand (a class).
-```cpl
-x is Null;    % sugar for `x === null`
-x is Boolean; % sugar for `x === false || x === true`
 
+### Instance-Of
+```
+<anything> `is`  <Class>
+<anything> `!is` <Class>
+```
+The expression `expr is Klass` tests whether `expr` is an instance of `Klass`, and returns a boolean.
+The operator `!is` negates the outcome.
+These operators can be used for reference types and value types alike.
+
+“Instance of” means the value was constructed directly by a constructor of `Klass` or one of its descendants.
+This makes instance-of a **nominal** operator —
+a value is not an instance of a class just because it is structurally assignable to it.
+
+For primitive types (`int`, `str`, etc.), the class name must be used as the right-hand operand
+in order to test instance membership (`Integer`, `String`, etc…
+see the spec’s [Core Library chapter](../spec/core-library.md)).
+It is a syntax error to use a type expression as an operand.
+
+```cpl
 42     is Symbol;  %== false
 @hello is Symbol;  %== true
 42     is Integer; %== true
@@ -815,6 +829,8 @@ x is Boolean; % sugar for `x === false || x === true`
 x !is Null;    % sugar for `!(x is Null)`
 x !is Boolean; % sugar for `!(x is Boolean)`
 x !is Integer; % sugar for `!(x is Integer)`
+
+x is Null; % faster to test `x === null`
 ```
 
 
@@ -1035,7 +1051,14 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… . …</code></td>
 		</tr>
 		<tr>
-			<th rowspan="2">3</th>
+			<th>3</th>
+			<td>Type Function Calls</td>
+			<td>unary postfix</td>
+			<td>left-to-right</td>
+			<td><code>… .< … ></code></td>
+		</tr>
+		<tr>
+			<th rowspan="2">4</th>
 			<td>To-Maybe</td>
 			<td rowspan="2">unary postfix</td>
 			<td rowspan="2">left-to-right</td>
@@ -1046,21 +1069,21 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… !</code></td>
 		</tr>
 		<tr>
-			<th>4</th>
+			<th>5</th>
 			<td>Mutable</td>
 			<td>unary prefix</td>
 			<td>right-to-left</td>
 			<td><code>mut …</code></td>
 		</tr>
 		<tr>
-			<th>5</th>
+			<th>6</th>
 			<td>Intersection</td>
 			<td>binary infix</td>
 			<td>left-to-right</td>
 			<td><code>… & …</code></td>
 		</tr>
 		<tr>
-			<th>6</th>
+			<th>7</th>
 			<td>Union</td>
 			<td>binary infix</td>
 			<td>left-to-right</td>
@@ -1090,6 +1113,10 @@ type R = (a: bool, b?: int, c: str);
 type Ra = R.a;                       %== bool
 type Rd = R.d;                       %> TypeError
 ```
+
+
+### Type Function Calls
+See the [Functions](./functions.md) chapter.
 
 
 ### To-Maybe

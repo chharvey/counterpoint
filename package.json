@@ -1,6 +1,6 @@
 {
   "name": "@chharvey/counterpoint",
-  "version": "0.5.4",
+  "version": "0.6.0",
   "description": "A robust programming language.",
   "homepage": "https://github.com/chharvey/counterpoint#readme",
   "bugs": {
@@ -35,10 +35,9 @@
     "lint": "eslint ./",
     "test": "tsx --test --test-isolation=none -- './test/**/*.test.ts'",
     "test:only": "tsx --test --test-only --test-isolation=none -- './test/**/*.test.ts'",
-    "rebuild-syntax": "npm run build --ignore-scripts -w ./tree-sitter-counterpoint/ && npm rebuild",
-    "quicktest": "npm run rebuild-syntax && npm run precompile && npm run test",
     "prebuild": "npm run build -w ./tree-sitter-counterpoint/ && npm rebuild",
-    "build": "npm run compile && npm run lint && npm run test"
+    "build": "npm run compile && npm run lint && npm run test",
+    "sync": "npm run sync -w ./tree-sitter-counterpoint/ && npm rebuild && npm run precompile"
   },
   "dependencies": {
     "binaryen.ts": "^0.3.0",
@@ -49,7 +48,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.0",
-    "@stylistic/eslint-plugin": "^5.2.0",
+    "@stylistic/eslint-plugin": "^6.0.0",
     "@types/minimist": "^1.2.0",
     "@types/node": "^26.1.1",
     "@types/utf8": "^3.0.0",

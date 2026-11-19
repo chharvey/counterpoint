@@ -11,7 +11,7 @@ import {extract_tokens} from '../utils.ts';
 
 test.suite('Expression', () => {
 	test.suite('Constant', () => {
-		/* eslint-disable @stylistic/array-element-newline */
+		/* eslint-disable @stylistic/list-style */
 		test.suite('#interpreterValue', () => {
 			test.test('computes null, boolean, and symbol values.', () => {
 				assert.deepStrictEqual(extract_tokens(`
@@ -63,6 +63,6 @@ test.suite('Expression', () => {
 				);
 			});
 		});
-		/* eslint-enable @stylistic/array-element-newline */
+		/* eslint-enable @stylistic/list-style */
 	});
 });

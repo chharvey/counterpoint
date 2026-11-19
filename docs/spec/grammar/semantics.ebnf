@@ -90,7 +90,7 @@ SemanticTypeAccess
 	::= SemanticType (SemanticIndex | SemanticKey);
 
 SemanticTypeCall
-	::= SemanticType SemanticType+;
+	::= SemanticType SemanticType* SemanticPropertyType*;
 
 SemanticTypeOperation[operator: MAYBE | RESULT | MUTABLE]
 	::= SemanticType;
@@ -152,8 +152,8 @@ SemanticExpressionBlock
 SemanticExpressionAccess[kind: NORMAL | MAYBE | RESULT][isEntryOptional?: Boolean]
 	::= SemanticExpression (SemanticIndex | SemanticKey | SemanticExpression);
 
-SemanticExpressionCall
-	::= SemanticExpression SemanticType* SemanticExpression* SemanticProperty*;
+SemanticExpressionCall[generic: Boolean]
+	::= SemanticExpression SemanticType* SemanticPropertyType* SemanticExpression* SemanticProperty*;
 
 SemanticExpressionClaim[force: Boolean]
 	::= SemanticExpression SemanticType;

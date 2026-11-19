@@ -16,8 +16,7 @@ export class Property implements HasFuncData {
 	/** @implements HasFuncData */
 	@memoizeGetter
 	public get funcImportDataMap(): ReadonlyMap<string, FuncImportData> {
-		return new Map<string, FuncImportData>([
-		]);
+		return new Map<string, FuncImportData>([]);
 	}
 
 

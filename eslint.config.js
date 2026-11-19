@@ -48,7 +48,7 @@ export default [
 			'@stylistic/arrow-spacing':          'error',
 			'@stylistic/block-spacing':          'error',
 			'@stylistic/comma-spacing':          'error',
-			'@stylistic/dot-location':           ['error', 'property'],
+			'@stylistic/dot-location':           'error',
 			'@stylistic/function-call-spacing':  'warn',
 			'@stylistic/generator-star-spacing': ['error', 'both'],
 			'@stylistic/indent':                 ['error', 'tab', {
@@ -75,18 +75,22 @@ export default [
 			'@stylistic/yield-star-spacing':          ['error', 'both'],
 
 			/* ## Grouping Structure Style */
-			'@stylistic/array-bracket-newline':          ['error', 'consistent'],
-			'@stylistic/array-bracket-spacing':          'warn',
-			'@stylistic/array-element-newline':          ['error', 'consistent'],
-			'arrow-body-style':                          'error',
-			'@stylistic/brace-style':                    ['error', '1tbs', {allowSingleLine: true}],
-			'@stylistic/computed-property-spacing':      'warn',
-			'curly':                                     'error',
-			'@stylistic/function-call-argument-newline': ['error', 'consistent'],
-			'@stylistic/function-paren-newline':         'error',
-			'func-style':                                ['error', 'declaration', {allowArrowFunctions: true}],
-			'@stylistic/lines-between-class-members':    ['error', 'always', {exceptAfterSingleLine: true}],
-			'@stylistic/member-delimiter-style':         ['error', {
+			'arrow-body-style':                       'error',
+			'@stylistic/brace-style':                 ['error', '1tbs', {allowSingleLine: true}],
+			'@stylistic/computed-property-spacing':   'warn',
+			'curly':                                  'error',
+			'func-style':                             ['error', 'declaration', {allowArrowFunctions: true}],
+			'@stylistic/lines-between-class-members': ['error', 'always', {exceptAfterSingleLine: true}],
+			'@stylistic/list-style':                  ['error', {
+				empty:     'never',
+				multiLine: {minItems: 1},
+				overrides: {
+					'{}':              {singleLine: {spacing: 'never'}},
+					'TSInterfaceBody': {singleLine: {maxItems: 0}},
+					'TSEnumBody':      {singleLine: {maxItems: 0}},
+				},
+			}],
+			'@stylistic/member-delimiter-style': ['error', {
 				overrides: {
 					interface:   {singleline: {requireLast: true}},
 					typeLiteral: {
@@ -95,22 +99,10 @@ export default [
 					},
 				},
 			}],
-			'no-useless-computed-key':         'error',
-			'@stylistic/object-curly-newline': ['error', {
-				ObjectExpression:  {multiline: true},
-				ObjectPattern:     {multiline: true},
-				ImportDeclaration: {multiline: true, minProperties: 2},
-				ExportDeclaration: {multiline: true, minProperties: 2},
-				TSTypeLiteral:     {multiline: true},
-				TSInterfaceBody:   'always',
-				TSEnumBody:        'always',
-			}],
-			'@stylistic/object-curly-spacing':    'warn',
-			'@stylistic/object-property-newline': ['error', {allowAllPropertiesOnSameLine: true}],
-			'object-shorthand':                   ['error', 'properties', {avoidQuotes: true}],
-			'@stylistic/padded-blocks':           ['error', 'never'],
-			'@stylistic/quote-props':             ['error', 'consistent-as-needed'],
-			'@stylistic/space-in-parens':         'warn',
+			'no-useless-computed-key':  'error',
+			'object-shorthand':         ['error', 'properties', {avoidQuotes: true}],
+			'@stylistic/padded-blocks': ['error', 'never'],
+			'@stylistic/quote-props':   ['error', 'consistent-as-needed'],
 
 			/* ## Operator Style */
 			'@stylistic/arrow-parens':             'error',
@@ -161,8 +153,7 @@ export default [
 			'require-await':         'error',
 
 			/* ### eslint-plugin-import-x: Helpful Warnings */
-			'@import/no-empty-named-blocks': 'error',
-			'@import/no-mutable-exports':    'error',
+			'@import/no-mutable-exports': 'error',
 
 			/* ### eslint-plugin-import-x: Style Guide */
 			'@import/first':                'error',

@@ -12,8 +12,8 @@ import {
 	isObjectType,
 	ReferenceType,
 } from './ReferenceType.ts';
-import {Tuple} from './Tuple.ts';
-import {Record} from './Record.ts';
+import {Tuple as TypeTuple} from './Tuple.ts';
+import {Record as TypeRecord} from './Record.ts';
 
 
 
@@ -29,9 +29,9 @@ class TypeFunction extends ReferenceType {
 	 * @param typeargReturn      the return type; `undefined` means a void function
 	 */
 	public constructor(
-		public readonly typeargParamsPosit: Tuple  = new Tuple(),
-		public readonly typeargParamsNamed: Record = new Record(),
-		public readonly typeargReturn?: Type,
+		public readonly typeargParamsPosit: TypeTuple  = new TypeTuple(),
+		public readonly typeargParamsNamed: TypeRecord = new TypeRecord(),
+		public readonly typeargReturn?:     Type,
 	) {
 		super();
 	}
