@@ -153,7 +153,7 @@ export class ValueVisitorCodegen extends ValueVisitor<binaryen.ExpressionRef /* 
 
 	@memoizePerCode
 	public override visitDictNew(val: DictNew): binaryen.ExpressionRef /* (ref $Value) */ {
-		return this.cg.vm.Value.fromDict(this.cg.codegenDict(new Map<bigint, binaryen.ExpressionRef>([...val.props].map(([{id}, value]) => [
+		return this.cg.vm.Value.fromDict(this.cg.codegenDict(new Map<bigint, binaryen.ExpressionRef>([...val.props].map(([id, value]) => [
 			id,
 			this.cg.newProperty(id, this.visit(value)),
 		]))));

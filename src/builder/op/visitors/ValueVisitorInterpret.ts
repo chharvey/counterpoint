@@ -113,7 +113,7 @@ export class ValueVisitorInterpret extends ValueVisitor<VALUE.Value> {
 	}
 
 	public override visitDictNew(val: DictNew): VALUE.Value {
-		return new VALUE.Dict(new Map<bigint, VALUE.Value>([...val.props].map(([{id}, value]) => [
+		return new VALUE.Dict(new Map<bigint, VALUE.Value>([...val.props].map(([id, value]) => [
 			id,
 			this.visit(value),
 		])));

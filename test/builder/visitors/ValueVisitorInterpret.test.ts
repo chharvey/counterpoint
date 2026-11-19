@@ -484,9 +484,9 @@ test.suite('ValueVisitorInterpret#visit', () => {
 			builder.pushInstruction(new OP.Drop(new OP.Unop(
 				OP.OpCode.DICT_COUNT,
 				new OP.DictNew(new Map([
-					[new VALUE.Symbol(0x100n, 'a'), items[0]],
-					[new VALUE.Symbol(0x101n, 'b'), items[1]],
-					[new VALUE.Symbol(0x102n, 'c'), items[2]],
+					[0x100n, items[0]],
+					[0x101n, items[1]],
+					[0x102n, items[2]],
 				]), new TYPE.Dict(TYPE.ANYTHING)).asTac(builder),
 				TYPE.NAT,
 			)));

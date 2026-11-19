@@ -6,7 +6,6 @@ import {
 } from '../../../index.ts';
 import {assert_instanceof} from '../../../lib/index.ts';
 import {
-	VALUE,
 	TYPE,
 } from '../../../typer/index.ts';
 import {CoreLibName} from '../../../parser/index.ts';
@@ -81,7 +80,7 @@ export class ExprVisitorBuild extends EXPR.ExprVisitor<OP.Value> {
 	@memoizePerNode
 	public override visitDict(expr: EXPR.Dict): OP.Value {
 		return new OP.DictNew(new Map(expr.children.map((c) => [
-			new VALUE.Symbol(c.key.id, c.key.source),
+			c.key.id,
 			this.visit(c.val).asTac(this.builder),
 		])), expr.type!);
 	}
