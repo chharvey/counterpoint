@@ -15,6 +15,181 @@ import {
 
 
 
+/**
+ * List of example constructor calls for testing.
+ *
+ * Use `Array#filter` in combination with string/regex methods to select specific examples.
+ */
+export const CTOR_CALLS: readonly string[] = [
+	'Boolean.(null)',
+	'Boolean.(false)',
+	'Boolean.(true)',
+	'Boolean.(@hello)',
+	'Boolean.(-0)',
+	'Boolean.(-42)',
+	'Boolean.(+0)',
+	'Boolean.(+42)',
+	'Boolean.(0.0)',
+	'Boolean.(4.2)',
+	'Boolean.("hello")',
+
+	'Integer.(-42)',
+	'Integer.(+42)',
+	'Integer.(4.2)',
+
+	'Natural.(-42)',
+	'Natural.(+42)',
+	'Natural.(4.2)',
+
+	'Float.(-42)',
+	'Float.(+42)',
+	'Float.(4.2)',
+
+	'String.(null)',
+	'String.(true)',
+	'String.(-42)',
+	'String.(+42)',
+	'String.(4.2)',
+	'String.("hello")',
+	'String.(())',
+	'String.((a= 1))',
+	'String.([])',
+	'String.([a= 1])',
+	'String.({})',
+	'String.({"a" -> 1})',
+
+	'List.<int>()',
+	'List.<int>(())',
+	'List.<int>(List.<int>())',
+	'List.<int>([])',
+	'List.<int>(Set.<int>())',
+	'List.<int>({})',
+	'List.<int>((1, 2, 3))',
+	'List.<int>(List.<int>((1, 2, 3)))',
+	'List.<int>([1, 2, 3])',
+	'List.<int>(Set.<int>((1, 2, 3)))',
+	'List.<int>({1, 2, 3})',
+
+	'Dict.<int>()',
+	'Dict.<int>(())',
+	// 'Dict.<int>((=))', // empty record is impossible
+	'Dict.<int>(List.<(sym, int)>())',
+	'Dict.<int>([])',
+	'Dict.<int>(Dict.<int>())',
+	// 'Dict.<int>([=])', // empty dict literal is impossible
+	'Dict.<int>(Set.<(sym, int)>())',
+	'Dict.<int>({})',
+	'Dict.<int>(Map.<sym, int>())',
+	// 'Dict.<int>({->})', // empty map literal is impossible
+	`Dict.<int>((
+		(@a, 1),
+		(@b, 2),
+		(@c, 3),
+	))`,
+	'Dict.<int>((a= 1, b= 2, c= 3))',
+	`Dict.<int>(List.<(sym, int)>((
+		(@a, 1),
+		(@b, 2),
+		(@c, 3),
+	)))`,
+	`Dict.<int>([
+		(@a, 1),
+		(@b, 2),
+		(@c, 3),
+	])`,
+	'Dict.<int>(Dict.<int>((a= 1, b= 2, c= 3)))',
+	'Dict.<int>([a= 1, b= 2, c= 3])',
+	`Dict.<int>(Set.<(sym, int)>((
+		(@a, 1),
+		(@b, 2),
+		(@c, 3),
+	)))`,
+	`Dict.<int>({
+		(@a, 1),
+		(@b, 2),
+		(@c, 3),
+	})`,
+	`Dict.<int>(Map.<sym, int>((
+		(@a, 1),
+		(@b, 2),
+		(@c, 3),
+	)))`,
+	`Dict.<int>({
+		@a -> 1,
+		@b -> 2,
+		@c -> 3,
+	})`,
+
+	'Set.<int>()',
+	'Set.<int>(())',
+	'Set.<int>(List.<int>())',
+	'Set.<int>([])',
+	'Set.<int>(Set.<int>())',
+	'Set.<int>({})',
+	'Set.<int>((1, 2, 3))',
+	'Set.<int>(List.<int>((1, 2, 3)))',
+	'Set.<int>([1, 2, 3])',
+	'Set.<int>(Set.<int>((1, 2, 3)))',
+	'Set.<int>({1, 2, 3})',
+
+	'Map.<int, float>()',
+	'Map.<int, float>(())',
+	'Map.<int, float>(List.<(int, float)>())',
+	'Map.<int, float>([])',
+	'Map.<int, float>(Set.<(int, float)>())',
+	'Map.<int, float>({})',
+	'Map.<int, float>(Map.<int, float>())',
+	// 'Map.<int, float>({->})', // empty map literal is impossible
+	`Map.<int, float>((
+		(1, 0.1),
+		(2, 0.2),
+		(3, 0.4),
+	))`,
+	`Map.<int, float>(List.<(int, float)>((
+		(1, 0.1),
+		(2, 0.2),
+		(3, 0.4),
+	)))`,
+	`Map.<int, float>([
+		(1, 0.1),
+		(2, 0.2),
+		(3, 0.4),
+	])`,
+	`Map.<int, float>(Set.<(int, float)>((
+		(1, 0.1),
+		(2, 0.2),
+		(3, 0.4),
+	)))`,
+	`Map.<int, float>({
+		(1, 0.1),
+		(2, 0.2),
+		(3, 0.4),
+	})`,
+	`Map.<int, float>(Map.<int, float>((
+		(1, 0.1),
+		(2, 0.2),
+		(3, 0.4),
+	)))`,
+	`Map.<int, float>({
+		1 -> 0.1,
+		2 -> 0.2,
+		3 -> 0.4,
+	})`,
+
+	'Exception.("message")',
+	'Exception.("message", Exception.("cause"))',
+
+	'None.<int>()',
+
+	'Some.<int>(42)',
+
+	'Fail.<int>(Exception.("message"))',
+
+	'Ok.<int>(42)',
+];
+
+
+
 export function extract_tokens(template: string): string[] {
 	return template.trim().replace(/\n\t+/g, '  ').split('  ');
 }
