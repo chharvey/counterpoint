@@ -360,6 +360,12 @@
 	(local $vect0 v128)
 	(local $vect1 v128)
 
+	;; ref.eq values are necessarily identical
+	(if
+		(ref.eq (local.get 0) (local.get 1))
+		(then (return (global.get $Value.TRUE)))
+	)
+
 	(call $Value.bool-from-i32 (block $exit (result i32)
 		(if
 			(i32.and
@@ -412,13 +418,6 @@
 				)
 				(br $exit (i32.const 0))
 			)
-		)
-		(if
-			(ref.eq
-				(local.get 0)
-				(local.get 1)
-			)
-			(then (br $exit (i32.const 1)))
 		)
 		(if
 			(i32.and
