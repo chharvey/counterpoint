@@ -39,7 +39,14 @@ LIST.NEW([Value*])                        -> List;
 DICT.NEW(Vector<VALUE.Symbol, Value>*)    -> Dict;
 SET.NEW([Value*])                         -> Set;
 MAP.NEW(Vector<Value, Value>*)            -> Map;
-MAYBE.NEW(Value?)                         -> Maybe;
+OBJECT.NEW(boolean [Class?])              -> Object;
+EXCP.NEW([Value Value?])                  -> Exception;
+MAYBE.NEW([Value?])                       -> Maybe;
+RESULT.NEW([Value Nil])                   -> Result;
+RESULT.NEW([Nil Exception])               -> Result;
+
+TUPLE.HAS (native-bigint [Value]) -> Boolean;
+RECORD.HAS(native-bigint [Value]) -> Boolean;
 
 TUPLE.GET (native-bigint [Value]) -> Value;
 RECORD.GET(native-bigint [Value]) -> Value;
@@ -68,10 +75,11 @@ DICT.COUNT([Value]) -> Natural;
 SET.COUNT([Value])  -> Natural;
 MAP.COUNT([Value])  -> Natural;
 
-MAYBE.UNWRAP([Value]) -> Value;
-
-INSTANCEOF(native-enum [Value]) -> Boolean;
-CAST      (native-enum [Value]) -> Value;
+NONE.IS       ([Value]) -> Boolean;
+FAIL.IS       ([Value]) -> Boolean;
+MAYBE.UNWRAP  ([Value]) -> Value;
+RESULT.UNWRAP ([Value]) -> Value;
+RESULT.EXTRACT([Value]) -> Exception;
 
 INT.ADD([Integer Integer]) -> Integer;
 INT.SUB([Integer Integer]) -> Integer;
@@ -98,11 +106,14 @@ GE([Number Number]) -> Boolean;
 
 ID([Value Value]) -> Boolean;
 EQ([Value Value]) -> Boolean;
+IS([Value Class]) -> Boolean;
+
+LAMBDA(native-string native-bigint native-string);
 
 DROP([Value]);
 
 DECL(SymbolSchemaVar|native-string Type [Value?]);
-SET (SymbolSchemaVar|native-string      [Value?]);
+SET (SymbolSchemaVar|native-string      [Value]);
 
 LIST.SET([Value Value Value]);
 DICT.SET([Value Value Value]);
@@ -113,6 +124,9 @@ LIST.COPY([Value Value]);
 DICT.COPY([Value Value]);
 SET.COPY ([Value Value]);
 MAP.COPY ([Value Value]);
+
+RETURN([Value Nil]);
+RETURN([Nil Exception]);
 
 
 
@@ -129,6 +143,27 @@ Build(String  s) := (STR.CONST   s);
 
 Build(SemanticProperty prop) := Sequence [`Symbol(prop.0)`, `Build(prop.1)`];
 Build(SemanticCase     case) := Sequence [`Build(case.0)`, `Build(case.1)`];
+
+Build(SemanticParameterFunction[id=*nil*]) := ();
+Build(SemanticParameterFunction[id: RealNumber][optional=false] ::= SemanticKey? SemanticType)
+	:= (DECL ‹type› `GetSymbolSchema(id)`);
+Build(SemanticParameterFunction[id: RealNumber][optional=true] ::= SemanticKey? SemanticType)
+	:= (DECL <Maybe> `GetSymbolSchema(id)` (MAYBE.NEW));
+Build(SemanticParameterFunction[id: RealNumber][optional=true] ::= SemanticKey? SemanticType SemanticExpression)
+	:= (DECL ‹type› `GetSymbolSchema(id)` `Build(SemanticExpression)`);
+
+Build(SemanticCapture[ref: true]) := ();
+Build(SemanticCapture[ref: false] ::= SemanticExpressionVariable[id: RealNumber])
+	:= (DECL ‹type› `GetSymbolSchema(id)` `Build(SemanticExpressionVariable)`);
+
+Build(SemanticBlock block) := block.children.map(Build);
+
+Build(SemanticGoal goal) := [
+	"start":
+	`Build(goal.0)`
+];
+
+
 
 Build(SemanticExpressionConstant[value: VALUE.Null]    const) := `Build(const.value)`;
 Build(SemanticExpressionConstant[value: VALUE.Boolean] const) := `Build(const.value)`;
@@ -153,30 +188,86 @@ Build(SemanticExpressionDict dict)  := (DICT.NEW   `...dict.children.flatMap(Bui
 Build(SemanticExpressionSet set)    := (SET.NEW    [`...set.children.map(Build)`]);
 Build(SemanticExpressionMap map)    := (MAP.NEW    `...map.children.map(Build)`);
 
-Build(SemanticExpressionAccess[kind=NORMAL] ::= SemanticExpression SemanticIndex) := (TUPLE.GET  `SemanticIndex.index` [`Build(SemanticExpression)`]);
-Build(SemanticExpressionAccess[kind=NORMAL] ::= SemanticExpression SemanticKey)   := (RECORD.GET `SemanticKey.id`      [`Build(SemanticExpression)`]);
-Build(SemanticExpressionAccess[kind=NORMAL] ::= SemanticExpression__0[type: TYPE.List] SemanticExpression__1) := (LIST.GET [`Build(SemanticExpression__0)` `Build(SemanticExpression__1)`]);
-Build(SemanticExpressionAccess[kind=NORMAL] ::= SemanticExpression__0[type: TYPE.Dict] SemanticExpression__1) := (DICT.GET [`Build(SemanticExpression__0)` `Build(SemanticExpression__1)`]);
-Build(SemanticExpressionAccess[kind=NORMAL] ::= SemanticExpression__0[type: TYPE.Set]  SemanticExpression__1) := (SET.GET  [`Build(SemanticExpression__0)` `Build(SemanticExpression__1)`]);
-Build(SemanticExpressionAccess[kind=NORMAL] ::= SemanticExpression__0[type: TYPE.Map]  SemanticExpression__1) := (MAP.GET  [`Build(SemanticExpression__0)` `Build(SemanticExpression__1)`]);
-
 Build(SemanticExpressionBlock blex) := [
 	...`blex.0.SemanticStatement.slice(0, 1).map(Build)`
 	return `Build(blex.0.-1.SemanticExpression)`.
 ];
 
-Build(SemanticExpressionAccess[kind=MAYBE] access) := [
-	(DECL ‹type› $base `Build(access.0)`)
-	(DECL <Maybe> $result)
-	(GOTO.IF (INSTANCEOF "None" (GET $base)) "then" "else")
+Build(SemanticExpressionAccess[kind=NORMAL] ::= SemanticExpression SemanticIndex) :=
+	1. *Let* `base_type` be *Unwrap:* `TypeOf(SemanticExpression)`.
+	2. *Let* `base_value` be *UnwrapAffirm:* `Build(SemanticExpression)`.
+	3. *Let* `returned` be "(TUPLE.GET `SemanticIndex.index` [`base_value`])".
+	4. *If* `SemanticExpressionAccess.isEntryOptional` is `true`:
+		1. *Return:* [
+			(DECL ‹type› $base `base_value`)
+			(DECL <Maybe> $returned)
+			(GOTO.IF (TUPLE.HAS `SemanticIndex.index` (GET $base)) "then" "else")
+			"then":
+			(SET $returned (MAYBE.NEW `returned`))
+			(GOTO "endif")
+			"else":
+			(SET $returned (MAYBE.NEW))
+			(GOTO "endif")
+			"endif":
+			return (GET $returned).
+		].
+	5. *Else:*
+		1. *Return:* `returned`.
+;
+
+Build(SemanticExpressionAccess[kind=NORMAL] ::= SemanticExpression SemanticKey) :=
+	1. *Let* `base_type` be *Unwrap:* `TypeOf(SemanticExpression)`.
+	2. *Let* `entry_info` be *Unwrap:* `GetEntryInfo(base_type, SemanticExpressionAccess, false)`.
+	3. *Let* `base_value` be *UnwrapAffirm:* `Build(SemanticExpression)`.
+	4. *Let* `returned` be "(RECORD.GET `SemanticKey.id` [`Build(SemanticExpression)`])".
+	5. *If* `entry_info.optional` is `true`:
+		1. *Return:* [
+			(DECL ‹type› $base `base_value`)
+			(DECL <Maybe> $returned)
+			(GOTO.IF (RECORD.HAS `SemanticKey.id` (GET $base)) "then" "else")
+			"then":
+			(SET $returned (MAYBE.NEW `returned`))
+			(GOTO "endif")
+			"else":
+			(SET $returned (MAYBE.NEW))
+			(GOTO "endif")
+			"endif":
+			return (GET $returned).
+		].
+	6. *Else:*
+		1. *Return:* `returned`.
+;
+
+Build(SemanticExpressionAccess[kind=NORMAL] ::= SemanticExpression__0[type: TYPE.List] SemanticExpression__1) := (LIST.GET [`Build(SemanticExpression__0)` `Build(SemanticExpression__1)`]);
+Build(SemanticExpressionAccess[kind=NORMAL] ::= SemanticExpression__0[type: TYPE.Dict] SemanticExpression__1) := (DICT.GET [`Build(SemanticExpression__0)` `Build(SemanticExpression__1)`]);
+Build(SemanticExpressionAccess[kind=NORMAL] ::= SemanticExpression__0[type: TYPE.Set]  SemanticExpression__1) := (SET.GET  [`Build(SemanticExpression__0)` `Build(SemanticExpression__1)`]);
+Build(SemanticExpressionAccess[kind=NORMAL] ::= SemanticExpression__0[type: TYPE.Map]  SemanticExpression__1) := (MAP.GET  [`Build(SemanticExpression__0)` `Build(SemanticExpression__1)`]);
+
+Build(SemanticExpressionAccess[kind=MAYBE] ::= SemanticExpression__0 (SemanticIndex | SemanticKey | SemanticExpression__1)) := [
+	(DECL ‹type› $base `Build(SemanticExpression__0)`)
+	(DECL <Maybe> $returned)
+	(GOTO.IF (NONE.IS (GET $base)) "then" "else")
 	"then":
-	(SET $result (MAYBE.NEW))
+	(SET $returned (MAYBE.NEW))
 	(GOTO "endif")
 	"else":
-	(SET $result (MAYBE.NEW `Build(access[kind=NORMAL] ::= (MAYBE.UNWRAP (GET $base)) access.1)`))
+	(SET $returned (MAYBE.NEW `Build(SemanticExpressionAccess[kind=NORMAL] ::= (MAYBE.UNWRAP (GET $base)) (SemanticIndex | SemanticKey | SemanticExpression__1))`))
 	(GOTO "endif")
 	"endif":
-	return (GET $result).
+	return (GET $returned).
+];
+Build(SemanticExpressionAccess[kind=RESULT] ::= SemanticExpression__0 (SemanticIndex | SemanticKey | SemanticExpression__1)) := [
+	(DECL ‹type› $base `Build(SemanticExpression__0)`)
+	(DECL <Maybe> $returned)
+	(GOTO.IF (FAIL.IS (GET $base)) "then" "else")
+	"then":
+	(SET $returned (RESULT.NEW nil (RESULT.EXTRACT (GET $base))))
+	(GOTO "endif")
+	"else":
+	(SET $returned (RESULT.NEW `Build(SemanticExpressionAccess[kind=NORMAL] ::= (RESULT.UNWRAP (GET $base)) (SemanticIndex | SemanticKey | SemanticExpression__1))` nil))
+	(GOTO "endif")
+	"endif":
+	return (GET $returned).
 ];
 
 Build(SemanticExpressionCall:has(SemanticExpressionVariable ::= "Boolean"):has(SemanticExpression*) call) := (BOOL.FROM  `Build(call.SemanticExpression*.0)`);
@@ -214,13 +305,20 @@ Build(SemanticExpressionCall:has(SemanticExpressionVariable ::= "Map"):has(Seman
 	(MAP.COPY (GET $destination) (GET $arg))
 	return (GET $destination).
 ];
-Build(SemanticExpressionCall:has(SemanticExpressionVariable ::= "Some"):has(SemanticExpression*) call) := (MAYBE.NEW `Build(call.SemanticExpression*.0)`);
+Build(SemanticExpressionCall ::= "Exception" SemanticType* SemanticExpression__1)
+	:= (EXCP.NEW `Build(SemanticExpression__1)`);
+Build(SemanticExpressionCall ::= "Exception" SemanticType* SemanticExpression__1 SemanticExpression__2)
+	:= (EXCP.NEW `Build(SemanticExpression__1)` `Build(SemanticExpression__2)`);
+Build(SemanticExpressionCall ::= "None" SemanticType* SemanticExpression*)                       := (MAYBE.NEW);
+Build(SemanticExpressionCall ::= "Some" SemanticType* SemanticExpression__0 SemanticExpression*) := (MAYBE.NEW `Build(SemanticExpression__0)`);
+Build(SemanticExpressionCall ::= "Fail" SemanticType* SemanticExpression__0 SemanticExpression*) := (RESULT.NEW nil `Build(SemanticExpression__0)`);
+Build(SemanticExpressionCall ::= "Ok"   SemanticType* SemanticExpression__0 SemanticExpression*) := (RESULT.NEW `Build(SemanticExpression__0)` nil);
 Build(SemanticExpressionCall call) := (CALL [`Build(call.0)` `...call.SemanticExpression*.map(Build)`]);
 
 Build(SemanticExpressionClaim claim) := Build(claim.0);
 
-Build(SemanticExpressionOperation[operator=UN_MAYBE]  ::= SemanticExpression)               := (MAYBE.UNWRAP [`Build(SemanticExpression)`]);
-Build(SemanticExpressionOperation[operator=UN_RESULT] ::= SemanticExpression)               := TODO:;
+Build(SemanticExpressionOperation[operator=UN_MAYBE]  ::= SemanticExpression)               := (MAYBE.UNWRAP  [`Build(SemanticExpression)`]);
+Build(SemanticExpressionOperation[operator=UN_RESULT] ::= SemanticExpression)               := (RESULT.UNWRAP [`Build(SemanticExpression)`]);
 Build(SemanticExpressionOperation[operator=NOT]       ::= SemanticExpression)               := (NOT [`Build(SemanticExpression)`]);
 Build(SemanticExpressionOperation[operator=EMP]       ::= SemanticExpression)               := (EMP [`Build(SemanticExpression)`]);
 Build(SemanticExpressionOperation[operator=NEG]       ::= SemanticExpression[type: Number]) := (NEG [`Build(SemanticExpression)`]);
@@ -229,47 +327,44 @@ Build(SemanticExpressionOperation[operator=IS] ::= SemanticExpression "Null")
 	:= (ID `Build(SemanticExpression)` (NULL.CONST null));
 Build(SemanticExpressionOperation[operator=IS] ::= SemanticExpression "Boolean") := [
 	(DECL <bool> $left (ID `Build(SemanticExpression)` (BOOL.CONST false)))
-	(DECL <bool> $result)
+	(DECL <bool> $returned)
 	(GOTO.IF (GET $left) "then" "else")
 	"then":
-	(SET $result (GET $left))
+	(SET $returned (GET $left))
 	(GOTO "endif")
 	"else":
-	(SET $result (ID `Build(SemanticExpression)` (BOOL.CONST true)))
+	(SET $returned (ID `Build(SemanticExpression)` (BOOL.CONST true)))
 	(GOTO "endif")
 	"endif":
-	return (GET $result).
+	return (GET $returned).
 ];
 Build(SemanticExpressionOperation[operator=IS] ::= SemanticExpression__0 SemanticExpression__1[type: Class])
-	:= (INSTANCEOF `SemanticExpression__1.source` `Build(SemanticExpression__0)`);
+	:= (IS `Build(SemanticExpression__0)` `Build(SemanticExpression__1)`);
 
-Build(SemanticExpressionOperation[operator=CAST] ::= SemanticExpression__0 SemanticExpression__1[type: Class])
-	:= (CAST `SemanticExpression__1.source` `Build(SemanticExpression__0)`);
-
-Build(SemanticExpressionOperation[operator=MAYBE] ::= SemanticExpression__0 SemanticExpression__1[type: Class]) := [
-	(DECL <Maybe> $result)
-	(GOTO.IF `Build(SemanticExpressionOperation[operator=IS])` "then" "else")
+Build(SemanticExpressionOperation[operator=CAST] ::= SemanticExpression__0 SemanticExpression__1[type: Class]) := [
+	(DECL ‹type› $returned)
+	(GOTO.IF (IS `Build(SemanticExpression__0)` `Build(SemanticExpression__1)`) "then" "else")
 	"then":
-	(SET $result (MAYBE.NEW (CAST `SemanticExpression__1.source` `Build(SemanticExpression__0)`)))
+	(SET $returned `Build(SemanticExpression__0)`)
 	(GOTO "endif")
 	"else":
-	(SET $result (MAYBE.NEW))
+	(SET $returned (TRAP))
 	(GOTO "endif")
 	"endif":
-	return (GET $result).
+	return (GET $returned).
 ];
 
-Build(SemanticExpressionOperation[operator=RESULT] ::= SemanticExpression__0 SemanticExpression__1[type: Class]) := [
-	(DECL <Result> $result)
-	(GOTO.IF `Build(SemanticExpressionOperation[operator=IS])` "then" "else")
+Build(SemanticExpressionOperation[operator=MAYBE] ::= SemanticExpression__0 SemanticExpression__1[type: Class]) := [
+	(DECL <Maybe> $returned)
+	(GOTO.IF (IS `Build(SemanticExpression__0)` `Build(SemanticExpression__1)`) "then" "else")
 	"then":
-	(SET $result (RESULT.OK.NEW (CAST `SemanticExpression__1.source` `Build(SemanticExpression__0)`)))
+	(SET $returned (MAYBE.NEW `Build(SemanticExpression__0)`))
 	(GOTO "endif")
 	"else":
-	TODO: (SET $result (RESULT.FAIL.NEW exception))
+	(SET $returned (MAYBE.NEW))
 	(GOTO "endif")
 	"endif":
-	return (GET $result).
+	return (GET $returned).
 ];
 
 Build(SemanticExpressionOperation[operator=ADD][0: Integer][1: Integer] op) := (INT.ADD [`Build(op.0)` `Build(op.1)`]);
@@ -298,87 +393,100 @@ Build(SemanticExpressionOperation[operator=GE][0: Number][1: Number] op) := (GE 
 Build(SemanticExpressionOperation[operator=ID] op) := (ID  [`Build(op.0)` `Build(op.1)`]);
 Build(SemanticExpressionOperation[operator=EQ] op) := (EQ  [`Build(op.0)` `Build(op.1)`]);
 
-
 Build(SemanticExpressionOperation[operator=AND] op) := [
 	(DECL ‹type› $left `Build(op.0)`)
-	(DECL ‹type› $result)
+	(DECL ‹type› $returned)
 	(GOTO.IF (BOOL.FROM (GET $left)) "then" "else")
 	"then":
-	(SET $result `Build(op.1)`)
+	(SET $returned `Build(op.1)`)
 	(GOTO "endif")
 	"else":
-	(SET $result (GET $left))
+	(SET $returned (GET $left))
 	(GOTO "endif")
 	"endif":
-	return (GET $result).
+	return (GET $returned).
 ];
 
 Build(SemanticExpressionOperation[operator=OR] op) := [
 	(DECL ‹type› $left `Build(op.0)`)
-	(DECL ‹type› $result)
+	(DECL ‹type› $returned)
 	(GOTO.IF (BOOL.FROM (GET $left)) "then" "else")
 	"then":
-	(SET $result (GET $left))
+	(SET $returned (GET $left))
 	(GOTO "endif")
 	"else":
-	(SET $result `Build(op.1)`)
+	(SET $returned `Build(op.1)`)
 	(GOTO "endif")
 	"endif":
-	return (GET $result).
+	return (GET $returned).
 ];
 
 Build(SemanticExpressionOperation[operator=COND] op) := [
-	(DECL ‹type› $result)
+	(DECL ‹type› $returned)
 	(GOTO.IF `Build(op.0)` "then" "else")
 	"then":
-	(SET $result `Build(op.1)`)
+	(SET $returned `Build(op.1)`)
 	(GOTO "endif")
 	"else":
-	(SET $result `Build(op.2)`)
+	(SET $returned `Build(op.2)`)
 	(GOTO "endif")
 	"endif":
-	return (GET $result).
+	return (GET $returned).
 ];
 
 Build(SemanticExpressionSwitch ::= SemanticExpression__0 (SemanticCase ::= SemanticExpression__1+ SemanticExpression__2)* SemanticExpression__3) := [
-	(DECL ‹type› $result)
+	(DECL ‹type› $returned)
 	(GOTO.IF (ID `Build(SemanticExpression__0)` `Build(SemanticCase*[i].children[j])`) "then" "else")
 	"then":
-	(SET $result `Build(SemanticCase*[i].children.-1)`)
+	(SET $returned `Build(SemanticCase*[i].children.-1)`)
 	(GOTO "endif")
 	"else":
-	(SET $result `Build(SemanticExpressionSwitch ::= SemanticExpression__0 (SemanticCase ::= SemanticExpression__1.slice(1)+ SemanticExpression__2)* SemanticExpression__3)`)
+	(SET $returned `Build(SemanticExpressionSwitch ::= SemanticExpression__0 (SemanticCase ::= SemanticExpression__1.slice(1)+ SemanticExpression__2)* SemanticExpression__3)`)
 	(GOTO "endif")
 	"endif":
-	return (GET $result).
+	return (GET $returned).
 ];
 Build(SemanticExpressionSwitch ::= SemanticExpression__0 (SemanticCase ::= SemanticExpression__1 SemanticExpression__2)* SemanticExpression__3) := [
-	(DECL ‹type› $result)
+	(DECL ‹type› $returned)
 	(GOTO.IF (ID `Build(SemanticExpression__0)` `Build(SemanticCase*[i].children.0)`) "then" "else")
 	"then":
-	(SET $result `Build(SemanticCase*[i].children.1)`)
+	(SET $returned `Build(SemanticCase*[i].children.1)`)
 	(GOTO "endif")
 	"else":
-	(SET $result `Build(SemanticExpressionSwitch ::= SemanticExpression__0 SemanticCase.slice(1)* SemanticExpression__3)`)
+	(SET $returned `Build(SemanticExpressionSwitch ::= SemanticExpression__0 SemanticCase.slice(1)* SemanticExpression__3)`)
 	(GOTO "endif")
 	"endif":
-	return (GET $result).
+	return (GET $returned).
 ];
 Build(SemanticExpressionSwitch ::= SemanticExpression__0 SemanticExpression__1) := [
 	(DROP `Build(SemanticExpression__0)`)
 	return `Build(SemanticExpression__1)`.
 ];
 
+Build(SemanticExpressionFunction) := (LAMBDA ‹temp_name› ‹arity› `SemanticExpressionFunction.source`);
+
+
+
 Build(SemanticDeclarationType decl) := [];
 
 Build(SemanticDeclarationVariable[id: RealNumber][writable: Boolean] ::= SemanticType? SemanticExpression) := [
 	(DECL ‹type› `GetSymbolSchema(id)` `Build(SemanticExpression)`)
 ];
-Build(SemanticDeclarationVariable[writable=false] ::= SemanticType? SemanticExpression) := [
+Build(SemanticDeclarationVariable[id=*nil*][writable=false] ::= SemanticType? SemanticExpression) := [
 	(DROP `Build(SemanticExpression)`)
 ];
 Build(SemanticDeclarationVariable[id: RealNumber][writable=true] ::= SemanticType) := [
 	(DECL ‹type› `GetSymbolSchema(id)` (MAYBE.NEW))
+];
+
+Build(SemanticDeclarationFunction[id=*nil*]) := [];
+Build(SemanticDeclarationFunction[id: RealNumber] ::= SemanticParameterFunction* SemanticCapture* SemanticType? SemanticBlock) := [
+	"func":
+	`SemanticCapture*.map(Build)`
+	`SemanticParameterFunction*.map(Build)`
+	`Build(SemanticBlock)`
+	(DROP (TRAP)) // traps because this part should be unreachable (a return/panic statement should have been encountered in the function body by now)
+	"endfunc":
 ];
 
 Build(SemanticStatementExpression:has(SemanticExpression) stmt) := [
@@ -506,11 +614,14 @@ Build(SemanticStatementIteration ::= SemanticType SemanticExpression SemanticBlo
 Build(SemanticStatementBreak[skip=false] stmt) := [ (GOTO "endwhile") ];
 Build(SemanticStatementBreak[skip=true]  stmt) := [ (GOTO "while") ];
 
-Build(SemanticBlock block) := block.children.map(Build);
-
-Build(SemanticGoal goal) := [
-	"start":
-	`Build(goal.0)`
+Build(SemanticStatementReturn[panic=false] ::= ()) := [ (GOTO "caller") ];
+Build(SemanticStatementReturn[panic=false] ::= SemanticExpression) := [
+	(RETURN `Build(SemanticExpression)` nil)
+	(GOTO "caller")
+];
+Build(SemanticStatementReturn[panic=true] ::= SemanticExpression) := [
+	(RETURN nil `Build(SemanticExpression)`)
+	(GOTO "caller")
 ];
 
 

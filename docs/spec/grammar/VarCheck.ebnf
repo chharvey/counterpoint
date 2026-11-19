@@ -1,17 +1,99 @@
 Nil! VarCheck(Or<
+	SemanticIndex,
 	SemanticKey,
+	SemanticItemType,
 	SemanticPropertyType,
 	SemanticProperty,
 	SemanticCase,
-	SemanticType,
-	SemanticExpression,
+	Difference<SemanticType, Or<SemanticTypeAlias, SemanticTypeCall, SemanticTypeFunction>>,
+	Difference<SemanticExpression, Or<SemanticExpressionVariable, SemanticExpressionFunction>>,
 	SemanticStatementExpression,
 	SemanticStatementClaim,
 	SemanticStatementConditional,
-	SemanticGoal,
+	SemanticStatementBreak,
+	SemanticStatementReturn,
 > list) :=
 	1. *For each* `it` in `list.children`:
 		1. *Perform:* *Unwrap:* `VarCheck(it)`.
+;
+
+
+
+Nil! VarCheck(SemanticParameterFunction param) :=
+	1. *For each* `it` in `param.children`:
+		1. *Perform:* *Unwrap:* `VarCheck(it)`.
+	2. *If* `param.id` is not *nil*:
+		1. *Let* `parent` be the parent node of `param`.
+		2. *Assert:* `parent` is a SemanticExpressionFunction or a SemanticDeclarationFunction.
+		3. *Let* `block` be `parent.children.-1`.
+		4. *Assert:* `block` is a SemanticBlock.
+		5. *Let* `validator` be the validator of `block`.
+		6. *If* `validator`’s symbol table contains a SymbolSchema whose `id` is `param.id`:
+			1. *Throw:* a new AssignmentErrorDuplicateDeclaration.
+		7. *Else:*
+			1. *If* `param.optional` is `true` *and* `param` does not contain a `SemanticExpression`:
+				1. *Let* `isUninitialized` be `true`.
+			2. *Else:*
+				1. *Let* `isUninitialized` be `false`.
+			3. *Let* `symbol` be a new SymbolSchemaVar [
+				id=              `param.id`,
+				isWritable=      `param.writable`,
+				isUninitialized= `isUninitialized`,
+				type=            `Anything`,
+			].
+			2. Add `symbol` as a record for `param.id` to `validator`.
+	3. *Else:*
+		1. *Return.*
+;
+
+
+
+Nil! VarCheck(SemanticCapture capture) :=
+	1. *Assert:* `capture.children.count` is 1.
+	2. *Let* `var` be `capture.children.0`.
+	3. *Perform:* *Unwrap:* `VarCheck(var)`.
+	4. *Assert:* the validator’s symbol table contains a SymbolSchema `symbol` whose `id` is `var.id`.
+	5. *Let* `parent` be the parent node of `capture`.
+	6. *Assert:* `parent` is a SemanticExpressionFunction or a SemanticDeclarationFunction.
+	7. *Let* `block` be `parent.children.-1`.
+	8. *Assert:* `block` is a SemanticBlock.
+	9. *Let* `validator` be the validator of `block`.
+	10. *If* `symbol.writable` is `true` *and* `capture.ref` is `true`:
+		1. *Let* `isWritable` be `true`.
+	11. *Else:*
+		1. *Let* `isWritable` be `false`.
+	12. *Let* `schema` be a new SymbolSchemaVar [
+		id=              `symbol.id`,
+		isWritable=      `isWritable`,
+		isUninitialized= `false`,
+		type=            `Anything`,
+	].
+	13. *If* `capture.ref` is `true`:
+		1. Add `symbol` as a record for `symbol.id` to `validator`.
+	14. *Else:*
+		1. Add `schema` as a record for `symbol.id` to `validator`.
+;
+
+
+
+Nil! VarCheck(SemanticBlock block) :=
+	1. *For each* `stmt` in `block.children`:
+		1. *If* `stmt` is a SemanticDeclarationFunction:
+			1. *If* `stmt.id` is not *nil*:
+				1. *If* the validator’s symbol table contains a SymbolSchema whose `id` is `stmt.id`:
+					1. *Throw:* a new AssignmentErrorDuplicateDeclaration.
+				2. *Else:*
+					1. *Let* `symbol` be a new SymbolSchemaFunc [
+						id=   `stmt.id`,
+						type= `Anything`,
+					].
+					2. Add `symbol` as a record for `stmt.id` to the validator.
+			2. *Else:*
+				1. Fall through.
+		2. *Else:*
+			1. Fall through.
+	2. *For each* `stmt` in `block.children`:
+		1. *Peform:* *Unwrap:* `VarCheck(stmt)`.
 ;
 
 
@@ -23,15 +105,15 @@ Nil! VarCheck(Or<SemanticTypeRecord, SemanticExpressionRecord, SemanticExpressio
 		2. *Perform:* *Unwrap:* `VarCheck(key)`.
 		3. *If* `assoc.children` already contains a property `prop_dupe` such that `prop_dupe.children.0.id` is `key.id`:
 			1. *Throw:* a new AssignmentErrorDuplicateKey.
-	3. *For each* `prop` in `assoc.children`:
-		1. *Peform:* *Unwrap:* `VarCheck(prop.children.1)`.
+	3. *For each* `child` in `assoc.children`:
+		1. *Peform:* *Unwrap:* `VarCheck(child)`.
 ;
 
 
 
 Nil! VarCheck(SemanticTypeAlias var) :=
-	1. *Note:* Skip var-checking of `var` for now if source is "Object", as semantics is determined by syntax.
-	2. *If* `var.source` is "Object":
+	1. *Note:* Skip var-checking of `var` for now, as semantics is determined by syntax.
+	2. *If* `var.source` is "Object" or "Exception" or "Function" or "Class":
 		1. *Return.*
 	3. *If* the validator’s symbol table does not contain a SymbolSchema `symbol` whose `id` is `var.id`:
 		1. *Throw:* a new ReferenceErrorUndeclared.
@@ -44,30 +126,72 @@ Nil! VarCheck(SemanticTypeAlias var) :=
 
 Nil! VarCheck(SemanticTypeCall call) :=
 	1. *Note:* Skip var-checking of `call.children.0` for now, as semantics is determined by syntax.
-	2. *If* `call.children.0.source` is not one of "List", "Dict", "Set", or "Map":
+	2. *If* `call.children.0.source` is not a Callable Interface Name:
 		1. *Throw:* a new SyntaxError.
 	3. *For each* `it` in `call.children[1..]`:
 		1. *Perform:* *Unwrap:* `VarCheck(it)`.
 ;
 
+
+
+Nil! VarCheck(SemanticTypeFunction fn) :=
+	1. *Note:* In function types, all parameter labels are var-checked before all parameter types.
+	2. *Let* `proptypes` be a filtering of `fn.children` for each `child` such that `child` is a SemanticPropertyType.
+	3. *For each* `proptype` in `proptypes`:
+		1. *Let* `key` be `proptype.children.0`.
+		2. *Perform:* *Unwrap:* `VarCheck(key)`.
+		3. *If* `proptypes` already contains a property `prop_dupe` such that `prop_dupe.children.0.id` is `key.id`:
+			1. *Throw:* a new AssignmentErrorDuplicateKey.
+	4. *For each* `child` in `fn.children`:
+		1. *Peform:* *Unwrap:* `VarCheck(child)`.
+;
 
 
 Nil! VarCheck(SemanticExpressionVariable var) :=
 	1. *If* the validator’s symbol table does not contain a SymbolSchema `symbol` whose `id` is `var.id`:
 		1. *Throw:* a new ReferenceErrorUndeclared.
 	// TODO: Throw a ReferenceErrorDeadZone if the variable is declared further down in source.
-	2. *If* `symbol` is not an instance of `SymbolSchemaVar`:
+	2. *If* `symbol` is an instance of `SymbolSchemaType`:
 		1. *Throw:* a new ReferenceErrorKind.
 ;
 
 
 
-Nil! VarCheck(SemanticExpressionCall call) :=
-	1. *Note:* Skip var-checking of `call.children.0` for now, as semantics is determined by syntax.
-	2. *If* `call.children.0.source` is not one of "List", "Dict", "Set", or "Map":
-		1. *Throw:* a new SyntaxError.
-	3. *For each* `it` in `call.children[1..]`:
-		1. *Perform:* *Unwrap:* `VarCheck(it)`.
+Nil! VarCheck(SemanticExpressionFunction fn) :=
+	1. *Note:* In function expressions, all parameter labels are var-checked *after* all parameter types and default values. The block/return is var-checked last.
+	2. *Let* `captures` be a filtering of `fn.children` for each `child` such that `child` is a SemanticCapture.
+	3. *For each* `capture` of `captures`:
+		1. *Perform:* *Unwrap:* `VarCheck(capture)`.
+	4. *Let* `parameters` be a filtering of `fn.children` for each `child` such that `child` is a SemanticParameterFunction.
+	5. *For each* `parameter` of `parameters`:
+		1. *Perform:* *Unwrap:* `VarCheck(parameter)`.
+	6. *Let* `named_params` be a filtering of `parameters` for each `parameter` such that `parameter.named` is `true`.
+	7. *Let* `labels` be a new Sequence.
+	8. *For each* `param` of `named_params`:
+		1. *Let* `key` be an item `c` in `param` such that `c` is a SemanticKey.
+		2. *If* `key` is set:
+			1. *Let* `label` be `key.id`.
+		3. *Else:*
+			1. *Assert* `param.id` is set.
+			2. *Let* `label` be `param.id`.
+		4. *If* `labels` already contains `label`:
+			1. *Throw:* a new AssignmentErrorDuplicateKey.
+		5. *Else:*
+			1. Push `label` to `labels`.
+	9. *Set* `labels` to a new Sequence.
+	10. *For each* `capture` of `captures`:
+		1. *Assert:* `capture.children.count` is *1*.
+		2. *Let* `label` be `capture.children.0.id`.
+		3. *If* `labels` already contains `label`:
+			1. *Throw:* a new AssignmentErrorDuplicateDeclaration.
+		4. *Else:*
+			1. Push `label` to `labels`.
+	11. *Let* `returntype` be an item `c` in `fn.children` such that `c` is a SemanticType.
+	12. *If* `returntype` is set:
+		1. *Perform:* *Unwrap:* `VarCheck(returntype)`.
+	13. *Else:*
+		1. Fall through.
+	14. *Return:* `VarCheck(fn.children.-1)`.
 ;
 
 
@@ -115,6 +239,46 @@ Nil! VarCheck(SemanticDeclarationVariable decl) :=
 			2. Add `symbol` as a record for `decl.id` to the validator.
 	11. *Else:*
 		1. *Return.*
+;
+
+
+
+Nil! VarCheck(SemanticDeclarationFunction fn) :=
+	1. *Note:* In function declarations, all parameter labels are var-checked *after* all parameter types and default values. The block/return is var-checked last.
+	2. *Perform:* The step labeled «*If* `stmt` is a SemanticDeclarationFunction» in «VarCheck(SemanticBlock)», replacing `stmt` with `fn`.
+	3. *Let* `captures` be a filtering of `fn.children` for each `child` such that `child` is a SemanticCapture.
+	4. *For each* `capture` of `captures`:
+		1. *Perform:* *Unwrap:* `VarCheck(capture)`.
+	5. *Let* `parameters` be a filtering of `fn.children` for each `child` such that `child` is a SemanticParameterFunction.
+	6. *For each* `parameter` of `parameters`:
+		1. *Perform:* *Unwrap:* `VarCheck(parameter)`.
+	7. *Let* `named_params` be a filtering of `parameters` for each `parameter` such that `parameter.named` is `true`.
+	8. *Let* `labels` be a new Sequence.
+	9. *For each* `param` of `named_params`:
+		1. *Let* `key` be an item `c` in `param` such that `c` is a SemanticKey.
+		2. *If* `key` is set:
+			1. *Let* `label` be `key.id`.
+		3. *Else:*
+			1. *Assert* `param.id` is set.
+			2. *Let* `label` be `param.id`.
+		4. *If* `labels` already contains `label`:
+			1. *Throw:* a new AssignmentErrorDuplicateKey.
+		5. *Else:*
+			1. Push `label` to `labels`.
+	10. *Set* `labels` to a new Sequence.
+	11. *For each* `capture` of `captures`:
+		1. *Assert:* `capture.children.count` is *1*.
+		2. *Let* `label` be `capture.children.0.id`.
+		3. *If* `labels` already contains `label`:
+			1. *Throw:* a new AssignmentErrorDuplicateDeclaration.
+		4. *Else:*
+			1. Push `label` to `labels`.
+	12. *Let* `returntype` be an item `c` in `fn.children` such that `c` is a SemanticType.
+	13. *If* `returntype` is set:
+		1. *Perform:* *Unwrap:* `VarCheck(returntype)`.
+	14. *Else:*
+		1. Fall through.
+	15. *Return:* `VarCheck(fn.children.-1)`.
 ;
 
 

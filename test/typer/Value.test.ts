@@ -71,13 +71,32 @@ test.suite('Value', () => {
 			});
 		});
 
+		test.suite('Exception', () => {
+			test.test('Exceptions with same message and cause are not identical.', () => {
+				const bob = new VALUE.String('bob');
+				const a   = new VALUE.Exception(new VALUE.String('alice'));
+				return assert.ok(!new VALUE.Exception(bob, a).identical(new VALUE.Exception(bob, a)));
+			});
+		});
+
 		test.suite('Maybe', () => {
 			test.test('different Nones are not identical.', () => {
-				assert.ok(!new VALUE.Maybe(TYPE.STR).identical(new VALUE.Maybe(TYPE.STR)));
+				assert.ok(!new VALUE.None(TYPE.STR).identical(new VALUE.None(TYPE.STR)));
 			});
 			test.test('Somes with identical values are not identical.', () => {
 				const v = new VALUE.String('water');
-				return assert.ok(!new VALUE.Maybe(v).identical(new VALUE.Maybe(v)));
+				return assert.ok(!new VALUE.Some(v).identical(new VALUE.Some(v)));
+			});
+		});
+
+		test.suite('Result', () => {
+			test.test('Fails with identical reasons are not identical.', () => {
+				const r = new VALUE.Exception(new VALUE.String('error'));
+				return assert.ok(!new VALUE.Fail(TYPE.NOTHING, r).identical(new VALUE.Fail(TYPE.NOTHING, r)));
+			});
+			test.test('Oks with identical values are not identical.', () => {
+				const v = new VALUE.String('water');
+				return assert.ok(!new VALUE.Ok(v).identical(new VALUE.Ok(v)));
 			});
 		});
 	});
@@ -229,34 +248,92 @@ test.suite('Value', () => {
 			});
 		});
 
+		test.suite('Exception', () => {
+			const ALICE  = new VALUE.String('alice');
+			const BOB    = new VALUE.String('bob');
+			test.test('Exceptions with equal messages and causes are equal.', () => {
+				const a1 = new VALUE.Exception(ALICE);
+				const a2 = new VALUE.Exception(ALICE);
+				assert.ok(a1.equal(a2));
+				assert.ok(new VALUE.Exception(BOB, a1).equal(new VALUE.Exception(BOB, a2)));
+				return assert.ok(new VALUE.Exception(BOB, a1).equal(new VALUE.Exception(new VALUE.String('bob'), a2)));
+			});
+			test.test('Exceptions with unequal messages are not equal.', () => {
+				const a = new VALUE.Exception(ALICE);
+				return assert.ok(!new VALUE.Exception(BOB, a).equal(new VALUE.Exception(new VALUE.String('bob2'), a)));
+			});
+			test.test('Exceptions with unequal causes are not equal.', () => {
+				const a1 = new VALUE.Exception(ALICE);
+				const a2 = new VALUE.Exception(new VALUE.String('alice2'));
+				const b1 = new VALUE.Exception(BOB, a1);
+				assert.ok(!b1.equal(new VALUE.Exception(BOB)));
+				return assert.ok(!b1.equal(new VALUE.Exception(BOB, a2)));
+			});
+		});
+
 		test.suite('Maybe', () => {
 			test.test('different Nones are equal.', () => {
-				assert.ok(new VALUE.Maybe(TYPE.STR).equal(new VALUE.Maybe(TYPE.STR)));
+				assert.ok(new VALUE.None(TYPE.STR).equal(new VALUE.None(TYPE.STR)));
 			});
 			test.test('Somes with equal values are equal.', () => {
-				assert.ok(new VALUE.Maybe(new VALUE.List<VALUE.String>([
+				assert.ok(new VALUE.Some(new VALUE.List<VALUE.String>([
 					new VALUE.String('earth'),
 					new VALUE.String('wind'),
 					new VALUE.String('fire'),
-				])).equal(new VALUE.Maybe(new VALUE.List<VALUE.String>([
+				])).equal(new VALUE.Some(new VALUE.List<VALUE.String>([
 					new VALUE.String('earth'),
 					new VALUE.String('wind'),
 					new VALUE.String('fire'),
 				]))));
 			});
 			test.test('Somes with unequal values are not equal.', () => {
-				assert.ok(!new VALUE.Maybe(new VALUE.List<VALUE.String>([
+				assert.ok(!new VALUE.Some(new VALUE.List<VALUE.String>([
 					new VALUE.String('earth'),
 					new VALUE.String('wind'),
 					new VALUE.String('fire'),
-				])).equal(new VALUE.Maybe(new VALUE.List<VALUE.String>([
+				])).equal(new VALUE.Some(new VALUE.List<VALUE.String>([
 					new VALUE.String('clubs'),
 					new VALUE.String('spades'),
 					new VALUE.String('diamonds'),
 				]))));
 			});
 			test.test('None and Some are never equal.', () => {
-				assert.ok(!new VALUE.Maybe(TYPE.STR).equal(new VALUE.Maybe(new VALUE.String('hearts'))));
+				assert.ok(!new VALUE.None(TYPE.STR).equal(new VALUE.Some(new VALUE.String('hearts'))));
+			});
+		});
+
+		test.suite('Result', () => {
+			test.test('Fails with equal reasons are equal.', () => {
+				assert.ok(new VALUE.Fail(TYPE.NOTHING, new VALUE.Exception(new VALUE.String('error'))).equal(new VALUE.Fail(TYPE.NOTHING, new VALUE.Exception(new VALUE.String('error')))));
+			});
+			test.test('Fails with unequal reasons are not equal.', () => {
+				assert.ok(!new VALUE.Fail(TYPE.NOTHING, new VALUE.Exception(new VALUE.String('error1'))).equal(new VALUE.Fail(TYPE.NOTHING, new VALUE.Exception(new VALUE.String('error2')))));
+			});
+			test.test('Oks with equal values are equal.', () => {
+				assert.ok(new VALUE.Ok(new VALUE.List<VALUE.String>([
+					new VALUE.String('earth'),
+					new VALUE.String('wind'),
+					new VALUE.String('fire'),
+				])).equal(new VALUE.Ok(new VALUE.List<VALUE.String>([
+					new VALUE.String('earth'),
+					new VALUE.String('wind'),
+					new VALUE.String('fire'),
+				]))));
+			});
+			test.test('Oks with unequal values are not equal.', () => {
+				assert.ok(!new VALUE.Ok(new VALUE.List<VALUE.String>([
+					new VALUE.String('earth'),
+					new VALUE.String('wind'),
+					new VALUE.String('fire'),
+				])).equal(new VALUE.Ok(new VALUE.List<VALUE.String>([
+					new VALUE.String('clubs'),
+					new VALUE.String('spades'),
+					new VALUE.String('diamonds'),
+				]))));
+			});
+			test.test('Fail and Ok are never equal, even with same underlying value.', () => {
+				const excp = new VALUE.Exception(new VALUE.String('success or failure'));
+				assert.ok(!new VALUE.Fail(TYPE.NOTHING, excp).equal(new VALUE.Ok(excp)));
 			});
 		});
 	});
@@ -267,7 +344,7 @@ test.suite('Value', () => {
 			const cg = new CodeGenerator();
 			return assertEqualBins(
 				VALUE.NULL.codegen(cg),
-				cg.vm.Value.newPrimitive(cg.vm.Vect.NULL),
+				cg.vm.Value.NULL,
 			);
 		});
 
@@ -277,8 +354,8 @@ test.suite('Value', () => {
 				VALUE.FALSE.codegen(cg),
 				VALUE.TRUE .codegen(cg),
 			], [
-				cg.vm.Value.newPrimitive(cg.vm.Vect.FALSE),
-				cg.vm.Value.newPrimitive(cg.vm.Vect.TRUE),
+				cg.vm.Value.FALSE,
+				cg.vm.Value.TRUE,
 			]);
 		});
 
@@ -287,7 +364,7 @@ test.suite('Value', () => {
 			const {vm: {Vect, Value}, mod: {wasm}} = cg;
 			return assertEqualBins(
 				new VALUE.Symbol(0x100n, 'hello').codegen(cg),
-				Value.newPrimitive(Vect.newNat(wasm.i64.const(0x100n))),
+				Value.fromNat(Vect.newNat(wasm.i64.const(0x100n))),
 			);
 		});
 
@@ -311,7 +388,7 @@ test.suite('Value', () => {
 			const {vm: {Vect, Value}, mod: {wasm}} = cg;
 			return assertEqualBins(
 				data.map((x) => new VALUE.Integer(x).codegen(cg)),
-				data.map((x) => Value.newPrimitive(Vect.newInt(wasm.i64.const(x)))),
+				data.map((x) => Value.fromInt(Vect.newInt(wasm.i64.const(x)))),
 			);
 		});
 
@@ -327,25 +404,25 @@ test.suite('Value', () => {
 			const {vm: {Vect, Value}, mod: {wasm}} = cg;
 			return assertEqualBins(
 				data.map((x) => new VALUE.Natural(x).codegen(cg)),
-				data.map((x) => Value.newPrimitive(Vect.newNat(wasm.i64.const(x)))),
+				data.map((x) => Value.fromNat(Vect.newNat(wasm.i64.const(x)))),
 			);
 		});
 
 		test.suite('Float', () => {
 			test.test('generates `(f64.const)`.', () => {
-				/* eslint-disable @stylistic/array-element-newline */
 				const data: number[] = [
+					/* eslint-disable @stylistic/list-style */
 					55, -55, 33, -33, 2.007, -2.007,
 					91.27e4, -91.27e4, 91.27e-4, -91.27e-4,
 					6.8, 6.8,
 					3.0 - 2.7,
+					/* eslint-enable @stylistic/list-style */
 				];
-				/* eslint-enable @stylistic/array-element-newline */
 				const cg = new CodeGenerator();
 				const {vm: {Vect, Value}, mod: {wasm}} = cg;
 				return assertEqualBins(
 					data.map((x) => new VALUE.Float(x).codegen(cg)),
-					data.map((x) => Value.newPrimitive(Vect.newFloat(wasm.f64.const(x)))),
+					data.map((x) => Value.fromFloat(Vect.newFloat(wasm.f64.const(x)))),
 				);
 			});
 			test.test('builds `0.0` and `-0.0` differently.', () => {
@@ -353,7 +430,7 @@ test.suite('Value', () => {
 				const {vm: {Vect, Value}, mod: {wasm}} = cg;
 				return assertEqualBins(
 					[0.0, -0.0].map((x) => new VALUE.Float(x).codegen(cg)),
-					[wasm.f64.const(0.0), wasm.f64.ceil(wasm.f64.const(-0.5))].map((c) => Value.newPrimitive(Vect.newFloat(c))),
+					[wasm.f64.const(0.0), wasm.f64.ceil(wasm.f64.const(-0.5))].map((c) => Value.fromFloat(Vect.newFloat(c))),
 				);
 			});
 		});
@@ -363,7 +440,7 @@ test.suite('Value', () => {
 			const {vm: {Value}, mod: {wasm}} = cg;
 			return assertEqualBins(
 				new VALUE.String('hello').codegen(cg),
-				Value.newComposite(cg.codegenString([0x68, 0x65, 0x6c, 0x6c, 0x6f].map((c) => wasm.i32.const(c)))),
+				Value.fromString(cg.codegenString([0x68, 0x65, 0x6c, 0x6c, 0x6f].map((c) => wasm.i32.const(c)))),
 			);
 		});
 	});

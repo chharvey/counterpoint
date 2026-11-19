@@ -83,7 +83,7 @@ export class Call extends Type {
 	public constructor(
 		start_node: SyntaxNodeType<'type_compound'>,
 		private readonly base: Type,
-		private readonly args: Readonly<NonemptyArray<Type>>,
+		public  readonly args: Readonly<NonemptyArray<Type>>,
 	) {
 		super(start_node, {}, [base, ...args]);
 	}
@@ -93,13 +93,6 @@ export class Call extends Type {
 		// (`this.base.source` must be a `CallableInterfaceName`)
 		validate_callable_interface_name(this.base.source);
 		return xjs.Array.forEachAggregated(this.args, (arg) => arg.varCheck());
-	}
-
-	public override typeCheck(): void {
-		// NOTE: ignore type-checking `this.base` for now, as semantics is determined by syntax.
-		// (`this.base.source` must be a `CallableInterfaceName`)
-		xjs.Array.forEachAggregated(this.args, (arg) => arg.typeCheck());
-		this.eval(); // assert does not throw
 	}
 
 	@memoizeMethod

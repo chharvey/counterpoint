@@ -20,7 +20,6 @@ import {
 import {
 	extract_lines,
 	assertAssignable,
-	op_maybe_string,
 	setupScript,
 } from '../utils.ts';
 
@@ -101,7 +100,7 @@ test.suite('Statement', () => {
 					};
 				}`);
 				const validator: Validator = (goal.block!.children[0] as AST.STMT.StatementIteration).block.validator;
-				const id: bigint = Validator.cookTokenIdentifier('it');
+				const id: bigint = Validator.keyId('it');
 				assert.ok(!validator.hasSymbol(id));
 				goal.varCheck();
 				assert.ok(validator.hasSymbol(id));
@@ -120,7 +119,7 @@ test.suite('Statement', () => {
 					};
 				}`);
 				const validator: Validator = (goal.block!.children[0] as AST.STMT.StatementIteration).block.validator;
-				const id: bigint = Validator.cookTokenIdentifier('_');
+				const id: bigint = Validator.keyId('_');
 				assert.ok(!validator.hasSymbol(id));
 				goal.varCheck();
 				return assert.ok(!validator.hasSymbol(id));
@@ -245,9 +244,9 @@ test.suite('Statement', () => {
 						val x: int | float = 42;
 						claim x: anything; % supertype
 					}`], (src) => {
-						const {stmts} = setupScript(src, {typeCheck: false});
-						stmts[0].typeCheck(); // assert does not throw
-						return assert.throws(() => stmts[1].typeCheck(), TypeErrorNotNarrow);
+						const {stmts, visitors} = setupScript(src, {typeCheck: false});
+						visitors.typeCheck.visit(stmts[0]); // assert does not throw
+						return assert.throws(() => visitors.typeCheck.visit(stmts[1]), TypeErrorNotNarrow);
 					});
 				});
 				test.test('accessing variable after claim is narrowed.', () => {
@@ -257,8 +256,9 @@ test.suite('Statement', () => {
 						claim x: int;
 						x;            % type \`int\`
 					}`, {build: false});
+					const expr_visitor = new AST.ExprVisitorType();
 					return assert.deepStrictEqual(
-						[stmts[1], stmts[3]].map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()),
+						[stmts[1], stmts[3]].map((stmt) => expr_visitor.visit((stmt as AST.STMT.StatementExpression).expr!)),
 						[TYPE.INT.union(TYPE.FLOAT), TYPE.INT],
 					);
 				});
@@ -277,14 +277,14 @@ test.suite('Statement', () => {
 					}`, {build: false}); // assert does not throw
 				});
 				test.test('disallows reassigning incorrect type after claim.', () => {
-					const {stmts} = setupScript(`{
+					const {stmts, visitors} = setupScript(`{
 						val mut x: bool | null = false;
 						claim x: bool;
 						set x = null;
 					}`, {typeCheck: false});
-					stmts[0].typeCheck(); // assert does not throw
-					stmts[1].typeCheck(); // assert does not throw
-					return assert.throws(() => stmts[2].typeCheck(), TypeErrorNotAssignable);
+					visitors.typeCheck.visit(stmts[0]); // assert does not throw
+					visitors.typeCheck.visit(stmts[1]); // assert does not throw
+					return assert.throws(() => visitors.typeCheck.visit(stmts[2]), TypeErrorNotAssignable);
 				});
 			});
 			test.suite('for accesses.', () => {
@@ -324,8 +324,9 @@ test.suite('Statement', () => {
 						record.tuple.0;             % type \`int\`
 					}`, {build: false});
 					const INT_NULL: TYPE.Type = TYPE.INT.union(TYPE.NULL);
+					const expr_visitor = new AST.ExprVisitorType();
 					return assert.deepStrictEqual(
-						[...stmts.slice(1, 3), ...stmts.slice(5, 7)].map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()),
+						[...stmts.slice(1, 3), ...stmts.slice(5, 7)].map((stmt) => expr_visitor.visit((stmt as AST.STMT.StatementExpression).expr!)),
 						[INT_NULL, INT_NULL, TYPE.NULL, TYPE.INT],
 					);
 				});
@@ -370,10 +371,10 @@ test.suite('Statement', () => {
 						claim list.[0]: float;
 						set list.[0] = 42;
 					}`], (src, i) => {
-						const {stmts} = setupScript(src, {typeCheck: false});
+						const {stmts, visitors} = setupScript(src, {typeCheck: false});
 						if (i === 0) {
-							xjs.Array.forEachAggregated(stmts.slice(0, -1), (stmt) => stmt.typeCheck()); // assert does not throw
-							return assert.throws(() => stmts.at(-1)!.typeCheck(), (err) => {
+							xjs.Array.forEachAggregated(stmts.slice(0, -1), (stmt) => visitors.typeCheck.visit(stmt)); // assert does not throw
+							return assert.throws(() => visitors.typeCheck.visit(stmts.at(-1)!), (err) => {
 								assertAssignable(err as Error, {
 									cons:   AggregateError,
 									errors: [
@@ -384,8 +385,8 @@ test.suite('Statement', () => {
 								return true;
 							});
 						} else {
-							stmts[0].typeCheck(); // assert does not throw
-							assert.throws(() => stmts[1].typeCheck(), /not yet supported/);
+							visitors.typeCheck.visit(stmts[0]); // assert does not throw
+							assert.throws(() => visitors.typeCheck.visit(stmts[1]), /not yet supported/);
 						}
 					});
 				});
@@ -395,39 +396,39 @@ test.suite('Statement', () => {
 		test.suite('StatementReassignment', () => {
 			test.suite('for variable reassignment.', () => {
 				test.test('throws when variable assignee type is not supertype.', () => {
-					const {goal} = setupScript(`{
+					const {goal, visitors} = setupScript(`{
 						val mut i: int = 42;
 						set i = 4.3;
 					}`, {typeCheck: false});
-					return assert.throws(() => goal.typeCheck(), TypeErrorNotAssignable);
+					return assert.throws(() => visitors.typeCheck.visit(goal), TypeErrorNotAssignable);
 				});
 				test.test('does not allow reassignment of `null` or `Maybe` when uninitialized.', () => {
-					const {goal, stmts} = setupScript(`{
+					const {goal, stmts, visitors} = setupScript(`{
 						val mut x?: int;
 						val mut y?: int;
 						set x = 42;
 						set x = null;
 						set x = y;
 					}`, {typeCheck: false});
-					stmts.slice(0, 3).forEach((stmt) => stmt.typeCheck());
+					stmts.slice(0, 3).forEach((stmt) => visitors.typeCheck.visit(stmt));
 					assert.partialDeepStrictEqual(goal.block!.validator.getSymbolBySource('x'), {
 						isWritable:      true,
 						isUninitialized: true,
 					});
-					return xjs.Array.forEachAggregated(stmts.slice(3), (stmt) => assert.throws(() => stmt.typeCheck(), TypeErrorNotAssignable));
+					return xjs.Array.forEachAggregated(stmts.slice(3), (stmt) => assert.throws(() => visitors.typeCheck.visit(stmt), TypeErrorNotAssignable));
 				});
 				test.test('None/Some assignable to Maybe, but not to each other.', () => {
 					setupScript(`{
 						val a: Maybe.<int> = None.<int>();
 						val b: Maybe.<int> = Some.<int>(42);
 					}`, {build: false}); // assert does not throw
-					const {stmts} = setupScript(`{
+					const {stmts, visitors} = setupScript(`{
 						val c: Maybe.<float> = None.<int>();
 						val d: Maybe.<float> = Some.<int>(42);
 						val e: Some.<int> = None.<int>();
 						val f: None.<int> = Some.<int>(42);
 					}`, {typeCheck: false});
-					return xjs.Array.forEachAggregated(stmts, (stmt) => assert.throws(() => stmt.typeCheck(), TypeErrorNotAssignable));
+					return xjs.Array.forEachAggregated(stmts, (stmt) => assert.throws(() => visitors.typeCheck.visit(stmt), TypeErrorNotAssignable));
 				});
 			});
 			test.suite('for property reassignment.', () => {
@@ -468,8 +469,8 @@ test.suite('Statement', () => {
 							set m.[true] = 4.2;
 						}`,
 					].forEach((src) => {
-						const {goal} = setupScript(src, {typeCheck: false});
-						assert.throws(() => goal.typeCheck(), TypeErrorNotAssignable);
+						const {goal, visitors} = setupScript(src, {typeCheck: false});
+						assert.throws(() => visitors.typeCheck.visit(goal), TypeErrorNotAssignable);
 					});
 				});
 				test.test('throws when Set/Map accessor expression is not a valid type.', () => {
@@ -480,8 +481,8 @@ test.suite('Statement', () => {
 						val m: mut {bool -> int} = {true -> 42};
 						set m.["true"] = 43;
 					}`], (src) => {
-						const {goal} = setupScript(src, {typeCheck: false});
-						assert.throws(() => goal.typeCheck(), TypeErrorNotNarrow);
+						const {goal, visitors} = setupScript(src, {typeCheck: false});
+						assert.throws(() => visitors.typeCheck.visit(goal), TypeErrorNotNarrow);
 					});
 				});
 				test.test('throws when assignee’s base type is not mutable.', () => {
@@ -511,8 +512,8 @@ test.suite('Statement', () => {
 							set m.[true] = 43;
 						}`,
 					].forEach((src) => {
-						const {goal} = setupScript(src, {typeCheck: false});
-						assert.throws(() => goal.typeCheck(), MutabilityError01);
+						const {goal, visitors} = setupScript(src, {typeCheck: false});
+						assert.throws(() => visitors.typeCheck.visit(goal), MutabilityError01);
 					});
 				});
 			});
@@ -524,12 +525,12 @@ test.suite('Statement', () => {
 						Set.<int>((42,)).[43]
 						Map.<bool, int>(((true, 42),)).[true]
 					`, (src) => {
-						const {goal} = setupScript(`{ delete ${src}; }`, {typeCheck: false});
-						assert.throws(() => goal.typeCheck(), /only applicable to interface types/);
+						const {goal, visitors} = setupScript(`{ delete ${src}; }`, {typeCheck: false});
+						assert.throws(() => visitors.typeCheck.visit(goal), /only applicable to interface types/);
 					});
 				});
 				test.test('throws when assignee’s base type is not mutable.', {expectFailure: true}, () => {
-					const {stmts} = setupScript(`{
+					const {stmts, visitors} = setupScript(`{
 						claim p: interface {
 							readonly x: int;
 							y: int;
@@ -539,26 +540,29 @@ test.suite('Statement', () => {
 						delete p.y;
 						delete p.z;
 					}`, {typeCheck: false});
-					stmts[0].typeCheck();
-					assert.throws(() => stmts[1].typeCheck(), MutabilityError01);
-					assert.throws(() => stmts[2].typeCheck(), MutabilityError01);
-					assert.throws(() => stmts[3].typeCheck(), MutabilityError01);
+					visitors.typeCheck.visit(stmts[0]);
+					return xjs.Array.forEachAggregated(
+						stmts.slice(1),
+						(stmt) => assert.throws(() => visitors.typeCheck.visit(stmt), MutabilityError01),
+					);
 				});
 				test.test('throws when assignee’s property is read-only or non-optional.', {expectFailure: true}, () => {
-					const {stmts} = setupScript(`{
+					const {stmts, visitors} = setupScript(`{
 						claim p: mut interface {
 							readonly x: int;
 							y: int | null;
 							z?: int;
 						};
+						delete p.z; % allowed
 						delete p.x; % cannot delete a read-only property
 						delete p.y; % cannot delete a non-optional property (even if type is nullish)
-						delete p.z; % allowed
 					}`, {typeCheck: false});
-					stmts[0].typeCheck();
-					assert.throws(() => stmts[1].typeCheck(), MutabilityError01);
-					assert.throws(() => stmts[2].typeCheck(), MutabilityError01);
-					stmts[3].typeCheck();
+					visitors.typeCheck.visit(stmts[0]);
+					visitors.typeCheck.visit(stmts[1]);
+					return xjs.Array.forEachAggregated(
+						stmts.slice(2),
+						(stmt) => assert.throws(() => visitors.typeCheck.visit(stmt), MutabilityError01),
+					);
 				});
 			});
 		});
@@ -586,13 +590,13 @@ test.suite('Statement', () => {
 			});
 			test.test('throws when condition is not subtype of Boolean.', () => {
 				xjs.Array.forEachAggregated(NON_BOOLS, (decl) => {
-					const {stmts} = setupScript(`{
+					const {stmts, visitors} = setupScript(`{
 						${decl}
 						if     cond then { "consequent"; } else { "alternative"; };
 						unless cond then { "consequent"; };
 					}`, {typeCheck: false});
-					stmts[0].typeCheck(); // assert does not throw
-					return xjs.Array.forEachAggregated(stmts.slice(1), (stmt) => assert.throws(() => stmt.typeCheck(), TypeErrorNotAssignable));
+					visitors.typeCheck.visit(stmts[0]); // assert does not throw
+					return xjs.Array.forEachAggregated(stmts.slice(1), (stmt) => assert.throws(() => visitors.typeCheck.visit(stmt), TypeErrorNotAssignable));
 				});
 			});
 		});
@@ -620,13 +624,13 @@ test.suite('Statement', () => {
 			});
 			test.test('throws when condition is not subtype of Boolean.', () => {
 				xjs.Array.forEachAggregated(NON_BOOLS, (decl) => {
-					const {stmts} = setupScript(`{
+					const {stmts, visitors} = setupScript(`{
 						${decl}
 						while cond do { "consequent"; };
 						until cond do { "consequent"; };
 					}`, {typeCheck: false});
-					stmts[0].typeCheck(); // assert does not throw
-					return xjs.Array.forEachAggregated(stmts.slice(1), (stmt) => assert.throws(() => stmt.typeCheck(), TypeErrorNotAssignable));
+					visitors.typeCheck.visit(stmts[0]); // assert does not throw
+					return xjs.Array.forEachAggregated(stmts.slice(1), (stmt) => assert.throws(() => visitors.typeCheck.visit(stmt), TypeErrorNotAssignable));
 				});
 			});
 		});
@@ -654,12 +658,12 @@ test.suite('Statement', () => {
 					{"hello", "world"}
 					{"a" -> "hello", "b" -> "world"}
 				`, (collection) => {
-					const {stmts} = setupScript(`{
+					const {stmts, visitors} = setupScript(`{
 						for it: str in ${collection} do {
 							;
 						};
 					}`, {typeCheck: false});
-					return assert.throws(() => stmts[0].typeCheck(), TypeErrorNotAssignable);
+					return assert.throws(() => visitors.typeCheck.visit(stmts[0]), TypeErrorNotAssignable);
 				});
 			});
 			test.test('throws when iteration variable is not supertype of List item type.', () => {
@@ -672,469 +676,102 @@ test.suite('Statement', () => {
 					"to the" | "world"
 					nothing
 				`, (vartype) => {
-					const {stmts} = setupScript(`{
+					const {stmts, visitors} = setupScript(`{
 						for it: ${vartype} in ["hello", "world"] do {
 							;
 						};
 					}`, {typeCheck: false});
-					return assert.throws(() => stmts[0].typeCheck(), TypeErrorNotNarrow);
+					return assert.throws(() => visitors.typeCheck.visit(stmts[0]), TypeErrorNotNarrow);
 				});
 			});
 			test.test('throws when block type-checking fails.', () => {
-				const {stmts} = setupScript(`{
+				const {stmts, visitors} = setupScript(`{
 					for it: str in ["hello", "world"] do {
 						42 + it; %> TypeErrorInvalidOperation
 					};
 				}`, {typeCheck: false});
-				assert.throws(() => (stmts[0] as AST.STMT.StatementIteration).block.children[0].typeCheck(), TypeErrorInvalidOperation);
-				return assert.throws(() => stmts[0].typeCheck(), TypeErrorInvalidOperation);
-			});
-		});
-	});
-
-
-	test.suite('#build', () => {
-		test.test('StatementExpression pushes OP.Drop instruction if expression exists.', () => {
-			const {stmts, builder} = setupScript(`{
-				val mut x: int = 42;
-				x;
-				42;
-				;
-			}`, {build: false});
-			assert.strictEqual(builder.instructions.length, 0);
-			(stmts[1] as AST.STMT.StatementExpression).build(builder);
-			assert.strictEqual(builder.instructions.length, 1);
-			(stmts[2] as AST.STMT.StatementExpression).build(builder);
-			assert.strictEqual(builder.instructions.length, 2);
-			(stmts[3] as AST.STMT.StatementExpression).build(builder);
-			assert.strictEqual(builder.instructions.length, 2);
-			return assert.strictEqual(builder.print(), xjs.String.dedent`
-				"block-0":
-					(DROP (GET x))
-					(DROP (INT.CONST 42))
-			`.trim());
-		});
-
-		test.test('StatementClaim pushes OP.Drop.', () => {
-			const {stmts, builder} = setupScript(`{%
-				val mut x: int | float = 42;
-				claim x: int;
-			}`, {build: false});
-			(stmts[1] as AST.STMT.StatementClaim).build(builder);
-			return assert.strictEqual(builder.print(), xjs.String.dedent`
-				"block-0":
-					(DROP (GET x))
-			`.trim());
-		});
-
-		test.suite('StatementReassignment', () => {
-			test.test('for variables: pushes (SET) with a value.', () => {
-				const {stmts, builder} = setupScript(`{
-					val mut x: int = 42;
-					set x = 43;
-					set x = 44;
-					set x = -42;
-				}`, {build: false});
-				stmts.slice(1).forEach((stmt) => (stmt as AST.STMT.StatementReassignment).build(builder));
-				return assert.strictEqual(builder.print(), xjs.String.dedent`
-					"block-0":
-						(SET x (INT.CONST 43))
-						(SET x (INT.CONST 44))
-						(SET x (INT.CONST -42))
-				`.trim());
-			});
-			test.test('for optional variables: wraps value in (MAYBE.NEW).', () => {
-				const {stmts, builder} = setupScript(`{
-					val mut x?: int;
-					set x = 42;
-				}`, {build: false});
-				stmts.slice(1).forEach((stmt) => (stmt as AST.STMT.StatementReassignment).build(builder));
-				return assert.strictEqual(builder.print(), xjs.String.dedent`
-					"block-0":
-						(SET x ${op_maybe_string('(INT.CONST 42)')})
-				`.trim());
-			});
-			test.test('deletion: pushes (SET) with an empty (MAYBE.NEW).', () => {
-				const {stmts, builder} = setupScript(`{
-					val mut x?: int;
-					delete x;
-				}`, {build: false});
-				stmts.slice(1).forEach((stmt) => (stmt as AST.STMT.StatementReassignment).build(builder));
-				return assert.strictEqual(builder.print(), xjs.String.dedent`
-					"block-0":
-						(SET x ${op_maybe_string()})
-				`.trim());
-			});
-			test.test('for collections: pushes OP.CollectionDynamicSet.', () => {
-				assert.strictEqual(setupScript(`{
-					val mut my_list: mut [int]        = [41, 42];
-					val mut my_dict: mut [:int]       = [a= 41, b= 42];
-					val mut my_set:  mut {int}        = {41 + 1, 42 / 2, 43 ^ 3};
-					val mut my_map:  mut {int -> int} = {21 -> 41, 22 -> 42, 23 -> 43};
-
-					val mut accessor: int = 22;
-					set my_list.[0 + 1]   = 84;
-					set my_dict.[@b]      = 84;
-					set my_set.[accessor] = true;
-					set my_map.[accessor] = 84;
-				}`, {codegen: false}).builder.print(), xjs.String.dedent`
-					"block-0":
-						(DECL <List> my_list (LIST.NEW (INT.CONST 41) (INT.CONST 42)))
-						(DECL <Dict> my_dict (DICT.NEW @a->(INT.CONST 41) @b->(INT.CONST 42)))
-						(DECL <int> $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
-						(DECL <int> $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
-						(DECL <int> $2 (INT.EXP (INT.CONST 43) (INT.CONST 3)))
-						(DECL <Set> my_set (SET.NEW (GET $0) (GET $1) (GET $2)))
-						(DECL <Map> my_map (MAP.NEW (INT.CONST 21)->(INT.CONST 41) (INT.CONST 22)->(INT.CONST 42) (INT.CONST 23)->(INT.CONST 43)))
-						(DECL <int> accessor (INT.CONST 22))
-						(DECL <int> $3 (INT.ADD (INT.CONST 0) (INT.CONST 1)))
-						(LIST.SET (GET my_list) (GET $3) (INT.CONST 84))
-						(DICT.SET (GET my_dict) (SYM.CONST @b) (INT.CONST 84))
-						(SET.SET (GET my_set) (GET accessor) (BOOL.CONST true))
-						(MAP.SET (GET my_map) (GET accessor) (INT.CONST 84))
-						(ENDPROGRAM)
-				`.trim());
+				assert.throws(() => visitors.typeCheck.visit((stmts[0] as AST.STMT.StatementIteration).block.children[0]), TypeErrorInvalidOperation);
+				return assert.throws(() => visitors.typeCheck.visit(stmts[0]), TypeErrorInvalidOperation);
 			});
 		});
 
-		test.suite('StatementConditional', () => {
-			test.test('pushes OP.GotoConditional.', () => {
-				assert.strictEqual(setupScript(`{
-					if true then {
-						(2 * 1 + 0);
-						2.2;
-					} else {
-						(6 / (1 + 1));
-						3.3;
-					};
-				}`, {codegen: false}).builder.print(), xjs.String.dedent`
-					"block-0":
-						(GOTO.IF (BOOL.CONST true) "block-1" "block-2")
-					"block-1":
-						(DECL <int> $0 (INT.MUL (INT.CONST 2) (INT.CONST 1)))
-						(DROP (INT.ADD (GET $0) (INT.CONST 0)))
-						(DROP (FLOAT.CONST 2.2))
-						(GOTO "block-3")
-					"block-2":
-						(DECL <int> $1 (INT.ADD (INT.CONST 1) (INT.CONST 1)))
-						(DROP (INT.DIV (INT.CONST 6) (GET $1)))
-						(DROP (FLOAT.CONST 3.3))
-						(GOTO "block-3")
-					"block-3":
-						(ENDPROGRAM)
-				`.trim());
+		test.suite('StatementReturn', () => {
+			test.test('throws when returned expression is not assignable to declared return type.', () => {
+				const {stmts, visitors} = setupScript(`{
+					func foo0(): float { return 40; }
+					func foo1(): float => 41;
+					func foo2(b: bool): float {
+						if b then { return 4.2; } else { return 42; };
+					}
+					func foo3(b: bool): float => if b then 4.2 else 43;
+				}`, {typeCheck: false});
+				const fn2 = stmts[2] as AST.STMT.DeclarationFunction;
+				const fn3 = stmts[3] as AST.STMT.DeclarationFunction;
+				const ret0:  AST.STMT.Statement = (stmts[0] as AST.STMT.DeclarationFunction).block.children[0];
+				const ret1:  AST.STMT.Statement = (stmts[1] as AST.STMT.DeclarationFunction).block.children[0];
+				const ret2a: AST.STMT.Statement = (fn2.block.children[0] as AST.STMT.StatementConditional).consequent.children[0];
+				const ret2b: AST.STMT.Statement = ((fn2.block.children[0] as AST.STMT.StatementConditional).alternative as AST.Block).children[0];
+				const ret3:  AST.STMT.Statement = fn3.block.children[0];
+				xjs.Array.forEachAggregated([ret0, ret1, ret2a, ret2b, ret3], (ret) => assert_instanceof(ret, AST.STMT.StatementReturn));
+				assert.throws(() => visitors.typeCheck.visit(ret0), TypeErrorNotAssignable);
+				assert.throws(() => visitors.typeCheck.visit(ret1), TypeErrorNotAssignable);
+				xjs.Array.forEachAggregated(fn2.parameters, (p) => visitors.typeCheck.visit(p));
+				visitors.typeCheck.visit(ret2a); // assert does not throw
+				assert.throws(() => visitors.typeCheck.visit(ret2b), TypeErrorNotAssignable);
+				xjs.Array.forEachAggregated(fn3.parameters, (p) => visitors.typeCheck.visit(p));
+				return assert.throws(() => visitors.typeCheck.visit(ret3), TypeErrorNotAssignable);
 			});
-			test.test('with no alternative.', () => {
-				assert.strictEqual(setupScript(`{
-					if false then {
-						(2 * 1 + 0);
-						2.2;
-					};
-				}`, {codegen: false}).builder.print(), xjs.String.dedent`
-					"block-0":
-						(GOTO.IF (BOOL.CONST false) "block-1" "block-2")
-					"block-1":
-						(DECL <int> $0 (INT.MUL (INT.CONST 2) (INT.CONST 1)))
-						(DROP (INT.ADD (GET $0) (INT.CONST 0)))
-						(DROP (FLOAT.CONST 2.2))
-						(GOTO "block-2")
-					"block-2":
-						(ENDPROGRAM)
-				`.trim());
+			test.test('throws when returned expression is present in void function.', () => {
+				const {stmts, visitors} = setupScript(`{
+					func foo0(): void { return 40; }
+					func foo1(): void => 41;
+					func foo2(b: bool): void {
+						if b then { return; } else { return 42; };
+					}
+					func foo3(b: bool): void => if b then 4.2 else 43;
+				}`, {typeCheck: false});
+				const fn2 = stmts[2] as AST.STMT.DeclarationFunction;
+				const fn3 = stmts[3] as AST.STMT.DeclarationFunction;
+				const ret0:  AST.STMT.Statement = (stmts[0] as AST.STMT.DeclarationFunction).block.children[0];
+				const ret1:  AST.STMT.Statement = (stmts[1] as AST.STMT.DeclarationFunction).block.children[0];
+				const ret2a: AST.STMT.Statement = (fn2.block.children[0] as AST.STMT.StatementConditional).consequent.children[0];
+				const ret2b: AST.STMT.Statement = ((fn2.block.children[0] as AST.STMT.StatementConditional).alternative as AST.Block).children[0];
+				const ret3:  AST.STMT.Statement = fn3.block.children[0];
+				xjs.Array.forEachAggregated([ret0, ret1, ret2a, ret2b, ret3], (ret) => assert_instanceof(ret, AST.STMT.StatementReturn));
+				const expected: RegExp = /is returned from a void function/;
+				assert.throws(() => visitors.typeCheck.visit(ret0), expected);
+				assert.throws(() => visitors.typeCheck.visit(ret1), expected);
+				xjs.Array.forEachAggregated(fn2.parameters, (p) => visitors.typeCheck.visit(p));
+				visitors.typeCheck.visit(ret2a); // assert does not throw
+				assert.throws(() => visitors.typeCheck.visit(ret2b), expected);
+				xjs.Array.forEachAggregated(fn3.parameters, (p) => visitors.typeCheck.visit(p));
+				return assert.throws(() => visitors.typeCheck.visit(ret3), expected);
 			});
-			test.test('negates the condition for `unless` statements.', () => {
-				assert.strictEqual(setupScript(`{
-					unless false then {
-						(2 * 1 + 0);
-						2.2;
-					};
-				}`, {codegen: false}).builder.print(), xjs.String.dedent`
-					"block-0":
-						(GOTO.IF (NOT (BOOL.CONST false)) "block-1" "block-2")
-					"block-1":
-						(DECL <int> $0 (INT.MUL (INT.CONST 2) (INT.CONST 1)))
-						(DROP (INT.ADD (GET $0) (INT.CONST 0)))
-						(DROP (FLOAT.CONST 2.2))
-						(GOTO "block-2")
-					"block-2":
-						(ENDPROGRAM)
-				`.trim());
+			test.test('throws for empty return statement in non-void function.', () => {
+				const {stmts, visitors} = setupScript(`{
+					func foo0(): float { return; }
+					func foo2(b: bool): float {
+						if b then { return 4.2; } else { return; };
+					}
+				}`, {typeCheck: false});
+				const fn1 = stmts[1] as AST.STMT.DeclarationFunction;
+				const ret0:  AST.STMT.Statement = (stmts[0] as AST.STMT.DeclarationFunction).block.children[0];
+				const ret1a: AST.STMT.Statement = (fn1.block.children[0] as AST.STMT.StatementConditional).consequent.children[0];
+				const ret1b: AST.STMT.Statement = ((fn1.block.children[0] as AST.STMT.StatementConditional).alternative as AST.Block).children[0];
+				xjs.Array.forEachAggregated([ret0, ret1a, ret1b], (ret) => assert_instanceof(ret, AST.STMT.StatementReturn));
+				const expected: RegExp = /does not return a value/;
+				assert.throws(() => visitors.typeCheck.visit(ret0), expected);
+				xjs.Array.forEachAggregated(fn1.parameters, (p) => visitors.typeCheck.visit(p));
+				visitors.typeCheck.visit(ret1a); // assert does not throw
+				return assert.throws(() => visitors.typeCheck.visit(ret1b), expected);
 			});
-			test.test('SSA.', () => {
-				assert.strictEqual(setupScript(`{
-					val mut unknown_cond: bool = false;
-					val mut x: int = 42;
-					if unknown_cond then {
-						set x = x * (1 + 1);
-						val y: float = 2.2;
-					} else {
-						set x = x - (6 / 2);
-						val y: float = 3.3;
-					};
-					x;
-				}`, {codegen: false}).builder.print(), xjs.String.dedent`
-					"block-0":
-						(DECL <bool> unknown_cond (BOOL.CONST false))
-						(DECL <int> x (INT.CONST 42))
-						(GOTO.IF (GET unknown_cond) "block-1" "block-2")
-					"block-1":
-						(DECL <int> $0 (INT.ADD (INT.CONST 1) (INT.CONST 1)))
-						(SET x (INT.MUL (GET x) (GET $0)))
-						(DECL <float> y (FLOAT.CONST 2.2))
-						(GOTO "block-3")
-					"block-2":
-						(DECL <int> $1 (INT.DIV (INT.CONST 6) (INT.CONST 2)))
-						(SET x (INT.SUB (GET x) (GET $1)))
-						(DECL <float> y (FLOAT.CONST 3.3))
-						(GOTO "block-3")
-					"block-3":
-						(DROP (GET x))
-						(ENDPROGRAM)
-				`.trim());
-			});
-			test.test('if–else chains.', () => {
-				assert.strictEqual(setupScript(`{
-					val mut cond?: bool;
-					set cond = true;
-					if cond == true then {
-						10;
-					} else if cond == false then {
-						20;
-					} else {
-						30;
-					};
-				}`, {codegen: false}).builder.print(), xjs.String.dedent`
-					"block-0":
-						(DECL <Maybe> cond ${op_maybe_string()})
-						(SET cond ${op_maybe_string('(BOOL.CONST true)')})
-						(GOTO.IF (EQ (GET cond) (BOOL.CONST true)) "block-1" "block-2")
-					"block-1":
-						(DROP (INT.CONST 10))
-						(GOTO "block-3")
-					"block-2":
-						(GOTO.IF (EQ (GET cond) (BOOL.CONST false)) "block-4" "block-5")
-					"block-4":
-						(DROP (INT.CONST 20))
-						(GOTO "block-6")
-					"block-5":
-						(DROP (INT.CONST 30))
-						(GOTO "block-6")
-					"block-6":
-						(GOTO "block-3")
-					"block-3":
-						(ENDPROGRAM)
-				`.trim());
-			});
-		});
-
-		test.suite('StatementLoop', () => {
-			test.test('pushes OP.GotoConditional.', () => {
-				assert.strictEqual(setupScript(`{
-					val mut cond: bool = false;
-					while cond do {
-						42;
-						4.2;
-					};
-				}`, {codegen: false}).builder.print(), xjs.String.dedent`
-					"block-0":
-						(DECL <bool> cond (BOOL.CONST false))
-						(GOTO "block-1")
-					"block-1":
-						(GOTO.IF (GET cond) "block-2" "block-3")
-					"block-2":
-						(DROP (INT.CONST 42))
-						(DROP (FLOAT.CONST 4.2))
-						(GOTO "block-1")
-					"block-3":
-						(ENDPROGRAM)
-				`.trim());
-			});
-			test.test('negates the condition for `until` statements.', () => {
-				assert.strictEqual(setupScript(`{
-					val mut cond: bool = false;
-					until cond do {
-						42;
-					};
-				}`, {codegen: false}).builder.print(), xjs.String.dedent`
-					"block-0":
-						(DECL <bool> cond (BOOL.CONST false))
-						(GOTO "block-1")
-					"block-1":
-						(GOTO.IF (NOT (GET cond)) "block-2" "block-3")
-					"block-2":
-						(DROP (INT.CONST 42))
-						(GOTO "block-1")
-					"block-3":
-						(ENDPROGRAM)
-				`.trim());
-			});
-			test.test('bottom-tested conditions.', () => {
-				assert.strictEqual(setupScript(`{
-					val mut cond: bool = false;
-					do {
-						42;
-						4.2;
-					} while cond;
-					do {
-						42;
-					} until cond;
-				}`, {codegen: false}).builder.print(), xjs.String.dedent`
-					"block-0":
-						(DECL <bool> cond (BOOL.CONST false))
-						(GOTO "block-1")
-					"block-1":
-						(DROP (INT.CONST 42))
-						(DROP (FLOAT.CONST 4.2))
-						(GOTO.IF (GET cond) "block-1" "block-2")
-					"block-2":
-						(GOTO "block-3")
-					"block-3":
-						(DROP (INT.CONST 42))
-						(GOTO.IF (NOT (GET cond)) "block-3" "block-4")
-					"block-4":
-						(ENDPROGRAM)
-				`.trim());
-			});
-		});
-
-		test.test('StatementIteration', () => {
-			assert.strictEqual(setupScript(`{
-				for item: int in [10, 20, 30] do {
-					item + 5;
-				};
-				for _: float in [4.4, 5.5, 6.6] do {
-					null;
-				};
-			}`, {codegen: false}).builder.print(), xjs.String.dedent`
-				"block-0":
-					(DECL <List> $0 (LIST.NEW (INT.CONST 10) (INT.CONST 20) (INT.CONST 30)))
-					(DECL <nat> $1 (NAT.CONST +0))
-					(GOTO "block-1")
-				"block-1":
-					(DECL <nat> $2 (LIST.COUNT (GET $0)))
-					(GOTO.IF (LT (GET $1) (GET $2)) "block-2" "block-3")
-				"block-2":
-					(DECL <int> item (LIST.GET (GET $0) (GET $1)))
-					(DROP (INT.ADD (GET item) (INT.CONST 5)))
-					(SET $1 (NAT.ADD (GET $1) (NAT.CONST +1)))
-					(GOTO "block-1")
-				"block-3":
-					(DECL <List> $3 (LIST.NEW (FLOAT.CONST 4.4) (FLOAT.CONST 5.5) (FLOAT.CONST 6.6)))
-					(DECL <nat> $4 (NAT.CONST +0))
-					(GOTO "block-4")
-				"block-4":
-					(DECL <nat> $5 (LIST.COUNT (GET $3)))
-					(GOTO.IF (LT (GET $4) (GET $5)) "block-5" "block-6")
-				"block-5":
-					(DROP (NULL.CONST null))
-					(SET $4 (NAT.ADD (GET $4) (NAT.CONST +1)))
-					(GOTO "block-4")
-				"block-6":
-					(ENDPROGRAM)
-			`.trim());
-		});
-
-		test.suite('StatementBreak', () => {
-			test.test('[skip=false] returns OP.Goto("endwhile"). [skip=true] returns OP.Goto("while").', () => {
-				assert.strictEqual(setupScript(`{
-					while true do {
-						41;
-						break;
-						42;
-						skip;
-						43;
-					};
-					for word: str in ["alpha", "beta", "gamma"] do {
-						10;
-						skip;
-						20;
-						break;
-						30;
-					};
-				}`, {codegen: false}).builder.print(), xjs.String.dedent`
-					"block-0":
-						(GOTO "block-1")
-					"block-1":
-						(GOTO.IF (BOOL.CONST true) "block-2" "block-3")
-					"block-2":
-						(DROP (INT.CONST 41))
-						(GOTO "block-3")
-					"unreachable-4":
-						(DROP (INT.CONST 42))
-						(GOTO "block-1")
-					"unreachable-5":
-						(DROP (INT.CONST 43))
-						(GOTO "block-1")
-					"block-3":
-						(DECL <List> $0 (LIST.NEW (STR.CONST "alpha") (STR.CONST "beta") (STR.CONST "gamma")))
-						(DECL <nat> $1 (NAT.CONST +0))
-						(GOTO "block-6")
-					"block-6":
-						(DECL <nat> $2 (LIST.COUNT (GET $0)))
-						(GOTO.IF (LT (GET $1) (GET $2)) "block-7" "block-8")
-					"block-7":
-						(DECL <str> word (LIST.GET (GET $0) (GET $1)))
-						(DROP (INT.CONST 10))
-						(GOTO "block-6")
-					"unreachable-9":
-						(DROP (INT.CONST 20))
-						(GOTO "block-8")
-					"unreachable-10":
-						(DROP (INT.CONST 30))
-						(SET $1 (NAT.ADD (GET $1) (NAT.CONST +1)))
-						(GOTO "block-6")
-					"block-8":
-						(ENDPROGRAM)
-				`.trim());
-			});
-			test.test('nested loops.', () => {
-				assert.strictEqual(setupScript(`{
-					while true do {
-						10;
-						break;
-						20;
-						if true then {
-							30;
-							while true do {
-								40;
-								skip;
-								50;
-							};
-							60;
-						};
-						70;
-					};
-				}`, {codegen: false}).builder.print(), xjs.String.dedent`
-					"block-0":
-						(GOTO "block-1")
-					"block-1":
-						(GOTO.IF (BOOL.CONST true) "block-2" "block-3")
-					"block-2":
-						(DROP (INT.CONST 10))
-						(GOTO "block-3")
-					"unreachable-4":
-						(DROP (INT.CONST 20))
-						(GOTO.IF (BOOL.CONST true) "block-5" "block-6")
-					"block-5":
-						(DROP (INT.CONST 30))
-						(GOTO "block-7")
-					"block-7":
-						(GOTO.IF (BOOL.CONST true) "block-8" "block-9")
-					"block-8":
-						(DROP (INT.CONST 40))
-						(GOTO "block-7")
-					"unreachable-10":
-						(DROP (INT.CONST 50))
-						(GOTO "block-7")
-					"block-9":
-						(DROP (INT.CONST 60))
-						(GOTO "block-6")
-					"block-6":
-						(DROP (INT.CONST 70))
-						(GOTO "block-1")
-					"block-3":
-						(ENDPROGRAM)
-				`.trim());
+			test.test('throws when panicked expression is not an Exception.', () => {
+				const {stmts, visitors} = setupScript(`{
+					panic Exception.("error1");
+					panic "error2";
+				}`, {typeCheck: false});
+				visitors.typeCheck.visit(stmts[0]); // assert does not throw
+				return assert.throws(() => visitors.typeCheck.visit(stmts[1]), TypeErrorNotAssignable);
 			});
 		});
 	});

@@ -4,7 +4,7 @@ import {ReferenceError as CplReferenceError} from './ReferenceError.ts';
 
 
 /**
- * A ReferenceErrorUndeclared is thrown when the validator encounters an undeclared variable.
+ * A ReferenceErrorUndeclared is raised when the validator encounters an undeclared variable.
  * @example
  * my_var; % ReferenceErrorUndeclared: `my_var` is never declared.
  */

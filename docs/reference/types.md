@@ -632,12 +632,6 @@ elements.\b01; %== "wind"
 elements.\b10; %== "fire"
 ```
 
-We can also access by natural number index.
-```cpl
-elements.+1;    %== "wind"
-elements.+\b10; %== "fire"
-```
-
 Tuple size is known at compile-time,
 so attempting to retrieve an out-of-bounds index results in a compile-time error.
 Positive indices beyond the end of the list result in a TypeErrorNoEntry.
@@ -1131,6 +1125,29 @@ bases?.[a]; % produces the consequent if it exists, else `null`
 ## Control Abstraction Types
 
 
+### Exceptions
+Exceptions are used to convey information about exceptional circumstances.
+Exceptions can be returned directly, wrapped in [Results](#results),
+sent by a function that panics.
+
+Exceptions must contain a string message, and may optionally contain a “cause”,
+which is another Exception that serves as the reason the current Exception
+is being raised.
+
+When an Exception is returned (or wrapped in a Result and returned) by a function,
+the caller is expected to handle it. This is the conventionanl control flow for recoverable operations.
+For example, a function that attempts to locate a file by name might not find that file;
+in that case, the function should convey that information back to its caller.
+
+When a truly unrecoverable situation occurs, a function may **panic** with an Exception.
+```cpl
+panic Exception("Error: memory out of bounds.");
+```
+The function’s caller has no way of handling a panic. The Exception propegates up the call stack,
+reaching the top level of the program, which logs its message and halts execution.
+Some debugging tools can be useful in inspecting panicked Exceptions.
+
+
 ### Maybes
 Maybe objects are containers of possible values.
 The Maybe type is an abstract type with exactly two concrete subtypes: Some, which contains a value, and None, which contains no value.
@@ -1151,28 +1168,52 @@ val mut x: int? = Some[int](42);
 set x = None[int]();
 ```
 
-`None` objects are considered falsy (and thus empty), and therefore return `true` when operated on by the
-[logical negation `!` and emptiness `?` operators](./expressions-operators.md#logical-negation-emptiness).
-```cpl
-val mut x: str? = Some[str]("hello");
-!x; %== false
-?x; %== false
-
-set x = None[str]();
-!x; %== true
-?x; %== true
-```
-Likewise, a `None` behaves like a falsy value in the
-[logical conjunction `&&`](./expressions-operators.md#conjunctive) and
-[logical disjunction `||`](./expressions-operators.md#disjunctive) operators.
-```cpl
-None[anything]() && "hello"; %== None()
-None[anything]() || "hello"; %== "hello"
-```
-A `Some` object is always truthy, regardless of its held value (even if that value itself is falsy).
-```cpl
-Some[bool](false) && "hello"; %== "hello"
-Some[bool](false) || "hello"; %== Some[bool](false)
-```
-
 The [maybe access operator](./expressions-operators.md#maybe-access) works very well with the Maybe type.
+
+
+### Results
+Result objects are containers of success values or Exceptions.
+The Result type is an abstract type with exactly two concrete subtypes: Ok, which contains a value, and Fail, which contains an Exception.
+In general, Result objects are used for representing robust functions’ return values, where the function might or might not fail.
+
+Result types are declared via the **generic result type syntax**: `Result[T, E]`
+where `T` indicates the type of the possible value and `E` indicates a subtype of [`Exception`](#exceptions).
+When not supplied, the default parameter `E` is `Exception`.
+`T` may be any type, including a type unioned with Exception or even another Result type. Nested Result types do not flatten.
+Ok and Fail objects are constructed via the constructor syntaxes `Ok[T, E](value)` and `Fail[T, E](reason)` respectively.
+```cpl
+val mut x: Result[int] = Ok[int](42);
+set x = Fail[int]();
+```
+
+A shorthand for the generic syntax `Result[T]` is `T!`.
+```cpl
+val mut x: int! = Ok[int](42);
+set x = Fail[int]();
+```
+
+The [result access operator](./expressions-operators.md#result-access) works very well with the Result type.
+
+
+
+## Callable Types
+
+
+### Functions
+Functions are callable objects, which codify algorithms to be dynamically executed and can be reused many times.
+
+Some functions have parameters, and these functions take arguments when called.
+When a function is called, it obtains control of execution within a new scope.
+Upon completing execution, functions return control back to their caller,
+and some of these functions return a value along with control.
+Some functions do not even complete execution, either because their author specified so,
+or because something broke internally.
+
+Functions are explored in-depth in the [Functions](./functions.md) chapter.
+
+
+### Classes
+Classes are callable objects that construct new objects. The objects a class constructs
+are said to be “instances” of that class and share the same shape that the class defines.
+
+Classes are explored in-depth in the [Classes] (link pending) chapter.

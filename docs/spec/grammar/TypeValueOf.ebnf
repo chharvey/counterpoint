@@ -5,8 +5,8 @@ Type! TypeValueOf(SemanticTypeConstant const) :=
 
 
 Type! TypeValueOf(SemanticTypeAlias var) :=
-	1. *If* `var.source` is "Object":
-		1. *Return:* `Object`.
+	1. *If* `var.source` is "Object" or "Class" or "Exception" or "Function":
+		1. *Return:* `Object` or `Exception` or `Function` or `Class` respectively.
 	2. *Assert:* The validator’s symbol table contains a SymbolSchema `symbol` whose `id` is `var.id`.
 	3. *Assert:* `symbol` is an instance of `SymbolSchemaType`.
 	4. *Return:* `symbol.typevalue`.
@@ -76,57 +76,34 @@ Type! TypeValueOf(SemanticTypeMap maptype) :=
 
 
 
-Type! TypeValueOf(SemanticTypeAccess access) :=
-	1. *Assert:* `access.children.count` is 2.
-	2. *Let* `base` be `access.children.0`.
-	3. *Let* `accessor` be `access.children.1`.
-	4. *Let* `base_type` be *Unwrap:* `TypeValueOf(base)`.
-	5. *Let* `entry` be *Unwrap:* `GetEntryInfo(base_type, access, false)`.
-	6. *Return:* `AccessType(access.kind, base_type, entry)`.
+Type! TypeValueOf(SemanticTypeAccess ::= SemanticType (SemanticIndex | SemanticKey)) :=
+	1. *Let* `base_type` be *Unwrap:* `TypeValueOf(SemanticType)`.
+	2. *Let* `entry` be *Unwrap:* `GetEntryInfo(base_type, SemanticTypeAccess, false)`.
+	3. *If* `entry.optional` is `true`:
+		1. *Return:* `Maybe(entry.type)`.
+	4. *Else:*
+		1. *Return:* `entry.type`.
 ;
 
 
 
-Type! TypeValueOf(SemanticTypeCall call) :=
-	1. *Assert:* `call.children.count` is greater than or equal to 2.
-	2. *Let* `base` be `call.children.0`.
-	3. *If* `base` is not a SemanticTypeAlias:
-		1. *Note:* Currently, the only allowed generic calls are `List.<T>`, `Dict.<T>`, `Set.<T>`, `Map.<K, V>`.
-		2. *Throw:* a new TypeError.
-	4. *If* `base.source` is one of "List", "Dict", or "Set":
-		1. *If* `call.children.count` is 2:
-			1. *Let* `genericarg` be *Unwrap:* `TypeValueOf(call.children.1)`.
-			2. *If* `base.source` is "List":
-				1. *Return:* a List type under the type argument `genericarg`.
-			3. *If* `base.source` is "Dict":
-				1. *Return:* a Dict type under the type argument `genericarg`.
-			4. *If* `base.source` is "Set":
-				1. *Return:* a Set type under the type argument `genericarg`.
-		2. *Throw:* a new TypeError.
-	5. *Else If* `base.source` is "Map":
-		1. *Let* `antecedenttype` be *Unwrap:* `TypeValueOf(call.children.1)`.
-		2. *If* `call.children.count` is 2:
-			1. *Let* `consequenttype` be `antecedenttype`.
-		3. *Else If* `call.children.count` is 3:
-			1. *Let* `consequenttype` be *Unwrap:* `TypeValueOf(call.children.2)`.
-		4. *Else:*
-			1. *Throw:* a new TypeError.
-		5. *Return:* a Map type under an antecedent type argument `antecedenttype`
-			and a consequent type argument `consequenttype`.
-	6. *Else:*
-		// TODO: see Class API
+Type! TypeValueOf(SemanticTypeCall ::= SemanticType__0 SemanticType__1+) :=
+	1. *If* `SemanticType__0` is not a SemanticTypeAlias:
+		1. *Note:* Currently, the only allowed generic calls are Callable Interface Names.
+		2. *Throw:* a new TypeErrorNotCallable.
+	2. See Class API.
 ;
 
 
 
-Type! TypeValueOf(SemanticTypeOperation[operator: MAYBE] oper) :=
-	1. *Assert:* `oper.children.count` is 1.
-	2. *Let* `t0` be *Unwrap:* `TypeValueOf(oper.children.0)`.
-	3. *Return:* `Maybe(t0)`.
+Type! TypeValueOf(SemanticTypeOperation[operator=MAYBE] ::= SemanticType) :=
+	1. *Let* `t0` be *Unwrap:* `TypeValueOf(SemanticType)`.
+	2. *Return:* `Maybe(t0)`.
 ;
 
-Type! TypeValueOf(SemanticTypeOperation[operator: RESULT] oper) :=
-	// TODO: implement
+Type! TypeValueOf(SemanticTypeOperation[operator=RESULT] ::= SemanticType) :=
+	1. *Let* `t0` be *Unwrap:* `TypeValueOf(SemanticType)`.
+	2. *Return:* `Result(t0)`.
 ;
 
 Type! TypeValueOf(SemanticTypeOperation[operator: MUTABLE] oper) :=
@@ -149,4 +126,30 @@ Type! TypeValueOf(SemanticTypeOperation[operator: OR] oper) :=
 	2. *Let* `t0` be *Unwrap:* `TypeValueOf(oper.children.0)`.
 	3. *Let* `t1` be *Unwrap:* `TypeValueOf(oper.children.1)`.
 	4. *Return:* `Union(t0, t1)`.
+;
+
+Type! TypeValueOf(SemanticTypeFunction fn) :=
+	1. *Let* `itemtypes` be a filtering of `fn.children` for each `child` such that `child` is a SemanticItemType.
+	2. *Let* `positional_params` be a new Sequence.
+	3. *For each* `itemtype` in `itemtypes`:
+		1. *Assert:* `itemtype.children.count` is 1.
+		2. *Let* `typedatum` be a new EntryTypeSchema [
+			type=     *Unwrap:* `TypeValueOf(itemtype.children.0)`,
+			optional= `itemtype.optional`,
+		].
+		3. Push `typedatum` to `positional_params`.
+	4. *Let* `proptypes` be a filtering of `fn.children` for each `child` such that `child` is a SemanticPropertyType.
+	5. *Let* `named_params` be a new Schema.
+	6. *For each* `propertytype` in `proptypes`:
+		1. *Assert:* `propertytype.children.count` is 2.
+		2. *Let* `typedatum` be a new EntryTypeSchema [
+			type=     *Unwrap:* `TypeValueOf(propertytype.children.1)`,
+			optional= `propertytype.optional`,
+		].
+		3. Set the property `propertytype.children.0.id` on `named_params` to the value `typedatum`.
+	7. *Let* `return_type` be an item `child` in `fn.children` such that `child` is a SemanticType.
+	8. *Return:* a new Function type whose positional parameter types are `positional_params`,
+		whose named parameter types are `named_params`,
+		and, if `return_type` is set, whose return type is `return_type`,
+		otherwise, who does not contain a return type.
 ;

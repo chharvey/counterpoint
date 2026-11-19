@@ -1,3 +1,4 @@
+import {Validator} from '../../index.ts';
 import {NULL} from './index.ts';
 import type {Value} from './Value.ts';
 import type {Null} from './Null.ts';
@@ -11,7 +12,7 @@ import {Collection} from './Collection.ts';
  * - Dict
  */
 export abstract class CollectionKeyed<T extends Value = Value> extends Collection {
-	protected static samenessDfn<T extends Value = Value>(
+	public static samenessDfn<T extends Value = Value>(
 		a:          CollectionKeyed<T>,
 		b:          CollectionKeyed<T>,
 		comparator: (a: T, b: T) => boolean,
@@ -53,7 +54,12 @@ export abstract class CollectionKeyed<T extends Value = Value> extends Collectio
 	}
 
 	public override toString(): string {
-		return [...this.#properties].map(([key, value]) => `${key}n= ${value}`).join(', ');
+		return [...this.#properties].map(([key, value]) => `${Validator.unhashIdentifierId(key) || key}= ${value}`).join(', ');
+	}
+
+	/** @final */
+	public has(key: bigint): boolean {
+		return !!this.#properties.get(key);
 	}
 
 	/** @final */

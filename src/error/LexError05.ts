@@ -4,7 +4,7 @@ import {LexError} from './LexError.ts';
 
 
 /**
- * A LexError05 is thrown when a float literal has an invalid format.
+ * A LexError05 is raised when a float literal has an invalid format.
  * @example
  * 5.e+2; % LexError05: Invalid floating-point literal format...
  * 5.0E2; % LexError05: Invalid floating-point literal format...

@@ -1,23 +1,11 @@
-import * as assert from 'node:assert';
-import {
-	type Builder,
-	OP,
-	TypeErrorInvalidOperation,
-} from '../../../index.ts';
-import {
-	assert_instanceof,
-	memoizeMethod,
-} from '../../../lib/index.ts';
+import {assert_instanceof} from '../../../lib/index.ts';
 import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../../core/index.ts';
 import {TYPE} from '../../../typer/index.ts';
 import type {SyntaxNodeSupertype} from '../../utils-private.ts';
-import {
-	Operator,
-	type ValidOperatorComparative,
-} from '../../Operator.ts';
+import type {ValidOperatorComparative} from '../../Operator.ts';
 import {Expression} from './Expression.ts';
 import {OperationBinary} from './OperationBinary.ts';
 
@@ -37,32 +25,10 @@ export class OperationBinaryComparative extends OperationBinary {
 
 	public constructor(
 		start_node: SyntaxNodeSupertype<'expression'>,
-		protected override readonly operator: ValidOperatorComparative,
+		public override readonly operator: ValidOperatorComparative,
 		operand0: Expression,
 		operand1: Expression,
 	) {
 		super(start_node, operator, operand0, operand1);
-	}
-
-	@memoizeMethod
-	public override type(): TYPE.Type {
-		const [t0, t1]: readonly TYPE.Type[] = this.children.map((operand) => operand.type());
-		if (t0.isBottomType || t1.isBottomType) {
-			return TYPE.NOTHING;
-		}
-		return (
-			bothNumbers(t0, t1) ? TYPE.BOOL :
-			assert.fail(new TypeErrorInvalidOperation(this))
-		);
-	}
-
-	@memoizeMethod
-	public override build(builder: Builder): OP.Binop {
-		return new OP.Binop(new Map<Operator, OP.OpCodeBin>([
-			[Operator.LT, OP.OpCode.LT],
-			[Operator.GT, OP.OpCode.GT],
-			[Operator.LE, OP.OpCode.LE],
-			[Operator.GE, OP.OpCode.GE],
-		]).get(this.operator)!, this.operand0.build(builder).asTac(builder), this.operand1.build(builder).asTac(builder), this.type());
 	}
 }

@@ -7,6 +7,7 @@ import {ValueType} from './ValueType.ts';
 
 /**
  * Class for constructing the `sym` type.
+ * @singleton
  * @final
  */
 class TypeSymbol extends ValueType {
@@ -19,7 +20,7 @@ class TypeSymbol extends ValueType {
 	}
 
 	@instanceOf(() => VALUE.Symbol)
-	public override includes(_: VALUE.Value): boolean {
+	public override includes(_v: VALUE.Value): boolean {
 		return true;
 	}
 }

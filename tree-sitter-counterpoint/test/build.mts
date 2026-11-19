@@ -273,6 +273,9 @@ function sourceExpressions(...expressions: readonly string[]): string {
 		// PropertiesType
 		// tested in #TypeRecordLiteral
 
+		// ParametersType
+		// tested in #TypeFunction
+
 		// PropertyAccessorType
 		// tested in #TypeCompound
 
@@ -339,7 +342,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 							'type_0',
 							'type_compound',
 							f('type_0', 'identifier'),
-							f('property_accessor_type_0', 'property_accessor_type', s('integer')),
+							f('property_accessor_type_0', 'property_accessor_type', s('whole_digits')),
 						),
 					),
 					s(
@@ -389,7 +392,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 							'type_0',
 							'type_compound',
 							f('type_0', 'identifier'),
-							f('property_accessor_type_0', 'property_accessor_type', s('integer')),
+							f('property_accessor_type_0', 'property_accessor_type', s('whole_digits')),
 						),
 					),
 					s(
@@ -472,13 +475,10 @@ function sourceExpressions(...expressions: readonly string[]): string {
 			xjs.String.dedent`
 				{
 					type T = TupleType.0;
-					type T = TupleType.-1;
-					type T = TupleType.+1;
+					type T = TupleType.\\b0;
+					type T = TupleType.\\d0;
 					type T = RecordType.prop;
 					type T = RecordType._;
-					type T = TupleType?.0;
-					type T = RecordType?.prop;
-					type T = RecordType?._;
 					type T = Set.<T>;
 					type T = SomeType.type;
 					type T = SomeType.bool;
@@ -490,32 +490,17 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				s(
 					'type_compound',
 					f('type_0', 'identifier'),
-					f('property_accessor_type_0', 'property_accessor_type', s('integer')),
+					f('property_accessor_type_0', 'property_accessor_type', s('whole_digits')),
 				),
 				s(
 					'type_compound',
 					f('type_0', 'identifier'),
-					f('property_accessor_type_0', 'property_accessor_type', s('integer')),
+					f('property_accessor_type_0', 'property_accessor_type', s('whole_digits')),
 				),
 				s(
 					'type_compound',
 					f('type_0', 'identifier'),
-					f('property_accessor_type_0', 'property_accessor_type', s('natural')),
-				),
-				s(
-					'type_compound',
-					f('type_0', 'identifier'),
-					f('property_accessor_type_0', 'property_accessor_type', s('word', s('identifier'))),
-				),
-				s(
-					'type_compound',
-					f('type_0', 'identifier'),
-					f('property_accessor_type_0', 'property_accessor_type', s('word')),
-				),
-				s(
-					'type_compound',
-					f('type_0', 'identifier'),
-					f('property_accessor_type_0', 'property_accessor_type', s('integer')),
+					f('property_accessor_type_0', 'property_accessor_type', s('whole_digits')),
 				),
 				s(
 					'type_compound',
@@ -612,8 +597,34 @@ function sourceExpressions(...expressions: readonly string[]): string {
 			)),
 		],
 
+		TypeFunction: [
+			xjs.String.dedent`
+				{
+					type T = \\() => void;
+					type T = \\(A, ?: C, b: B, d?: D) => void;
+					type T = \\(\\() => void) => void;
+					type T = \\() => bool;
+				}
+			`,
+			sourceTypes(
+				s('type_function'),
+				s(
+					'type_function',
+					s('entry_type',                  f('type_0', 'identifier')),
+					s('entry_type__optional',        f('type_0', 'identifier')),
+					s('entry_type__named',           f('word_0', 'word', s('identifier')), f('type_0', 'identifier')),
+					s('entry_type__named__optional', f('word_0', 'word', s('identifier')), f('type_0', 'identifier')),
+				),
+				s(
+					'type_function',
+					s('entry_type', f('type_0', 'type_function')),
+				),
+				s('type_function', f('type_0', 'keyword_type')),
+			),
+		],
+
 		// Type
-		// consists of #TypeUnion
+		// consists of #Type{Union,Function}
 
 
 		/* ## Expressions */
@@ -673,6 +684,15 @@ function sourceExpressions(...expressions: readonly string[]): string {
 
 		// CaseSwitch
 		// tested in #ExpressionSwitch
+
+		// ParameterFunction
+		// tested in #ParametersFunction
+
+		// ParametersFunction
+		// tested in #{Expression,Declaration}Function
+
+		// CaptureClause
+		// tested in #{Expression,Declaration}Function
 
 		// PropertyAccessor
 		// tested in #{ExpressionCompound,Assignee}
@@ -911,8 +931,8 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					maybe~?;
 					result~!;
 					tuple.0;
-					tuple.-1;
-					tuple.+1;
+					tuple.\\b0;
+					tuple.\\d0;
 					tuple?.0;
 					tuple!.0;
 					record.prop;
@@ -952,27 +972,27 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				s(
 					'expression_compound',
 					f('expression_0', 'identifier'),
-					f('property_accessor_0', 'property_accessor', s('integer')),
+					f('property_accessor_0', 'property_accessor', s('whole_digits')),
 				),
 				s(
 					'expression_compound',
 					f('expression_0', 'identifier'),
-					f('property_accessor_0', 'property_accessor', s('integer')),
+					f('property_accessor_0', 'property_accessor', s('whole_digits')),
 				),
 				s(
 					'expression_compound',
 					f('expression_0', 'identifier'),
-					f('property_accessor_0', 'property_accessor', s('natural')),
+					f('property_accessor_0', 'property_accessor', s('whole_digits')),
 				),
 				s(
 					'expression_compound',
 					f('expression_0', 'identifier'),
-					f('property_accessor_0', 'property_accessor', s('integer')),
+					f('property_accessor_0', 'property_accessor', s('whole_digits')),
 				),
 				s(
 					'expression_compound',
 					f('expression_0', 'identifier'),
-					f('property_accessor_0', 'property_accessor', s('integer')),
+					f('property_accessor_0', 'property_accessor', s('whole_digits')),
 				),
 				s(
 					'expression_compound',
@@ -1389,8 +1409,84 @@ function sourceExpressions(...expressions: readonly string[]): string {
 			),
 		],
 
+		ExpressionFunction: [
+			xjs.String.dedent`
+				{
+					\\(): void {;};
+					\\(a: A, d?: D, $b: B, c= charlie: C, $e?: E, f= foxtrot?: F): void { return; };
+					\\(): bool { return true; };
+					\\(): bool => false;
+					\\(): bool => { false; };
+					\\() with (x, y): void { return; };
+				}
+			`,
+			sourceExpressions(
+				s(
+					'expression_function',
+					f('block_0', 'block__return', s('statement_expression__return')),
+				),
+				s(
+					'expression_function',
+					s(
+						'parameter_function',
+						f('identifier_0', 'identifier'),
+						f('type_0',       'identifier'),
+					),
+					s(
+						'parameter_function__optional',
+						f('identifier_0', 'identifier'),
+						f('type_0',       'identifier'),
+					),
+					s(
+						'parameter_function__named',
+						f('identifier_0', 'identifier'),
+						f('type_0',       'identifier'),
+					),
+					s(
+						'parameter_function__named',
+						f('word_0',       'word', s('identifier')),
+						f('identifier_0', 'identifier'),
+						f('type_0',       'identifier'),
+					),
+					s(
+						'parameter_function__named__optional',
+						f('identifier_0', 'identifier'),
+						f('type_0',       'identifier'),
+					),
+					s(
+						'parameter_function__named__optional',
+						f('word_0',       'word', s('identifier')),
+						f('identifier_0', 'identifier'),
+						f('type_0',       'identifier'),
+					),
+					f('block_0', 'block__return', s('statement_return')),
+				),
+				s(
+					'expression_function',
+					f('type_0', 'keyword_type'),
+					f('block_0', 'block__return', s('statement_return', f('expression_0', 'primitive_literal', s('keyword_value')))),
+				),
+				s(
+					'expression_function',
+					f('type_0', 'keyword_type'),
+					f('expression_0', 'primitive_literal', s('keyword_value')),
+				),
+				s(
+					'expression_function',
+					f('type_0', 'keyword_type'),
+					f('expression_0', 'expression_block', s('statement_expression__return', s('primitive_literal', s('keyword_value')))),
+				),
+				s(
+					'expression_function',
+					s('capture', f('identifier_0', 'identifier')),
+					s('capture', f('identifier_0', 'identifier')),
+					f('block_0', 'block__return', s('statement_return')),
+				),
+			),
+		],
+
 		// Expression
-		// consists of #Expression{Disjunctive,Conditional,Switch}
+		// consists of #Expression{Disjunctive,Conditional,Switch,Function}
 
 
 		/* ## Statements */
@@ -1433,7 +1529,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					s(
 						'assignee',
 						f('expression_0', 'identifier'),
-						f('property_accessor_0', 'property_accessor', s('integer')),
+						f('property_accessor_0', 'property_accessor', s('whole_digits')),
 					),
 					s('identifier'),
 				),
@@ -1521,7 +1617,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					s(
 						'assignee',
 						f('expression_0', 'identifier'),
-						f('property_accessor_0', 'property_accessor', s('integer')),
+						f('property_accessor_0', 'property_accessor', s('whole_digits')),
 					),
 					s('identifier'),
 				),
@@ -1608,7 +1704,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					s(
 						'assignee',
 						f('expression_0', 'identifier'),
-						f('property_accessor_0', 'property_accessor', s('integer')),
+						f('property_accessor_0', 'property_accessor', s('whole_digits')),
 					),
 				),
 				s(
@@ -1769,8 +1865,20 @@ function sourceExpressions(...expressions: readonly string[]): string {
 			))),
 		],
 
+		// StatementReturn
+		// tested in #{Expression,Declaration}Function
+
+		StatementPanic: [
+			xjs.String.dedent`
+				{
+					panic my_exception;
+				}
+			`,
+			sourceStatements(s('statement_panic', f('expression_0', 'identifier'))),
+		],
+
 		// Statement
-		// consists of #{Declaration,Statement{Expression,Claim,Set,Delete,Conditional,Loop,Iteration,Break}}
+		// consists of #{Declaration,Statement{Expression,Claim,Set,Delete,Conditional,Loop,Iteration,Break,Return,Panic}}
 
 		Block: [
 			xjs.String.dedent`
@@ -1952,8 +2060,79 @@ function sourceExpressions(...expressions: readonly string[]): string {
 			),
 		],
 
+		DeclarationFunction: [
+			xjs.String.dedent`
+				{
+					func _(): void {;}
+					func foo(): void {;}
+					func foo(a: A, $b: B, c= charlie: C): void { return; }
+					func foo(): bool { return true; }
+					func foo(): bool => false;
+					func foo(): bool => { false; };
+					func foo() with (x, ref y): void { return; }
+				}
+			`,
+			sourceStatements(
+				s(
+					'declaration_function',
+					f('block_0', 'block__return', s('statement_expression__return')),
+				),
+				s(
+					'declaration_function',
+					f('identifier_0', 'identifier'),
+					f('block_0', 'block__return', s('statement_expression__return')),
+				),
+				s(
+					'declaration_function',
+					f('identifier_0', 'identifier'),
+					s(
+						'parameter_function',
+						f('identifier_0', 'identifier'),
+						f('type_0',       'identifier'),
+					),
+					s(
+						'parameter_function__named',
+						f('identifier_0', 'identifier'),
+						f('type_0',       'identifier'),
+					),
+					s(
+						'parameter_function__named',
+						f('word_0',       'word', s('identifier')),
+						f('identifier_0', 'identifier'),
+						f('type_0',       'identifier'),
+					),
+					f('block_0', 'block__return', s('statement_return')),
+				),
+				s(
+					'declaration_function',
+					f('identifier_0', 'identifier'),
+					f('type_0', 'keyword_type'),
+					f('block_0', 'block__return', s('statement_return', f('expression_0', 'primitive_literal', s('keyword_value')))),
+				),
+				s(
+					'declaration_function',
+					f('identifier_0', 'identifier'),
+					f('type_0', 'keyword_type'),
+					f('expression_0', 'primitive_literal', s('keyword_value')),
+				),
+				s(
+					'declaration_function',
+					f('identifier_0', 'identifier'),
+					f('type_0', 'keyword_type'),
+					f('expression_0', 'expression_block', s('statement_expression__return', s('primitive_literal', s('keyword_value')))),
+				),
+				s(
+					'declaration_function',
+					f('identifier_0', 'identifier'),
+					s('capture__ref', f('identifier_0', 'identifier')),
+					s('capture__ref', f('identifier_0', 'identifier')),
+					f('block_0', 'block__return', s('statement_return')),
+				),
+			),
+		],
+
 		// Declaration
-		// consists of #Declaration{Type,Variable}
+		// consists of #Declaration{Type,Variable,Function}
 	}).map(([title, [source, expected]]) => xjs.String.dedent`
 		${'='.repeat(title.length)}
 		${title}

@@ -1,5 +1,4 @@
-;; Return whether the given record has a property amongst its entries with the given key.
-(func $Record.has-key (param $record (ref $Record)) (param $key i64) (result i32)
+(func $Record.has-key (export "Record#hasKey") (param $record (ref $Record)) (param $key i64) (result i32)
 	(local $i i32)
 
 	(block $exit

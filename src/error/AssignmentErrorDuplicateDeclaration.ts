@@ -4,7 +4,7 @@ import {AssignmentError} from './AssignmentError.ts';
 
 
 /**
- * An AssignmentErrorDuplicateDeclaration is thrown when the validator encounters a duplicate declaration.
+ * An AssignmentErrorDuplicateDeclaration is raised when the validator encounters a duplicate declaration.
  * @example
  * val my_var: int = 42;
  * val my_var: int = 24; % AssignmentErrorDuplicateDeclaration: Duplicate declaration of `my_var`.

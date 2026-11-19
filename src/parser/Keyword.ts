@@ -31,10 +31,14 @@ export enum Keyword {
 	// storage
 	TYPE   = 'type',
 	LET    = 'val',
+	FUNC   = 'func',
 	CLAIM  = 'claim',
 	SET    = 'set',
 	DELETE = 'delete',
 	BLANK  = '_',
+	PUN    = '$',
+	WITH   = 'with',
+	REF    = 'ref',
 	VOID   = 'void',
 
 	// modifier
@@ -50,6 +54,8 @@ export enum Keyword {
 	DO     = 'do',
 	BREAK  = 'break',
 	SKIP   = 'skip',
+	RETURN = 'return',
+	PANIC  = 'panic',
 }
 
 

@@ -9,6 +9,7 @@ import {
 	ReferenceErrorUndeclared,
 	ReferenceErrorDeadZone,
 	ReferenceErrorKind,
+	AssignmentErrorDuplicateKey,
 } from '../../src/index.ts';
 import {
 	extract_tokens,
@@ -20,6 +21,26 @@ import {
 
 
 test.suite('Type', () => {
+	test.suite('#varCheck', () => {
+		test.suite('TypeFunction', () => {
+			test.test('throws for duplicate param labels.', () => {
+				const {stmts} = setupScript(`{
+					type T = \\(a: int, b: bool) => void;
+					type U = \\(a: int, b: bool) => void;
+					type V = \\(a: int, a: bool) => void;
+				}`, {varCheck: false});
+				stmts.slice(0, 2).forEach((stmt) => stmt.varCheck());
+				return assert.throws(() => stmts[2].varCheck(), AssignmentErrorDuplicateKey);
+			});
+			test.test('single underscore is considered a word, not an identifier.', () => {
+				const decl: AST.STMT.DeclarationType = AST.STMT.DeclarationType.fromSource('type X = \\(_: bool, _: int) => void;');
+				return assert.throws(() => decl.varCheck(), AssignmentErrorDuplicateKey);
+			});
+		});
+	});
+
+
+
 	test.suite('#eval', () => {
 		test.suite('TypeCollectionLiteral', () => {
 			test.test('TypeTuple', () => {
@@ -71,6 +92,40 @@ test.suite('Type', () => {
 				}`, {build: false}); // assert does not throw
 			});
 		});
+
+
+		test.suite('TypeFunction', () => {
+			test.test('with all required parameters.', () => {
+				assertEqualTypes(
+					AST.TYPE.Function.fromSource('\\(bool, int | null, alpha: str, bravo: float) => void').eval(),
+					new TYPE.Function(TYPE.Tuple.fromTypes([
+						TYPE.BOOL,
+						TYPE.INT.union(TYPE.NULL),
+					]), TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>([
+						[Validator.keyId('alpha'), TYPE.STR],
+						[Validator.keyId('bravo'), TYPE.FLOAT],
+					]))),
+				);
+			});
+			test.test('with optional parameters.', () => {
+				assertEqualTypes(
+					AST.TYPE.Function.fromSource('\\(bool, ?: int | null, alpha?: str, bravo: float) => void').eval(),
+					new TYPE.Function(new TYPE.Tuple([
+						{type: TYPE.BOOL,                 optional: false},
+						{type: TYPE.INT.union(TYPE.NULL), optional: true},
+					]), new TYPE.Record(new Map<bigint, EntryType>([
+						[Validator.keyId('alpha'), {type: TYPE.STR,   optional: true}],
+						[Validator.keyId('bravo'), {type: TYPE.FLOAT, optional: false}],
+					]))),
+				);
+			});
+			test.test('with return type.', () => {
+				assertEqualTypes(
+					AST.TYPE.Function.fromSource('\\() => sym').eval(),
+					new TYPE.Function(undefined, undefined, TYPE.SYM),
+				);
+			});
+		});
 	});
 
 
@@ -90,7 +145,7 @@ test.suite('Type', () => {
 					new VALUE.Symbol(0x52n, 'then').toType(),
 					new VALUE.Symbol(0x46n, 'str').toType(),
 					new VALUE.Symbol(0x49n, 'false').toType(),
-					new VALUE.Symbol(Validator.cookTokenIdentifier('foobar'), 'foobar').toType(),
+					new VALUE.Symbol(Validator.keyId('foobar'), 'foobar').toType(),
 					typeUnit(42n),
 					typeUnit(42n, 'nat'),
 					typeUnit(4.2e+3),
@@ -117,10 +172,12 @@ test.suite('Type', () => {
 
 	test.suite('TypeAlias', () => {
 		test.suite('#varCheck', () => {
-			test.test('does not throw when referencing intrinsic identifiers.', () => {
+			test.test('does not throw when referencing built-in identifiers.', () => {
 				setupScript(`{
 					type T = Object;
+					type E = Exception;
 					val obj: Object = 42;
+					val ex: Exception = Exception.("hello");
 				}`, {typeCheck: false}); // assert does not throw
 			});
 			test.test('throws if the validator does not contain a record for the identifier.', () => {
@@ -164,8 +221,10 @@ test.suite('Type', () => {
 			test.test('computes the value of reserved types.', () => {
 				assertEqualTypes([
 					'Object',
+					'Exception',
 				].map((src) => AST.TYPE.TypeAlias.fromSource(src).eval()), [
 					TYPE.OBJ,
+					TYPE.EXCP,
 				]);
 			});
 			test.test('computes the value of a type alias.', () => {

@@ -1,26 +1,18 @@
 import * as xjs from 'extrajs';
-import {
-	type Builder,
-	OP,
-	AssignmentErrorDuplicateKey,
-	TypeErrorNotAssignable,
-} from '../../../index.ts';
+import {TypeErrorNotAssignable} from '../../../index.ts';
 import {
 	type NonemptyArray,
 	assert_instanceof,
-	memoizeMethod,
 } from '../../../lib/index.ts';
 import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../../core/index.ts';
-import {
-	VALUE,
-	TYPE,
-} from '../../../typer/index.ts';
+import {TYPE} from '../../../typer/index.ts';
 import type {SyntaxNodeFamily} from '../../utils-private.ts';
+import type {ExprVisitorType} from '../index.ts';
+import {check_unique_keys} from '../utils-private.ts';
 import {typecheck_assign} from '../AstNode.ts';
-import type {Key} from '../Key.ts';
 import type {Property} from '../Property.ts';
 import {Expression} from './Expression.ts';
 import {
@@ -38,47 +30,22 @@ export class Dict extends Collection {
 	}
 
 	public constructor(
-		start_node: SyntaxNodeFamily<'expression_dict_literal', ['break']>,
+		start_node: SyntaxNodeFamily<'expression_dict_literal', ['break', 'return']>,
 		public override readonly children: Readonly<NonemptyArray<Property>>,
 	) {
 		super(start_node, children);
 	}
 
 	public override varCheck(): void {
-		const keys: Key[] = this.children.map((prop) => prop.key);
-		xjs.Array.forEachAggregated(keys, (key, i) => {
-			key.varCheck();
-			if (keys.slice(0, i).find((k) => k.id === key.id)) {
-				throw new AssignmentErrorDuplicateKey(key);
-			}
-		});
-		return xjs.Array.forEachAggregated(this.children, (prop) => prop.val.varCheck());
-	}
-
-	@memoizeMethod
-	public override type(): TYPE.Type {
-		if (this.children.some((c) => c.val.type().isBottomType)) {
-			return TYPE.NOTHING;
-		}
-		return new TYPE.Dict(
-			TYPE.Union.all(...this.children.map((c) => c.val.type())),
-			true,
-		);
-	}
-
-	@memoizeMethod
-	public override build(builder: Builder): OP.DictNew {
-		return new OP.DictNew(new Map(this.children.map((c) => [
-			new VALUE.Symbol(c.key.id, c.key.source),
-			c.val.build(builder).asTac(builder),
-		])), this.type());
+		check_unique_keys(this.children.map((prop) => prop.key));
+		return super.varCheck();
 	}
 
 	@assignToDeco
-	public override assignTo(assignee: TYPE.Type): void {
+	public override assignTo(visitor: ExprVisitorType, assignee: TYPE.Type): void {
 		if (assignee instanceof TYPE.Dict) {
 			// better error reporting to check entry-by-entry instead of checking `this.type().typearg`
-			return xjs.Array.forEachAggregated(this.children, (prop) => typecheck_assign(prop.val, assignee.typearg, prop));
+			return xjs.Array.forEachAggregated(this.children, (prop) => typecheck_assign(visitor, prop.val, assignee.typearg, prop));
 		}
 		throw new TypeErrorNotAssignable(this, assignee);
 	}

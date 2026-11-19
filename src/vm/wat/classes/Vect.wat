@@ -1,35 +1,35 @@
-(global $Vect.VOID                        v128 (v128.const i16x8 0 0 0 0x0000 0 0 0 0))
-(global $Vect.NULL  (export "Vect#NULL")  v128 (v128.const i16x8 0 0 0 0x0001 0 0 0 0))
-(global $Vect.FALSE (export "Vect#FALSE") v128 (v128.const i16x8 0 0 0 0x0002 0 0 0 0))
-(global $Vect.TRUE  (export "Vect#TRUE")  v128 (v128.const i16x8 0 0 0 0x0003 0 0 0 0))
+(global $Vect.VOID  v128 (v128.const i16x8 0 0 0 0x0000 0 0 0 0))
+(global $Vect.NULL  v128 (v128.const i16x8 0 0 0 0x0001 0 0 0 0))
+(global $Vect.FALSE v128 (v128.const i16x8 0 0 0 0x0002 0 0 0 0))
+(global $Vect.TRUE  v128 (v128.const i16x8 0 0 0 0x0003 0 0 0 0))
 
 
 
-(func $Vect.new-int (export "Vect#newInt") (param $int i64) (result v128)
+(func $Vect.new-int (export "Vect#newInt") (param i64) (result v128)
 	(i64x2.replace_lane 1
 		(i16x8.replace_lane 3
 			(global.get $Vect.VOID)
 			(i32.const 0x18)
 		)
-		(local.get $int)
+		(local.get 0)
 	)
 )
-(func $Vect.new-nat (export "Vect#newNat") (param $nat i64) (result v128)
+(func $Vect.new-nat (export "Vect#newNat") (param i64) (result v128)
 	(i64x2.replace_lane 1
 		(i16x8.replace_lane 3
 			(global.get $Vect.VOID)
 			(i32.const 0x28)
 		)
-		(local.get $nat)
+		(local.get 0)
 	)
 )
-(func $Vect.new-float (export "Vect#newFloat") (param $float f64) (result v128)
+(func $Vect.new-float (export "Vect#newFloat") (param f64) (result v128)
 	(f64x2.replace_lane 1
 		(i16x8.replace_lane 3
 			(global.get $Vect.VOID)
 			(i32.const 0x48)
 		)
-		(local.get $float)
+		(local.get 0)
 	)
 )
 

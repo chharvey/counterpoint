@@ -1,5 +1,7 @@
 import * as assert from 'node:assert';
+import * as xjs from 'extrajs';
 import {
+	AssignmentErrorDuplicateKey,
 	TypeErrorInvalidOperation,
 	TypeErrorNotNarrow,
 	TypeErrorNoEntry,
@@ -13,14 +15,9 @@ import {
 	VALUE,
 	TYPE,
 } from '../../typer/index.ts';
-import {
-	IntrinsicName,
-	INTRINSICS,
-} from '../../parser/index.ts';
+import {CoreLibName} from '../../parser/index.ts';
 import {
 	Operator,
-	type ValidTypeAccessOperator,
-	type ValidAccessOperator,
 	Validator,
 } from '../index.ts';
 import {
@@ -28,12 +25,13 @@ import {
 	Key,
 	type TYPE as AST_TYPE,
 	EXPR,
+	ExprVisitorType,
 } from './index.ts';
 
 
 
-function throwWrongSubtypeError(accessor: EXPR.Expression, supertype: TYPE.Type): never {
-	throw new TypeErrorNotNarrow(accessor.type(), supertype, accessor.line_index, accessor.col_index);
+function throwWrongSubtypeError(subtype: TYPE.Type, supertype: TYPE.Type, accessor: EXPR.Expression): never {
+	throw new TypeErrorNotNarrow(subtype, supertype, accessor.line_index, accessor.col_index);
 }
 
 
@@ -47,30 +45,44 @@ function only_errors_of_type<E extends Error = Error>(err: unknown, types: reado
 
 
 
-export function validate_intrinsic_name(source: string): asserts source is IntrinsicName {
-	if (!(INTRINSICS as readonly string[]).includes(source)) {
-		throw new SyntaxError(`Unexpected token: \`${source}\`; expected \`${INTRINSICS.join(' | ')}\`.`);
-	}
+/** Ensure no duplicate keys in a record/dict expression/type or function type. */
+export function check_unique_keys(keys: readonly Key[]): void {
+	const key_ids = new Set<bigint>();
+	return xjs.Array.forEachAggregated(keys, (key) => {
+		if (key_ids.has(key.id)) {
+			throw new AssignmentErrorDuplicateKey(key);
+		} else {
+			key_ids.add(key.id);
+		}
+	});
 }
+
+
 
 /** Callable type interfaces that have generic parameters. */
 export type CallableInterfaceName = (
-	| IntrinsicName.LIST
-	| IntrinsicName.DICT
-	| IntrinsicName.SET
-	| IntrinsicName.MAP
-	| IntrinsicName.MAYBE
-	| IntrinsicName.NONE
-	| IntrinsicName.SOME
+	| CoreLibName.LIST
+	| CoreLibName.DICT
+	| CoreLibName.SET
+	| CoreLibName.MAP
+	| CoreLibName.MAYBE
+	| CoreLibName.NONE
+	| CoreLibName.SOME
+	| CoreLibName.RESULT
+	| CoreLibName.FAIL
+	| CoreLibName.OK
 );
 const CALLABLE_INTERFACES: readonly string[] = [
-	IntrinsicName.LIST,
-	IntrinsicName.DICT,
-	IntrinsicName.SET,
-	IntrinsicName.MAP,
-	IntrinsicName.MAYBE,
-	IntrinsicName.NONE,
-	IntrinsicName.SOME,
+	CoreLibName.LIST,
+	CoreLibName.DICT,
+	CoreLibName.SET,
+	CoreLibName.MAP,
+	CoreLibName.MAYBE,
+	CoreLibName.NONE,
+	CoreLibName.SOME,
+	CoreLibName.RESULT,
+	CoreLibName.FAIL,
+	CoreLibName.OK,
 ];
 export function validate_callable_interface_name(source: string): asserts source is CallableInterfaceName {
 	if (!CALLABLE_INTERFACES.includes(source)) {
@@ -80,36 +92,21 @@ export function validate_callable_interface_name(source: string): asserts source
 
 /** Callable classes that have value parameters. */
 export type CallableClassName = (
-	| IntrinsicName.BOOLEAN
-	| IntrinsicName.INTEGER
-	| IntrinsicName.NATURAL
-	| IntrinsicName.FLOAT
-	| IntrinsicName.STRING
-	| IntrinsicName.LIST
-	| IntrinsicName.DICT
-	| IntrinsicName.SET
-	| IntrinsicName.MAP
-	| IntrinsicName.NONE
-	| IntrinsicName.SOME
+	| CoreLibName.BOOLEAN
+	| CoreLibName.INTEGER
+	| CoreLibName.NATURAL
+	| CoreLibName.FLOAT
+	| CoreLibName.STRING
+	| CoreLibName.LIST
+	| CoreLibName.DICT
+	| CoreLibName.SET
+	| CoreLibName.MAP
+	| CoreLibName.EXCEPTION
+	| CoreLibName.NONE
+	| CoreLibName.SOME
+	| CoreLibName.FAIL
+	| CoreLibName.OK
 );
-const CALLABLE_CLASSES: readonly string[] = [
-	IntrinsicName.BOOLEAN,
-	IntrinsicName.INTEGER,
-	IntrinsicName.NATURAL,
-	IntrinsicName.FLOAT,
-	IntrinsicName.STRING,
-	IntrinsicName.LIST,
-	IntrinsicName.DICT,
-	IntrinsicName.SET,
-	IntrinsicName.MAP,
-	IntrinsicName.NONE,
-	IntrinsicName.SOME,
-];
-export function validate_callable_class_name(source: string): asserts source is CallableClassName {
-	if (!CALLABLE_CLASSES.includes(source)) {
-		throw new SyntaxError(`Unexpected token: \`${source}\`; expected \`${CALLABLE_CLASSES.join(' | ')}\`.`);
-	}
-}
 
 
 
@@ -219,6 +216,9 @@ export type ConstructorSchema = {
  * 	new ('set': Set.<(K, V)>);
  * 	new (map:   Map.<K, V>);
  * }
+ * declare class Exception extends Object {
+ * 	new (message: str, cause?: Exception);
+ * }
  * declare abstract class Maybe<out T> extends Object {}
  * declare class None<out T> extends Maybe.<T> {
  * 	new ();
@@ -226,35 +226,42 @@ export type ConstructorSchema = {
  * declare class Some<out T> extends Maybe.<T> {
  * 	new (value: T);
  * }
+ * declare abstract class Result<out T, out E narrows Exception = Exception> extends Object {}
+ * declare class Fail<out T, out E narrows Exception = Exception> extends Result.<T, E> {
+ * 	new (reason: E);
+ * }
+ * declare class Ok<out T, out E narrows Exception = Exception> extends Result.<T, E> {
+ * 	new (value: T);
+ * }
  * ```
  */
 export const CLASS_API = new Map<CallableInterfaceName | CallableClassName, ConstructorSchema>([
-	[IntrinsicName.BOOLEAN, {
+	[CoreLibName.BOOLEAN, {
 		genericParams: [],
 		overloads:     [[{positional: true, type: () => TYPE.ANYTHING}]],
 		returnType:    () => TYPE.BOOL,
 	}],
-	[IntrinsicName.INTEGER, {
+	[CoreLibName.INTEGER, {
 		genericParams: [],
 		overloads:     [[{positional: true, type: () => TYPE.NUMBER}]],
 		returnType:    () => TYPE.INT,
 	}],
-	[IntrinsicName.NATURAL, {
+	[CoreLibName.NATURAL, {
 		genericParams: [],
 		overloads:     [[{positional: true, type: () => TYPE.NUMBER}]],
 		returnType:    () => TYPE.NAT,
 	}],
-	[IntrinsicName.FLOAT, {
+	[CoreLibName.FLOAT, {
 		genericParams: [],
 		overloads:     [[{positional: true, type: () => TYPE.NUMBER}]],
 		returnType:    () => TYPE.FLOAT,
 	}],
-	[IntrinsicName.STRING, {
+	[CoreLibName.STRING, {
 		genericParams: [],
 		overloads:     [[{positional: true, type: () => TYPE.ANYTHING}]],
 		returnType:    () => TYPE.STR,
 	}],
-	[IntrinsicName.LIST, {
+	[CoreLibName.LIST, {
 		genericParams: [{positional: true, readonlyVariance: 'covariant', mutableVariance: 'invariant'}],
 		overloads:     [
 			[],
@@ -263,7 +270,7 @@ export const CLASS_API = new Map<CallableInterfaceName | CallableClassName, Cons
 		],
 		returnType: (generic_params) => new TYPE.List(generic_params[0]),
 	}],
-	[IntrinsicName.DICT, {
+	[CoreLibName.DICT, {
 		genericParams: [{positional: true, readonlyVariance: 'covariant', mutableVariance: 'invariant'}],
 		overloads:     [
 			[],
@@ -274,7 +281,7 @@ export const CLASS_API = new Map<CallableInterfaceName | CallableClassName, Cons
 		],
 		returnType: (generic_params) => new TYPE.Dict(generic_params[0]),
 	}],
-	[IntrinsicName.SET, {
+	[CoreLibName.SET, {
 		genericParams: [{positional: true, readonlyVariance: 'covariant', mutableVariance: 'invariant'}],
 		overloads:     [
 			[],
@@ -283,10 +290,10 @@ export const CLASS_API = new Map<CallableInterfaceName | CallableClassName, Cons
 		],
 		returnType: (generic_params) => new TYPE.Set(generic_params[0]),
 	}],
-	[IntrinsicName.MAP, {
+	[CoreLibName.MAP, {
 		genericParams: [
 			{positional: true, readonlyVariance: 'covariant', mutableVariance: 'invariant'},
-			{positional: true, readonlyVariance: 'covariant', mutableVariance: 'invariant', default: (generic_params) => generic_params[0]},
+			{positional: true, readonlyVariance: 'covariant', mutableVariance: 'invariant'},
 		],
 		overloads: [
 			[],
@@ -296,20 +303,40 @@ export const CLASS_API = new Map<CallableInterfaceName | CallableClassName, Cons
 		],
 		returnType: (generic_params) => new TYPE.Map(generic_params[0], generic_params[1]),
 	}],
-	[IntrinsicName.MAYBE, {
+	[CoreLibName.EXCEPTION, {
+		genericParams: [],
+		overloads:     [[{positional: true, type: () => TYPE.STR}, {positional: true, optional: true, type: () => TYPE.EXCP}]],
+		returnType:    () => TYPE.EXCP,
+	}],
+	[CoreLibName.MAYBE, {
 		genericParams: [{positional: true, readonlyVariance: 'covariant'}],
 		overloads:     [],
 		returnType:    (generic_params) => new TYPE.Maybe(generic_params[0]),
 	}],
-	[IntrinsicName.NONE, {
+	[CoreLibName.NONE, {
 		genericParams: [{positional: true, readonlyVariance: 'covariant'}],
 		overloads:     [[]],
 		returnType:    (generic_params) => new TYPE.None(generic_params[0]),
 	}],
-	[IntrinsicName.SOME, {
+	[CoreLibName.SOME, {
 		genericParams: [{positional: true, readonlyVariance: 'covariant'}],
 		overloads:     [[{positional: true, type: (generic_params) => generic_params[0]}]],
 		returnType:    (generic_params) => new TYPE.Some(generic_params[0]),
+	}],
+	[CoreLibName.RESULT, {
+		genericParams: [{positional: true, readonlyVariance: 'covariant'}, {positional: true, readonlyVariance: 'covariant', constraint: {direction: 'narrows', type: () => TYPE.EXCP}, default: () => TYPE.EXCP}],
+		overloads:     [],
+		returnType:    (generic_params) => new TYPE.Result(generic_params[0], generic_params[1]),
+	}],
+	[CoreLibName.FAIL, {
+		genericParams: [{positional: true, readonlyVariance: 'covariant'}, {positional: true, readonlyVariance: 'covariant', constraint: {direction: 'narrows', type: () => TYPE.EXCP}, default: () => TYPE.EXCP}],
+		overloads:     [[{positional: true, type: (generic_params) => generic_params[1]}]],
+		returnType:    (generic_params) => new TYPE.Fail(generic_params[0], generic_params[1]),
+	}],
+	[CoreLibName.OK, {
+		genericParams: [{positional: true, readonlyVariance: 'covariant'}, {positional: true, readonlyVariance: 'covariant', constraint: {direction: 'narrows', type: () => TYPE.EXCP}, default: () => TYPE.EXCP}],
+		overloads:     [[{positional: true, type: (generic_params) => generic_params[0]}]],
+		returnType:    (generic_params) => new TYPE.Ok(generic_params[0], generic_params[1]),
 	}],
 ]);
 
@@ -331,13 +358,9 @@ function decombine(t: TYPE.Type): TYPE.Type[] {
 }
 
 export function get_entry_info(base_type: TYPE.Type, access: AST_TYPE.Access | EXPR.Access, is_writing: boolean = false): EntryType {
-	const accessor_maybe: boolean = access.kind === Operator.DOT_MAYBE;
+	const accessor_maybe: boolean = access instanceof EXPR.Access && access.kind === Operator.DOT_MAYBE;
 	if (base_type.isBottomType) {
 		return {type: TYPE.NOTHING, optional: accessor_maybe};
-	}
-	if (base_type instanceof TYPE.Maybe && accessor_maybe) {
-		const info: EntryType = get_entry_info(base_type.typearg, access, is_writing);
-		return {...info, type: new TYPE.Maybe(info.type)};
 	}
 	if (base_type instanceof TYPE.Combinable) {
 		const constituents: readonly TYPE.Type[] = decombine(base_type);
@@ -414,7 +437,7 @@ export function get_entry_info(base_type: TYPE.Type, access: AST_TYPE.Access | E
 		default: {
 			assert_instanceof(access, EXPR.Access);
 			assert_instanceof(access.accessor, EXPR.Expression);
-			const accessor_type: TYPE.Type = access.accessor.type();
+			const accessor_type: TYPE.Type = new ExprVisitorType().visit(access.accessor);
 			if (accessor_type.isBottomType) {
 				return {type: TYPE.NOTHING, optional: accessor_maybe};
 			}
@@ -423,24 +446,24 @@ export function get_entry_info(base_type: TYPE.Type, access: AST_TYPE.Access | E
 					const INTEGRAL: TYPE.Type = TYPE.INT.union(TYPE.NAT);
 					return accessor_type.isSubtypeOf(INTEGRAL)
 						? {type: base_type.typearg, optional: accessor_maybe}
-						: throwWrongSubtypeError(access.accessor, INTEGRAL);
+						: throwWrongSubtypeError(accessor_type, INTEGRAL, access.accessor);
 				}
 				case base_type instanceof TYPE.Dict: {
 					return accessor_type.isSubtypeOf(TYPE.SYM)
 						? {type: base_type.typearg, optional: accessor_maybe}
 						: accessor_type.isSubtypeOf(TYPE.STR)
 							? assert.fail(new Error('String keys for dict access are not yet supported.'))
-							: throwWrongSubtypeError(access.accessor, TYPE.Union.all(TYPE.SYM, TYPE.STR));
+							: throwWrongSubtypeError(accessor_type, TYPE.Union.all(TYPE.SYM, TYPE.STR), access.accessor);
 				}
 				case base_type instanceof TYPE.Set: {
 					return accessor_type.isSubtypeOf(base_type.typearg) || !is_writing
 						? {type: TYPE.BOOL, optional: false}
-						: throwWrongSubtypeError(access.accessor, base_type.typearg);
+						: throwWrongSubtypeError(accessor_type, base_type.typearg, access.accessor);
 				}
 				case base_type instanceof TYPE.Map: {
 					return accessor_type.isSubtypeOf(base_type.typearg_ant) || !is_writing
 						? {type: base_type.typearg_con, optional: accessor_maybe}
-						: throwWrongSubtypeError(access.accessor, base_type.typearg_ant);
+						: throwWrongSubtypeError(accessor_type, base_type.typearg_ant, access.accessor);
 				}
 				default: {
 					throw new TypeErrorInvalidOperation(access);
@@ -448,24 +471,4 @@ export function get_entry_info(base_type: TYPE.Type, access: AST_TYPE.Access | E
 			}
 		}
 	}
-}
-
-
-
-export function access_type(
-	access_kind: ValidTypeAccessOperator | ValidAccessOperator,
-	base_type:   TYPE.Type,
-	entry:       EntryType,
-	access:      AST_TYPE.Access | EXPR.Access,
-): TYPE.Type {
-	if (
-		access_kind === Operator.DOT     && entry.optional ||
-		access_kind === Operator.DOT_MAYBE && !entry.optional && !(base_type instanceof TYPE.Maybe)
-	) {
-		throw new TypeErrorInvalidOperation(access);
-	}
-	if (access_kind === Operator.DOT_RESULT) {
-		throw new Error('Operator `!.` not yet supported.');
-	}
-	return entry.optional ? new TYPE.Maybe(entry.type) : entry.type;
 }

@@ -17,11 +17,14 @@ import {
 
 
 /**
- * A `Maybe` repesents presence or absence of a value.
+ * Class for constructing a `Maybe` type.
+ * Known subclasses:
+ * - None
+ * - Some
  */
 export class Maybe extends ReferenceType {
 	/**
-	 * Constructs a Record type resembling the `Maybe[T]` type, with the given generic argument.
+	 * Constructs a new Maybe object resembling the `Maybe[T]` type, with the given generic argument.
 	 * @param typearg the generic argument to `Maybe[T]`
 	 */
 	public constructor(public readonly typearg: Type) {
@@ -48,7 +51,7 @@ export class Maybe extends ReferenceType {
 	}
 
 	/** @final */
-	public override mutableOf(): Type {
+	public override mutableOf(): Maybe {
 		return this;
 	}
 }
@@ -58,6 +61,11 @@ export class Maybe extends ReferenceType {
 export class None extends Maybe {
 	public override toString(): string {
 		return `None[${this.typearg}]`;
+	}
+
+	@instanceOf(() => VALUE.None)
+	public override includes(v: VALUE.Value): boolean {
+		return v.toType().isSubtypeOf(this);
 	}
 
 	public override isSubtypeOf(t: Type): boolean {
@@ -76,9 +84,16 @@ export class None extends Maybe {
 	}
 }
 
+
+
 export class Some extends Maybe {
 	public override toString(): string {
 		return `Some[${this.typearg}]`;
+	}
+
+	@instanceOf(() => VALUE.Some)
+	public override includes(v: VALUE.Value): boolean {
+		return v.toType().isSubtypeOf(this);
 	}
 
 	public override isSubtypeOf(t: Type): boolean {

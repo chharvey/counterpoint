@@ -1,31 +1,23 @@
-import * as assert from 'node:assert';
 import {
-	OP,
 	ReferenceErrorUndeclared,
 	ReferenceErrorKind,
 } from '../../../index.ts';
-import {
-	assert_instanceof,
-	memoizeMethod,
-} from '../../../lib/index.ts';
+import {assert_instanceof} from '../../../lib/index.ts';
 import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../../core/index.ts';
-import {TYPE} from '../../../typer/index.ts';
 import {
 	SymbolKind,
-	type SymbolSchema,
-	SymbolSchemaVar,
+	SymbolSchemaType,
 } from '../../index.ts';
 import type {SyntaxNodeType} from '../../utils-private.ts';
 import {Validator} from '../../Validator.ts';
 import {Expression} from './Expression.ts';
-import type {Reassignable} from './Reassignable.ts';
 
 
 
-export class Variable extends Expression implements Reassignable {
+export class Variable extends Expression {
 	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): Variable {
 		const expression: Expression = Expression.fromSource(src, config);
 		assert_instanceof(expression, Variable);
@@ -45,33 +37,9 @@ export class Variable extends Expression implements Reassignable {
 		if (!this.validator.hasSymbol(this.id)) {
 			throw new ReferenceErrorUndeclared(this);
 		}
-		if (!(this.validator.getSymbol(this.id) instanceof SymbolSchemaVar)) {
+		if (this.validator.getSymbol(this.id) instanceof SymbolSchemaType) {
 			throw new ReferenceErrorKind(this, SymbolKind.TYPE, SymbolKind.VALUE);
 			// TODO: When Type objects are allowed as runtime values, this should be removed and checked by the type checker (`this#typeCheck`).
 		}
-	}
-
-	@memoizeMethod
-	public override type(): TYPE.Type {
-		assert.ok(this.validator.hasSymbol(this.id), `Expected ${this.source} (${this.id}) to be in the symbol table.`);
-		const symbol: SymbolSchema = this.validator.getSymbol(this.id)!;
-		assert_instanceof(symbol, SymbolSchemaVar);
-		return symbol.isUninitialized ? new TYPE.Maybe(symbol.type) : symbol.type;
-	}
-
-	@memoizeMethod
-	public override build(): OP.Get {
-		const symbol = this.validator.getSymbol(this.id) as SymbolSchemaVar;
-		return new OP.Get(symbol, symbol.irType);
-	}
-
-	/**
-	 * @inheritdoc
-	 * @implements Reassignable
-	 */
-	@memoizeMethod
-	public writeType(): TYPE.Type {
-		this.type(); // re-assert any assumptions and re-throw any errors
-		return (this.validator.getSymbol(this.id) as SymbolSchemaVar).type;
 	}
 }

@@ -46,3 +46,24 @@ export function assert_instanceof<Class extends object>(obj: unknown, cons: Cons
 export function assert_context_name(context: ClassMethodDecoratorContext, name: string): void {
 	return assert.strictEqual(context.name, name, `This decorator may only be used on methods named \`${name}\`.`);
 }
+
+
+
+/**
+ * Returns true if the arguments are strictly equal (`===`),
+ * or if both are nullish (`null` or `undefined`),
+ * or if they are equal by some given definition.
+ * Else returns false.
+ */
+export function equal_nullish_values<T extends object>(
+	arg0: T | null | undefined,
+	arg1: T | null | undefined,
+	comparator?: (v0: T, v1: T) => boolean,
+): boolean {
+	arg0 ??= undefined;
+	arg1 ??= undefined;
+	if (arg0 === arg1) {
+		return true;
+	}
+	return !!arg0 && !!arg1 && (comparator?.(arg0, arg1) ?? false);
+}

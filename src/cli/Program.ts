@@ -30,8 +30,8 @@ export class Program {
 	#build(): Builder {
 		const builder = new Builder();
 		this.#astGoal.varCheck();
-		this.#astGoal.typeCheck();
-		this.#astGoal.build(builder);
+		new AST.AstNodeVisitorTypeCheck().visit(this.#astGoal);
+		new AST.AstNodeVisitorBuild(builder).visit(this.#astGoal);
 		return builder;
 	}
 

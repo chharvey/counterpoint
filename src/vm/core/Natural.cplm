@@ -1,5 +1,5 @@
-from "cplvm" import ('::op::toNat');
-from "./utils.cplm" import (
+from "core/vm" import ('op::toNat');
+from "./utils" import (
 	DIGITS,
 	mod,
 );
@@ -10,8 +10,9 @@ from "./utils.cplm" import (
 public class Natural {
 	public new (private readonly data?: nat = +0) {;}
 	public new (arg: int | float) {
-		this('::op::toNat'(arg) as :nat:);
+		this('op::toNat'(arg) as :nat:);
 	}
+
 
 	internal toString(radix?: nat = +10): Result[str, RangeException] {
 		if radix < +2 || +36 < radix then {

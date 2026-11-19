@@ -1,6 +1,6 @@
 {
   "name": "@chharvey/counterpoint",
-  "version": "0.5.4",
+  "version": "0.6.0",
   "description": "A robust programming language.",
   "homepage": "https://github.com/chharvey/counterpoint#readme",
   "bugs": {
@@ -11,7 +11,7 @@
   "main": "dist/main.js",
   "type": "module",
   "bin": {
-    "cplc": "bin/cplc.js"
+    "cplc": "bin/cplc.mjs"
   },
   "repository": {
     "type": "git",
@@ -30,17 +30,18 @@
     "cplc:d-p": "npx cplc d ./sample/test-v0.5.cpls -p ./sample/counterpoint-config.json",
     "cplc:r": "npx cplc r ./sample/test-v0.5.wasm",
     "fresh-install": "rm -rf ./node_modules/ ./tree-sitter-counterpoint/node_modules/ ./package-lock.json && npm install",
-    "precompile": "rm -rf ./dist/ && mkdir -p ./dist/vm/wat/ && cp -R ./src/vm/wat/ ./dist/vm/wat/",
+    "precompile": "rm -rf ./dist/ && node ./scripts/validate-wat.js",
     "compile": "tsc && tsc --project ./test/tsconfig.json",
     "lint": "eslint ./",
     "test": "tsx --test --test-isolation=none -- './test/**/*.test.ts'",
     "test:only": "tsx --test --test-only --test-isolation=none -- './test/**/*.test.ts'",
-    "justbuild": "npm run build --ignore-scripts -w ./tree-sitter-counterpoint/ && npm rebuild",
+    "rebuild-syntax": "npm run build --ignore-scripts -w ./tree-sitter-counterpoint/ && npm rebuild",
+    "quicktest": "npm run rebuild-syntax && npm run precompile && npm run test",
     "prebuild": "npm run build -w ./tree-sitter-counterpoint/ && npm rebuild",
     "build": "npm run compile && npm run lint && npm run test"
   },
   "dependencies": {
-    "binaryen.ts": "^0.2.0",
+    "binaryen.ts": "^0.3.0",
     "extrajs": "^0.27.0",
     "fast-deep-equal": "^3.1.3",
     "minimist": "^1.2.6",
@@ -48,24 +49,24 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.0",
-    "@stylistic/eslint-plugin": "^5.2.0",
+    "@stylistic/eslint-plugin": "^6.0.0",
     "@types/minimist": "^1.2.0",
     "@types/node": "^26.1.1",
     "@types/utf8": "^3.0.0",
     "eslint": "^10.8.0",
     "eslint-plugin-import-x": "^4.17.1",
     "globals": "^17.0.0",
-    "n": "^10.2.0",
     "tsx": "^4.22.4",
     "typescript": "~6.0.3",
-    "typescript-eslint": "^8.18.0"
+    "typescript-eslint": "^8.18.0",
+    "wasm-opt": "^2.0.1"
   },
   "allowScripts": {
     "tree-sitter@0.25.1": true,
     "tree-sitter-cli@0.26.11": true
   },
   "engines": {
-    "node": "^26.5"
+    "node": "^26.12"
   },
   "private": true,
   "workspaces": [

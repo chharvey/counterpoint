@@ -1,4 +1,4 @@
-# Intrinsics
+# Core Library
 This chapter describes the objects built in to the standard “core” Counterpoint library.
 
 
@@ -77,7 +77,7 @@ All reference objects belong to the `Object` class.
 
 
 ### `Object`
-The `Object` class contains every reference object.
+All `Object` objects are reference objects.
 
 
 ### `List`
@@ -100,7 +100,29 @@ The values in Sets are Counterpoint Language Values.
 The values in Maps are Counterpoint Language Values.
 
 
+### `Exception`
+`Exception` objects are used for reporting author-defined errors in a program.
+They each contain a `str` message, a call stack representation, and optionally another `Exception` cause.
+
+
 ### `Maybe`
 `Maybe` objects either hold a value or do not,
 instantiated respectively by the subclasses `Some` and `None`.
 The values in Somes are Counterpoint Language Values.
+
+
+### `Result`
+`Result` objects either hold a success value or a failure reason,
+instantiated respectively by the subclasses `Ok` and `Fail`.
+The success values and failure reasons in Results are Counterpoint Language Values.
+
+
+### `Function`
+`Function` objects encapsulate parameterized Counterpoint code closed over a lexical environment
+and support the dynamic execution of that code.
+
+
+### `Class`
+`Class` objects are Classes, which construct objects.
+Classes may encapsulate parameterized Counterpoint code closed over a lexical environment
+and support the dynamic execution of that code.

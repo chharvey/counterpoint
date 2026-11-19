@@ -6,13 +6,14 @@ import {
 	TypeErrorNoEntry,
 	TypeErrorNotCallable,
 	TypeErrorArgCount,
+	TypeErrorAmbiguousOverload,
 } from './index.ts';
 import {ErrorCode} from './ErrorCode.ts';
 
 
 
 /**
- * A CplTypeError is thrown when the validator recognizes a type mismatch.
+ * A CplTypeError is raised when the validator recognizes a type mismatch.
  *
  * Known subclasses:
  * - TypeErrorInvalidOperation
@@ -21,18 +22,20 @@ import {ErrorCode} from './ErrorCode.ts';
  * - TypeErrorNoEntry
  * - TypeErrorNotCallable
  * - TypeErrorArgCount
+ * - TypeErrorAmbiguousOverload
  */
 class CplTypeError extends ErrorCode {
 	static readonly #CODE = 2300;
 
 	protected static get CODES(): ReadonlyMap<ConstructorType<CplTypeError>, number> {
 		return new Map<ConstructorType<CplTypeError>, number>([
-			[TypeErrorInvalidOperation, 1],
-			[TypeErrorNotNarrow,        2],
-			[TypeErrorNotAssignable,    3],
-			[TypeErrorNoEntry,          4],
-			[TypeErrorNotCallable,      5],
-			[TypeErrorArgCount,         6],
+			[TypeErrorInvalidOperation,  1],
+			[TypeErrorNotNarrow,         2],
+			[TypeErrorNotAssignable,     3],
+			[TypeErrorNoEntry,           4],
+			[TypeErrorNotCallable,       5],
+			[TypeErrorArgCount,          6],
+			[TypeErrorAmbiguousOverload, 7],
 		]);
 	}
 

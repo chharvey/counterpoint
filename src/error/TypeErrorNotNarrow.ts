@@ -4,8 +4,8 @@ import {TypeError as CplTypeError} from './TypeError.ts';
 
 
 /**
- * A TypeErrorNotNarrow is thrown when one type is expected to narrow another type, but does not.
- * A general error used for different cases, such as compound types’s components, generic constraints, or throwing non-Exceptions.
+ * A TypeErrorNotNarrow is raised when one type is expected to narrow another type, but does not.
+ * A general error used for different cases, such as compound types’s components, generic constraints, or panicking with non-Exceptions.
  * @example
  * {"a" -> 1, "b" -> 2}.[1]; % TypeErrorNotNarrow: Type `1` is not a subtype of `"a" | "b"`.
  */

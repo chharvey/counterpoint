@@ -2,18 +2,17 @@ import * as assert from 'node:assert';
 import * as test from 'node:test';
 import * as xjs from 'extrajs';
 import {
-	assert_instanceof,
-	Validator,
-	AST,
-	type SymbolSchema,
-	SymbolSchemaType,
-	SymbolSchemaVar,
 	VALUE,
 	TYPE,
-	OP,
+	CORE_LIB_NAMES,
+	Validator,
+	AST,
+	SymbolSchemaType,
+	SymbolSchemaVar,
 	ReferenceErrorUndeclared,
 	ReferenceErrorDeadZone,
 	ReferenceErrorKind,
+	AssignmentErrorDuplicateDeclaration,
 	AssignmentErrorDuplicateKey,
 	TypeErrorInvalidOperation,
 	TypeErrorNotAssignable,
@@ -32,8 +31,52 @@ import {
 
 
 test.suite('Expression', () => {
+	const VISITOR = new AST.ExprVisitorType();
+
+
+	test.suite('#varCheck', () => {
+		test.suite('ExpressionFunction (and DeclarationFunction)', () => {
+			test.test('disallows duplicate param keys.', () => {
+				const {stmts} = setupScript(`{
+					\\(a= b: int, a= c: float): void { return; };
+					\\($a: int, a= c: float): void { return; };
+				}`, {varCheck: false});
+				const fn0 = (stmts[0] as AST.STMT.StatementExpression).expr as AST.EXPR.Function;
+				const fn1 = (stmts[1] as AST.STMT.StatementExpression).expr as AST.EXPR.Function;
+				assert.throws(() => fn0.varCheck(), AssignmentErrorDuplicateKey);
+				return assert.throws(() => fn1.varCheck(), AssignmentErrorDuplicateKey);
+			});
+			test.test('throws when capture is not declared.', () => {
+				const {stmts} = setupScript(`{
+					\\() with (x): void { return; };
+				}`, {varCheck: false});
+				return assert.throws(() => stmts[0].varCheck(), ReferenceErrorUndeclared);
+			});
+			test.test('disallows duplicate captures.', () => {
+				const {stmts} = setupScript(`{
+					val x: int = 42;
+					\\() with (x, x): void { return; };
+				}`, {varCheck: false});
+				stmts[0].varCheck();
+				const fn0 = (stmts[1] as AST.STMT.StatementExpression).expr as AST.EXPR.Function;
+				return assert.throws(() => fn0.varCheck(), AssignmentErrorDuplicateDeclaration);
+			});
+		});
+	});
+
+
+
 	test.suite('#type', () => {
 		test.suite('Variable', () => {
+			test.test('all core lib class references are of type `Class`.', () => {
+				const {stmts} = setupScript(`{
+					${CORE_LIB_NAMES.join(';')};
+				}`, {build: false}); // assert does not throw
+				assertEqualTypes(
+					stmts.map((stmt) => VISITOR.visit((stmt as AST.STMT.StatementExpression).expr!)),
+					repeat(TYPE.CLASS, CORE_LIB_NAMES.length),
+				);
+			});
 			test.test('wraps in `Maybe` when accessed variable is uninitialized.', () => {
 				const {stmts} = setupScript(`{
 					val mut w:  int = 42;
@@ -41,10 +84,10 @@ test.suite('Expression', () => {
 					w;
 					x;
 				}`, {build: false});
-				assert.ok( (stmts[0] as AST.STMT.DeclarationVariable).assigned);
+				assert.ok( (stmts[0] as AST.STMT.DeclarationVariable).assigned); // eslint-disable-line @stylistic/list-style
 				assert.ok(!(stmts[1] as AST.STMT.DeclarationVariable).assigned);
 				return assertEqualTypes(
-					stmts.slice(2).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()),
+					stmts.slice(2).map((stmt) => VISITOR.visit((stmt as AST.STMT.StatementExpression).expr!)),
 					[
 						TYPE.INT,
 						new TYPE.Maybe(TYPE.INT),
@@ -56,24 +99,24 @@ test.suite('Expression', () => {
 
 		test.suite('Claim', () => {
 			test.test('returns the type value of the claimed type.', () => {
-				assert.ok(AST.EXPR.Claim.fromSource('3 as <int | null>').type().equals(TYPE.INT.union(TYPE.NULL)));
+				assert.ok(VISITOR.visit(AST.EXPR.Claim.fromSource('3 as <int | null>')).equals(TYPE.INT.union(TYPE.NULL)));
 			});
 			test.test('allows claiming to a type alias.', () => {
 				const claim: AST.EXPR.Claim = AST.EXPR.Claim.fromSource('"Alice" as <Name>');
-				const id: bigint = Validator.cookTokenIdentifier('Name');
+				const id: bigint = Validator.keyId('Name');
 				claim.validator.addSymbol(new SymbolSchemaType(id, claim.claimed_type));
 				(claim.validator.getSymbol(id) as SymbolSchemaType).typevalue = TYPE.STR;
-				return assert.strictEqual(claim.type(), TYPE.STR);
+				return assert.strictEqual(VISITOR.visit(claim), TYPE.STR);
 			});
 			test.test('allows claiming to `nothing` even though types are disjoint.', () => {
-				assert.ok(AST.EXPR.Claim.fromSource('42 as <nothing>').type().isBottomType);
+				assert.ok(VISITOR.visit(AST.EXPR.Claim.fromSource('42 as <nothing>')).isBottomType);
 			});
 			test.test('allows claiming a `nothing` expression even though types are disjoint.', () => {
 				const claim: AST.EXPR.Claim = AST.EXPR.Claim.fromSource('n as <int>');
-				const id: bigint = Validator.cookTokenIdentifier('n');
+				const id: bigint = Validator.keyId('n');
 				claim.validator.addSymbol(new SymbolSchemaVar(id, claim.operand, false, false));
 				(claim.validator.getSymbol(id) as SymbolSchemaVar).type = TYPE.NOTHING;
-				return assert.strictEqual(claim.type(), TYPE.INT);
+				return assert.strictEqual(VISITOR.visit(claim), TYPE.INT);
 			});
 			test.test('throws when the operand type and claimed type are disjoint (and neither is `nothing`).', () => {
 				xjs.Array.forEachAggregated(extract_lines`
@@ -81,7 +124,7 @@ test.suite('Expression', () => {
 					"three" as <int>
 					3       as <float>
 					3.0     as <int>
-				`, (src) => assert.throws(() => AST.EXPR.Claim.fromSource(src).type(), TypeErrorNotAssignable));
+				`, (src) => assert.throws(() => VISITOR.visit(AST.EXPR.Claim.fromSource(src)), TypeErrorNotAssignable));
 			});
 			test.test('allows disjoint types when claiming to top type first.', () => {
 				setupScript(`{
@@ -108,7 +151,7 @@ test.suite('Expression', () => {
 					setupScript(`{
 						switch 42 default true;
 						switch 42 as <nothing> default 43;
-					}`, {build: false}).stmts.map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()),
+					}`, {build: false}).stmts.map((stmt) => VISITOR.visit((stmt as AST.STMT.StatementExpression).expr!)),
 					[
 						TYPE.TRUE,
 						TYPE.NOTHING,
@@ -123,7 +166,7 @@ test.suite('Expression', () => {
 							case 1.1 -> 10
 							case 2.2 -> 20
 							default 43;
-					}`, {build: false}).stmts.map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()),
+					}`, {build: false}).stmts.map((stmt) => VISITOR.visit((stmt as AST.STMT.StatementExpression).expr!)),
 					[
 						typeUnit(4.3),
 						TYPE.Union.all(typeUnit(10n), typeUnit(20n), typeUnit(43n)),
@@ -131,281 +174,35 @@ test.suite('Expression', () => {
 				);
 			});
 			test.test('throws when at least one antecedent is an error.', () => {
-				const {stmts} = setupScript(`{
+				const {stmts, visitors} = setupScript(`{
 					switch 42
 						case 1.1       | 2.2 -> 15
 						case 33 / 10.0 | 4.4 -> 25
 						default 43;
 				}`, {typeCheck: false});
-				assert.throws(() => (stmts[0] as AST.STMT.StatementExpression).expr!.typeCheck(), TypeErrorInvalidOperation);
+				assert.throws(() => visitors.typeCheck.visit((stmts[0] as AST.STMT.StatementExpression).expr!), TypeErrorInvalidOperation);
 			});
 		});
-	});
 
 
-
-	test.suite('#build', () => {
-		test.test('Constant returns an OP.Const.', () => {
-			const value: AST.EXPR.Constant = AST.EXPR.Constant.fromSource('42');
-			return assert.deepStrictEqual(value.build(), new OP.Const(value.interpreterValue));
-		});
-		test.test('Variable returns an OP.Get.', () => {
-			const {stmts} = setupScript(`{
-				val mut x: int = 42;
-				x;
-			}`, {codegen: false});
-			const expr = (stmts[1] as AST.STMT.StatementExpression).expr as AST.EXPR.Variable;
-			const symbol: SymbolSchema | undefined = expr.validator.getSymbol(expr.id);
-			assert_instanceof(symbol, SymbolSchemaVar);
-			return assert.deepStrictEqual(expr.build(), new OP.Get(symbol, typeUnit(42n)));
-		});
-		test.test('Template returns an OP.Template.', () => {
-			assert.strictEqual(setupScript(`{
-					val user: (name: str) = (name= "Alan");
-					"""Hello, {{user.name}}, you have {{2 * 3}} new {{"messages"}}.""";
-			}`, {codegen: false}).builder.print(), xjs.String.dedent`
-				"block-0":
-					(DECL <record> user (RECORD.NEW @name->(STR.CONST "Alan")))
-					(DECL <str> $0 (RECORD.GET @name (GET user)))
-					(DECL <int> $1 (INT.MUL (INT.CONST 2) (INT.CONST 3)))
-					(DECL <str> $2 (STR.FROM (GET $1)))
-					(DROP (STR.TEMPLATE (STR.CONST "Hello, ") (GET $0) (STR.CONST ", you have ") (GET $2) (STR.CONST " new ") (STR.CONST "messages") (STR.CONST ".")))
-					(ENDPROGRAM)
-			`.trim());
-		});
-		test.test('three-address code format.', () => {
-			assert.strictEqual(setupScript(`{
-				"""hello {{"""great {{42}} big"""}} world""";
-			}`, {codegen: false}).builder.print(), xjs.String.dedent`
-				"block-0":
-					(DECL <str> $0 (STR.FROM (INT.CONST 42)))
-					(DECL <str> $1 (STR.TEMPLATE (STR.CONST "great ") (GET $0) (STR.CONST " big")))
-					(DROP (STR.TEMPLATE (STR.CONST "hello ") (GET $1) (STR.CONST " world")))
-					(ENDPROGRAM)
-			`.trim());
-		});
-		test.test('Tuple returns an OP.CollectionLinearNew.', () => {
-			assert.strictEqual(setupScript(`{
-				val mut x: bool  = false;
-				val mut y: int   = 5;
-				val mut z: float = 0.2;
-				(x, y + 2, 3.0 * z - 1.0);
-			}`, {codegen: false}).builder.print(), xjs.String.dedent`
-				"block-0":
-					(DECL <bool> x (BOOL.CONST false))
-					(DECL <int> y (INT.CONST 5))
-					(DECL <float> z (FLOAT.CONST 0.2))
-					(DECL <int> $0 (INT.ADD (GET y) (INT.CONST 2)))
-					(DECL <float> $1 (FLOAT.MUL (FLOAT.CONST 3.0) (GET z)))
-					(DECL <float> $2 (FLOAT.SUB (GET $1) (FLOAT.CONST 1.0)))
-					(DROP (TUPLE.NEW (GET x) (GET $0) (GET $2)))
-					(ENDPROGRAM)
-			`.trim());
-		});
-		test.test('Record returns an OP.RecordNew.', () => {
-			assert.strictEqual(setupScript(`{
-				val x: bool  = false;
-				val y: int   = 5;
-				val z: float = 0.2;
-				(a= x, b= y + 2, c= 3.0 * z - 1.0);
-			}`, {codegen: false}).builder.print(), xjs.String.dedent`
-				"block-0":
-					(DECL <bool> x (BOOL.CONST false))
-					(DECL <int> y (INT.CONST 5))
-					(DECL <float> z (FLOAT.CONST 0.2))
-					(DECL <int> $0 (INT.ADD (GET y) (INT.CONST 2)))
-					(DECL <float> $1 (FLOAT.MUL (FLOAT.CONST 3.0) (GET z)))
-					(DECL <float> $2 (FLOAT.SUB (GET $1) (FLOAT.CONST 1.0)))
-					(DROP (RECORD.NEW @a->(GET x) @b->(GET $0) @c->(GET $2)))
-					(ENDPROGRAM)
-			`.trim());
-		});
-		test.test('List returns an OP.CollectionLinearNew.', () => {
-			assert.strictEqual(setupScript(`{
-				[false, 5 + 2, 3.0 * 0.2 - 1.0];
-			}`, {codegen: false}).builder.print(), xjs.String.dedent`
-				"block-0":
-					(DECL <int> $0 (INT.ADD (INT.CONST 5) (INT.CONST 2)))
-					(DECL <float> $1 (FLOAT.MUL (FLOAT.CONST 3.0) (FLOAT.CONST 0.2)))
-					(DECL <float> $2 (FLOAT.SUB (GET $1) (FLOAT.CONST 1.0)))
-					(DROP (LIST.NEW (BOOL.CONST false) (GET $0) (GET $2)))
-					(ENDPROGRAM)
-			`.trim());
-		});
-		test.test('Dict returns an OP.DictNew.', () => {
-			assert.strictEqual(setupScript(`{
-				[a= false, b= 5 + 2, c= 3.0 * 0.2 - 1.0];
-			}`, {codegen: false}).builder.print(), xjs.String.dedent`
-				"block-0":
-					(DECL <int> $0 (INT.ADD (INT.CONST 5) (INT.CONST 2)))
-					(DECL <float> $1 (FLOAT.MUL (FLOAT.CONST 3.0) (FLOAT.CONST 0.2)))
-					(DECL <float> $2 (FLOAT.SUB (GET $1) (FLOAT.CONST 1.0)))
-					(DROP (DICT.NEW @a->(BOOL.CONST false) @b->(GET $0) @c->(GET $2)))
-					(ENDPROGRAM)
-			`.trim());
-		});
-		test.test('Set returns an OP.CollectionLinearNew.', () => {
-			assert.strictEqual(setupScript(`{
-				{false, 5 + 2, 3.0 * 0.2 - 1.0};
-			}`, {codegen: false}).builder.print(), xjs.String.dedent`
-				"block-0":
-					(DECL <int> $0 (INT.ADD (INT.CONST 5) (INT.CONST 2)))
-					(DECL <float> $1 (FLOAT.MUL (FLOAT.CONST 3.0) (FLOAT.CONST 0.2)))
-					(DECL <float> $2 (FLOAT.SUB (GET $1) (FLOAT.CONST 1.0)))
-					(DROP (SET.NEW (BOOL.CONST false) (GET $0) (GET $2)))
-					(ENDPROGRAM)
-			`.trim());
-		});
-		test.suite('Map', () => {
-			test.test('returns an OP.MapNew.', () => {
-				assert.strictEqual(setupScript(`{
-					{"a" -> false, "b" -> 5 + 2, "c" -> 3.0 * 0.2 - 1.0};
-				}`, {codegen: false}).builder.print(), xjs.String.dedent`
-					"block-0":
-						(DECL <int> $0 (INT.ADD (INT.CONST 5) (INT.CONST 2)))
-						(DECL <float> $1 (FLOAT.MUL (FLOAT.CONST 3.0) (FLOAT.CONST 0.2)))
-						(DECL <float> $2 (FLOAT.SUB (GET $1) (FLOAT.CONST 1.0)))
-						(DROP (MAP.NEW (STR.CONST "a")->(BOOL.CONST false) (STR.CONST "b")->(GET $0) (STR.CONST "c")->(GET $2)))
-						(ENDPROGRAM)
-				`.trim());
-			});
-			test.test('evaluates antecedents and consequents interchangeably in source order.', () => {
-				assert.strictEqual(setupScript(`{
-					{[10] -> 10 + 1, [12] -> 5 * 2 + 3, [7 * 2] -> 15};
-				}`, {codegen: false}).builder.print(), xjs.String.dedent`
-					"block-0":
-						(DECL <List> $0 (LIST.NEW (INT.CONST 10)))
-						(DECL <int> $1 (INT.ADD (INT.CONST 10) (INT.CONST 1)))
-						(DECL <List> $2 (LIST.NEW (INT.CONST 12)))
-						(DECL <int> $3 (INT.MUL (INT.CONST 5) (INT.CONST 2)))
-						(DECL <int> $4 (INT.ADD (GET $3) (INT.CONST 3)))
-						(DECL <int> $5 (INT.MUL (INT.CONST 7) (INT.CONST 2)))
-						(DECL <List> $6 (LIST.NEW (GET $5)))
-						(DROP (MAP.NEW (GET $0)->(GET $1) (GET $2)->(GET $4) (GET $6)->(INT.CONST 15)))
-						(ENDPROGRAM)
-				`.trim());
-			});
-		});
-		test.test('ExpressionBlock returns the last expression-statement’s expression.', () => {
-			assert.strictEqual(setupScript(`{
-				val mut x: int = 42;
-				val mut y: int = {
-					set x = x + 2;
-					x / 2;
-				};
-				set y = {
-					y;
-					set y = y + x;
-					y * 2;
-				} + y;
-			}`, {codegen: false}).builder.print(), xjs.String.dedent`
-				"block-0":
-					(DECL <int> x (INT.CONST 42))
-					(SET x (INT.ADD (GET x) (INT.CONST 2)))
-					(DECL <int> y (INT.DIV (GET x) (INT.CONST 2)))
-					(DROP (GET y))
-					(SET y (INT.ADD (GET y) (GET x)))
-					(DECL <int> $0 (INT.MUL (GET y) (INT.CONST 2)))
-					(SET y (INT.ADD (GET $0) (GET y)))
-					(ENDPROGRAM)
-			`.trim());
-		});
-		test.suite('Claim', () => {
-			test.test('returns the operand.', () => {
-				const {stmts, builder} = setupScript(`{
-					42 as <int>;
-				}`, {codegen: false});
-				const expr = (stmts[0] as AST.STMT.StatementExpression).expr as AST.EXPR.Claim;
-				return assert.deepStrictEqual(expr.build(builder), expr.operand.build(builder));
-			});
-			test.test('repeated calls are idempotent.', () => {
-				const {stmts, builder} = setupScript(`{
-					(42 + 42 + 42) as <int | float>;
+		test.suite('ExpressionFunction', () => {
+			test.test('returns a function type.', () => {
+				const {stmts} = setupScript(`{
+					\\(a: int, mut b: float | null, mut $c: bool, delta= d: nat): void { return; };
+					% TODO: test optional parameters (steal from 'test/validator/Type.test.ts')
+					\\(): int | float => 4.2;
 				}`, {build: false});
-				assert.strictEqual(builder.instructions.length, 0);
-				const expr = (stmts[0] as AST.STMT.StatementExpression).expr as AST.EXPR.Claim;
-				expr.operand.build(builder);
-				assert.strictEqual(builder.instructions.length, 1);
-				expr.build(builder);
-				assert.strictEqual(builder.instructions.length, 1);
+				return assertEqualTypes(stmts.map((stmt) => VISITOR.visit((stmt as AST.STMT.StatementExpression).expr!)), [
+					new TYPE.Function(TYPE.Tuple.fromTypes([
+						TYPE.INT,
+						TYPE.FLOAT.union(TYPE.NULL),
+					]), TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>([
+						[Validator.keyId('c'),     TYPE.BOOL],
+						[Validator.keyId('delta'), TYPE.NAT],
+					]))),
+					new TYPE.Function(undefined, undefined, TYPE.INT.union(TYPE.FLOAT)),
+				]);
 			});
-		});
-		test.test('Switch', () => {
-			assert.strictEqual(setupScript(`{
-				switch 42 default true;
-			}`, {codegen: false}).builder.print(), xjs.String.dedent`
-				"block-0":
-					(DROP (INT.CONST 42))
-					(DROP (BOOL.CONST true))
-					(ENDPROGRAM)
-			`.trim());
-			assert.strictEqual(setupScript(`{
-				switch 21 + 21
-					case 42 -> false
-					default true;
-			}`, {codegen: false}).builder.print(), xjs.String.dedent`
-				"block-0":
-					(DECL <int> $0 (INT.ADD (INT.CONST 21) (INT.CONST 21)))
-					(DECL <bool> $1)
-					(GOTO.IF (ID (GET $0) (INT.CONST 42)) "block-1" "block-2")
-				"block-1":
-					(SET $1 (BOOL.CONST false))
-					(GOTO "block-3")
-				"block-2":
-					(SET $1 (BOOL.CONST true))
-					(GOTO "block-3")
-				"block-3":
-					(DROP (GET $1))
-					(ENDPROGRAM)
-			`.trim());
-			assert.strictEqual(setupScript(`{
-				switch 4.2
-					case 1.1       -> 10
-					case 2.0 + 0.2 -> 20
-					case 3.3 | 4.4 -> 10 * 3
-					default 40;
-			}`, {codegen: false}).builder.print(), xjs.String.dedent`
-				"block-0":
-					(DECL <int> $0)
-					(GOTO.IF (ID (FLOAT.CONST 4.2) (FLOAT.CONST 1.1)) "block-1" "block-2")
-				"block-1":
-					(SET $0 (INT.CONST 10))
-					(GOTO "block-3")
-				"block-2":
-					(DECL <int> $1)
-					(DECL <float> $2 (FLOAT.ADD (FLOAT.CONST 2.0) (FLOAT.CONST 0.2)))
-					(GOTO.IF (ID (FLOAT.CONST 4.2) (GET $2)) "block-4" "block-5")
-				"block-4":
-					(SET $1 (INT.CONST 20))
-					(GOTO "block-6")
-				"block-5":
-					(DECL <int> $3)
-					(GOTO.IF (ID (FLOAT.CONST 4.2) (FLOAT.CONST 3.3)) "block-7" "block-8")
-				"block-7":
-					(SET $3 (INT.MUL (INT.CONST 10) (INT.CONST 3)))
-					(GOTO "block-9")
-				"block-8":
-					(DECL <int> $4)
-					(GOTO.IF (ID (FLOAT.CONST 4.2) (FLOAT.CONST 4.4)) "block-10" "block-11")
-				"block-10":
-					(SET $4 (INT.MUL (INT.CONST 10) (INT.CONST 3)))
-					(GOTO "block-12")
-				"block-11":
-					(SET $4 (INT.CONST 40))
-					(GOTO "block-12")
-				"block-12":
-					(SET $3 (GET $4))
-					(GOTO "block-9")
-				"block-9":
-					(SET $1 (GET $3))
-					(GOTO "block-6")
-				"block-6":
-					(SET $0 (GET $1))
-					(GOTO "block-3")
-				"block-3":
-					(DROP (GET $0))
-					(ENDPROGRAM)
-			`.trim());
 		});
 	});
 
@@ -431,14 +228,14 @@ test.suite('Expression', () => {
 					"42😀"  "42\\u{1f600}"
 				`).map((src) => AST.EXPR.Constant.fromSource(src));
 				return assertEqualTypes(
-					constants.map((c) => c.type()),
+					constants.map((c) => VISITOR.visit(c)),
 					constants.map((c) => new TYPE.Unit(c.interpreterValue)),
 				);
 			});
 		});
 
 
-		/* eslint-disable @stylistic/array-element-newline */
+		/* eslint-disable @stylistic/list-style */
 		test.suite('#interpreterValue', () => {
 			test.test('computes null, boolean, and symbol values.', () => {
 				assert.deepStrictEqual(extract_tokens(`
@@ -451,7 +248,7 @@ test.suite('Expression', () => {
 					new VALUE.Symbol(0x52n, 'then'),
 					new VALUE.Symbol(0x46n, 'str'),
 					new VALUE.Symbol(0x49n, 'false'),
-					new VALUE.Symbol(Validator.cookTokenIdentifier('foobar'), 'foobar'),
+					new VALUE.Symbol(Validator.keyId('foobar'), 'foobar'),
 				]);
 			});
 			test.test('computes int values.', () => {
@@ -490,13 +287,18 @@ test.suite('Expression', () => {
 				);
 			});
 		});
-		/* eslint-enable @stylistic/array-element-newline */
+		/* eslint-enable @stylistic/list-style */
 	});
 
 
 
 	test.suite('Variable', () => {
 		test.suite('#varCheck', () => {
+			test.test('allows core lib class references.', () => {
+				setupScript(`{
+					${CORE_LIB_NAMES.join(';')};
+				}`, {typeCheck: false}); // assert does not throw
+			});
 			test.test('throws if the validator does not contain a record for the identifier.', () => {
 				setupScript(`{
 					val mut i: int = 42;
@@ -562,7 +364,7 @@ test.suite('Expression', () => {
 			test.test('always returns `String`.', () => {
 				const templates: readonly AST.EXPR.Template[] = initTemplates();
 				assertEqualTypes(
-					templates.map((t) => t.type()),
+					templates.map((t) => VISITOR.visit(t)),
 					repeat(TYPE.STR, templates.length),
 				);
 			});
@@ -585,18 +387,18 @@ test.suite('Expression', () => {
 					assert.partialDeepStrictEqual(
 						goal.block!.validator.getAllSymbols(),
 						new Map([
-							[Validator.cookTokenIdentifier('T'), {source: 'T'}],
-							[Validator.cookTokenIdentifier('U'), {source: 'U'}],
-							[Validator.cookTokenIdentifier('f'), {source: 'f'}],
+							[Validator.keyId('T'), {source: 'T'}],
+							[Validator.keyId('U'), {source: 'U'}],
+							[Validator.keyId('f'), {source: 'f'}],
 						]),
 					);
 					return assertEqualTypes(
 						(stmts[1] as AST.STMT.DeclarationType).assigned.eval(),
 						TYPE.Record.fromTypes(new Map([
-							[Validator.cookTokenIdentifier('a'), TYPE.BOOL],
-							[Validator.cookTokenIdentifier('b'), TYPE.Record.fromTypes(new Map([[Validator.cookTokenIdentifier('z'), TYPE.INT]]))],
-							[Validator.cookTokenIdentifier('c'), TYPE.STR],
-							[Validator.cookTokenIdentifier('d'), TYPE.Record.fromTypes(new Map([[Validator.cookTokenIdentifier('y'), TYPE.FLOAT]]))],
+							[Validator.keyId('a'), TYPE.BOOL],
+							[Validator.keyId('b'), TYPE.Record.fromTypes(new Map([[Validator.keyId('z'), TYPE.INT]]))],
+							[Validator.keyId('c'), TYPE.STR],
+							[Validator.keyId('d'), TYPE.Record.fromTypes(new Map([[Validator.keyId('y'), TYPE.FLOAT]]))],
 						])),
 					);
 				});
@@ -628,7 +430,7 @@ test.suite('Expression', () => {
 							cons:   AggregateError,
 							errors: dupes.map((k) => ({
 								cons:    AssignmentErrorDuplicateKey,
-								message: `Duplicate record/dict key \`${k}\`.`,
+								message: `Duplicate record/dict/parameter key \`${k}\`.`,
 							})),
 						});
 						return true;
@@ -659,7 +461,7 @@ test.suite('Expression', () => {
 					`),
 				];
 				return assertEqualTypes(
-					collections.map((node) => node.type()),
+					collections.map((node) => VISITOR.visit(node)),
 					[
 						TYPE.Tuple.fromTypes(expected),
 						TYPE.Record.fromTypes(new Map(collections[1].children.map((c, i) => [
@@ -689,7 +491,7 @@ test.suite('Expression', () => {
 	test.suite('ExpressionBlock', () => {
 		test.suite('#type', () => {
 			test.test('throws when the last statement is not an expression-statement.', () => {
-				const {goal} = setupScript(`{
+				const {goal, visitors} = setupScript(`{
 					val mut x: int = 42;
 					val mut y: int | null = {
 						x;
@@ -699,10 +501,10 @@ test.suite('Expression', () => {
 					x;
 					y;
 				}`, {typeCheck: false});
-				assert.throws(() => goal.typeCheck(), /The last statement of a block-expression must be an expression-statement/);
+				assert.throws(() => visitors.typeCheck.visit(goal), /The last statement of a block-expression must be an expression-statement/);
 			});
 			test.test('throws when the determinant is empty.', () => {
-				const {goal} = setupScript(`{
+				const {goal, visitors} = setupScript(`{
 					val mut x: int = 42;
 					val mut y: int | null = {
 						x;
@@ -712,7 +514,7 @@ test.suite('Expression', () => {
 					x;
 					y;
 				}`, {typeCheck: false});
-				assert.throws(() => goal.typeCheck(), /The determining expression-statement of a block-expression must be nonempty/);
+				assert.throws(() => visitors.typeCheck.visit(goal), /The determining expression-statement of a block-expression must be nonempty/);
 			});
 			test.test('returns the type of the determinant.', () => {
 				const {stmts} = setupScript(`{
@@ -725,7 +527,7 @@ test.suite('Expression', () => {
 					x;
 					y;
 				}`, {build: false});
-				assertEqualTypes((stmts[1] as AST.STMT.DeclarationVariable).assigned!.type(), TYPE.INT);
+				assertEqualTypes(VISITOR.visit((stmts[1] as AST.STMT.DeclarationVariable).assigned!), TYPE.INT);
 			});
 		});
 	});

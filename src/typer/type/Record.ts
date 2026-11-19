@@ -1,6 +1,7 @@
 import * as assert from 'node:assert';
 import {
 	TypeErrorNoEntry,
+	Validator,
 	type AST,
 } from '../../index.ts';
 import type {EntryType} from '../utils-public.ts';
@@ -51,7 +52,7 @@ class TypeRecord extends ValueType {
 	}
 
 	public override toString(): string {
-		return `(${[...this.typeargs].map(([key, value]) => `${key}${value.optional ? '?:' : ':'} ${value.type}`).join(', ')})`;
+		return `(${[...this.typeargs].map(([key, value]) => `${Validator.unhashIdentifierId(key) || key}${value.optional ? '?:' : ':'} ${value.type}`).join(', ')})`;
 	}
 
 	@instanceOf(() => VALUE.Record)
@@ -68,12 +69,10 @@ class TypeRecord extends ValueType {
 			this.minCount >= (t as TypeRecord).minCount &&
 			[...(t as TypeRecord).typeargs].every(([id, thattype]) => {
 				const thistype: EntryType | undefined = this.typeargs.get(id);
-				if (!thattype.optional) {
-					/* NOTE: We *cannot* assert `thistype` exists and is not optional since properties are not ordered.
-						We can however make the assertion in tuple types because of item ordering. */
-					if (thistype?.optional !== false) {
-						return false;
-					}
+				/* NOTE: We *cannot* assert `thistype` exists and is not optional since properties are not ordered.
+					We can however make the assertion in tuple types because of item ordering. */
+				if (!thattype.optional && thistype?.optional !== false) {
+					return false;
 				}
 				return thistype?.type.isSubtypeOf(thattype.type) ?? true; // Covariance for records: `A <: B --> Record.<A> <: Record.<B>`.
 			})
@@ -81,7 +80,7 @@ class TypeRecord extends ValueType {
 	}
 
 	public get(key: bigint, accessor: AST.Key): EntryType {
-		return this.isKeyCanonical(key)
+		return this.typeargs.has(key)
 			? this.typeargs.get(key)!
 			: assert.fail(new TypeErrorNoEntry('key', this, accessor));
 	}
@@ -97,10 +96,6 @@ class TypeRecord extends ValueType {
 
 	public valueTypes(): Type {
 		return Union.all(...[...this.typeargs.values()].map((t) => t.type));
-	}
-
-	public isKeyCanonical(key: bigint): boolean {
-		return this.typeargs.has(key);
 	}
 }
 export {TypeRecord as Record};

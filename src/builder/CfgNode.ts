@@ -35,8 +35,8 @@ export class CfgNode {
 		return [
 			`"${this.label}":`,
 			...this.#instructions.map((instr) => instr.toString()),
-			...(this.#terminator ? [this.#terminator.toString()] : []),
-		].join('\n\t');
+			this.#terminator?.toString() ?? '',
+		].filter((s) => !!s).join('\n\t');
 	}
 
 	public pushInstruction(instr: OP.Instruction): void {

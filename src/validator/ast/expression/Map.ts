@@ -1,13 +1,8 @@
 import * as xjs from 'extrajs';
-import {
-	type Builder,
-	OP,
-	TypeErrorNotAssignable,
-} from '../../../index.ts';
+import {TypeErrorNotAssignable} from '../../../index.ts';
 import {
 	type NonemptyArray,
 	assert_instanceof,
-	memoizeMethod,
 } from '../../../lib/index.ts';
 import {
 	type CplConfig,
@@ -15,6 +10,7 @@ import {
 } from '../../../core/index.ts';
 import {TYPE} from '../../../typer/index.ts';
 import type {SyntaxNodeFamily} from '../../utils-private.ts';
+import type {ExprVisitorType} from '../index.ts';
 import {typecheck_assign} from '../AstNode.ts';
 import type {Case} from '../Case.ts';
 import {Expression} from './Expression.ts';
@@ -33,39 +29,19 @@ class ExpressionMap extends Collection {
 	}
 
 	public constructor(
-		start_node: SyntaxNodeFamily<'expression_map_literal', ['break']>,
+		start_node: SyntaxNodeFamily<'expression_map_literal', ['break', 'return']>,
 		public override readonly children: Readonly<NonemptyArray<Case>>,
 	) {
 		super(start_node, children);
 	}
 
-	@memoizeMethod
-	public override type(): TYPE.Type {
-		if (this.children.some((c) => c.antecedents[0].type().isBottomType || c.consequent.type().isBottomType)) {
-			return TYPE.NOTHING;
-		}
-		return new TYPE.Map(
-			TYPE.Union.all(...this.children.map((c) => c.antecedents[0].type())),
-			TYPE.Union.all(...this.children.map((c) => c.consequent.type())),
-			true,
-		);
-	}
-
-	@memoizeMethod
-	public override build(builder: Builder): OP.MapNew {
-		return new OP.MapNew(new Map(this.children.map((c) => [
-			c.antecedents[0].build(builder).asTac(builder),
-			c.consequent.build(builder).asTac(builder),
-		])), this.type());
-	}
-
 	@assignToDeco
-	public override assignTo(assignee: TYPE.Type): void {
+	public override assignTo(visitor: ExprVisitorType, assignee: TYPE.Type): void {
 		if (assignee instanceof TYPE.Map) {
 			// better error reporting to check entry-by-entry instead of checking `this.type().typearg_{ant,con}`
 			return xjs.Array.forEachAggregated(this.children, (case_) => (
 				xjs.Array.forEachAggregated([case_.antecedents[0], case_.consequent], (expr, i) => (
-					typecheck_assign(expr, [assignee.typearg_ant, assignee.typearg_con][i], expr)
+					typecheck_assign(visitor, expr, [assignee.typearg_ant, assignee.typearg_con][i], expr)
 				))
 			));
 		}

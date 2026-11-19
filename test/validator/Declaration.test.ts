@@ -8,10 +8,12 @@ import {
 	type SymbolSchema,
 	SymbolSchemaType,
 	SymbolSchemaVar,
+	SymbolSchemaFunc,
 	TYPE,
 	AssignmentErrorDuplicateDeclaration,
 	AssignmentErrorMissingType,
 	TypeErrorNotAssignable,
+	TypeErrorAmbiguousOverload,
 } from '../../src/index.ts';
 import {
 	extract_lines,
@@ -19,7 +21,6 @@ import {
 	assert_shallowStrictEqual,
 	assertAssignable,
 	assertEqualTypes,
-	op_maybe_string,
 	typeUnit,
 	setupScript,
 } from '../utils.ts';
@@ -33,7 +34,7 @@ test.suite('Declaration', () => {
 				const goal: AST.Goal = AST.Goal.fromSource(`{
 					type T = int;
 				}`);
-				const id: bigint = Validator.cookTokenIdentifier('T');
+				const id: bigint = Validator.keyId('T');
 				assert.ok(!goal.block!.validator.hasSymbol(id));
 				goal.varCheck();
 				assert.ok(goal.block!.validator.hasSymbol(id));
@@ -95,9 +96,9 @@ test.suite('Declaration', () => {
 					val mut b:  int = 42;
 					val mut c?: int;
 				}`);
-				const id_a: bigint = Validator.cookTokenIdentifier('a');
-				const id_b: bigint = Validator.cookTokenIdentifier('b');
-				const id_c: bigint = Validator.cookTokenIdentifier('c');
+				const id_a: bigint = Validator.keyId('a');
+				const id_b: bigint = Validator.keyId('b');
+				const id_c: bigint = Validator.keyId('c');
 				assert.ok(!goal.block!.validator.hasSymbol(id_a));
 				assert.ok(!goal.block!.validator.hasSymbol(id_b));
 				assert.ok(!goal.block!.validator.hasSymbol(id_c));
@@ -173,10 +174,72 @@ test.suite('Declaration', () => {
 				}`, {typeCheck: false}); // assert does not throw
 			});
 		});
+
+		test.suite('DeclarationFunction', () => {
+			test.test('allows duplicate blank identifier.', () => {
+				setupScript(`{
+					func _(): void { return; };
+					func _(a: int): void { return; };
+				}`, {typeCheck: false}); // assert does not throw
+			});
+			test.test('hoists function names.', () => {
+				const errmsg = /Only function names should be hoisted/;
+				const {stmts} = setupScript(`{
+					func f(): void { return; }
+					func f(a: int): void { return; }
+					type T = \\(int) => void;
+					func T(a: int): void { return; }
+					val x = \\(): void { return; };
+					func x(a: int): void { return; }
+				}`, {varCheck: false});
+				stmts[0].varCheck();
+				stmts[1].varCheck(); // allows overloads
+				stmts[2].varCheck();
+				assert.throws(() => stmts[3].varCheck(), errmsg);
+				stmts[4].varCheck();
+				return assert.throws(() => stmts[5].varCheck(), errmsg);
+			});
+			test.test('allows self-reference, but not self-shadowing.', () => {
+				setupScript(`{
+					func f(): void {
+						f;
+						return;
+					};
+				}`, {typeCheck: false}); // assert does not throw
+				assert.throws(() => setupScript(`{
+					func f(): void { % no error
+						val f: int = 42; %> AssignmentErrorDuplicateDeclaration
+						return;
+					};
+				}`, {typeCheck: false}), AssignmentErrorDuplicateDeclaration);
+				return assert.throws(() => setupScript(`{
+					func f( % no error
+						f: int, %> AssignmentErrorDuplicateDeclaration
+					): void {
+						return;
+					};
+				}`, {typeCheck: false}), AssignmentErrorDuplicateDeclaration);
+			});
+			test.test('hoists function name.', () => {
+				setupScript(`{
+					f;
+					func f(): void { return; };
+				}`, {typeCheck: false});
+				setupScript(`{
+					func f(): void { g; return; };
+					func g(): void { f; return; };
+				}`, {typeCheck: false});
+			});
+		});
 	});
 
 
 	test.suite('#typeCheck', () => {
+		let node_type_check: AST.AstNodeVisitorTypeCheck;
+		test.before(() => {
+			node_type_check = new AST.AstNodeVisitorTypeCheck();
+		});
+
 		test.suite('DeclarationType', () => {
 			test.test('sets `SymbolSchemaType#typevalue`.', () => {
 				assert.strictEqual(
@@ -196,10 +259,10 @@ test.suite('Declaration', () => {
 						.filter((s) => !!s)
 						.forEach((s) => typeCheckGoal(`{${s}}`, expect_thrown));
 				}
-				const {goal} = setupScript(src, {typeCheck: false});
+				const {goal, visitors} = setupScript(src, {typeCheck: false});
 				return (expect_thrown)
-					? assert.throws(() => goal.typeCheck(), expect_thrown)
-					: goal.typeCheck();
+					? assert.throws(() => visitors.typeCheck.visit(goal), expect_thrown)
+					: visitors.typeCheck.visit(goal);
 			}
 			test.test('checks the assigned expression’s type against the variable assignee’s type.', () => {
 				setupScript(`{
@@ -209,7 +272,7 @@ test.suite('Declaration', () => {
 					val  the_answer:  int | float =  21  *  2;
 				`);
 				var_.varCheck();
-				return var_.typeCheck();
+				return node_type_check.visit(var_);
 			});
 			test.test('passes when assigned is structurally assignable.', () => {
 				xjs.Array.forEachAggregated(extract_lines`
@@ -288,36 +351,37 @@ test.suite('Declaration', () => {
 					], [
 						TYPE.Tuple.fromTypes([
 							typeUnit(42n),
-							TYPE.Record.fromTypes(new Map([[Validator.cookTokenIdentifier('x'), typeUnit('hello')]])),
+							TYPE.Record.fromTypes(new Map([[Validator.keyId('x'), typeUnit('hello')]])),
 							new TYPE.Dict(TYPE.BOOL, true),
 						]),
 						TYPE.Record.fromTypes(new Map([
-							[Validator.cookTokenIdentifier('a'), TYPE.INT],
-							[Validator.cookTokenIdentifier('b'), TYPE.Tuple.fromTypes([TYPE.STR])],
-							[Validator.cookTokenIdentifier('c'), new TYPE.List(TYPE.BOOL, true)],
+							[Validator.keyId('a'), TYPE.INT],
+							[Validator.keyId('b'), TYPE.Tuple.fromTypes([TYPE.STR])],
+							[Validator.keyId('c'), new TYPE.List(TYPE.BOOL, true)],
 						])),
 					]);
 				});
 				test.test('throws when assigned expression is not a primitive literal, string template, constructor call, or inferrable tuple/record literal.', () => {
-					xjs.Array.forEachAggregated(setupScript(`{
+					const {stmts, visitors} = setupScript(`{
 						val operation = 21 * 2;
 						val block_expr = { 42; };
 						val tup_literal = (42, "hello", operation);
 						val rec_literal = (a= 69, b= "world", c= operation);
 						val list_literal = [42, 69];
 						val dict_literal = [a= "hello", b= "world"];
-					}`, {typeCheck: false}).stmts, (stmt) => assert.throws(() => stmt.typeCheck(), AssignmentErrorMissingType));
+					}`, {typeCheck: false});
+					xjs.Array.forEachAggregated(stmts, (stmt) => assert.throws(() => visitors.typeCheck.visit(stmt), AssignmentErrorMissingType));
 				});
 			});
 			test.test('throws when the assigned expression’s type is not compatible with the variable assignee’s type.', () => {
-				assert.throws(() => AST.STMT.DeclarationVariable.fromSource(`
+				assert.throws(() => node_type_check.visit(AST.STMT.DeclarationVariable.fromSource(`
 					val  the_answer:  null =  21  *  2;
-				`).typeCheck(), TypeErrorNotAssignable);
+				`)), TypeErrorNotAssignable);
 			});
 			test.test('throws when assigning int to float.', () => {
-				assert.throws(() => AST.STMT.DeclarationVariable.fromSource(`
+				assert.throws(() => node_type_check.visit(AST.STMT.DeclarationVariable.fromSource(`
 					val x: float = 42;
-				`).typeCheck(), TypeErrorNotAssignable);
+				`)), TypeErrorNotAssignable);
 			});
 			test.test('immutable lists/dicts/sets/maps should be covariant.', () => {
 				typeCheckGoal(extract_lines`
@@ -443,16 +507,11 @@ test.suite('Declaration', () => {
 						);
 						val bob: Employee | Volunteer = ${BOB};
 					}`, (err) => {
-						const id_name:         bigint = Validator.cookTokenIdentifier('name');
-						const id_id:           bigint = Validator.cookTokenIdentifier('id');
-						const id_job_title:    bigint = Validator.cookTokenIdentifier('job_title');
-						const id_hours_worked: bigint = Validator.cookTokenIdentifier('hours_worked');
-						const id_agency:       bigint = Validator.cookTokenIdentifier('agency');
 						assertAssignable(err as Error, {
 							cons:   AggregateError,
 							errors: [
-								{cons: TypeErrorNotAssignable, message: `Expression \`${BOB}\` is not assignable to type \`(${id_name}: str, ${id_id}: int, ${id_job_title}: str, ${id_hours_worked}: float)\`.`},
-								{cons: TypeErrorNotAssignable, message: `Expression \`${BOB}\` is not assignable to type \`(${id_name}: str, ${id_agency}: str, ${id_hours_worked}: float)\`.`},
+								{cons: TypeErrorNotAssignable, message: `Expression \`${BOB}\` is not assignable to type \`(name: str, id: int, job_title: str, hours_worked: float)\`.`},
+								{cons: TypeErrorNotAssignable, message: `Expression \`${BOB}\` is not assignable to type \`(name: str, agency: str, hours_worked: float)\`.`},
 							],
 						});
 						return true;
@@ -564,48 +623,69 @@ test.suite('Declaration', () => {
 				});
 			});
 		});
-	});
 
-
-	test.suite('#build', () => {
-		test.test('DeclarationType has no effect.', () => {
-			assert.strictEqual(setupScript(`{
-				type N = int | nat | float;
-			}`, {codegen: false}).builder.print(), '"block-0":\n\t(ENDPROGRAM)');
-		});
-		test.test('DeclarationVariable pushes (DECL+SET)/DROP instruction depending on presence of child nodes.', () => {
-			const {stmts, builder} = setupScript(`{
-				% Foldable cases:
-				val _:          int = 42; % \`(DROP (INT.CONST 42))\`
-				val assignee_a: int = 42; % \`(DECL <int> assignee_a (INT.CONST 42))\`
-
-				% Non-Foldable cases:
-				val mut assignee_b?: int;
-				val mut assignee_c:  int = 42;
-				val     _:           int = assignee_c;
-				val     assignee_d:  int = assignee_c;
-				val mut assignee_e:  int = assignee_c;
-
-				%% Syntactically impossible cases (for completion):
-				val _?:          int;
-				val assignee_f?: int;
-				val mut _?:      int;
-				val mut _:       int = 42;
-				val mut _:       int = assignee_c;
-				%%
-			}`, {codegen: false});
-			stmts.forEach((stmt) => (stmt as AST.STMT.DeclarationVariable).build(builder));
-			return assert.strictEqual(builder.print(), xjs.String.dedent`
-				"block-0":
-					(DROP (INT.CONST 42))
-					(DECL <int> assignee_a (INT.CONST 42))
-					(DECL <Maybe> assignee_b ${op_maybe_string()})
-					(DECL <int> assignee_c (INT.CONST 42))
-					(DROP (GET assignee_c))
-					(DECL <int> assignee_d (GET assignee_c))
-					(DECL <int> assignee_e (GET assignee_c))
-					(ENDPROGRAM)
-			`.trim());
+		test.suite('DeclarationFunction', () => {
+			test.test('sets the SymbolSchemaFunc `type`.', () => {
+				const {stmts, visitors} = setupScript(`{
+					func f(a: float, mut b: str): void { return; };
+				}`, {typeCheck: false});
+				const id_f: bigint = Validator.keyId('f');
+				const id_a: bigint = Validator.keyId('a');
+				const id_b: bigint = Validator.keyId('b');
+				const fn = stmts[0] as AST.STMT.DeclarationFunction;
+				assert.ok(fn.validator.hasSymbol(id_f));
+				assert.ok(fn.block.validator.hasSymbol(id_a));
+				assert.ok(fn.block.validator.hasSymbol(id_b));
+				const info_f: SymbolSchema | undefined = fn.validator.getSymbol(id_f);
+				const info_a: SymbolSchema | undefined = fn.block.validator.getSymbol(id_a);
+				const info_b: SymbolSchema | undefined = fn.block.validator.getSymbol(id_b);
+				assert_instanceof(info_f, SymbolSchemaFunc);
+				assert_instanceof(info_a, SymbolSchemaVar);
+				assert_instanceof(info_b, SymbolSchemaVar);
+				assert.strictEqual(info_f.types.length, 0);
+				assert_shallowStrictEqual(
+					[info_a.type, info_b.type],
+					repeat(TYPE.ANYTHING, 2),
+				);
+				visitors.typeCheck.visit(fn);
+				assert.strictEqual(info_f.types.length, 1);
+				assertEqualTypes(info_f.types[0], new TYPE.Function(TYPE.Tuple.fromTypes([
+					TYPE.FLOAT,
+					TYPE.STR,
+				])));
+				return assert_shallowStrictEqual(
+					[info_a.type, info_b.type],
+					[TYPE.FLOAT, TYPE.STR],
+				);
+			});
+			test.test('pushes to array of overload signatures.', () => {
+				const {goal, stmts, visitors} = setupScript(`{
+					func f(a: int): void { "1"; return; }
+					func f($b: nat): void { "2"; return; }
+				}`, {typeCheck: false});
+				const {validator} = goal.block!;
+				const id_f: bigint = Validator.keyId('f');
+				assert.ok(validator.hasSymbol(id_f));
+				const info_f: SymbolSchema | undefined = validator.getSymbol(id_f);
+				assert_instanceof(info_f, SymbolSchemaFunc);
+				assert.strictEqual(info_f.types.length, 0);
+				visitors.typeCheck.visit(stmts[0]);
+				visitors.typeCheck.visit(stmts[1]);
+				return assertEqualTypes(info_f.types, [
+					new TYPE.Function(TYPE.Tuple.fromTypes([TYPE.INT])),
+					new TYPE.Function(new TYPE.Tuple(), TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>([
+						[Validator.keyId('b'), TYPE.NAT],
+					]))),
+				]);
+			});
+			test.test('throws when overloads have identical signatures.', () => {
+				const {stmts, visitors} = setupScript(`{
+					func f(a: int): void { "1"; return; }
+					func f(b: int): void { "2"; return; }
+				}`, {typeCheck: false});
+				visitors.typeCheck.visit(stmts[0]); // assert does not throw
+				return assert.throws(() => visitors.typeCheck.visit(stmts[1]), TypeErrorAmbiguousOverload);
+			});
 		});
 	});
 });

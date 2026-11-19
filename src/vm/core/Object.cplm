@@ -1,15 +1,15 @@
-from "cplvm" import ('::Value::hash');
-from "./String.cplm" import (String);
+from "core/vm" import ('Value::hash'); % TODO: export `$Value.hash` from VM
+from "./String" import (String);
 
 
 
 public class abstract Object {
 	%%%
 	Return a string representation of this object.
-	Used internally in the `String()` constructor.
+	A hook used internally in the `String()` constructor.
 	@return a string representation of this object
 	%%%
 	public open '%%toString%%'(): str {
-		return """<Object instance {{String('::Value::hash'(this), 16)}}>""";
+		return """<Object instance {{String('Value::hash'(this), 16)}}>""";
 	}
 }

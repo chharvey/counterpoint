@@ -88,16 +88,45 @@ test.suite('Type', () => {
 				],
 			);
 		});
+		test.test('TypeFunction', () => {
+			assert_shallowStrictEqual(
+				[
+					new TYPE.Function(),
+					new TYPE.Function(
+						TYPE.Tuple.fromTypes([TYPE.INT]),
+						TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>([[0x100n, TYPE.FLOAT]])),
+					),
+					new TYPE.Function(
+						new TYPE.Tuple([
+							{type: TYPE.INT, optional: false},
+							{type: TYPE.INT, optional: true},
+						]),
+						new TYPE.Record(new Map<bigint, EntryType>([
+							[0x100n, {type: TYPE.FLOAT, optional: true}],
+							[0x101n, {type: TYPE.FLOAT, optional: false}],
+						])),
+						TYPE.STR,
+					),
+				].map((fn) => fn.toString()),
+				[
+					'\\() => void',
+					'\\(int, 256: float) => void',
+					'\\(int, ?: int, 256?: float, 257: float) => str',
+				],
+			);
+		});
 	});
 
 
 	test.suite('#isDefinitelyFalsy', () => {
 		test.test('only a combination of `nothing`, `null`, and `false` are definitely falsy.', () => {
 			[
+				/* eslint-disable @stylistic/list-style */
 				TYPE.NOTHING,
 				TYPE.Union.all(           TYPE.FALSE),
 				TYPE.Union.all(TYPE.NULL            ),
 				TYPE.Union.all(TYPE.NULL, TYPE.FALSE),
+				/* eslint-enable @stylistic/list-style */
 			].forEach((t) => assert.ok(t.isDefinitelyFalsy, `Expected \`${t}\` to be definitely falsy.`));
 		});
 		test.test('any other types are not definitely falsy.', () => {
@@ -121,10 +150,12 @@ test.suite('Type', () => {
 	test.suite('#isDefinitelyTruthy', () => {
 		test.test('all definitely falsy types are not definitely truthy.', () => {
 			[
+				/* eslint-disable @stylistic/list-style */
 				TYPE.NOTHING,
 				TYPE.Union.all(           TYPE.FALSE),
 				TYPE.Union.all(TYPE.NULL            ),
 				TYPE.Union.all(TYPE.NULL, TYPE.FALSE),
+				/* eslint-enable @stylistic/list-style */
 			].forEach((t) => assert.ok(!t.isDefinitelyTruthy, `Expected \`${t}\` to not be definitely truthy.`));
 		});
 		test.test('unions of falsy types are not definitely truthy.', () => {
@@ -154,10 +185,12 @@ test.suite('Type', () => {
 		test.test('reference types are definitely truthy.', () => {
 			[
 				TYPE.OBJ,
+				TYPE.EXCP,
 				new TYPE.List(TYPE.INT),
 				new TYPE.Dict(TYPE.INT),
 				new TYPE.Set(TYPE.INT),
 				new TYPE.Map(TYPE.INT, TYPE.INT),
+				new TYPE.Maybe(TYPE.INT),
 			].forEach((t) => assert.ok(t.isDefinitelyTruthy, `Expected \`${t}\` to be definitely truthy.`));
 		});
 	});
@@ -175,6 +208,7 @@ test.suite('Type', () => {
 			[TYPE.FLOAT,    TYPE.NOTHING],
 			[TYPE.STR,      TYPE.NOTHING],
 			[TYPE.OBJ,      TYPE.NOTHING],
+			[TYPE.EXCP,     TYPE.NOTHING],
 		]).forEach((right, left) => assert.ok(left.falsySide.equals(right), `${left.falsySide} == ${right}`));
 	});
 
@@ -886,6 +920,58 @@ test.suite('Type', () => {
 			});
 		});
 
+		test.suite('Result', () => {
+			test.test('is a subtype but not a supertype of `Object`.', () => {
+				const result = new TYPE.Result(TYPE.STR);
+				assert.ok(result.isSubtypeOf(TYPE.OBJ), 'Maybe[str] <: Object');
+				assert.ok(!TYPE.OBJ.isSubtypeOf(result), 'Object !<: Maybe[str]');
+			});
+			test.test('always covariant: `A <: C && B <: D --> Result[A, B] <: Result[C, D]`.', () => {
+				const sub = new TYPE.Result(TYPE.INT);
+				const sup = new TYPE.Result(TYPE.INT.union(TYPE.FLOAT));
+				assert.ok(sub.isSubtypeOf(sup), 'Result[int, Exception] <: Result[int | float, Exception]');
+				assert.ok(!sup.isSubtypeOf(sub), 'Result[int | float, Exception] !<: Result[int, Exception]');
+			});
+		});
+
+		test.suite('TypeFunction', () => {
+			test.test('is a subtype but not a supertype of `anything` and `Object`.', () => {
+				const fn = new TYPE.Function();
+				assert.ok(fn.isSubtypeOf(TYPE.ANYTHING), '() => void <: anything');
+				assert.ok(!TYPE.ANYTHING.isSubtypeOf(fn), 'anything !<: () => void');
+				assert.ok(fn.isSubtypeOf(TYPE.OBJ), '() => void <: Object');
+				assert.ok(!TYPE.OBJ.isSubtypeOf(fn), 'Object !<: () => void');
+			});
+			test.test('Contravariance for parameter types: `A >: B --> \\(A) => R <: \\(B) => R`.', () => {
+				const f0 = new TYPE.Function(TYPE.Tuple.fromTypes([
+					TYPE.INT,
+					TYPE.BOOL,
+					TYPE.STR,
+				]));
+				const f1 = new TYPE.Function(TYPE.Tuple.fromTypes([
+					TYPE.INT.union(TYPE.FLOAT),
+					TYPE.BOOL.union(TYPE.NULL),
+				]));
+
+				assert.ok(!f0.isSubtypeOf(f1), '\\(int, bool, str) => void !<: \\(int | float, bool | null) => void');
+				assert.ok(f1.isSubtypeOf(f0),  '\\(int | float, bool | null) => void <: \\(int, bool, str) => void');
+			});
+			test.test('Covariance     for return type:     `A <: B --> \\(P) => A <: \\(P) => B`.', () => {
+				const f0 = new TYPE.Function(TYPE.Tuple.fromTypes([TYPE.STR]), undefined, TYPE.INT);
+				const f1 = new TYPE.Function(TYPE.Tuple.fromTypes([TYPE.STR]), undefined, TYPE.INT.union(TYPE.NULL));
+
+				assert.ok(f0.isSubtypeOf(f1),  '\\(str) => int <: \\(str) => int | null');
+				assert.ok(!f1.isSubtypeOf(f0), '\\(str) => int | null !<: \\(str) => int');
+			});
+		});
+
+		test.suite('TypeClass', () => {
+			test.test('is a subtype but not a supertype of `Object`.', () => {
+				assert.ok(TYPE.CLASS.isSubtypeOf(TYPE.OBJ), 'Class <: Object');
+				assert.ok(!TYPE.OBJ.isSubtypeOf(TYPE.CLASS), 'Object !<: Class');
+			});
+		});
+
 		test.suite('TypeInterface', () => {
 			test.test('returns `true` if the subtype contains at least the properties of the supertype.', () => {
 				const t0 = new TYPE.TypeInterface(new Map<string, TYPE.Type>([
@@ -998,6 +1084,7 @@ test.suite('Type', () => {
 		const without_mutability: readonly TYPE.ReferenceType[] = [
 			TYPE.OBJ,
 			...builtin_types.map((t) => new TYPE.Maybe(t)),
+			new TYPE.Function(),
 		];
 		const with_mutability: readonly TYPE.ReferenceType[] = [
 			new TYPE.List(TYPE.BOOL),
@@ -1019,6 +1106,16 @@ test.suite('Type', () => {
 		});
 		test.test('immutable counterparts of types with mutability are not subtypes of their mutable types.', () => {
 			with_mutability.forEach((t) => assert.ok(!t.isSubtypeOf(t.mutableOf()), `${t} !<: mut ${t}`));
+		});
+	});
+
+
+	test.suite('Result#constructor', () => {
+		test.test('throws when failure type argument is not a subtype of Exception.', () => {
+			const fail_type: TYPE.Type = TYPE.FLOAT;
+			assert.ok(!fail_type.isSubtypeOf(TYPE.EXCP));
+			new TYPE.Result(TYPE.INT, TYPE.EXCP); // assert does not throw
+			return assert.throws(() => new TYPE.Result(TYPE.INT, fail_type), TypeError);
 		});
 	});
 });

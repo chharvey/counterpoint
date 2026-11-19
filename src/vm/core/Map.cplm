@@ -1,0 +1,41 @@
+from "core/vm" import ('op::isTuple');
+from "./Object" import await (Object);
+from "./Exception" import (Exception);
+
+
+
+%%%
+A Map is a variable-size unordered collection of key–value pairs, whose keys are values.
+This class implements a Map using an underling hash table,
+using hashed keys as indices.
+
+@typeparam K : the type of keys in this Map
+@typeparam V : the type of values in this Map
+%%%
+public class open Map[out(in) K, out(in) V] extends Object {
+	public new () {
+		super();
+	}
+	public new (list: List[(K, V)]) {
+		panic Exception("TODO: not yet supported");
+	}
+	public new ('set': Set[(K, V)]) {
+		panic Exception("TODO: not yet supported");
+	}
+	public new (map: Map[K, V]) {
+		panic Exception("TODO: not yet supported");
+	}
+	%%
+	public new (());
+	public new (((K, V),));
+	public new (((K, V), (K, V)));
+	public new (((K, V), (K, V), (K, V)));
+	public new (anything); % any tuple type with items of type `(K, V)`
+	%%
+	public new (arg: anything) {
+		if 'op::isTuple'(arg) as :bool: then {
+			panic Exception("TODO: not yet supported");
+		};
+		panic Exception("Value cannot be converted to a Map.");
+	}
+}

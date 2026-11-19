@@ -96,7 +96,7 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 		</tr>
 		<tr>
 			<th rowspan="4">5</th>
-			<td rowspan="3">Type Cast</td>
+			<td rowspan="2">Type Cast</td>
 			<td rowspan="4">binary infix</td>
 			<td rowspan="4">left-to-right</td>
 			<td><code>… as …</code></td>
@@ -105,11 +105,11 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… as? …</code></td>
 		</tr>
 		<tr>
-			<td><code>… as! …</code></td>
+			<td rowspan="2">Type Claim</td>
+			<td><code>… as : … :</code></td>
 		</tr>
 		<tr>
-			<td>Type Claim</td>
-			<td><code>… as : … :</code></td>
+			<td><code>… as! : … :</code></td>
 		</tr>
 		<tr>
 			<th>6</th>
@@ -168,11 +168,10 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… !> …</code></td>
 		</tr>
 		<tr>
-			<td>TBA</td>
+			<td rowspan="2">Instance-Of</td>
 			<td><code>… is …</code></td>
 		</tr>
 		<tr>
-			<td>TBA</td>
 			<td><code>… !is …</code></td>
 		</tr>
 		<tr>
@@ -217,18 +216,23 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… !| …</code></td>
 		</tr>
 		<tr>
-			<th>13</th>
+			<th rowspan="3">13</th>
 			<td>Conditional</td>
 			<td>ternary infix</td>
 			<td>n/a</td>
 			<td><code>if … then … else …</code></td>
 		</tr>
 		<tr>
-			<th>14</th>
 			<td>Switch</td>
 			<td>n-ary infix</td>
 			<td>n/a</td>
 			<td><code>switch …</code> (<code>case</code> (<code>… |</code>)* <code>… -> …</code>)* <code>default …</code></td>
+		</tr>
+		<tr>
+			<td>Lambdas</td>
+			<td>n/a</td>
+			<td>n/a</td>
+			<td><code>\(…)… => …</code></td>
 		</tr>
 	</tbody>
 </table>
@@ -308,11 +312,11 @@ In this example, static control flow analysis can reach the determinant and dete
 At runtime however, the [`while` loop](./statements.md#loops) runs indefinitely, so the variable never actually gets assigned.
 While this program compiles successfully, it’ll crash when run.
 
-Block-expressions may contain `break`, `skip`, `return`, and `throw` statements (depending on lexical context).
+Block-expressions may contain `break`, `skip`, `return`, and `panic` statements (depending on lexical context).
 These are called **abrupt completions**, because they abruptly transfer control out of the block
 without finishing the evaluation of it.
 Specifically, `break` or `skip` statements will apply to the containing loop,
-and `return`/`throw` statements will apply to the containing function.
+and `return`/`panic` statements will apply to the containing function.
 ```cpl
 func f(mut i: int): str {
 	while true do {
@@ -347,15 +351,15 @@ This table highlights some exceptional cases.
 
 ### Property Access
 ```
-<Tuple>  `.` int-literal
+<Tuple>  `.` whole-digits
 <Record> `.` word
 <Object> `.` `[` <Object> `]`
 
-<Tuple>  `?.` int-literal
+<Tuple>  `?.` whole-digits
 <Record> `?.` word
 <Object> `?.` `[` <Object> `]`
 
-<Tuple>  `!.` int-literal
+<Tuple>  `!.` whole-digits
 <Record> `!.` word
 <Object> `!.` `[` <Object> `]`
 ```
@@ -373,28 +377,22 @@ such as an operation of expressions, e.g., `map.[expr]`.
 The expression in the brackets evaluates to an index, key, element, or antecedent
 of the binding object and must be of the correct type.
 
+When an optional entry is accessed, a `Maybe` object is returned.
+For example, given a record `record` of type `(a: bool, b?: int)`, with an optional property `b`,
+the expression `record.b` will produce a `Some` containing the value at `record.b` if it exists,
+but otherwise will produce a `None`. The type of `record.b` is `Maybe[int]`.
+
 More information about property access when used on collections
 can be found in the [Types](./types.md) chapter.
 
 #### Maybe Access
-The **maybe access** syntax is almost the same as property access, except that
-the operator always produces a `Maybe` object — a `None` object if and when there is no such bound property
-on the binding object at runtime, else a `Some` object containing the accesssed value.
-This operator is designed to work with optional entries on types, such as optional properties on a record type, as well as
-[the `Maybe` algeraic sum type](./types.md#maybes).
+The **maybe access** syntax is almost the same as property access, except that the operator always produces a `Maybe` object.
+This operator is designed to work with [the `Maybe` algeraic sum type](./types.md#maybes).
 
-Given a record `record` of type `(a: bool, b?: int)`,
-the expression `record.b` would result in a crash if there’s no actual value at that location,
-so the compiler raises an error when using that syntax.
-Using the maybe access operator though, `record?.b` will produce a `Some` containing the value at `record.b`
-if it exists, but otherwise will produce a `None` and avoid the crash.
-An equivalent syntax exists for dynamic access: `map?.[expr]`, etc.
-
-Conversely, maybe access syntax is not allowed for required properties: `record?.a` would raise a compiler error.
-
-If the *binding object is a `Maybe`*, then the maybe access operator produces another `Maybe`.
+If the binding object is a `Maybe`, then the maybe access operator produces another `Maybe`.
 For example, `None[T]().property` is a type error, but `None[T]()?.property` will simply produce a new `None[U]`
 (and not the same `None[T]` reference object).
+Likewise, `Some[T](obj)?.property` unwraps the value `obj`, accesses `.property` on it, and returns the accessed value in a new `Some`.
 This facet makes maybe access safe to use when chained.
 
 When the maybe access operator is chained, it should be chained down the line,
@@ -404,16 +402,6 @@ and will result in a type-error if `z` is not a property of `Maybe`.
 
 **Type-Checking Note:**
 
-For static types (e.g., tuples and records),
-either the normal or maybe access operator is allowed, corresponding to the optionality of the entry being accessed.
-When the maybe access operator is used for an optional entry, the entry type is wrapped in a `Maybe`.
-```cpl
-claim record: (required: bool, optional?: int);
-record.required;  %: bool
-record?.required; %> TypeErrorInvalidOperation
-record.optional;  %> TypeErrorInvalidOperation
-record?.optional; %: int?
-```
 For dynamic types (e.g., lists and dicts),
 both normal and maybe access operators are allowed.
 The normal access operator treats all entries as required (does not wrap the declared type in `Maybe`), and
@@ -426,7 +414,7 @@ dict?.[@prop]; %: Maybe[float]
 
 #### Maybe Unwrapper
 The **maybe unwrapping** operator `~?`, if the operand is a `Maybe[T]` type, ‘unwraps’ the value of the Maybe, returning type `T`.
-Additionally, if the value is actually a `None` at runtime, the `~?` operator throws an error.
+Additionally, if the value is actually a `None` at runtime, the `~?` operator panics.
 ```cpl
 claim rec_maybe: Maybe[(item: int)];
 
@@ -438,14 +426,40 @@ if rec_maybe is Some then {
 
 rec_maybe.item;   %> TypeErrorNoEntry
 rec_maybe?.item;  % maybe access: returns type `Maybe[int]`
-rec_maybe~?.item; % unwraps `rec_maybe` to `(item: int)`; returns type `int`; but throws at runtime if `rec_maybe` is a `None`
+rec_maybe~?.item; % unwraps `rec_maybe` to `(item: int)`; returns type `int`; but panics at runtime if `rec_maybe` is a `None`
 ```
 
 #### Result Access
-// TODO:
+The **result access** syntax is almost the same as property access, except that the operator always produces a `Result` object.
+This operator is designed to work with [the `Result` algeraic sum type](./types.md#results).
+
+If the binding object is a `Result`, then the result access operator produces another `Result`.
+For example, `Fail[T]().property` is a type error, but `Fail[T]()!.property` will simply produce a new `Fail[U]`
+(and not the same `Fail[T]` reference object).
+Likewise, `Ok[T](obj)!.property` unwraps the value `obj`, accesses `.property` on it, and returns the accessed value in a new `Ok`.
+This facet makes maybe access safe to use when chained.
+
+When the result access operator is chained, it should be chained down the line,
+e.g., `x!.y!.z` is equivalent to `(x!.y)!.z`.
+However, `x!.y.z` (which can be thought of as `(x!.y).z`) is not the same,
+and will result in a type-error if `z` is not a property of `Result`.
 
 #### Result Unwrapper
-// TODO:
+The **result unwrapping** operator `~!`, if the operand is a `Result[T]` type, ‘unwraps’ the value of the Result, returning type `T`.
+Additionally, if the value is actually a `Fail` at runtime, the `~!` operator panics with that `Fail`’s reason.
+```cpl
+claim rec_result: Result[(item: int)];
+
+val rec: (item: int) = rec_result;   %> TypeError
+val rec: (item: int) = rec_result~!; % no TypeError, but unsafe!
+if rec_result is Ok then {
+	val rec: (item: int) = rec_result~!; % no TypeError, and safe
+};
+
+rec_result.item;   %> TypeErrorNoEntry
+rec_result!.item;  % result access: returns type `Result[int]`
+rec_result~!.item; % unwraps `rec_result` to `(item: int)`; returns type `int`; but panics at runtime if `rec_result` is a `Fail`
+```
 
 
 ### Logical Negation, Emptiness
@@ -465,18 +479,20 @@ The **emptiness operator**, `?`, determines whether a value is considered “emp
 A value is “empty” if it’s “falsy”, if it’s a zero numeric value (`0`, `0.0`, or `-0.0`),
 or if it’s an empty string or empty collection (such as an array or set).
 
-| “Falsy” Values | “Empty” Values   | “Truthy” Values |
-| -------------- | ---------------- | --------------- |
-| `null`         | `null`           |                 |
-| `false`        | `false`          | `true`          |
-|                |                  | all symbols     |
-|                | `0`              | all integers    |
-|                | `+0`             | all naturals    |
-|                | `0.0`, `-0.0`    | all floats      |
-|                | `""`             | all strings     |
-|                | `()`, `[]`, `{}` | all collections |
-| all `None`s    | all `None`s      | all `Some`s     |
-|                |                  | any other value |
+| “Falsy” Values | “Empty” Values   | “Truthy” Values  |
+| -------------- | ---------------- | ---------------- |
+| `null`         | `null`           |                  |
+| `false`        | `false`          | `true`           |
+|                |                  | all symbols      |
+|                | `0`              | all integers     |
+|                | `+0`             | all naturals     |
+|                | `0.0`, `-0.0`    | all floats       |
+|                | `""`             | all strings      |
+|                | `()`, `[]`, `{}` | all collections  |
+|                |                  | all `Exception`s |
+|                | all `None`s      | all `Some`s      |
+|                |                  | all `Result`s    |
+|                |                  | any other value  |
 
 
 ### Mathematical Affirmation, Mathematical Negation
@@ -518,8 +534,8 @@ This is important to mention because it could also affect how we write
 
 ### Type Cast/Claim
 ```
-<Object>   `as`  <Class>
-<Object>   `as?` <Class>
+<anything> `as`  <Class>
+<anything> `as?` <Class>
 <anything> `as`  `:` <Type> `:`
 <anything> `as!` `:` <Type> `:`
 ```
@@ -528,15 +544,15 @@ This means that at compile time, `expr` is treated as type `Klass` within its co
 and the object to which `expr` evaluates is dynamically converted to a `Klass` instance at runtime.
 `Klass` must be a type narrower than (or equal to) the original type of `expr`,
 and the runtime object can only be converted if it is an instance of `Klass` (or is structurally compatible).
-If the runtime conversion is not possible, than an error is thrown.
+If the runtime conversion is not possible, than a panic occurs.
 
-`expr as? Klass` always returns a `Maybe[Klass]` object and never throws.
+`expr as? Klass` always returns a `Maybe[Klass]` object and never panics.
 If `expr` is a `Klass` instance (or structural equivalent), a `Some[Klass]` is returned; otherwise it returns a `None[Klass]`.
 
 The expression `expr as :T:` tells the type system to treat `expr` as type `T`,
 even though it might have been computed as a different type.
 This is called a **type claim**, because we’re *claiming* that `expr` is of type `T`.
-(We say “claim” instead of “assert”, because no runtime error is thrown.)
+(We say “claim” instead of “assert”, because no runtime error occurs.)
 This is simply a static type declaration; it has no effect at runtime.
 
 Normally, the compiler will compute the type of an expression, but sometimes the compiler gets it wrong,
@@ -551,7 +567,7 @@ val quantity:   int        = item.1 as :int:;        % narrowing
 val in_stock:   int | bool = item.1 as :int | bool:; % shifting
 ```
 
-Unless either type is `nothing` (the Bottom Type), a compiler error is thrown
+Unless either type is `nothing` (the Bottom Type), a compiler error is raised
 when the operand’s computed type is disjoint with the claimed type.
 ```cpl
 42 as :str:; %> TypeError
@@ -564,33 +580,27 @@ You should only use this if you *really* know what you’re doing.
 
 #### Cast vs Claim
 A runtime cast (`expr as Klass`) will always check whether `Klass` is a class, and whether `expr` is actually an instance of it at runtime;
-if it’s not a true instance or structurally compatible with the class, then the program throws. This operator is preferred in such circumstances.
+if it’s not a true instance or structurally compatible with the class, then the program panics. This operator is preferred in such circumstances.
 ```cpl
 val animal: Animal = Cat();
 val cat: Cat = animal as Cat; % cast is allowed (`Cat` can be converted to `Cat`)
 cat.meow();                   % calls `meow` on the `Cat` instance
 
-val dog: Dog = animal as Dog; % throws error: `Cat` cannot be converted to `Dog`
+val dog: Dog = animal as Dog; % panic: `Cat` cannot be converted to `Dog`
 dog.woof();                   % unreachable
 ```
-The `as?` and `as!` casts can be useful in tandem with maybe/result access respectively.
+The `as?` cast can be useful in tandem with maybe access.
 ```cpl
-val cat_m: Maybe[Cat] = animal as? Cat; %== Some.<Cat>
+val cat_m: Maybe[Cat] = animal as? Cat; %== Some[Cat]
 cat_m?.meow();                          % calls `meow`
 
 val dog_m: Maybe[Dog] = animal as? Dog; %== None
 dog_m?.woof();                          %== None
-
-val cat_r: Result[Cat] = animal as! Cat; %== Ok.<Cat>
-cat_r!.meow();                           % calls `meow`
-
-val dog_r: Result[Dog] = animal as! Dog; %== Fail
-dog_r?.woof();                           %== Fail
 ```
 
 A compile-time claim (`expr as :Klass:`) *claims* to the type-checker that `expr` is already of type `Klass`,
 but no double-check is performed at runtime. The program will proceed as usual, assuming `expr` is assignable to type `Klass`.
-That means that if it’s *not* such an instance, an error could be thrown down the line,
+That means that if it’s *not* such an instance, a panic could occur down the line,
 for example, when attempting to access a nonexistent method.
 ```cpl
 val animal: Animal = Cat();
@@ -598,10 +608,10 @@ val cat: Cat = animal as :Cat:; % claim is allowed (`Animal` and `Cat` overlap)
 cat.meow();                     % calls `meow` on the `Cat` instance
 
 val dog: Dog = animal as :Dog:; % claim is allowed (`Animal` and `Dog` overlap)
-dog.woof();                     % throws error: method `woof` not found on `Cat` instance
+dog.woof();                     % panic: method `woof` not found on `Cat` instance
 ```
 If we had written `animal as Dog` (a cast) instead of `animal as :Dog:` (a claim),
-an error would be thrown early, before `dog.woof()` is reached.
+a panic would occur early, before `dog.woof()` is reached.
 
 There are benefits that type claims have over type casts, however.
 - We can narrow types that would otherwise be too wide.
@@ -757,9 +767,6 @@ The parser receives these tokens and produces the correct expression.
 <Number> `>=` <Number>
 <Number> `!<` <Number>
 <Number> `!>` <Number>
-
-<anything> `is`  <Class>
-<anything> `!is` <Class>
 ```
 The numerical comparative operators,
 
@@ -790,12 +797,26 @@ int --> nat --> float
 Conversions are made only for determining mathematical inequality; the value of the operand does not change.
 Note that conversions may be lossy; see [Numeric Conversions](./built-ins.md#numeric-conversions) for details.
 
-The object comparative operators `is` and `!is` determine whether the left-hand operand (any value)
-is an instance of the right-hand operand (a class).
-```cpl
-x is Null;    % sugar for `x === null`
-x is Boolean; % sugar for `x === false || x === true`
 
+### Instance-Of
+```
+<anything> `is`  <Class>
+<anything> `!is` <Class>
+```
+The expression `expr is Klass` tests whether `expr` is an instance of `Klass`, and returns a boolean.
+The operator `!is` negates the outcome.
+These operators can be used for reference types and value types alike.
+
+“Instance of” means the value was constructed directly by a constructor of `Klass` or one of its descendants.
+This makes instance-of a **nominal** operator —
+a value is not an instance of a class just because it is structurally assignable to it.
+
+For primitive types (`int`, `str`, etc.), the class name must be used as the right-hand operand
+in order to test instance membership (`Integer`, `String`, etc…
+see the spec’s [Core Library chapter](../spec/core-library.md)).
+It is a syntax error to use a type expression as an operand.
+
+```cpl
 42     is Symbol;  %== false
 @hello is Symbol;  %== true
 42     is Integer; %== true
@@ -804,6 +825,8 @@ x is Boolean; % sugar for `x === false || x === true`
 x !is Null;    % sugar for `!(x is Null)`
 x !is Boolean; % sugar for `!(x is Boolean)`
 x !is Integer; % sugar for `!(x is Integer)`
+
+x is Null; % faster to test `x === null`
 ```
 
 
@@ -977,6 +1000,15 @@ and they don't need to be the same type.
 The result type of the switch expression is the union of the types of all the consequents and the type of the default value.
 
 
+### Lambdas
+```
+\(‹parameters?›) ‹return-type› => { ‹statements› }
+\(‹parameters?›) ‹return-type› => <anything>
+```
+Lambdas, a.k.a. anonymous functions, a.k.a. function expressions, are expressions that have function values.
+Functions are covered in the [Functions](./functions.md) chapter.
+
+
 
 ## Type Operators
 
@@ -1015,27 +1047,15 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… . …</code></td>
 		</tr>
 		<tr>
-			<th rowspan="5">3</th>
-			<td>Nullish</td>
-			<td rowspan="5">unary postfix</td>
-			<td rowspan="5">left-to-right</td>
+			<th rowspan="2">3</th>
+			<td>To-Maybe</td>
+			<td rowspan="2">unary postfix</td>
+			<td rowspan="2">left-to-right</td>
 			<td><code>… ?</code></td>
 		</tr>
 		<tr>
-			<td>TBA</td>
+			<td>To-Result</td>
 			<td><code>… !</code></td>
-		</tr>
-		<tr>
-			<td>List</td>
-			<td><code>… []</code></td>
-		</tr>
-		<tr>
-			<td>Tuple</td>
-			<td><code>… […]</code></td>
-		</tr>
-		<tr>
-			<td>Set</td>
-			<td><code>… {}</code></td>
 		</tr>
 		<tr>
 			<th>4</th>
@@ -1068,22 +1088,18 @@ Read about Tuples, Records, Lists, Dicts, Sets, and Maps in the [Types](./types.
 
 ### Type Property Access
 ```
-<Type> `.`  int-literal
-<Type> `.`  word
-<Type> `?.` int-literal
-<Type> `?.` word
+<Type> `.` whole-digits
+<Type> `.` word
 ```
 The **type property accesss** syntax for types is analogous to the property access syntax of values.
 It accesses the index or key of a tuple or record type respectively.
 ```
 type T = (bool, int, str);
 type T1 = T.1;             %== int
-type T_1 = T.-1;           %== str
 type T3 = T.3;             %> TypeError
 
 type R = (a: bool, b?: int, c: str);
 type Ra = R.a;                       %== bool
-type Rc = R?.b;                      %== int | null
 type Rd = R.d;                       %> TypeError
 ```
 
@@ -1098,11 +1114,15 @@ type T = int?; % equivalent to `type T = Maybe[int];`
 ```
 
 
-### TBA
+### To-Result
 ```
 <Type> `!`
 ```
-To be announced.
+The **to-result** operator creates a new [Result type](./types.md#results) containing the operand.
+```cpl
+type T = int!; % equivalent to `type T = Result[int];`
+```
+Note that the second generic argument of `Result` defaults to `Exception`.
 
 
 ### Mutable

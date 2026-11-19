@@ -22,8 +22,6 @@ import {Collection} from './Collection.ts';
  * @final
  */
 class ValueMap<K extends Value = Value, V extends Value = Value> extends Collection {
-	public override readonly isReference = true;
-
 	#cases: Map<K, V>;
 
 
@@ -35,16 +33,12 @@ class ValueMap<K extends Value = Value, V extends Value = Value> extends Collect
 		});
 	}
 
-	/**
-	 * @implements Value
-	 */
+	/** @implements Value */
 	public override get isEmpty(): boolean {
 		return this.#cases.size === 0;
 	}
 
-	/**
-	 * @implements Collection
-	 */
+	/** @implements Collection */
 	public override get count(): bigint {
 		return BigInt(this.#cases.size);
 	}

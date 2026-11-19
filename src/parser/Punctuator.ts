@@ -47,4 +47,8 @@ export enum Punctuator {
 	SEMI   = ';',
 	COLON  = ':',
 	EQ     = '=',
+
+	// storage
+	BSLASH = '\\',
+	EQ_GT  = '=>',
 }

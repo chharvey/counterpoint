@@ -37,6 +37,8 @@ TokenWorth(Punctuator :::= "|")   -> RealNumber := \x23;
 TokenWorth(Punctuator :::= ";")   -> RealNumber := \x24;
 TokenWorth(Punctuator :::= ":")   -> RealNumber := \x25;
 TokenWorth(Punctuator :::= "=")   -> RealNumber := \x26;
+TokenWorth(Punctuator :::= "\")   -> RealNumber := \x27;
+TokenWorth(Punctuator :::= "=>")  -> RealNumber := \x28;
 
 
 
@@ -65,37 +67,50 @@ TokenWorth(KeywordOther :::= "case")     -> RealNumber := \x55;
 TokenWorth(KeywordOther :::= "default")  -> RealNumber := \x56;
 TokenWorth(KeywordOther :::= "type")     -> RealNumber := \x57;
 TokenWorth(KeywordOther :::= "val")      -> RealNumber := \x58;
-TokenWorth(KeywordOther :::= "claim")    -> RealNumber := \x59;
-TokenWorth(KeywordOther :::= "set")      -> RealNumber := \x5a;
-TokenWorth(KeywordOther :::= "delete")   -> RealNumber := \x5b;
-TokenWorth(KeywordOther :::= "_")        -> RealNumber := \x5c;
-TokenWorth(KeywordOther :::= "void")     -> RealNumber := \x5d;
-TokenWorth(KeywordOther :::= "nominal")  -> RealNumber := \x5e;
-TokenWorth(KeywordOther :::= "unless")   -> RealNumber := \x5f;
-TokenWorth(KeywordOther :::= "while")    -> RealNumber := \x60;
-TokenWorth(KeywordOther :::= "until")    -> RealNumber := \x61;
-TokenWorth(KeywordOther :::= "for")      -> RealNumber := \x62;
-TokenWorth(KeywordOther :::= "in")       -> RealNumber := \x63;
-TokenWorth(KeywordOther :::= "do")       -> RealNumber := \x64;
-TokenWorth(KeywordOther :::= "break")    -> RealNumber := \x65;
-TokenWorth(KeywordOther :::= "skip")     -> RealNumber := \x66;
+TokenWorth(KeywordOther :::= "func")     -> RealNumber := \x59;
+TokenWorth(KeywordOther :::= "claim")    -> RealNumber := \x5a;
+TokenWorth(KeywordOther :::= "set")      -> RealNumber := \x5b;
+TokenWorth(KeywordOther :::= "delete")   -> RealNumber := \x5c;
+TokenWorth(KeywordOther :::= "_")        -> RealNumber := \x5d;
+TokenWorth(KeywordOther :::= "$")        -> RealNumber := \x5e;
+TokenWorth(KeywordOther :::= "with")     -> RealNumber := \x5f;
+TokenWorth(KeywordOther :::= "ref")      -> RealNumber := \x60;
+TokenWorth(KeywordOther :::= "void")     -> RealNumber := \x61;
+TokenWorth(KeywordOther :::= "nominal")  -> RealNumber := \x62;
+TokenWorth(KeywordOther :::= "unless")   -> RealNumber := \x63;
+TokenWorth(KeywordOther :::= "while")    -> RealNumber := \x64;
+TokenWorth(KeywordOther :::= "until")    -> RealNumber := \x65;
+TokenWorth(KeywordOther :::= "for")      -> RealNumber := \x66;
+TokenWorth(KeywordOther :::= "in")       -> RealNumber := \x67;
+TokenWorth(KeywordOther :::= "do")       -> RealNumber := \x68;
+TokenWorth(KeywordOther :::= "break")    -> RealNumber := \x69;
+TokenWorth(KeywordOther :::= "skip")     -> RealNumber := \x6a;
+TokenWorth(KeywordOther :::= "return")   -> RealNumber := \x6b;
+TokenWorth(KeywordOther :::= "panic")    -> RealNumber := \x6c;
 
 
 
-TokenWorth(Identifier :::= "Boolean") -> RealNumber := \x80;
-TokenWorth(Identifier :::= "Symbol")  -> RealNumber := \x81;
-TokenWorth(Identifier :::= "Integer") -> RealNumber := \x82;
-TokenWorth(Identifier :::= "Natural") -> RealNumber := \x83;
-TokenWorth(Identifier :::= "Float")   -> RealNumber := \x84;
-TokenWorth(Identifier :::= "String")  -> RealNumber := \x85;
-TokenWorth(Identifier :::= "Object")  -> RealNumber := \x86;
-TokenWorth(Identifier :::= "List")    -> RealNumber := \x87;
-TokenWorth(Identifier :::= "Dict")    -> RealNumber := \x88;
-TokenWorth(Identifier :::= "Set")     -> RealNumber := \x89;
-TokenWorth(Identifier :::= "Map")     -> RealNumber := \x8a;
-TokenWorth(Identifier :::= "Maybe")   -> RealNumber := \x8b;
-TokenWorth(Identifier :::= "None")    -> RealNumber := \x8c;
-TokenWorth(Identifier :::= "Some")    -> RealNumber := \x8d;
+TokenWorth(Identifier :::= "Null")      -> RealNumber := \x80;
+TokenWorth(Identifier :::= "Boolean")   -> RealNumber := \x81;
+TokenWorth(Identifier :::= "Symbol")    -> RealNumber := \x82;
+TokenWorth(Identifier :::= "Integer")   -> RealNumber := \x83;
+TokenWorth(Identifier :::= "Natural")   -> RealNumber := \x84;
+TokenWorth(Identifier :::= "Float")     -> RealNumber := \x85;
+TokenWorth(Identifier :::= "String")    -> RealNumber := \x86;
+TokenWorth(Identifier :::= "Object")    -> RealNumber := \x87;
+TokenWorth(Identifier :::= "List")      -> RealNumber := \x88;
+TokenWorth(Identifier :::= "Dict")      -> RealNumber := \x89;
+TokenWorth(Identifier :::= "Set")       -> RealNumber := \x8a;
+TokenWorth(Identifier :::= "Map")       -> RealNumber := \x8b;
+TokenWorth(Identifier :::= "Exception") -> RealNumber := \x8c;
+TokenWorth(Identifier :::= "Maybe")     -> RealNumber := \x8d;
+TokenWorth(Identifier :::= "None")      -> RealNumber := \x8e;
+TokenWorth(Identifier :::= "Some")      -> RealNumber := \x8f;
+TokenWorth(Identifier :::= "Result")    -> RealNumber := \x90;
+TokenWorth(Identifier :::= "Fail")      -> RealNumber := \x91;
+TokenWorth(Identifier :::= "Ok")        -> RealNumber := \x92;
+TokenWorth(Identifier :::= "Function")  -> RealNumber := \x93;
+TokenWorth(Identifier :::= "Class")     -> RealNumber := \x94;
 
 TokenWorth(Identifier) -> RealNumber :=
 	1. Convert the source text of `Identifier` to a string of bytes in the UTF-8 encoding.
@@ -104,73 +119,6 @@ TokenWorth(Identifier) -> RealNumber :=
 ;
 
 
-
-TokenWorth(Integer :::= WholeDigits) -> RealNumber
-	:= TokenWorth(WholeDigits);
-TokenWorth(Integer :::= "-" WholeDigits) -> RealNumber
-	:= -1 * TokenWorth(WholeDigits);
-
-TokenWorth(Natural :::= "+" WholeDigits) -> RealNumber
-	:= TokenWorth(WholeDigits);
-
-TokenWorth(WholeDigits :::= "\b"  DigitSequenceBin) -> RealNumber
-	:= TokenWorth(DigitSequenceBin);
-TokenWorth(WholeDigits :::= "\q"  DigitSequenceQua) -> RealNumber
-	:= TokenWorth(DigitSequenceQua);
-TokenWorth(WholeDigits :::= "\s"  DigitSequenceSex) -> RealNumber
-	:= TokenWorth(DigitSequenceSex);
-TokenWorth(WholeDigits :::= "\o"  DigitSequenceOct) -> RealNumber
-	:= TokenWorth(DigitSequenceOct);
-TokenWorth(WholeDigits :::= "\d"? DigitSequenceDec) -> RealNumber
-	:= TokenWorth(DigitSequenceDec);
-TokenWorth(WholeDigits :::= "\x"  DigitSequenceHex) -> RealNumber
-	:= TokenWorth(DigitSequenceHex);
-TokenWorth(WholeDigits :::= "\z"  DigitSequenceNif) -> RealNumber
-	:= TokenWorth(DigitSequenceNif);
-
-TokenWorth(Float :::= SignedDigitSequenceDec ".") -> RealNumber
-	:= TokenWorth(SignedDigitSequenceDec);
-TokenWorth(Float :::= SignedDigitSequenceDec "." DigitSequenceDec) -> RealNumber
-	:= TokenWorth(SignedDigitSequenceDec) + TokenWorth(DigitSequenceDec);
-TokenWorth(Float :::= SignedDigitSequenceDec "." DigitSequenceDec ExponentPart) -> RealNumber
-	:= (TokenWorth(SignedDigitSequenceDec) + TokenWorth(DigitSequenceDec)) * TokenWorth(ExponentPart);
-
-TokenWorth(ExponentPart :::= "e" SignedDigitSequenceDec) -> RealNumber
-	:= 10 ^ TokenWorth(SignedDigitSequenceDec);
-
-TokenWorth(SignedDigitSequenceDec :::= "+"? DigitSequenceDec) -> RealNumber
-	:= TokenWorth(DigitSequenceDec);
-TokenWorth(SignedDigitSequenceDec :::= "-"  DigitSequenceDec) -> RealNumber
-	:= -1 * TokenWorth(DigitSequenceDec);
-
-TokenWorth(DigitSequenceBin :::= [0-1]) -> RealNumber
-	:= TokenWorth([0-1]);
-TokenWorth(DigitSequenceBin :::= DigitSequenceBin "_"? [0-1]) -> RealNumber
-	:= 2 * TokenWorth(DigitSequenceBin) + TokenWorth([0-1]);
-TokenWorth(DigitSequenceQua :::= [0-3]) -> RealNumber
-	:= TokenWorth([0-3]);
-TokenWorth(DigitSequenceQua :::= DigitSequenceQua "_"? [0-3]) -> RealNumber
-	:= 4 * TokenWorth(DigitSequenceQua) + TokenWorth([0-3]);
-TokenWorth(DigitSequenceSex :::= [0-5]) -> RealNumber
-	:= TokenWorth([0-5]);
-TokenWorth(DigitSequenceSex :::= DigitSequenceSex "_"? [0-5]) -> RealNumber
-	:= 6 * TokenWorth(DigitSequenceSex) + TokenWorth([0-5]);
-TokenWorth(DigitSequenceOct :::= [0-7]) -> RealNumber
-	:= TokenWorth([0-7]);
-TokenWorth(DigitSequenceOct :::= DigitSequenceOct "_"? [0-7]) -> RealNumber
-	:= 8 * TokenWorth(DigitSequenceOct) + TokenWorth([0-7]);
-TokenWorth(DigitSequenceDec :::= [0-9]) -> RealNumber
-	:= TokenWorth([0-9]);
-TokenWorth(DigitSequenceDec :::= DigitSequenceDec "_"? [0-9]) -> RealNumber
-	:= 10 * TokenWorth(DigitSequenceDec) + TokenWorth([0-9]);
-TokenWorth(DigitSequenceHex :::= [0-9a-f]) -> RealNumber
-	:= TokenWorth([0-9a-f]);
-TokenWorth(DigitSequenceHex :::= DigitSequenceHex "_"? [0-9a-f]) -> RealNumber
-	:= 16 * TokenWorth(DigitSequenceHex) + TokenWorth([0-9a-f]);
-TokenWorth(DigitSequenceNif :::= [0-9a-z]) -> RealNumber
-	:= TokenWorth([0-9a-z]);
-TokenWorth(DigitSequenceNif :::= DigitSequenceNif "_"? [0-9a-z]) -> RealNumber
-	:= 36 * TokenWorth(DigitSequenceNif) + TokenWorth([0-9a-z]);
 
 TokenWorth([0-9a-z] :::= "0") -> RealNumber  :=  TokenWorth([0-9a-f] :::= "0") -> RealNumber  :=  TokenWorth([0-9] :::= "0") -> RealNumber  :=  TokenWorth([0-7] :::= "0") -> RealNumber  :=  TokenWorth([0-5] :::= "0") -> RealNumber  :=  TokenWorth([0-3] :::= "0") -> RealNumber  :=  TokenWorth([0-1] :::= "0") -> RealNumber  :=  \x00;
 TokenWorth([0-9a-z] :::= "1") -> RealNumber  :=  TokenWorth([0-9a-f] :::= "1") -> RealNumber  :=  TokenWorth([0-9] :::= "1") -> RealNumber  :=  TokenWorth([0-7] :::= "1") -> RealNumber  :=  TokenWorth([0-5] :::= "1") -> RealNumber  :=  TokenWorth([0-3] :::= "1") -> RealNumber  :=  TokenWorth([0-1] :::= "1") -> RealNumber  :=  \x01;
@@ -208,6 +156,73 @@ TokenWorth([0-9a-z] :::= "w") -> RealNumber  :=  \x020;
 TokenWorth([0-9a-z] :::= "x") -> RealNumber  :=  \x021;
 TokenWorth([0-9a-z] :::= "y") -> RealNumber  :=  \x022;
 TokenWorth([0-9a-z] :::= "z") -> RealNumber  :=  \x023;
+
+TokenWorth(DigitSequenceBin :::= [0-1]) -> RealNumber
+	:= TokenWorth([0-1]);
+TokenWorth(DigitSequenceBin :::= DigitSequenceBin "_"? [0-1]) -> RealNumber
+	:= 2 * TokenWorth(DigitSequenceBin) + TokenWorth([0-1]);
+TokenWorth(DigitSequenceQua :::= [0-3]) -> RealNumber
+	:= TokenWorth([0-3]);
+TokenWorth(DigitSequenceQua :::= DigitSequenceQua "_"? [0-3]) -> RealNumber
+	:= 4 * TokenWorth(DigitSequenceQua) + TokenWorth([0-3]);
+TokenWorth(DigitSequenceSex :::= [0-5]) -> RealNumber
+	:= TokenWorth([0-5]);
+TokenWorth(DigitSequenceSex :::= DigitSequenceSex "_"? [0-5]) -> RealNumber
+	:= 6 * TokenWorth(DigitSequenceSex) + TokenWorth([0-5]);
+TokenWorth(DigitSequenceOct :::= [0-7]) -> RealNumber
+	:= TokenWorth([0-7]);
+TokenWorth(DigitSequenceOct :::= DigitSequenceOct "_"? [0-7]) -> RealNumber
+	:= 8 * TokenWorth(DigitSequenceOct) + TokenWorth([0-7]);
+TokenWorth(DigitSequenceDec :::= [0-9]) -> RealNumber
+	:= TokenWorth([0-9]);
+TokenWorth(DigitSequenceDec :::= DigitSequenceDec "_"? [0-9]) -> RealNumber
+	:= 10 * TokenWorth(DigitSequenceDec) + TokenWorth([0-9]);
+TokenWorth(DigitSequenceHex :::= [0-9a-f]) -> RealNumber
+	:= TokenWorth([0-9a-f]);
+TokenWorth(DigitSequenceHex :::= DigitSequenceHex "_"? [0-9a-f]) -> RealNumber
+	:= 16 * TokenWorth(DigitSequenceHex) + TokenWorth([0-9a-f]);
+TokenWorth(DigitSequenceNif :::= [0-9a-z]) -> RealNumber
+	:= TokenWorth([0-9a-z]);
+TokenWorth(DigitSequenceNif :::= DigitSequenceNif "_"? [0-9a-z]) -> RealNumber
+	:= 36 * TokenWorth(DigitSequenceNif) + TokenWorth([0-9a-z]);
+
+TokenWorth(WholeDigits :::= "\b"  DigitSequenceBin) -> RealNumber
+	:= TokenWorth(DigitSequenceBin);
+TokenWorth(WholeDigits :::= "\q"  DigitSequenceQua) -> RealNumber
+	:= TokenWorth(DigitSequenceQua);
+TokenWorth(WholeDigits :::= "\s"  DigitSequenceSex) -> RealNumber
+	:= TokenWorth(DigitSequenceSex);
+TokenWorth(WholeDigits :::= "\o"  DigitSequenceOct) -> RealNumber
+	:= TokenWorth(DigitSequenceOct);
+TokenWorth(WholeDigits :::= "\d"? DigitSequenceDec) -> RealNumber
+	:= TokenWorth(DigitSequenceDec);
+TokenWorth(WholeDigits :::= "\x"  DigitSequenceHex) -> RealNumber
+	:= TokenWorth(DigitSequenceHex);
+TokenWorth(WholeDigits :::= "\z"  DigitSequenceNif) -> RealNumber
+	:= TokenWorth(DigitSequenceNif);
+
+TokenWorth(Integer :::= WholeDigits) -> RealNumber
+	:= TokenWorth(WholeDigits);
+TokenWorth(Integer :::= "-" WholeDigits) -> RealNumber
+	:= -1 * TokenWorth(WholeDigits);
+
+TokenWorth(Natural :::= "+" WholeDigits) -> RealNumber
+	:= TokenWorth(WholeDigits);
+
+TokenWorth(Float :::= SignedDigitSequenceDec ".") -> RealNumber
+	:= TokenWorth(SignedDigitSequenceDec);
+TokenWorth(Float :::= SignedDigitSequenceDec "." DigitSequenceDec) -> RealNumber
+	:= TokenWorth(SignedDigitSequenceDec) + TokenWorth(DigitSequenceDec);
+TokenWorth(Float :::= SignedDigitSequenceDec "." DigitSequenceDec ExponentPart) -> RealNumber
+	:= (TokenWorth(SignedDigitSequenceDec) + TokenWorth(DigitSequenceDec)) * TokenWorth(ExponentPart);
+
+TokenWorth(ExponentPart :::= "e" SignedDigitSequenceDec) -> RealNumber
+	:= 10 ^ TokenWorth(SignedDigitSequenceDec);
+
+TokenWorth(SignedDigitSequenceDec :::= "+"? DigitSequenceDec) -> RealNumber
+	:= TokenWorth(DigitSequenceDec);
+TokenWorth(SignedDigitSequenceDec :::= "-"  DigitSequenceDec) -> RealNumber
+	:= -1 * TokenWorth(DigitSequenceDec);
 
 
 

@@ -27,20 +27,21 @@ export function identical(
  * Known subclasses:
  * - Primitive
  * - Collection
+ * - Data
+ * - ValueObject
+ * - Exception
  * - Maybe
+ * - Result
+ * - ValueFunction
+ * - ValueClass
  */
 export abstract class Value {
 	/** Whether this value is of a reference type or a value type. */
-	public abstract readonly isReference: boolean;
+	public readonly isReference: boolean = true;
 
-	/**
-	 * Return the “logical value” of this value.
-	 * @returns the associated Boolean value of this value
-	 */
-	// eslint-disable-next-line @typescript-eslint/class-literal-property-style --- overridden in subclasses by getters
-	public get isTruthy(): boolean {
-		return true;
-	}
+	/** The “logical value” (associated Boolean value) of this value. */
+	public readonly isTruthy: boolean = true;
+
 
 	/**
 	 * Return whether this value is “empty”, that is,

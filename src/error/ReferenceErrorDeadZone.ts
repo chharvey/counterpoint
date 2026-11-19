@@ -4,7 +4,7 @@ import {ReferenceError as CplReferenceError} from './ReferenceError.ts';
 
 
 /**
- * A ReferenceErrorDeadZone is thrown when the validator encounters a not-yet-declared variable.
+ * A ReferenceErrorDeadZone is raised when the validator encounters a not-yet-declared variable.
  * @example
  * my_var;               % ReferenceErrorDeadZone: `my_var` is used before it is declared.
  * val my_var: int = 42;

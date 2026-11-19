@@ -6,6 +6,7 @@ import {
 	NanErrorDivZero,
 } from '../../index.ts';
 import {
+	assert_instanceof,
 	memoizeMethod,
 	runOnceMethod,
 } from '../../lib/index.ts';
@@ -49,6 +50,7 @@ export type OpCodeBin = (
 
 	| OpCode.ID
 	| OpCode.EQ
+	| OpCode.IS
 );
 
 
@@ -71,7 +73,7 @@ export class Binop extends Value {
 	@runOnceMethod
 	public override validate(builder: Builder): void {
 		const operands = [this.operand0, this.operand1] as const;
-		return xjs.Array.forEachAggregated(operands, (arg) => {
+		xjs.Array.forEachAggregated(operands, (arg) => {
 			arg.validate(builder);
 			switch (this.operator) {
 				case OpCode.INT_ADD: { return assert.ok(arg.type.isSubtypeOf(TYPE.INT)); }
@@ -98,6 +100,9 @@ export class Binop extends Value {
 				case OpCode.GE: { return assert.ok(arg.type.isSubtypeOf(TYPE.NUMBER)); }
 			}
 		});
+		if (this.operator === OpCode.IS) {
+			assert.ok(operands[1].type.isSubtypeOf(TYPE.CLASS));
+		}
 	}
 
 	public override interpret(interp: Interpreter): VALUE.Value {
@@ -128,39 +133,43 @@ export class Binop extends Value {
 
 			case OpCode.ID: { return VALUE.Boolean.fromBoolean(operand0.identical(operand1)); }
 			case OpCode.EQ: { return VALUE.Boolean.fromBoolean(operand0.equal(operand1)); }
+			case OpCode.IS: {
+				assert_instanceof(operand1, VALUE.Class);
+				return VALUE.Boolean.fromBoolean(operand0 instanceof operand1.nativeClass);
+			}
 		}
 	}
 
 	@memoizeMethod
 	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
-		const {op} = cg.vm;
 		const [code0, code1]: [binaryen.ExpressionRef, binaryen.ExpressionRef] = [this.operand0.codegen(cg), this.operand1.codegen(cg)];
 		switch (this.operator) {
-			case OpCode.INT_ADD: { return op.intAdd(code0, code1); }
-			case OpCode.INT_SUB: { return op.intSub(code0, code1); }
-			case OpCode.INT_MUL: { return op.intMul(code0, code1); }
-			case OpCode.INT_DIV: { return op.intDiv(code0, code1); }
-			case OpCode.INT_EXP: { return op.intExp(code0, code1); }
+			case OpCode.INT_ADD: { return cg.vm.op.intAdd(code0, code1); }
+			case OpCode.INT_SUB: { return cg.vm.op.intSub(code0, code1); }
+			case OpCode.INT_MUL: { return cg.vm.op.intMul(code0, code1); }
+			case OpCode.INT_DIV: { return cg.vm.op.intDiv(code0, code1); }
+			case OpCode.INT_EXP: { return cg.vm.op.intExp(code0, code1); }
 
-			case OpCode.NAT_ADD: { return op.natAdd(code0, code1); }
-			case OpCode.NAT_SUB: { return op.natSub(code0, code1); }
-			case OpCode.NAT_MUL: { return op.natMul(code0, code1); }
-			case OpCode.NAT_DIV: { return op.natDiv(code0, code1); }
-			case OpCode.NAT_EXP: { return op.natExp(code0, code1); }
+			case OpCode.NAT_ADD: { return cg.vm.op.natAdd(code0, code1); }
+			case OpCode.NAT_SUB: { return cg.vm.op.natSub(code0, code1); }
+			case OpCode.NAT_MUL: { return cg.vm.op.natMul(code0, code1); }
+			case OpCode.NAT_DIV: { return cg.vm.op.natDiv(code0, code1); }
+			case OpCode.NAT_EXP: { return cg.vm.op.natExp(code0, code1); }
 
-			case OpCode.FLOAT_ADD: { return op.floatAdd(code0, code1); }
-			case OpCode.FLOAT_SUB: { return op.floatSub(code0, code1); }
-			case OpCode.FLOAT_MUL: { return op.floatMul(code0, code1); }
-			case OpCode.FLOAT_DIV: { return op.floatDiv(code0, code1); }
-			case OpCode.FLOAT_EXP: { return op.floatExp(code0, code1); }
+			case OpCode.FLOAT_ADD: { return cg.vm.op.floatAdd(code0, code1); }
+			case OpCode.FLOAT_SUB: { return cg.vm.op.floatSub(code0, code1); }
+			case OpCode.FLOAT_MUL: { return cg.vm.op.floatMul(code0, code1); }
+			case OpCode.FLOAT_DIV: { return cg.vm.op.floatDiv(code0, code1); }
+			case OpCode.FLOAT_EXP: { return cg.vm.op.floatExp(code0, code1); }
 
-			case OpCode.LT: { return op.lt(code0, code1); }
-			case OpCode.GT: { return op.gt(code0, code1); }
-			case OpCode.LE: { return op.le(code0, code1); }
-			case OpCode.GE: { return op.ge(code0, code1); }
+			case OpCode.LT: { return cg.vm.op.lt(code0, code1); }
+			case OpCode.GT: { return cg.vm.op.gt(code0, code1); }
+			case OpCode.LE: { return cg.vm.op.le(code0, code1); }
+			case OpCode.GE: { return cg.vm.op.ge(code0, code1); }
 
-			case OpCode.ID: { return op.id(code0, code1); }
-			case OpCode.EQ: { return op.eq(code0, code1); }
+			case OpCode.ID: { return cg.vm.op.id(code0, code1); }
+			case OpCode.EQ: { return cg.vm.op.eq(code0, code1); }
+			case OpCode.IS: { return cg.vm.op.is(code0, code1); }
 		}
 	}
 
@@ -239,8 +248,8 @@ export class Binop extends Value {
 			return wasm.block(null, [
 				wasm.drop(arg0),
 				wasm.drop(arg1),
-				cg.vm.Vect.FALSE,
-			], binaryen.Type.v128);
+				cg.vm.Value.FALSE,
+			], cg.vm.reftype.Value);
 		}
 
 		// Operator Logical

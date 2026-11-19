@@ -105,23 +105,27 @@ function call<RuleName extends string>($: GrammarSymbols<RuleName>, family_name:
 
 
 /* # LEXER HELPERS */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function rg(s: string | RegExp): RegExp { // s -> (s)
 	return new RegExp(`(${typeof s === 'string' ? RegExp.escape(s) : s.source})`);
 }
-function ro(s: string | RegExp): RegExp { // s -> (s)?
-	return new RegExp(rg(s).source.concat('?'));
+function ru(s: string | RegExp): RegExp { // s -> (?:s)
+	return new RegExp(`(?:${typeof s === 'string' ? RegExp.escape(s) : s.source})`);
 }
-function rr0(s: string | RegExp): RegExp { // s -> (s)*
-	return new RegExp(rg(s).source.concat('*'));
+function ro(s: string | RegExp): RegExp { // s -> (?:s)?
+	return new RegExp(ru(s).source.concat('?'));
 }
-function rr1(s: string | RegExp): RegExp { // s -> (s)+
-	return new RegExp(rg(s).source.concat('+'));
+function rr0(s: string | RegExp): RegExp { // s -> (?:s)*
+	return new RegExp(ru(s).source.concat('*'));
 }
-function rs(...ss: readonly (string | RegExp)[]): RegExp { // s,t -> (s)(t)
-	return new RegExp(ss.map((s) => rg(s).source).join(''));
+function rr1(s: string | RegExp): RegExp { // s -> (?:s)+
+	return new RegExp(ru(s).source.concat('+'));
 }
-function rc(...ss: readonly (string | RegExp)[]): RegExp { // s,t -> (s)|(t)
-	return new RegExp(ss.map((s) => rg(s).source).join('|'));
+function rs(...ss: readonly (string | RegExp)[]): RegExp { // s,t -> (?:s)(?:t)
+	return new RegExp(ss.map((s) => ru(s).source).join(''));
+}
+function rc(...ss: readonly (string | RegExp)[]): RegExp { // s,t -> (?:s)|(?:t)
+	return new RegExp(ss.map((s) => ru(s).source).join('|'));
 }
 
 const WORD_BASIC   = /[A-Za-z][A-Za-z0-9_]*|_[A-Za-z0-9_]+/;
@@ -136,13 +140,14 @@ const DIGIT_SEQ_HEX = /([0-9a-f]_?)*[0-9a-f]/;
 const DIGIT_SEQ_NIF = /([0-9a-z]_?)*[0-9a-z]/;
 
 const WHOLE_DIGITS = rc(
-	rs('\\b',     DIGIT_SEQ_BIN),
-	rs('\\q',     DIGIT_SEQ_QUA),
-	rs('\\s',     DIGIT_SEQ_SEX),
-	rs('\\o',     DIGIT_SEQ_OCT),
-	rs(ro('\\d'), DIGIT_SEQ_DEC),
-	rs('\\x',     DIGIT_SEQ_HEX),
-	rs('\\z',     DIGIT_SEQ_NIF),
+	// HACK: issues with tree-sitter not handling "s" and "d"
+	rs('\\b',        DIGIT_SEQ_BIN),
+	rs('\\q',        DIGIT_SEQ_QUA),
+	rs(/\\\x73/,     DIGIT_SEQ_SEX), // '\\s'
+	rs('\\o',        DIGIT_SEQ_OCT),
+	rs(ro(/\\\x64/), DIGIT_SEQ_DEC), // '\\d'
+	rs('\\x',        DIGIT_SEQ_HEX),
+	rs('\\z',        DIGIT_SEQ_NIF),
 );
 
 const SIGNED_DIGIT_SEQ_DEC = rs(/[+-]?/, DIGIT_SEQ_DEC);
@@ -160,7 +165,7 @@ const STRING_ESCAPE = rc(
 	DELIM_STRING,
 	ESCAPER,
 	COMMENTER_LINE,
-	's', 't', 'n', 'r', // eslint-disable-line @stylistic/function-call-argument-newline
+	's', 't', 'n', 'r', // eslint-disable-line @stylistic/list-style
 	rs('u{', ro(DIGIT_SEQ_HEX), '}'),
 	'\n',
 	/[^"\\%stnru\n]/,
@@ -244,7 +249,7 @@ function uSeq(left: RuleOrLiteral, right: RuleOrLiteral): ChoiceRule {
 
 
 
-/* eslint-disable @stylistic/arrow-parens */
+/* eslint-disable @stylistic/arrow-parens, @stylistic/list-style */
 module.exports = grammar({
 	name: 'counterpoint',
 
@@ -273,6 +278,8 @@ module.exports = grammar({
 			WORD_BASIC,
 			WORD_UNICODE,
 		)),
+
+		whole_digits: _$ => token(WHOLE_DIGITS),
 
 		integer: _$ => token(rs(/-?/, WHOLE_DIGITS)),
 		natural: _$ => token(rs('+',  WHOLE_DIGITS)),
@@ -329,10 +336,13 @@ module.exports = grammar({
 			// storage
 			'type',
 			'val',
+			'func',
 			'claim',
 			'set',
 			'delete',
 			'_',
+			'with',
+			'ref',
 			'void',
 			// modifier
 			'nominal',
@@ -345,6 +355,8 @@ module.exports = grammar({
 			'do',
 			'break',
 			'skip',
+			'return',
+			'panic',
 			$.identifier,
 			$.keyword_type,
 			$.keyword_value,
@@ -362,7 +374,7 @@ module.exports = grammar({
 
 		/* ## Types */
 		...parameterize('entry_type', ({named, optional}) => (
-			$ => seq(...iff(named, seq(field('word_0', $.word), ...iff(!optional, ':'))), ...iff(optional, seq('?', ':')), field('type_0', $._type))
+			$ => seq(...iff(named, seq(field('word_0', $.word), ...iff(!optional, ':'))), ...iff(optional, seq(field('opt_0', '?'), ':')), field('type_0', $._type))
 		), 'named', 'optional'),
 
 		_items_type: $ => {
@@ -376,7 +388,17 @@ module.exports = grammar({
 
 		_properties_type: $ => seq(OPT_COM, repCom1(call($, 'entry_type', 'named', ['', 'optional'])), OPT_COM),
 
-		property_accessor_type: $ => choice($.integer, $.natural, $.word),
+		_parameters_type: $ => {
+			const LIST_ENT_OPT: SeqRule = repCom1(call($, 'entry_type', 'optional'));
+			const LIST_ENT_NAM: SeqRule = repCom1(call($, 'entry_type', 'named', ['', 'optional']));
+			return choice(
+				seq(OPT_COM, repCom1($.entry_type), optional(seq(',', LIST_ENT_OPT)), optional(seq(',', LIST_ENT_NAM)), OPT_COM),
+				seq(OPT_COM,                                          LIST_ENT_OPT,   optional(seq(',', LIST_ENT_NAM)), OPT_COM),
+				seq(OPT_COM,                                                                            LIST_ENT_NAM,   OPT_COM),
+			);
+		},
+
+		property_accessor_type: $ => choice($.whole_digits, $.word),
 
 		type_grouped:        $ => seq('(', $._type,                            ')'),
 		type_tuple_literal:  $ => seq('(', optional($._items_type),            ')'),
@@ -400,9 +422,9 @@ module.exports = grammar({
 			$.type_map_literal,
 		),
 
-		type_compound: $ => prec(5, seq(field('type_0', $._type), choice(
-			seq(choice('.', '?.'), field('property_accessor_type_0', $.property_accessor_type)),
-			seq('.',               field('generic_arguments_0',      $.generic_arguments)),
+		type_compound: $ => prec(5, seq(field('type_0', $._type), '.', choice(
+			field('property_accessor_type_0', $.property_accessor_type),
+			field('generic_arguments_0',      $.generic_arguments),
 		))),
 
 		type_unary_symbol:  $ => prec(4, seq($._type, choice('?', '!'))),
@@ -410,6 +432,8 @@ module.exports = grammar({
 
 		type_intersection: $ => prec.left(2, seq($._type, '&', $._type)),
 		type_union:        $ => prec.left(1, seq($._type, '|', $._type)),
+
+		type_function: $ => seq('\\', '(', optional($._parameters_type), ')', '=>', choice('void', field('type_0', $._type))),
 
 		_type: $ => choice(
 			$._type_unit,
@@ -420,176 +444,225 @@ module.exports = grammar({
 			$.type_unary_keyword,
 			$.type_intersection,
 			$.type_union,
+
+			$.type_function,
 		),
 
 
 		/* ## Expressions */
-		...parameterize('string_template', ({break: brk}) => $ => choice(
+		...parameterize('string_template', ({break: brk, return: rtn}) => $ => choice(
 			$.template_full,
-			seq($.template_head, optional(call($, '_expression', 'block', {break: brk})), repeat(seq($.template_middle, optional(call($, '_expression', 'block', {break: brk})))), $.template_tail),
-		), 'break'),
+			seq($.template_head, optional(call($, '_expression', 'block', {break: brk}, {return: rtn})), repeat(seq($.template_middle, optional(call($, '_expression', 'block', {break: brk}, {return: rtn})))), $.template_tail),
+		), 'break', 'return'),
 
-		...parameterize('_items', ({break: brk}) => $ => choice(
-			seq(         call($, '_expression', 'block', {break: brk}),  ','),
-			seq(optional(call($, '_expression', 'block', {break: brk})), ',', repCom1(call($, '_expression', 'block', {break: brk})), OPT_COM),
-		), 'break'),
+		...parameterize('_items', ({break: brk, return: rtn}) => $ => choice(
+			seq(         call($, '_expression', 'block', {break: brk}, {return: rtn}),  ','),
+			seq(optional(call($, '_expression', 'block', {break: brk}, {return: rtn})), ',', repCom1(call($, '_expression', 'block', {break: brk}, {return: rtn})), OPT_COM),
+		), 'break', 'return'),
 
-		...parameterize('property',    ({break: brk}) => $ => seq(                                                                         $.word,                                        '=',  call($, '_expression', 'block', {break: brk})), 'break'),
-		...parameterize('case_map',    ({break: brk}) => $ => seq(                                                                         call($, '_expression', 'block', {break: brk}), '->', call($, '_expression', 'block', {break: brk})), 'break'),
-		...parameterize('case_switch', ({break: brk}) => $ => seq('case', repeat(seq(call($, '_expression', 'block', {break: brk}), '|')), call($, '_expression', 'block', {break: brk}), '->', call($, '_expression', 'block', {break: brk})), 'break'),
+		...parameterize('property',    ({break: brk, return: rtn}) => $ => seq(                                                                                        $.word,                                                       '=',  call($, '_expression', 'block', {break: brk}, {return: rtn})), 'break', 'return'),
+		...parameterize('case_map',    ({break: brk, return: rtn}) => $ => seq(                                                                                        call($, '_expression', 'block', {break: brk}, {return: rtn}), '->', call($, '_expression', 'block', {break: brk}, {return: rtn})), 'break', 'return'),
+		...parameterize('case_switch', ({break: brk, return: rtn}) => $ => seq('case', repeat(seq(call($, '_expression', 'block', {break: brk}, {return: rtn}), '|')), call($, '_expression', 'block', {break: brk}, {return: rtn}), '->', call($, '_expression', 'block', {break: brk}, {return: rtn})), 'break', 'return'),
 
-		...parameterize('property_accessor', ({break: brk}) => $ => choice($.integer, $.natural, $.word, seq('[', call($, '_expression', 'block', {break: brk}), ']')), 'break'),
+		...parameterize('parameter_function', ({named, optional: opt}) => $ => seq(choice(
+			seq(...iff(named, seq(field('word_0', $.word), '=')), choice('_', seq(optional(field('mut_0', 'mut')), field('identifier_0', $.identifier)))),
+			...iff(named, seq(optional(field('mut_0', 'mut')), field('pun_0', '$'), field('identifier_0', $.identifier))),
+		), ...iff(opt, field('opt_0', '?')), ':', field('type_0', $._type), ...iff(opt, optional(seq('=', field('expression_0', call($, '_expression', 'block')))))), 'named', 'optional'),
 
-		...parameterize('expression_grouped',        ({break: brk}) => $ => seq('(',                               call($, '_expression', 'block', {break: brk}),             ')'), 'break'),
-		...parameterize('expression_tuple_literal',  ({break: brk}) => $ => seq('(', optional(                     call($, '_items',               {break: brk})           ), ')'), 'break'),
-		...parameterize('expression_record_literal', ({break: brk}) => $ => seq('(',              OPT_COM, repCom1(call($, 'property',             {break: brk})), OPT_COM,   ')'), 'break'),
-		...parameterize('expression_list_literal',   ({break: brk}) => $ => seq('[', optional(seq(OPT_COM, repCom1(call($, '_expression', 'block', {break: brk})), OPT_COM)), ']'), 'break'),
-		...parameterize('expression_dict_literal',   ({break: brk}) => $ => seq('[',              OPT_COM, repCom1(call($, 'property',             {break: brk})), OPT_COM,   ']'), 'break'),
-		...parameterize('expression_set_literal',    ({break: brk}) => $ => seq('{', optional(seq(OPT_COM, repCom1(call($, '_expression', 'block', {break: brk})), OPT_COM)), '}'), 'break'),
-		...parameterize('expression_map_literal',    ({break: brk}) => $ => seq('{',              OPT_COM, repCom1(call($, 'case_map',             {break: brk})), OPT_COM,   '}'), 'break'),
-		...parameterize('function_arguments',        ({break: brk}) => $ => seq('(', optional(seq(OPT_COM, repCom1(call($, '_expression', 'block', {break: brk})), OPT_COM)), ')'), 'break'),
+		_parameters_function: $ => {
+			const LIST_PARAM_OPT: SeqRule = repCom1(call($, 'parameter_function', 'optional'));
+			const LIST_PARAM_NAM: SeqRule = repCom1(call($, 'parameter_function', 'named', ['', 'optional']));
+			return choice(
+				seq(OPT_COM, repCom1($.parameter_function), optional(seq(',', LIST_PARAM_OPT)), optional(seq(',', LIST_PARAM_NAM)), OPT_COM),
+				seq(OPT_COM,                                                  LIST_PARAM_OPT,   optional(seq(',', LIST_PARAM_NAM)), OPT_COM),
+				seq(OPT_COM,                                                                                      LIST_PARAM_NAM,   OPT_COM),
+			);
+		},
 
-		...parameterize('_expression_unit', ({block, break: brk}) => $ => choice(
+		...parameterize('capture', ({ref}) => $ => seq(...iff(ref, optional(field('ref_0', 'ref'))), field('identifier_0', $.identifier)), 'ref'),
+
+		...parameterize('_capture_clause', ({ref}) => $ => seq('with', '(', OPT_COM, repCom1(call($, 'capture', {ref})), OPT_COM, ')'), 'ref'),
+
+		...parameterize('property_accessor', ({break: brk, return: rtn}) => $ => choice($.whole_digits, $.word, seq('[', call($, '_expression', 'block', {break: brk}, {return: rtn}), ']')), 'break', 'return'),
+
+		...parameterize('expression_grouped',        ({break: brk, return: rtn}) => $ => seq('(',                               call($, '_expression', 'block', {break: brk}, {return: rtn}),             ')'), 'break', 'return'),
+		...parameterize('expression_tuple_literal',  ({break: brk, return: rtn}) => $ => seq('(', optional(                     call($, '_items',               {break: brk}, {return: rtn})           ), ')'), 'break', 'return'),
+		...parameterize('expression_record_literal', ({break: brk, return: rtn}) => $ => seq('(',              OPT_COM, repCom1(call($, 'property',             {break: brk}, {return: rtn})), OPT_COM,   ')'), 'break', 'return'),
+		...parameterize('expression_list_literal',   ({break: brk, return: rtn}) => $ => seq('[', optional(seq(OPT_COM, repCom1(call($, '_expression', 'block', {break: brk}, {return: rtn})), OPT_COM)), ']'), 'break', 'return'),
+		...parameterize('expression_dict_literal',   ({break: brk, return: rtn}) => $ => seq('[',              OPT_COM, repCom1(call($, 'property',             {break: brk}, {return: rtn})), OPT_COM,   ']'), 'break', 'return'),
+		...parameterize('expression_set_literal',    ({break: brk, return: rtn}) => $ => seq('{', optional(seq(OPT_COM, repCom1(call($, '_expression', 'block', {break: brk}, {return: rtn})), OPT_COM)), '}'), 'break', 'return'),
+		...parameterize('expression_map_literal',    ({break: brk, return: rtn}) => $ => seq('{',              OPT_COM, repCom1(call($, 'case_map',             {break: brk}, {return: rtn})), OPT_COM,   '}'), 'break', 'return'),
+		...parameterize('function_arguments',        ({break: brk, return: rtn}) => $ => seq('(', optional(seq(OPT_COM, repCom1(call($, '_expression', 'block', {break: brk}, {return: rtn})), OPT_COM)), ')'), 'break', 'return'),
+
+		...parameterize('_expression_unit', ({block, break: brk, return: rtn}) => $ => choice(
 			$.identifier,
 			$.primitive_literal,
-			call($, 'string_template',           {break: brk}),
-			call($, 'expression_grouped',        {break: brk}),
-			call($, 'expression_tuple_literal',  {break: brk}),
-			call($, 'expression_record_literal', {break: brk}),
-			call($, 'expression_list_literal',   {break: brk}),
-			call($, 'expression_dict_literal',   {break: brk}),
-			call($, 'expression_set_literal',    {break: brk}),
-			call($, 'expression_map_literal',    {break: brk}),
-			...iff(block, alias(call($, 'block', {break: brk}), $.expression_block)),
-		), 'block', 'break'),
+			call($, 'string_template',           {break: brk}, {return: rtn}),
+			call($, 'expression_grouped',        {break: brk}, {return: rtn}),
+			call($, 'expression_tuple_literal',  {break: brk}, {return: rtn}),
+			call($, 'expression_record_literal', {break: brk}, {return: rtn}),
+			call($, 'expression_list_literal',   {break: brk}, {return: rtn}),
+			call($, 'expression_dict_literal',   {break: brk}, {return: rtn}),
+			call($, 'expression_set_literal',    {break: brk}, {return: rtn}),
+			call($, 'expression_map_literal',    {break: brk}, {return: rtn}),
+			...iff(block, alias(call($, 'block', {break: brk}, {return: rtn}), $.expression_block)),
+		), 'block', 'break', 'return'),
 
-		...parameterize('expression_compound', ({block, break: brk}) => $ => prec(10, seq(field('expression_0', call($, '_expression', {block}, {break: brk})), choice(
+		...parameterize('expression_compound', ({block, break: brk, return: rtn}) => $ => prec(10, seq(field('expression_0', call($, '_expression', {block}, {break: brk}, {return: rtn})), choice(
 			'~?',
 			'~!',
-			seq(choice('.', '?.', '!.'), field('property_accessor_0', call($, 'property_accessor', {break: brk}))),
-			seq('.',                     optional(field('generic_arguments_0', $.generic_arguments)), field('function_arguments_0', call($, 'function_arguments', {break: brk}))),
-		))), 'block', 'break'),
+			seq(choice('.', '?.', '!.'), field('property_accessor_0', call($, 'property_accessor', {break: brk}, {return: rtn}))),
+			seq('.',                     optional(field('generic_arguments_0', $.generic_arguments)), field('function_arguments_0', call($, 'function_arguments', {break: brk}, {return: rtn}))),
+		))), 'block', 'break', 'return'),
 
-		...parameterize('expression_unary_symbol', ({block, break: brk}) => $ => prec(9, seq(choice('!', '?', '+', '-'), call($, '_expression', {block}, {break: brk}))), 'block', 'break'),
+		...parameterize('expression_unary_symbol', ({block, break: brk, return: rtn}) => $ => prec(9, seq(choice('!', '?', '+', '-'), call($, '_expression', {block}, {break: brk}, {return: rtn}))), 'block', 'break', 'return'),
 
-		...parameterize('expression_cast', ({block, break: brk}) => $ => choice(
-			prec.left(8, seq(field('expression_0', call($, '_expression', {block}, {break: brk})), choice('as', 'as?'), field('expression_1', call($, '_expression', {block}, {break: brk})))),
-			prec(8,      seq(field('expression_0', call($, '_expression', {block}, {break: brk})), choice('as', 'as!'), '<', field('type_0', $._type), '>')),
-		), 'block', 'break'),
+		...parameterize('expression_cast', ({block, break: brk, return: rtn}) => $ => choice(
+			prec.left(8, seq(field('expression_0', call($, '_expression', {block}, {break: brk}, {return: rtn})), choice('as', 'as?'), field('expression_1', call($, '_expression', {block}, {break: brk}, {return: rtn})))),
+			prec(8,      seq(field('expression_0', call($, '_expression', {block}, {break: brk}, {return: rtn})), choice('as', 'as!'), '<', field('type_0', $._type), '>')),
+		), 'block', 'break', 'return'),
 
-		...parameterize('expression_exponential',    ({block, break: brk}) => $ => prec.right(7, seq(call($, '_expression', {block}, {break: brk}), '^',                                                   call($, '_expression', {block}, {break: brk}))), 'block', 'break'),
-		...parameterize('expression_multiplicative', ({block, break: brk}) => $ => prec.left (6, seq(call($, '_expression', {block}, {break: brk}), choice('*', '/'),                                      call($, '_expression', {block}, {break: brk}))), 'block', 'break'),
-		...parameterize('expression_additive',       ({block, break: brk}) => $ => prec.left (5, seq(call($, '_expression', {block}, {break: brk}), choice('+', '-'),                                      call($, '_expression', {block}, {break: brk}))), 'block', 'break'),
-		...parameterize('expression_comparative',    ({block, break: brk}) => $ => prec.left (4, seq(call($, '_expression', {block}, {break: brk}), choice('<', '>', '<=', '>=', '!<', '!>', 'is', '!is'), call($, '_expression', {block}, {break: brk}))), 'block', 'break'),
-		...parameterize('expression_equality',       ({block, break: brk}) => $ => prec.left (3, seq(call($, '_expression', {block}, {break: brk}), choice('===', '!==', '==', '!='),                      call($, '_expression', {block}, {break: brk}))), 'block', 'break'),
-		...parameterize('expression_conjunctive',    ({block, break: brk}) => $ => prec.left (2, seq(call($, '_expression', {block}, {break: brk}), choice('&&', '!&'),                                    call($, '_expression', {block}, {break: brk}))), 'block', 'break'),
-		...parameterize('expression_disjunctive',    ({block, break: brk}) => $ => prec.left (1, seq(call($, '_expression', {block}, {break: brk}), choice('||', '!|'),                                    call($, '_expression', {block}, {break: brk}))), 'block', 'break'),
+		...parameterize('expression_exponential',    ({block, break: brk, return: rtn}) => $ => prec.right(7, seq(call($, '_expression', {block}, {break: brk}, {return: rtn}), '^',                                                   call($, '_expression', {block}, {break: brk}, {return: rtn}))), 'block', 'break', 'return'),
+		...parameterize('expression_multiplicative', ({block, break: brk, return: rtn}) => $ => prec.left (6, seq(call($, '_expression', {block}, {break: brk}, {return: rtn}), choice('*', '/'),                                      call($, '_expression', {block}, {break: brk}, {return: rtn}))), 'block', 'break', 'return'),
+		...parameterize('expression_additive',       ({block, break: brk, return: rtn}) => $ => prec.left (5, seq(call($, '_expression', {block}, {break: brk}, {return: rtn}), choice('+', '-'),                                      call($, '_expression', {block}, {break: brk}, {return: rtn}))), 'block', 'break', 'return'),
+		...parameterize('expression_comparative',    ({block, break: brk, return: rtn}) => $ => prec.left (4, seq(call($, '_expression', {block}, {break: brk}, {return: rtn}), choice('<', '>', '<=', '>=', '!<', '!>', 'is', '!is'), call($, '_expression', {block}, {break: brk}, {return: rtn}))), 'block', 'break', 'return'),
+		...parameterize('expression_equality',       ({block, break: brk, return: rtn}) => $ => prec.left (3, seq(call($, '_expression', {block}, {break: brk}, {return: rtn}), choice('===', '!==', '==', '!='),                      call($, '_expression', {block}, {break: brk}, {return: rtn}))), 'block', 'break', 'return'),
+		...parameterize('expression_conjunctive',    ({block, break: brk, return: rtn}) => $ => prec.left (2, seq(call($, '_expression', {block}, {break: brk}, {return: rtn}), choice('&&', '!&'),                                    call($, '_expression', {block}, {break: brk}, {return: rtn}))), 'block', 'break', 'return'),
+		...parameterize('expression_disjunctive',    ({block, break: brk, return: rtn}) => $ => prec.left (1, seq(call($, '_expression', {block}, {break: brk}, {return: rtn}), choice('||', '!|'),                                    call($, '_expression', {block}, {break: brk}, {return: rtn}))), 'block', 'break', 'return'),
 
-		...parameterize('expression_conditional', ({break: brk}) => $ => seq(
+		...parameterize('expression_conditional', ({break: brk, return: rtn}) => $ => seq(
 			'if',
-			call($, '_expression', 'block', {break: brk}),
+			call($, '_expression', 'block', {break: brk}, {return: rtn}),
 			'then',
-			call($, '_expression', {break: brk}),
+			call($, '_expression', {break: brk}, {return: rtn}),
 			'else',
-			call($, '_expression', {break: brk}),
-		), 'break'),
+			call($, '_expression', {break: brk}, {return: rtn}),
+		), 'break', 'return'),
 
-		...parameterize('expression_switch', ({break: brk}) => $ => seq(
+		...parameterize('expression_switch', ({break: brk, return: rtn}) => $ => seq(
 			'switch',
-			field('expression_0', call($, '_expression', 'block', {break: brk})),
-			repeat(call($, 'case_switch', {break: brk})),
+			field('expression_0', call($, '_expression', 'block', {break: brk}, {return: rtn})),
+			repeat(call($, 'case_switch', {break: brk}, {return: rtn})),
 			'default',
-			field('expression_1', call($, '_expression', 'block', {break: brk})),
-		), 'break'),
+			field('expression_1', call($, '_expression', 'block', {break: brk}, {return: rtn})),
+		), 'break', 'return'),
 
-		...parameterize('_expression', ({block, break: brk}) => $ => choice(
-			call($, '_expression_unit', {block}, {break: brk}),
+		expression_function: $ => seq(
+			'\\', '(', optional($._parameters_function), ')',
+			optional(call($, '_capture_clause')),
+			':', choice('void', field('type_0', $._type)),
+			choice(
+				field('block_0', call($, 'block', {break: false}, 'return')),
+				seq('=>', field('expression_0', call($, '_expression', 'block', {break: false}, 'return'))),
+			),
+		),
 
-			alias(call($, 'expression_compound',       {block}, {break: brk}), $.expression_compound),
-			alias(call($, 'expression_unary_symbol',   {block}, {break: brk}), $.expression_unary_symbol),
-			alias(call($, 'expression_cast',           {block}, {break: brk}), $.expression_cast),
-			alias(call($, 'expression_exponential',    {block}, {break: brk}), $.expression_exponential),
-			alias(call($, 'expression_multiplicative', {block}, {break: brk}), $.expression_multiplicative),
-			alias(call($, 'expression_additive',       {block}, {break: brk}), $.expression_additive),
-			alias(call($, 'expression_comparative',    {block}, {break: brk}), $.expression_comparative),
-			alias(call($, 'expression_equality',       {block}, {break: brk}), $.expression_equality),
-			alias(call($, 'expression_conjunctive',    {block}, {break: brk}), $.expression_conjunctive),
-			alias(call($, 'expression_disjunctive',    {block}, {break: brk}), $.expression_disjunctive),
+		...parameterize('_expression', ({block, break: brk, return: rtn}) => $ => choice(
+			call($, '_expression_unit', {block}, {break: brk}, {return: rtn}),
 
-			call($, 'expression_conditional', {break: brk}),
-			call($, 'expression_switch',      {break: brk}),
-		), 'block', 'break'),
+			alias(call($, 'expression_compound',       {block}, {break: brk}, {return: rtn}), $.expression_compound),
+			alias(call($, 'expression_unary_symbol',   {block}, {break: brk}, {return: rtn}), $.expression_unary_symbol),
+			alias(call($, 'expression_cast',           {block}, {break: brk}, {return: rtn}), $.expression_cast),
+			alias(call($, 'expression_exponential',    {block}, {break: brk}, {return: rtn}), $.expression_exponential),
+			alias(call($, 'expression_multiplicative', {block}, {break: brk}, {return: rtn}), $.expression_multiplicative),
+			alias(call($, 'expression_additive',       {block}, {break: brk}, {return: rtn}), $.expression_additive),
+			alias(call($, 'expression_comparative',    {block}, {break: brk}, {return: rtn}), $.expression_comparative),
+			alias(call($, 'expression_equality',       {block}, {break: brk}, {return: rtn}), $.expression_equality),
+			alias(call($, 'expression_conjunctive',    {block}, {break: brk}, {return: rtn}), $.expression_conjunctive),
+			alias(call($, 'expression_disjunctive',    {block}, {break: brk}, {return: rtn}), $.expression_disjunctive),
+
+			call($, 'expression_conditional', {break: brk}, {return: rtn}),
+			call($, 'expression_switch',      {break: brk}, {return: rtn}),
+			$.expression_function,
+		), 'block', 'break', 'return'),
 
 
 		/* ## Statements */
-		...parameterize('assignee', ({break: brk}) => $ => choice(
+		...parameterize('assignee', ({break: brk, return: rtn}) => $ => choice(
 			field('identifier_0', $.identifier),
-			seq(field('expression_0', call($, '_expression', 'block', {break: brk})), '.', field('property_accessor_0', call($, 'property_accessor', {break: brk}))),
-		), 'break'),
+			seq(field('expression_0', call($, '_expression', 'block', {break: brk}, {return: rtn})), '.', field('property_accessor_0', call($, 'property_accessor', {break: brk}, {return: rtn}))),
+		), 'break', 'return'),
 
-		...parameterize('statement_expression', ({break: brk}) => $ => seq(optional(call($, '_expression', 'block', {break: brk})), ';'), 'break'),
+		...parameterize('statement_expression', ({break: brk, return: rtn}) => $ => seq(optional(call($, '_expression', 'block', {break: brk}, {return: rtn})), ';'), 'break', 'return'),
 
-		...parameterize('statement_claim',  ({break: brk}) => $ => seq('claim',  call($, 'assignee', {break: brk}), ':', $._type,                                       ';'), 'break'),
-		...parameterize('statement_set',    ({break: brk}) => $ => seq('set',    call($, 'assignee', {break: brk}), '=', call($, '_expression', 'block', {break: brk}), ';'), 'break'),
-		...parameterize('statement_delete', ({break: brk}) => $ => seq('delete', call($, 'assignee', {break: brk}),                                                     ';'), 'break'),
+		...parameterize('statement_claim',  ({break: brk, return: rtn}) => $ => seq('claim',  call($, 'assignee', {break: brk}, {return: rtn}), ':', $._type,                                                      ';'), 'break', 'return'),
+		...parameterize('statement_set',    ({break: brk, return: rtn}) => $ => seq('set',    call($, 'assignee', {break: brk}, {return: rtn}), '=', call($, '_expression', 'block', {break: brk}, {return: rtn}), ';'), 'break', 'return'),
+		...parameterize('statement_delete', ({break: brk, return: rtn}) => $ => seq('delete', call($, 'assignee', {break: brk}, {return: rtn}),                                                                    ';'), 'break', 'return'),
 
-		...parameterize('statement_conditional', ({unless, break: brk}) => $ => seq(
+		...parameterize('statement_conditional', ({unless, break: brk, return: rtn}) => $ => seq(
 			!unless ? 'if' : 'unless',
-			field('expression_0', call($, '_expression', 'block', {break: brk})),
+			field('expression_0', call($, '_expression', 'block', {break: brk}, {return: rtn})),
 			'then',
-			field('block_0', call($, 'block', {break: brk})),
+			field('block_0', call($, 'block', {break: brk}, {return: rtn})),
 			!unless
 				? choice(
-					seq(optional(seq('else', field('block_1', call($, 'block', {break: brk})))), ';'),
-					seq('else', field('statement_conditional_0', call($, 'statement_conditional', {unless}, {break: brk}))),
+					seq(optional(seq('else', field('block_1', call($, 'block', {break: brk}, {return: rtn})))), ';'),
+					seq('else', field('statement_conditional_0', call($, 'statement_conditional', {unless}, {break: brk}, {return: rtn}))),
 				)
 				: ';',
-		), 'unless', 'break'),
+		), 'unless', 'break', 'return'),
 
-		statement_loop: $ => seq(uSeq(
-			seq(choice('while', field('until_0', 'until')), field('expression_0', call($, '_expression', 'block'))),
-			seq('do',                                       field('block_0',      call($, 'block', 'break'))),
-		), ';'),
+		...parameterize('statement_loop', ({return: rtn}) => $ => seq(uSeq(
+			seq(choice('while', field('until_0', 'until')), field('expression_0', call($, '_expression', 'block', {return: rtn}))),
+			seq('do',                                       field('block_0',      call($, 'block', 'break', {return: rtn}))),
+		), ';'), 'return'),
 
-		statement_iteration: $ => seq(
+		...parameterize('statement_iteration', ({return: rtn}) => $ => seq(
 			'for',
 			choice('_', field('identifier_0', $.identifier)),
 			':',
 			field('type_0', $._type),
 			'in',
-			field('expression_0', call($, '_expression', 'block', 'break')),
+			field('expression_0', call($, '_expression', 'block', 'break', {return: rtn})),
 			'do',
-			field('block_0', call($, 'block', 'break')),
+			field('block_0', call($, 'block', 'break', {return: rtn})),
 			';',
-		),
+		), 'return'),
 
 		statement_break: _$ => seq(choice('break', 'skip'), ';'),
 
-		...parameterize('_statement', ({break: brk}) => $ => choice(
-			call($, '_declaration',                          {break: brk}),
-			call($, 'statement_expression',                  {break: brk}),
-			call($, 'statement_claim',                       {break: brk}),
-			call($, 'statement_set',                         {break: brk}),
-			call($, 'statement_delete',                      {break: brk}),
-			call($, 'statement_conditional', ['', 'unless'], {break: brk}),
-			$.statement_loop,
-			$.statement_iteration,
-			...iff(brk, $.statement_break),
-		), 'break'),
+		...parameterize('statement_return', ({break: brk}) => $ => seq('return', optional(field('expression_0', call($, '_expression', 'block', {break: brk}, 'return'))), ';'), 'break'),
+		...parameterize('statement_panic',  ({break: brk}) => $ => seq('panic',           field('expression_0', call($, '_expression', 'block', {break: brk}, 'return')),  ';'), 'break'),
 
-		...parameterize('block', ({break: brk}) => $ => seq('{', repeat1(call($, '_statement', {break: brk})), '}'), 'break'),
+		...parameterize('_statement', ({break: brk, return: rtn}) => $ => choice(
+			call($, '_declaration',                          {break: brk}, {return: rtn}),
+			call($, 'statement_expression',                  {break: brk}, {return: rtn}),
+			call($, 'statement_claim',                       {break: brk}, {return: rtn}),
+			call($, 'statement_set',                         {break: brk}, {return: rtn}),
+			call($, 'statement_delete',                      {break: brk}, {return: rtn}),
+			call($, 'statement_conditional', ['', 'unless'], {break: brk}, {return: rtn}),
+			call($, 'statement_loop',                                      {return: rtn}),
+			call($, 'statement_iteration',                                 {return: rtn}),
+			...iff(brk, $.statement_break),
+			...iff(rtn, call($, 'statement_return', {break: brk})),
+			call($, 'statement_panic', {break: brk}),
+		), 'break', 'return'),
+
+		...parameterize('block', ({break: brk, return: rtn}) => $ => seq('{', repeat1(call($, '_statement', {break: brk}, {return: rtn})), '}'), 'break', 'return'),
 
 		declaration_type: $ => seq('type', choice('_', field('identifier_0', $.identifier)), '=', field('type_0', $._type), ';'),
 
-		...parameterize('declaration_variable', ({break: brk}) => $ => choice(
-			seq('val', choice('_', seq(optional(field('mut_0', 'mut')), field('identifier_0', $.identifier))),      optional(seq(':', field('type_0', $._type))), '=', field('expression_0', call($, '_expression', 'block', {break: brk})), ';'),
-			seq('val',                          field('mut_0', 'mut'),  field('identifier_0', $.identifier),   '?',              ':', field('type_0', $._type),                                                                              ';'),
-		), 'break'),
+		...parameterize('declaration_variable', ({break: brk, return: rtn}) => $ => choice(
+			seq('val', choice('_', seq(optional(field('mut_0', 'mut')), field('identifier_0', $.identifier))),      optional(seq(':', field('type_0', $._type))), '=', field('expression_0', call($, '_expression', 'block', {break: brk}, {return: rtn})), ';'),
+			seq('val',                          field('mut_0', 'mut'),  field('identifier_0', $.identifier),   '?',              ':', field('type_0', $._type),                                                                                             ';'),
+		), 'break', 'return'),
 
-		...parameterize('_declaration', ({break: brk}) => $ => choice(
+		declaration_function: $ => seq(
+			'func', choice('_', field('identifier_0', $.identifier)),
+			'(', optional($._parameters_function), ')',
+			optional(call($, '_capture_clause', 'ref')),
+			':', choice('void', field('type_0', $._type)),
+			choice(
+				field('block_0', call($, 'block', {break: false}, 'return')),
+				seq('=>', field('expression_0', call($, '_expression', 'block', {break: false}, 'return')), ';'),
+			),
+		),
+
+		...parameterize('_declaration', ({break: brk, return: rtn}) => $ => choice(
 			$.declaration_type,
-			call($, 'declaration_variable', {break: brk}),
-		), 'break'),
+			call($, 'declaration_variable', {break: brk}, {return: rtn}),
+			$.declaration_function,
+		), 'break', 'return'),
 	},
 
 	extras: $ => [
@@ -606,6 +679,8 @@ module.exports = grammar({
 		// familyNameAll('entry_type', ['named', 'optional']).map((rulename) => $[rulename]),
 		[$.word, $.primitive_literal],
 		[$.word, $._type_unit],
+		[$._parameters_type],
+		[$._parameters_function],
 	],
 
 	/**
@@ -638,10 +713,13 @@ module.exports = grammar({
 			// storage
 			'type',
 			'val',
+			'func',
 			'claim',
 			'set',
 			'delete',
 			'_',
+			'with',
+			'ref',
 			'void',
 			// modifier
 			'nominal',
@@ -654,6 +732,8 @@ module.exports = grammar({
 			'do',
 			'break',
 			'skip',
+			'return',
+			'panic',
 			// type keyword
 			'nothing',
 			'bool',
@@ -670,4 +750,4 @@ module.exports = grammar({
 		],
 	},
 });
-/* eslint-enable @stylistic/arrow-parens */
+/* eslint-enable @stylistic/arrow-parens, @stylistic/list-style */

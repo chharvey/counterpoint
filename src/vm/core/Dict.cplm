@@ -1,0 +1,53 @@
+from "core/vm" import (
+	'op::isTuple',
+	'op::isRecord',
+);
+from "./Object" import await (Object);
+from "./Exception" import (Exception);
+
+
+
+%%%
+A Dict is a variable-size unordered collection of key–value pairs,
+whose keys are words codified internally as integers.
+This class implements a Dict using an underlying hash table.
+
+@typeparam T : the type of values in this Dict
+%%%
+public class open Dict[out(in) T] extends Object {
+	public new () {
+		super();
+	}
+	public new (list: List[(sym, T)]) {
+		panic Exception("TODO: not yet supported");
+	}
+	public new (dict: Dict[T]) {
+		panic Exception("TODO: not yet supported");
+	}
+	public new ('set': Set[(sym, T)]) {
+		panic Exception("TODO: not yet supported");
+	}
+	public new (map: Map[sym, T]) {
+		panic Exception("TODO: not yet supported");
+	}
+	%%
+	public new (());
+	public new (((sym, T),));
+	public new (((sym, T), (sym, T)));
+	public new (((sym, T), (sym, T), (sym, T)));
+	public new (anything); % any tuple type with items of type `(sym, T)`
+	public new ((a: T));
+	public new ((a: T, b: T));
+	public new ((a: T, b: T, c: T));
+	public new (anything); % any record type with values of type `T`
+	%%
+	public new (arg: anything) {
+		if 'op::isTuple'(arg) as :bool: then {
+			panic Exception("TODO: not yet supported");
+		} else if 'op::isRecord'(arg) as :bool: then {
+			panic Exception("TODO: not yet supported");
+		};
+		panic Exception("Value cannot be converted to a Dict.");
+	}
+
+}

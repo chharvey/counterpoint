@@ -12,11 +12,40 @@ import type {
 	Builder,
 } from '../Builder.ts';
 import type {Interpreter} from '../Interpreter.ts';
-import {ast_type_name} from './utils-public.ts';
-import {stringify_type_name} from './utils-private.ts';
+import {
+	TypeName,
+	ast_type_name,
+} from './utils-public.ts';
 import {OpCode} from './Opcode.ts';
 import {Instruction} from './Instruction.ts';
 import type {Value} from './Value.ts';
+
+
+
+function stringify_type_name(typename: TypeName): string | undefined {
+	return new Map<TypeName, string>([
+		[TypeName.NOTHING,   'nothing'],
+		[TypeName.NULL,      'null'],
+		[TypeName.BOOL,      'bool'],
+		[TypeName.SYM,       'sym'],
+		[TypeName.INT,       'int'],
+		[TypeName.NAT,       'nat'],
+		[TypeName.FLOAT,     'float'],
+		[TypeName.STR,       'str'],
+		[TypeName.TUPLE,     'tuple'],
+		[TypeName.RECORD,    'record'],
+		[TypeName.LIST,      'List'],
+		[TypeName.DICT,      'Dict'],
+		[TypeName.SET,       'Set'],
+		[TypeName.MAP,       'Map'],
+		[TypeName.OBJECT,    'Object'],
+		[TypeName.CLASS,     'Class'],
+		[TypeName.EXCEPTION, 'Exception'],
+		[TypeName.MAYBE,     'Maybe'],
+		[TypeName.RESULT,    'Result'],
+		[TypeName.ANYTHING,  'anything'],
+	]).get(typename);
+}
 
 
 
@@ -25,7 +54,7 @@ export class Decl extends Instruction {
 	private readonly targetType: TYPE.Type;
 	private readonly value?:     Value;
 
-	public constructor(target: SymbolSchemaVar, typ: TYPE.Type, value: Value);
+	public constructor(target: SymbolSchemaVar, typ: TYPE.Type, value?: Value);
 	public constructor(target: Temp);
 	public constructor(
 		private readonly target: SymbolSchemaVar | Temp,
@@ -35,7 +64,9 @@ export class Decl extends Instruction {
 		super(OpCode.DECL);
 		this.targetType = this.target instanceof SymbolSchemaVar ? typ! : this.target.type;
 		if (this.target instanceof SymbolSchemaVar) {
-			this.value = value!;
+			if (value) {
+				this.value = value;
+			}
 		} else if (this.target.value) {
 			this.value = this.target.value;
 		}
@@ -45,7 +76,7 @@ export class Decl extends Instruction {
 		return super.toString(
 			`<${stringify_type_name(ast_type_name(this.targetType))}>`,
 			this.target instanceof SymbolSchemaVar ? this.target.source : this.target.name,
-			...(this.value ? [this.value] : []),
+			this.value ?? '',
 		);
 	}
 
@@ -60,7 +91,8 @@ export class Decl extends Instruction {
 
 	public override interpret(interp: Interpreter): void {
 		if (this.target instanceof SymbolSchemaVar) {
-			interp.setLocalValue(this.target, this.value!.interpret(interp));
+			// @ts-expect-error --- FIXME: function params do not have an initial value
+			interp.setLocalValue(this.target, this.value?.interpret(interp));
 		} else if (this.target.value) {
 			interp.setLocalValue(this.target, this.target.value.interpret(interp));
 		}
@@ -68,7 +100,7 @@ export class Decl extends Instruction {
 
 	@memoizeMethod
 	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
-		return cg.teeLocal(this.target, this.value?.codegen(cg) ?? cg.vm.Value.newDefault()).set();
+		return cg.teeLocal(this.target, this.value?.codegen(cg) ?? cg.mod.wasm.struct.new_default(cg.vm.heaptype.Value)).set();
 	}
 
 	/* eslint-disable */

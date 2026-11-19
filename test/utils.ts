@@ -177,12 +177,6 @@ export function assertEqualBins<Ref extends binaryen.ExpressionRef>(arg0: Ref | 
 
 
 
-export function op_maybe_string(val?: string): string {
-	return `(MAYBE.NEW${val ? ` ${val}` : ''})`;
-}
-
-
-
 const TYPE_UNIT_MEMO = new Map<symbol | bigint | number | string, TYPE.Unit<VALUE.Symbol | VALUE.Integer | VALUE.Float | VALUE.String>>();
 const TYPE_UNIT_MEMO_SYM = new Map<string, TYPE.Unit<VALUE.Symbol>>();
 const TYPE_UNIT_MEMO_NAT = new Map<bigint, TYPE.Unit<VALUE.Natural>>();
@@ -194,7 +188,7 @@ export function typeUnit(value: string, tag?: 'sym'): TYPE.Unit<VALUE.String>;
 export function typeUnit(value: symbol | bigint | number | string, tag?: string): TYPE.Unit<VALUE.Symbol | VALUE.Integer | VALUE.Natural | VALUE.Float | VALUE.String> {
 	if (typeof value === 'string' && tag === 'sym') {
 		// TODO: Map#getOrInsertComputed
-		TYPE_UNIT_MEMO_SYM.has(value) || TYPE_UNIT_MEMO_SYM.set(value, new VALUE.Symbol(Validator.cookTokenIdentifier(value), value).toType());
+		TYPE_UNIT_MEMO_SYM.has(value) || TYPE_UNIT_MEMO_SYM.set(value, new VALUE.Symbol(Validator.keyId(value), value).toType());
 		return TYPE_UNIT_MEMO_SYM.get(value)!;
 	}
 	if (typeof value === 'bigint' && tag === 'nat') {
@@ -225,12 +219,12 @@ export function genConst(cg: CodeGenerator, value: bigint, tag?: 'nat'): binarye
 export function genConst(cg: CodeGenerator, value?: null | boolean | number | string): binaryen.ExpressionRef;
 export function genConst(cg: CodeGenerator, value: null | boolean | symbol | bigint | number | string = null, tag?: string): binaryen.ExpressionRef {
 	switch (value) {
-		case null:
-		case false:
-		case true:  { return cg.getConst(value); }
+		case null:  { return cg.vm.Value.NULL; }
+		case false: { return cg.vm.Value.FALSE; }
+		case true:  { return cg.vm.Value.TRUE; }
 	}
 	if (typeof value === 'string' && tag === 'sym') {
-		return new VALUE.Symbol(Validator.cookTokenIdentifier(value), value).codegen(cg);
+		return new VALUE.Symbol(Validator.keyId(value), value).codegen(cg);
 	}
 	if (typeof value === 'bigint' && tag === 'nat') {
 		return (
@@ -267,29 +261,39 @@ export function setupScript(
 	source: string,
 	opts:   {varCheck?: boolean, typeCheck?: boolean, build?: boolean, codegen?: boolean} = {},
 ): {
-	readonly goal:    AST.Goal,
-	readonly stmts:   NonNullable<typeof goal.block>['children'],
-	readonly builder: Builder,
-	readonly cg:      CodeGenerator,
-	readonly wasm:    binaryen.ExpressionBuilder,
+	readonly goal:     AST.Goal,
+	readonly stmts:    AST.Block['children'],
+	readonly builder:  Builder,
+	readonly cg:       CodeGenerator,
+	readonly wasm:     binaryen.ExpressionBuilder,
+	readonly visitors: {
+		readonly typeCheck: AST.AstNodeVisitorTypeCheck,
+		readonly build:     AST.AstNodeVisitorBuild,
+	},
 } {
-	const goal: AST.Goal = AST.Goal.fromSource(source);
-	const builder = new Builder();
-	const cg      = new CodeGenerator();
+	const goal: AST.Goal     = AST.Goal.fromSource(source);
+	const builder            = new Builder();
+	const cg                 = new CodeGenerator();
+	const visitor_type_check = new AST.AstNodeVisitorTypeCheck();
+	const visitor_build      = new AST.AstNodeVisitorBuild(builder);
 	assert.ok(goal.block, 'Expected AST.Goal to contain a block.');
 	opts.varCheck  ??= true;
 	opts.typeCheck ??= true;
 	opts.build     ??= true;
 	opts.codegen   ??= true;
 	opts.varCheck &&                                                 goal.varCheck();
-	opts.varCheck && opts.typeCheck &&                               goal.typeCheck();
-	opts.varCheck && opts.typeCheck && opts.build &&                 goal.build(builder);
+	opts.varCheck && opts.typeCheck &&                               visitor_type_check.visit(goal);
+	opts.varCheck && opts.typeCheck && opts.build &&                 visitor_build.visit(goal);
 	opts.varCheck && opts.typeCheck && opts.build && opts.codegen && builder.codegen(cg);
 	return {
 		goal,
 		builder,
 		cg,
-		stmts: goal.block.children,
-		wasm:  cg.mod.wasm,
+		stmts:    goal.block.children,
+		wasm:     cg.mod.wasm,
+		visitors: {
+			typeCheck: visitor_type_check,
+			build:     visitor_build,
+		},
 	};
 }

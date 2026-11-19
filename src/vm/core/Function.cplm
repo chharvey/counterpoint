@@ -1,0 +1,5 @@
+from "./Object" import await (Object);
+
+
+
+public class Function extends Object {}

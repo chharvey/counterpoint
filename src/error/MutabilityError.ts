@@ -5,7 +5,7 @@ import {ErrorCode} from './ErrorCode.ts';
 
 
 /**
- * A MutabilityError is thrown when the validator recognizes an attempt to mutate an immutable object.
+ * A MutabilityError is raised when the validator recognizes an attempt to mutate an immutable object.
  *
  * Known subclasses:
  * - MutabilityError01

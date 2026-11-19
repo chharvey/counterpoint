@@ -22,6 +22,36 @@ SemanticCase
 
 
 
+SemanticParameterFunction[id=*nil*][named=true][writable: Boolean][optional=false]
+	::= SemanticKey SemanticType;
+SemanticParameterFunction[id=*nil*][named=true][writable: Boolean][optional=true]
+	::= SemanticKey SemanticType SemanticExpression?;
+SemanticParameterFunction[id: RealNumber][named=true][writable: Boolean][optional=false]
+	::= SemanticKey? SemanticType;
+SemanticParameterFunction[id: RealNumber][named=true][writable: Boolean][optional=true]
+	::= SemanticKey? SemanticType SemanticExpression?;
+SemanticParameterFunction[id?: RealNumber][named=false][writable: Boolean][optional=false]
+	::= SemanticType;
+SemanticParameterFunction[id?: RealNumber][named=false][writable: Boolean][optional=true]
+	::= SemanticType SemanticExpression?;
+
+
+
+SemanticCapture[ref: Boolean]
+	::= SemanticExpressionVariable;
+
+
+
+SemanticBlock
+	::= SemanticStatement+;
+
+
+
+SemanticGoal
+	::= SemanticBlock?;
+
+
+
 SemanticType =:=
 	| SemanticTypeConstant
 	| SemanticTypeAlias
@@ -29,6 +59,7 @@ SemanticType =:=
 	| SemanticTypeAccess
 	| SemanticTypeCall
 	| SemanticTypeOperation
+	| SemanticTypeFunction
 ;
 
 
@@ -55,7 +86,7 @@ SemanticTypeDict   ::= SemanticType;
 SemanticTypeSet    ::= SemanticType;
 SemanticTypeMap    ::= SemanticType SemanticType;
 
-SemanticTypeAccess[kind: NORMAL | MAYBE]
+SemanticTypeAccess
 	::= SemanticType (SemanticIndex | SemanticKey);
 
 SemanticTypeCall
@@ -65,6 +96,9 @@ SemanticTypeOperation[operator: MAYBE | RESULT | MUTABLE]
 	::= SemanticType;
 SemanticTypeOperation[operator: AND | OR]
 	::= SemanticType SemanticType;
+
+SemanticTypeFunction
+	::= SemanticItemType* SemanticPropertyType* SemanticType?;
 
 
 
@@ -79,6 +113,7 @@ SemanticExpression =:=
 	| SemanticExpressionClaim
 	| SemanticExpressionOperation
 	| SemanticExpressionSwitch
+	| SemanticExpressionFunction
 ;
 
 
@@ -114,7 +149,7 @@ SemanticExpressionMap    ::= SemanticCase+;
 SemanticExpressionBlock
 	::= SemanticBlock;
 
-SemanticExpressionAccess[kind: NORMAL | MAYBE | RESULT]
+SemanticExpressionAccess[kind: NORMAL | MAYBE | RESULT][isEntryOptional?: Boolean]
 	::= SemanticExpression (SemanticIndex | SemanticKey | SemanticExpression);
 
 SemanticExpressionCall
@@ -139,6 +174,9 @@ SemanticExpressionOperation[operator: COND]
 SemanticExpressionSwitch
 	::= SemanticExpression SemanticCase* SemanticExpression;
 
+SemanticExpressionFunction
+	::= SemanticParameterFunction* SemanticCapture* SemanticType? SemanticBlock;
+
 
 
 SemanticStatement =:=
@@ -150,6 +188,7 @@ SemanticStatement =:=
 	| SemanticStatementLoop
 	| SemanticStatementIteration
 	| SemanticStatementBreak
+	| SemanticStatementReturn
 ;
 
 
@@ -157,6 +196,7 @@ SemanticStatement =:=
 SemanticDeclaration =:=
 	| SemanticDeclarationType
 	| SemanticDeclarationVariable
+	| SemanticDeclarationFunction
 ;
 
 SemanticDeclarationType[id: RealNumber]
@@ -164,10 +204,13 @@ SemanticDeclarationType[id: RealNumber]
 
 SemanticDeclarationVariable[id: RealNumber][writable: Boolean]
 	::= SemanticType? SemanticExpression;
-SemanticDeclarationVariable[writable=false]
+SemanticDeclarationVariable[id=*nil*][writable=false]
 	::= SemanticType? SemanticExpression;
 SemanticDeclarationVariable[id: RealNumber][writable=true]
 	::= SemanticType;
+
+SemanticDeclarationFunction[id?: RealNumber]
+	::= SemanticParameterFunction* SemanticCapture* SemanticType? SemanticBlock;
 
 
 
@@ -192,12 +235,7 @@ SemanticStatementIteration[id?: RealNumber]
 SemanticStatementBreak[skip: Boolean]
 	::= ();
 
-
-
-SemanticBlock
-	::= SemanticStatement+;
-
-
-
-SemanticGoal
-	::= SemanticBlock?;
+SemanticStatementReturn[panic=false]
+	::= SemanticExpression?;
+SemanticStatementReturn[panic=true]
+	::= SemanticExpression;

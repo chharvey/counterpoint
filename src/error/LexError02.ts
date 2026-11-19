@@ -4,7 +4,7 @@ import {LexError} from './LexError.ts';
 
 
 /**
- * A LexError02 is thrown when the lexer reaches the end of the file before the end of a token.
+ * A LexError02 is raised when the lexer reaches the end of the file before the end of a token.
  */
 export class LexError02 extends LexError {
 	static readonly #CODE = 2;

@@ -1,15 +1,14 @@
 import * as assert from 'node:assert';
-import type {Builder} from '../../../index.ts';
 import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../../core/index.ts';
 import {AstNode} from '../AstNode.ts';
-import type {Buildable} from '../Buildable.ts';
 import {Block} from '../Block.ts';
 import {
 	DeclarationType,
 	DeclarationVariable,
+	DeclarationFunction,
 	StatementExpression,
 	StatementClaim,
 	StatementReassignment,
@@ -17,39 +16,44 @@ import {
 	StatementLoop,
 	StatementIteration,
 	StatementBreak,
+	StatementReturn,
 } from './index.ts';
 
 
 
-interface StmtVisitorMethods<T> {
-	visitDeclType           (stmt: DeclarationType):       T;
-	visitDeclVariable       (stmt: DeclarationVariable):   T;
-	visitStmtExpr           (stmt: StatementExpression):   T;
-	visitStmtClaim          (stmt: StatementClaim):        T;
-	visitStmtReassignment   (stmt: StatementReassignment): T;
-	visitStmtConditional    (stmt: StatementConditional):  T;
-	visitStatementLoop      (stmt: StatementLoop):         T;
-	visitStatementIteration (stmt: StatementIteration):    T;
-	visitStatementBreak     (stmt: StatementBreak):        T;
+export abstract class StmtVisitor<T> {
+	/* eslint-disable @stylistic/space-before-function-paren */
+	public visitDeclType         (stmt: DeclarationType):       T { return this.defaultVisit(stmt); }
+	public visitDeclVariable     (stmt: DeclarationVariable):   T { return this.defaultVisit(stmt); }
+	public visitDeclFunction     (stmt: DeclarationFunction):   T { return this.defaultVisit(stmt); }
+	public visitStmtExpr         (stmt: StatementExpression):   T { return this.defaultVisit(stmt); }
+	public visitStmtClaim        (stmt: StatementClaim):        T { return this.defaultVisit(stmt); }
+	public visitStmtReassignment (stmt: StatementReassignment): T { return this.defaultVisit(stmt); }
+	public visitStmtConditional  (stmt: StatementConditional):  T { return this.defaultVisit(stmt); }
+	public visitStmtLoop         (stmt: StatementLoop):         T { return this.defaultVisit(stmt); }
+	public visitStmtIteration    (stmt: StatementIteration):    T { return this.defaultVisit(stmt); }
+	public visitStmtBreak        (stmt: StatementBreak):        T { return this.defaultVisit(stmt); }
+	public visitStmtReturn       (stmt: StatementReturn):       T { return this.defaultVisit(stmt); }
+	/* eslint-enable @stylistic/space-before-function-paren */
 
-	defaultVisit(stmt: Statement): T;
-}
-export class StmtVisitor<T> {
-	public constructor(private readonly methods: Partial<StmtVisitorMethods<T>>) {}
+	public abstract defaultVisit(stmt: Statement): T;
 
 	/** @final */
 	public visit(stmt: Statement): T {
 		switch (stmt.constructor) {
-			case DeclarationType:       { return this.methods.visitDeclType           ?.(stmt as DeclarationType)       ?? this.methods.defaultVisit?.(stmt) ?? assert.fail('Missing implementation.'); }
-			case DeclarationVariable:   { return this.methods.visitDeclVariable       ?.(stmt as DeclarationVariable)   ?? this.methods.defaultVisit?.(stmt) ?? assert.fail('Missing implementation.'); }
-			case StatementExpression:   { return this.methods.visitStmtExpr           ?.(stmt as StatementExpression)   ?? this.methods.defaultVisit?.(stmt) ?? assert.fail('Missing implementation.'); } // eslint-disable-line @typescript-eslint/no-unnecessary-type-assertion
-			case StatementClaim:        { return this.methods.visitStmtClaim          ?.(stmt as StatementClaim)        ?? this.methods.defaultVisit?.(stmt) ?? assert.fail('Missing implementation.'); }
-			case StatementReassignment: { return this.methods.visitStmtReassignment   ?.(stmt as StatementReassignment) ?? this.methods.defaultVisit?.(stmt) ?? assert.fail('Missing implementation.'); }
-			case StatementConditional:  { return this.methods.visitStmtConditional    ?.(stmt as StatementConditional)  ?? this.methods.defaultVisit?.(stmt) ?? assert.fail('Missing implementation.'); }
-			case StatementLoop:         { return this.methods.visitStatementLoop      ?.(stmt as StatementLoop)         ?? this.methods.defaultVisit?.(stmt) ?? assert.fail('Missing implementation.'); }
-			case StatementIteration:    { return this.methods.visitStatementIteration ?.(stmt as StatementIteration)    ?? this.methods.defaultVisit?.(stmt) ?? assert.fail('Missing implementation.'); }
-			case StatementBreak:        { return this.methods.visitStatementBreak     ?.(stmt as StatementBreak)        ?? this.methods.defaultVisit?.(stmt) ?? assert.fail('Missing implementation.'); }
-			default:                    { return                                                                           this.methods.defaultVisit?.(stmt) ?? assert.fail('Unexpected subclass.'); }
+			case DeclarationType:       { return this.visitDeclType         (stmt as DeclarationType); }
+			case DeclarationVariable:   { return this.visitDeclVariable     (stmt as DeclarationVariable); }
+			case DeclarationFunction:   { return this.visitDeclFunction     (stmt as DeclarationFunction); }
+			case StatementExpression:   { return this.visitStmtExpr         (stmt as StatementExpression); } // eslint-disable-line @typescript-eslint/no-unnecessary-type-assertion
+			case StatementClaim:        { return this.visitStmtClaim        (stmt as StatementClaim); }
+			case StatementReassignment: { return this.visitStmtReassignment (stmt as StatementReassignment); }
+			case StatementConditional:  { return this.visitStmtConditional  (stmt as StatementConditional); }
+			case StatementLoop:         { return this.visitStmtLoop         (stmt as StatementLoop); }
+			case StatementIteration:    { return this.visitStmtIteration    (stmt as StatementIteration); }
+			case StatementBreak:        { return this.visitStmtBreak        (stmt as StatementBreak); }
+			case StatementReturn:       { return this.visitStmtReturn       (stmt as StatementReturn); }
+
+			default: { return this.defaultVisit(stmt); }
 		}
 	}
 }
@@ -67,8 +71,9 @@ export class StmtVisitor<T> {
  * - StatementConditional
  * - StatementBreakable
  * - StatementBreak
+ * - StatementReturn
  */
-export abstract class Statement extends AstNode implements Buildable {
+export abstract class Statement extends AstNode {
 	/**
 	 * Construct a new Statement from a source text and optionally a configuration.
 	 * The source text must parse successfully.
@@ -81,13 +86,4 @@ export abstract class Statement extends AstNode implements Buildable {
 		assert.strictEqual(block.children.length, 1, 'semantic block should have 1 child');
 		return block.children[0];
 	}
-
-
-	public abstract get hasBottomType(): boolean;
-
-	/**
-	 * @inheritdoc
-	 * @implements Buildable
-	 */
-	public abstract build(builder: Builder): void;
 }

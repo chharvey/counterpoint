@@ -1,0 +1,36 @@
+from "core/vm" import ('op::isTuple');
+from "./Object" import await (Object);
+from "./Exception" import (Exception);
+
+
+
+%%%
+A Set is a variable-size unordered collection of unindexed items that does not allow duplicates.
+This class implements a Set using an underlying Map.
+
+@typeparam T : the type of elements in this Set
+%%%
+public class open Set[out(in) T] extends Object {
+	public new () {
+		super();
+	}
+	public new (list: List[T]) {
+		panic Exception("TODO: not yet supported");
+	}
+	public new ('set': Set[T]) {
+		panic Exception("TODO: not yet supported");
+	}
+	%%
+	public new (());
+	public new ((T,));
+	public new ((T, T));
+	public new ((T, T, T));
+	public new (anything); % any tuple type with items of type `T`
+	%%
+	public new (arg: anything) {
+		if 'op::isTuple'(arg) as :bool: then {
+			panic Exception("TODO: not yet supported");
+		};
+		panic Exception("Value cannot be converted to a Set.");
+	}
+}

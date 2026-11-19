@@ -1,4 +1,3 @@
-import * as assert from 'node:assert';
 import type * as binaryen from 'binaryen.ts';
 import type {CodeGenerator} from '../../index.ts';
 import {runOnceSetter} from '../../lib/index.ts';
@@ -12,23 +11,23 @@ import {Opcode} from './Opcode.ts';
 
 
 
-interface TermVisitorMethods<T> {
-	visitGoto            (term: Goto):            T;
-	visitGotoConditional (term: GotoConditional): T;
-	visitEndProgram      (term: EndProgram):      T;
+export abstract class TermVisitor<T> {
+	/* eslint-disable @stylistic/space-before-function-paren */
+	public visitGoto            (term: Goto):            T { return this.defaultVisit(term); }
+	public visitGotoConditional (term: GotoConditional): T { return this.defaultVisit(term); }
+	public visitEndProgram      (term: EndProgram):      T { return this.defaultVisit(term); }
+	/* eslint-enable @stylistic/space-before-function-paren */
 
-	defaultVisit(term: Terminator): T;
-}
-export class TermVisitor<T> {
-	public constructor(private readonly methods: Partial<TermVisitorMethods<T>>) {}
+	public abstract defaultVisit(term: Terminator): T;
 
 	/** @final */
 	public visit(term: Terminator): T {
 		switch (term.constructor) {
-			case Goto:            { return this.methods.visitGoto            ?.(term as Goto)            ?? this.methods.defaultVisit?.(term) ?? assert.fail('Missing implementation.'); }
-			case GotoConditional: { return this.methods.visitGotoConditional ?.(term as GotoConditional) ?? this.methods.defaultVisit?.(term) ?? assert.fail('Missing implementation.'); }
-			case EndProgram:      { return this.methods.visitEndProgram      ?.(term as EndProgram)      ?? this.methods.defaultVisit?.(term) ?? assert.fail('Missing implementation.'); }
-			default:              { return                                                                  this.methods.defaultVisit?.(term) ?? assert.fail('Unexpected subclass.'); }
+			case Goto:            { return this.visitGoto            (term as Goto); }
+			case GotoConditional: { return this.visitGotoConditional (term as GotoConditional); }
+			case EndProgram:      { return this.visitEndProgram      (term as EndProgram); }
+
+			default: { return this.defaultVisit(term); }
 		}
 	}
 }

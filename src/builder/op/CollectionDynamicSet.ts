@@ -108,39 +108,38 @@ export class CollectionDynamicSet extends Instruction {
 
 	@memoizeMethod
 	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
-		const {vm: {Vect, Value, List, Dict, Map: VmMap}, mod: {wasm}} = cg;
+		const {vm: {reftype, Vect, Value, List, Dict, Map: VmMap}, mod: {wasm}} = cg;
 
 		const collection: binaryen.ExpressionRef = this.collection.codegen(cg);
 		const accessor:   binaryen.ExpressionRef = this.accessor.codegen(cg);
 		const value:      binaryen.ExpressionRef = this.value.codegen(cg);
-		const cast_collection = (reftype: binaryen.Type): binaryen.ExpressionRef => Value.cast(collection, reftype);
 		switch (this.name) {
 			case TypeName.LIST: {
 				return List.set(
-					cast_collection(cg.vm.reftype.List),
-					wasm.i32.wrap_i64(Vect.asInt(Value.field(accessor).primitive)),
+					Value.asList(collection),
+					wasm.i32.wrap_i64(Vect.asInt(Value.asPrimitive(accessor))),
 					value,
 				);
 			}
 			case TypeName.DICT: {
 				return Dict.set(
-					cast_collection(cg.vm.reftype.Dict),
-					Vect.asNat(Value.field(accessor).primitive),
+					Value.asDict(collection),
+					Vect.asNat(Value.asPrimitive(accessor)),
 					value,
 				);
 			}
 			case TypeName.SET: {
-				const base: Local = cg.newLocal(cast_collection(cg.vm.reftype.Map));
-				const xsor: Local = cg.newLocal(accessor, cg.vm.reftype.Value);
+				const base: Local = cg.newLocal(Value.asMap(collection));
+				const xsor: Local = cg.newLocal(accessor, reftype.Value);
 				return wasm.block(null, [
 					base.set(),
 					xsor.set(),
 					wasm.if(
-						Vect.isConst(Value.field(value).primitive, true),
+						Vect.isConst(Value.asPrimitive(value), true),
 						VmMap.set(
 							base.get(),
 							xsor.get(),
-							cg.getConst(null),
+							Value.NULL,
 						),
 						wasm.drop(VmMap.delete(
 							base.get(),
@@ -151,7 +150,7 @@ export class CollectionDynamicSet extends Instruction {
 			}
 			case TypeName.MAP: {
 				return VmMap.set(
-					cast_collection(cg.vm.reftype.Map),
+					Value.asMap(collection),
 					accessor,
 					value,
 				);

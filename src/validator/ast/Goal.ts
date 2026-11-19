@@ -1,11 +1,6 @@
 import * as xjs from 'extrajs';
 import type {SyntaxNode} from 'tree-sitter';
-import {
-	type Builder,
-	OP,
-	ParseError01,
-} from '../../index.ts';
-import {runOnceMethod} from '../../lib/index.ts';
+import {ParseError01} from '../../index.ts';
 import {
 	type CplConfig,
 	CONFIG_DEFAULT,
@@ -19,7 +14,6 @@ import type {SyntaxNodeType} from '../utils-private.ts';
 import {Decorator} from '../Decorator.ts';
 import {Validator} from '../Validator.ts';
 import {AstNode} from './AstNode.ts';
-import type {Buildable} from './Buildable.ts';
 import type {Block} from './Block.ts';
 
 
@@ -44,7 +38,7 @@ function report_syntax_errors(node: SyntaxNode): void {
 
 
 
-export class Goal extends AstNode implements Buildable {
+export class Goal extends AstNode {
 	/**
 	 * Construct a new Goal from a source text and optionally a configuration.
 	 * The source text must parse successfully.
@@ -73,16 +67,5 @@ export class Goal extends AstNode implements Buildable {
 
 	public override get validator(): Validator {
 		return this.#validator;
-	}
-
-	/**
-	 * @inheritdoc
-	 * @implements Buildable
-	 */
-	@runOnceMethod
-	public build(builder: Builder): void {
-		this.block?.build(builder);
-		builder.terminateBlock(new OP.EndProgram());
-		return builder.validate();
 	}
 }

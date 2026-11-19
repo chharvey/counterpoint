@@ -34,9 +34,7 @@ class ValueString extends Primitive {
 			: data;
 	}
 
-	/**
-	 * @implements Value
-	 */
+	/** @implements Value */
 	public override get isEmpty(): boolean {
 		return this.data.length === 0;
 	}
@@ -58,7 +56,7 @@ class ValueString extends Primitive {
 
 	@memoizeMethod
 	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
-		return cg.vm.Value.newComposite(cg.codegenString([...this.data].map((c) => cg.mod.wasm.i32.const(c))));
+		return cg.vm.Value.fromString(cg.codegenString([...this.data].map((c) => cg.mod.wasm.i32.const(c))));
 	}
 
 	/**

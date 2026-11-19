@@ -5,13 +5,14 @@ import {
 	AssignmentErrorReassignment,
 	AssignmentErrorDeletion,
 	AssignmentErrorMissingType,
+	AssignmentErrorFunctionExit,
 } from './index.ts';
 import {ErrorCode} from './ErrorCode.ts';
 
 
 
 /**
- * An AssignmentError is thrown when the validator detects an illegal declaration or assignment.
+ * An AssignmentError is raised when the validator detects an illegal declaration or assignment.
  *
  * Known subclasses:
  * - AssignmentErrorDuplicateDeclaration
@@ -19,6 +20,7 @@ import {ErrorCode} from './ErrorCode.ts';
  * - AssignmentErrorReassignment
  * - AssignmentErrorDeletion
  * - AssignmentErrorMissingType
+ * - AssignmentErrorFunctionExit
  */
 export class AssignmentError extends ErrorCode {
 	static readonly #CODE = 2200;
@@ -30,6 +32,7 @@ export class AssignmentError extends ErrorCode {
 			[AssignmentErrorReassignment,         10],
 			[AssignmentErrorDeletion,             11],
 			[AssignmentErrorMissingType,          20],
+			[AssignmentErrorFunctionExit,         30],
 		]);
 	}
 

@@ -1,19 +1,14 @@
 import * as assert from 'node:assert';
 import type {SyntaxNode} from 'tree-sitter';
-import {OP} from '../../../index.ts';
 import {
 	assert_instanceof,
-	memoizeMethod,
 	memoizeGetter,
 } from '../../../lib/index.ts';
 import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../../core/index.ts';
-import {
-	VALUE,
-	type TYPE,
-} from '../../../typer/index.ts';
+import {VALUE} from '../../../typer/index.ts';
 import {Keyword} from '../../../parser/index.ts';
 import {
 	type SyntaxNodeType,
@@ -74,15 +69,5 @@ export class Constant extends Expression {
 				return new VALUE.Symbol(Validator.wordNodeId(node), node.text);
 			}
 		}
-	}
-
-	@memoizeMethod
-	public override type(): TYPE.Type {
-		return this.interpreterValue.toType();
-	}
-
-	@memoizeMethod
-	public override build(): OP.Const {
-		return new OP.Const(this.interpreterValue);
 	}
 }

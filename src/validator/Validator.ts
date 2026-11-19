@@ -4,13 +4,17 @@ import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../core/index.ts';
+import {CLASS_API} from '../typer/index.ts';
 import {
 	Punctuator,
 	type Keyword,
 	KEYWORDS,
-	INTRINSICS,
+	CORE_LIB_NAMES,
 } from '../parser/index.ts';
-import type {SymbolSchema} from './index.ts';
+import {
+	type SymbolSchema,
+	SymbolSchemaClass,
+} from './index.ts';
 import {
 	type SyntaxNodeType,
 	isSyntaxNodeType,
@@ -116,11 +120,11 @@ function tokenWorthFloat(text: string): number {
 	const exppart:    string = expindex < 0 ? '0'                        : text.slice(expindex   + 1);
 	const wholevalue: number = Number(tokenWorthInt(wholepart, RADIX_DEFAULT));
 	const fracvalue:  number = Number(tokenWorthInt(fracpart,  RADIX_DEFAULT)) * base ** -fracpart.length;
-	const expvalue:   number = parseFloat(( // HACK: `` parseFloat(`1e${...}`) `` is more accurate than `base ** tokenWorthInt(...)`
+	const expvalue:   number = parseFloat( // HACK: `` parseFloat(`1e${...}`) `` is more accurate than `base ** tokenWorthInt(...)`
 		exppart.startsWith(Punctuator.PLUS)  ? `1e+${tokenWorthInt(exppart.slice(1), RADIX_DEFAULT)}` :
 		exppart.startsWith(Punctuator.MINUS) ? `1e-${tokenWorthInt(exppart.slice(1), RADIX_DEFAULT)}` :
-		                                       `1e${ tokenWorthInt(exppart,          RADIX_DEFAULT)}` // eslint-disable-line @stylistic/indent
-	));
+		                                       `1e${ tokenWorthInt(exppart,          RADIX_DEFAULT)}`, // eslint-disable-line @stylistic/indent
+	);
 	return (wholevalue + fracvalue) * expvalue;
 }
 
@@ -136,7 +140,7 @@ function tokenWorthString(text: string): CodeUnit[] {
 			DELIM_STRING,
 			ESCAPER,
 			COMMENTER_LINE,
-			's', 't', 'n', 'r', // eslint-disable-line @stylistic/array-element-newline
+			's', 't', 'n', 'r', // eslint-disable-line @stylistic/list-style
 		].includes(text[1])) {
 			/* an escaped character literal */
 			return [
@@ -206,8 +210,8 @@ export class Validator {
 	/** The minimum allowed cooked value of a reserved keyword token. */
 	private static readonly MIN_VALUE_KEYWORD = 0x40n;
 
-	/** The minimum allowed cooked value of an intrinsic identifier token. */
-	private static readonly MIN_VALUE_INTRINSIC = 0x80n;
+	/** The minimum allowed cooked value of a built-in identifier token. */
+	private static readonly MIN_VALUE_CORE_LIB = 0x80n;
 
 	/** The minimum allowed cooked value of a user-defined identifier token. */
 	private static readonly MIN_VALUE_IDENTIFIER = 0x100n;
@@ -222,6 +226,27 @@ export class Validator {
 		return this.#hashStringMemo.get(s)!;
 	}
 
+	/** Try to find the identifier name(s) of the given hash value. */
+	public static unhashIdentifierId(i: bigint): string {
+		return (
+			i >= Validator.MIN_VALUE_IDENTIFIER ? [...this.#hashStringMemo].filter(([_, value]) => value === i - Validator.MIN_VALUE_IDENTIFIER).map(([key]) => key).join() :
+			i >= Validator.MIN_VALUE_CORE_LIB   ? CORE_LIB_NAMES[Number(i - Validator.MIN_VALUE_CORE_LIB)] :
+			i >= Validator.MIN_VALUE_KEYWORD    ? KEYWORDS[Number(i - Validator.MIN_VALUE_KEYWORD)] :
+			''
+		) || '';
+	}
+
+	/** Compute the ID of the name of a key. */
+	public static keyId(name: string): bigint {
+		const keywords       = KEYWORDS       as readonly string[];
+		const core_lib_names = CORE_LIB_NAMES as readonly string[];
+		return (
+			keywords       .includes(name) ? Validator.MIN_VALUE_KEYWORD  + BigInt(keywords   .indexOf(name)) :
+			core_lib_names .includes(name) ? Validator.MIN_VALUE_CORE_LIB + BigInt(core_lib_names .indexOf(name)) :
+			Validator.MIN_VALUE_IDENTIFIER + Validator.#hashString(name)
+		);
+	}
+
 	/**
 	 * Give the unique integer identifier of a reserved keyword token.
 	 * The id is determined by the language specification.
@@ -231,7 +256,7 @@ export class Validator {
 	public static cookTokenKeyword(source: Keyword): bigint {
 		const index: number = KEYWORDS.indexOf(source);
 		return (0 <= index && index < KEYWORDS.length)
-			? BigInt(index) + Validator.MIN_VALUE_KEYWORD
+			? Validator.MIN_VALUE_KEYWORD + BigInt(index)
 			: assert.fail(new RangeError(`Token \`${source}\` is not a valid keyword.`));
 	}
 
@@ -241,8 +266,11 @@ export class Validator {
 	 * @return       the unique id identifying the token
 	 */
 	public static cookTokenIdentifier(source: string): bigint {
-		if ((INTRINSICS as readonly string[]).includes(source)) {
-			return Validator.MIN_VALUE_INTRINSIC + BigInt((INTRINSICS as readonly string[]).indexOf(source));
+		if ((KEYWORDS as readonly string[]).includes(source)) {
+			throw new RangeError(`Keyword ${source} is not a valid identifier.`);
+		}
+		if ((CORE_LIB_NAMES as readonly string[]).includes(source)) {
+			return Validator.MIN_VALUE_CORE_LIB + BigInt((CORE_LIB_NAMES as readonly string[]).indexOf(source));
 		}
 		return Validator.MIN_VALUE_IDENTIFIER + Validator.#hashString(source);
 	}
@@ -334,6 +362,16 @@ export class Validator {
 		public  readonly config:  CplConfig = CONFIG_DEFAULT,
 		private readonly parent?: Validator,
 	) {
+		if (!this.parent) {
+			xjs.Array.forEachAggregated(CORE_LIB_NAMES, (name) => {
+				if (!CLASS_API.has(name)) {
+					throw new ReferenceError(`Class API is missing a definition for ${name}.`);
+				}
+			});
+			CLASS_API.forEach((signature, name) => {
+				this.addSymbol(new SymbolSchemaClass(Validator.cookTokenIdentifier(name), name, signature));
+			});
+		}
 	}
 
 	/**
@@ -380,7 +418,7 @@ export class Validator {
 	 * @returns the symbol information, or `undefined` if there is no corresponding entry
 	 */
 	public getSymbolBySource(source: string): SymbolSchema | undefined {
-		return this.getSymbol(Validator.cookTokenIdentifier(source));
+		return this.getSymbol(Validator.keyId(source));
 	}
 
 	/**

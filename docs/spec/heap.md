@@ -1,7 +1,7 @@
 # The Heap
 This chapter describes the **runtime heap**, a virtual machine memory structure
-that stores data encoding [reference objects](./intrinsics.md#reference-objects)
-(and sometimes [data values](./intrinsics.md#data-values))
+that stores data encoding [reference objects](./core-library.md#reference-objects)
+(and sometimes [data values](./core-library.md#data-values))
 during the execution time of a program.
 
 The heap is a block of memory consisting of bytes of data.

@@ -1,10 +1,14 @@
 Nil! TypeCheck(Or<
+	SemanticIndex,
 	SemanticKey,
+	SemanticItemType,
 	SemanticPropertyType
 	SemanticProperty,
 	SemanticCase,
-	SemanticStatementExpression,
 	SemanticGoal,
+	SemanticStatementExpression,
+	SemanticStatementBreak,
+	SemanticStatementReturn,
 > list) :=
 	1. *For each* `it` in `list.children`:
 		1. *Perform:* *Unwrap:* `TypeCheck(it)`.
@@ -12,15 +16,86 @@ Nil! TypeCheck(Or<
 
 
 
+Nil! TypeCheck(SemanticParameterFunction param) :=
+	1. *For each* `it` in `param.children`:
+		1. *Perform:* *Unwrap:* `TypeCheck(it)`.
+	2. *Let* `typenode` be an item `child` in `param.children` such that `child` is a SemanticType.
+	3. *Let* `exprnode` be an item `child` in `param.children` such that `child` is a SemanticExpression.
+	4. *Let* `param_type` be *Unwrap:* `TypeValueOf(typenode)`.
+	5. *If* `exprnode` is set:
+		1. *Perform:* *Unwrap:* `TypeCheckAssign(exprnode, param_type)`.
+	6. *Else:*
+		1. Fall through.
+	7. *If* `param.id` is not *nil*:
+		1. *Let* `parent` be the parent node of `param`.
+		2. *Assert:* `parent` is a SemanticExpressionFunction or a SemanticDeclarationFunction.
+		3. *Let* `block` be `parent.children.-1`.
+		4. *Assert:* `block` is a SemanticBlock.
+		5. *Let* `validator` be the validator of `block`.
+		6. *Assert:* `validator`’s symbol table contains a SymbolSchema `symbol` whose `id` is `param.id`.
+		7. *Assert:* `symbol` is an instance of `SymbolSchemaVar`.
+		8. *Set* `symbol.type` to `param_type`.
+	8. *Else:*
+		1. *Return.*
+;
+
+
+
+Nil! TypeCheck(SemanticCapture[ref: true] ::= SemanticExpressionVariable) := TypeCheck(SemanticExpressionVariable);
+Nil! TypeCheck(SemanticCapture[ref: false] ::= SemanticExpressionVariable[id: RealNumber]) :=
+	1. *Perform:* *Unwrap:* `TypeCheck(SemanticExpressionVariable)`.
+	2. *Let* `parent` be the parent node of `SemanticCapture`.
+	3. *Assert:* `parent` is a SemanticExpressionFunction or a SemanticDeclarationFunction.
+	4. *Let* `block` be `parent.children.-1`.
+	5. *Assert:* `block` is a SemanticBlock.
+	6. *Let* `validator` be the validator of `block`.
+	7. *Assert:* `validator`’s symbol table contains a SymbolSchema `symbol` whose `id` is `SemanticExpressionVariable.id`.
+	8. *Assert:* `symbol` is an instance of `SymbolSchemaVar`.
+	9. *Set* `symbol.type` to *Unwrap:* `TypeOf(SemanticExpressionVariable)`.
+;
+
+
+
+Nil! TypeCheck(SemanticBlock block) :=
+	1. *For each* `stmt` in `block.children`:
+		1. *Perform:* *Unwrap:* `TypeCheck(stmt)`.
+	2. *If* `block` is a function body *and* *UnwrapAffirm:* `CompletionOf(block)` is not *RETURN_OR_PANIC*:
+		1. *Throw:* a new AssignmentErrorFunctionExit.
+	3. *Else:*
+		1. *Return.*
+;
+
+
+
 Nil TypeCheck(SemanticType typexpr) :=
-	1. *Perform:* *Unwrap:* `TypeValueOf(typexpr)`.
+	1. *For each* `it` in `typexpr.children`:
+		1. *Perform:* *Unwrap:* `TypeCheck(it)`.
+	2. *Perform:* *Unwrap:* `TypeValueOf(typexpr)`.
+		1. *Note:* The result of this step is not used; it is only performed to rethrow any TypeErrors.
+;
+
+Nil TypeCheck(SemanticTypeCall typexpr) :=
+	1. *Note:* Skip type-checking of `typexpr.children.0` for now, as semantics is determined by syntax.
+	2. *For each* `it` in `typexpr.children[1..]`:
+		1. *Perform:* *Unwrap:* `TypeCheck(it)`.
+	3. *Perform:* *Unwrap:* `TypeValueOf(typexpr)`.
 		1. *Note:* The result of this step is not used; it is only performed to rethrow any TypeErrors.
 ;
 
 
 
 Nil! TypeCheck(SemanticExpression expr) :=
-	1. *Perform:* *Unwrap:* `TypeOf(expr)`.
+	1. *For each* `it` in `expr.children`:
+		1. *Perform:* *Unwrap:* `TypeCheck(it)`.
+	2. *Perform:* *Unwrap:* `TypeOf(expr)`.
+		1. *Note:* The result of this step is not used; it is only performed to rethrow any TypeErrors.
+;
+
+Nil! TypeCheck(SemanticExpressionCall expr) :=
+	1. *Note:* Skip type-checking of `expr.children.0` for now, as semantics is determined by syntax.
+	2. *For each* `it` in `expr.children[1..]`:
+		1. *Perform:* *Unwrap:* `TypeCheck(it)`.
+	3. *Perform:* *Unwrap:* `TypeOf(expr)`.
 		1. *Note:* The result of this step is not used; it is only performed to rethrow any TypeErrors.
 ;
 
@@ -56,6 +131,51 @@ Nil! TypeCheck(SemanticDeclarationVariable decl) :=
 		1. *Assert:* The validator’s symbol table contains a SymbolSchema `symbol` whose `id` is `decl.id`.
 		2. *Assert:* `symbol` is an instance of `SymbolSchemaVar`.
 		3. *Set* `symbol.type` to `assignee_type`.
+	11. *Else:*
+		1. *Return.*
+;
+
+
+
+None! TypeCheck(SemanticDeclarationFunction fn) :=
+	1. *For each* `it` in `fn.children`:
+		1. *Perform:* *Unwrap:* `TypeCheck(it)`.
+	2. *Let* `parameters` be a filtering of `fn.children` for each `child` such that `child` is a SemanticParameterFunction.
+	3. *Let* `positional_params` be a filtering of `parameters` for each `param` such that `param.named` is `false`.
+	4. *Let* `positional_param_types` be a new Sequence.
+	5. *For each* `param` in `positional_params`:
+		1. *Assert:* `param.children.count` is *1*.
+		2. *Let* `typedatum` be a new EntryTypeSchema [
+			type=     *Unwrap:* `TypeValueOf(param.children.0)`,
+			optional= `param.optional`,
+		].
+		3. Push `typedatum` to `positional_param_types`.
+	6. *Let* `named_params` be a filtering of `parameters` for each `param` such that `param.named` is `true`.
+	7. *Let* `named_param_types` be a new Schema.
+	8. *For each* `param` in `named_params`:
+		1. *If* `param.children.count` is *2*:
+			1. *Let* `key_id` be `param.children.0.id`.
+			2. *Let* `param_type` be *Unwrap:* `TypeValueOf(param.children.1)`.
+		2. *Else:*
+			1. *Assert:* `param.children.count` is *1*.
+			2. *Assert:* `param.id` is set.
+			3. *Let* `key_id` be `param.id`.
+			4. *Let* `param_type` be *Unwrap:* `TypeValueOf(param.children.0)`.
+		3. *Let* `typedatum` be a new EntryTypeSchema [
+			type=     `param_type`,
+			optional= `param.optional`,
+		].
+		4. Set the property `key_id` on `named_param_types` to the value `typedatum`.
+	9. *Let* `fn_type` be a new Function type whose positional parameter types are `positional_param_types`,
+		whose named parameter types are `named_param_types`,
+		and who does not contain a return type.
+	10. *If* `fn.id` is not *nil*:
+		1. *Assert:* The validator’s symbol table contains a SymbolSchema `symbol` whose `id` is `fn.id`.
+		2. *Assert:* `symbol` is an instance of `SymbolSchemaFunc`.
+		3. *If* there exists an item `t` in `symbol.types` such that *UnwrapAffirm:* `Equal(t, fn_type)` is `true`:
+			1. *Throw:* a new TypeError.
+		4. *Else:*
+			1. Push `fn_type` to `symbol.types`.
 	11. *Else:*
 		1. *Return.*
 ;
@@ -113,8 +233,9 @@ Nil! TypeCheck(SemanticStatementReassignment ::= SemanticExpressionVariable) :=
 Nil! TypeCheck(SemanticStatementReassignment ::= SemanticExpressionVariable SemanticExpression) :=
 	1. *Perform:* *Unwrap:* `TypeCheck(SemanticExpressionVariable)`.
 	2. *Perform:* *Unwrap:* `TypeCheck(SemanticExpression)`.
-	3. *Let* `assignee_type` be *Unwrap:* `WriteTypeOf(SemanticExpressionVariable)`.
-	4. *Return:* `TypeCheckAssign(SemanticExpression, assignee_type)`.
+	3. *Assert:* The validator’s symbol table contains a SymbolSchema `symbol` whose `id` is `reassignable.id`.
+	4. *Assert:* `symbol` is an instance of `SymbolSchemaVar`.
+	5. *Return:* `TypeCheckAssign(SemanticExpression, symbol.type)`.
 ;
 Nil! TypeCheck(SemanticStatementReassignment ::= SemanticExpressionAccess) :=
 	1. *Perform:* *Unwrap:* `TypeCheck(SemanticExpressionAccess)`.
@@ -132,8 +253,8 @@ Nil! TypeCheck(SemanticStatementReassignment ::= SemanticExpressionAccess Semant
 	3. *Let* `base_type` be *Unwrap:* `TypeOf(SemanticExpressionAccess)`.
 	4. *If* `base_type` is not mutable:
 		1. *Throw:* a new MutabilityError01.
-	5. *Let* `assignee_type` be *Unwrap:* `WriteTypeOf(SemanticExpressionAccess)`.
-	6. *Return:* `TypeCheckAssign(SemanticExpression, assignee_type)`.
+	5. *Let* `entry` be *Unwrap:* `GetEntryInfo(base_type, reassignable, true)`.
+	6. *Return:* `TypeCheckAssign(SemanticExpression, entry.type)`.
 ;
 
 
@@ -187,6 +308,38 @@ Nil! TypeCheck(SemanticStatementIteration stmt) :=
 		4. *Set* `symbol.type` to `assignee_type`.
 	13. *Perform:* *Unwrap:* `TypeCheck(block)`.
 ;
+
+
+
+Nil! TypeCheck(SemanticStatementReturn[panic=false] ::= ()) :=
+	1. *Let* `parent` be the result of walking up the AST and finding a node
+		that is either a SemanticExpressionFunction or a SemanticDeclarationFunction.
+	2. *If* `parent` is set:
+		1. *Let* `return_node` be an item `node` in `parent` such that `item` is a SemanticType.
+		2. *If* `return_node` is set:
+			1. *Let* `return_type` be *Unwrap:* `TypeValueOf(return_node)`.
+			2. *Throw:* a new Error """A function with return type \`{{return_type.value}}\` does not return a value."""
+		3. *Else:*
+			1. *Note:* The function is a void function and the return statement has no expression.
+			2. *Return.*
+	3. *Else:*
+		1. *Return.*
+;
+Nil! TypeCheck(SemanticStatementReturn[panic=false] ::= SemanticExpression) :=
+	1. *Let* `parent` be the result of walking up the AST and finding a node
+		that is either a SemanticExpressionFunction or a SemanticDeclarationFunction.
+	2. *If* `parent` is set:
+		1. *Let* `return_node` be an item `node` in `parent` such that `item` is a SemanticType.
+		2. *If* `return_node` is set:
+			1. *Let* `return_type` be *Unwrap:* `TypeValueOf(return_node)`.
+			2. *Return:* `TypeCheckAssign(SemanticExpression, return_type.value)`.
+		3. *Else:*
+			1. *Throw:* a new Error """Expression \`{{ SemanticExpression }}\` is returned from a void function."""
+	3. *Else:*
+		1. *Return.*
+;
+Nil! TypeCheck(SemanticStatementReturn[panic=true] ::= SemanticExpression)
+	:= TypeCheckAssign(SemanticExpression, Exception);
 
 
 

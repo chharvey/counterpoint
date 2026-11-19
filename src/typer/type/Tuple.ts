@@ -68,18 +68,16 @@ class TypeTuple extends ValueType {
 			this.minCount >= (t as TypeTuple).minCount &&
 			(t as TypeTuple).typeargs.every((thattype, i) => {
 				const thistype: EntryType | undefined = this.typeargs.at(i);
-				if (!thattype.optional) {
-					/* NOTE: We can assert `thistype` exists and is not optional because of item ordering.
-						We cannot do so with record types since properties are not ordered. */
-					assert.strictEqual(thistype?.optional, false, `${thistype!.type} should exist and not be optional.`);
-				}
+				/* NOTE: We can assert `thistype` exists and is not optional because of item ordering.
+					We cannot do so with record types since properties are not ordered. */
+				thattype.optional || assert.strictEqual(thistype?.optional, false, `${thistype!.type} should exist and not be optional.`);
 				return thistype?.type.isSubtypeOf(thattype.type) ?? true; // Covariance for tuples: `A <: B --> Tuple.<A> <: Tuple.<B>`.
 			})
 		);
 	}
 
 	public get(index: bigint, accessor: AST.Index): EntryType {
-		return this.isIndexCanonical(index)
+		return 0 <= index && index < this.typeargs.length
 			? this.typeargs.at(Number(index))!
 			: assert.fail(new TypeErrorNoEntry('index', this, accessor));
 	}
@@ -96,10 +94,6 @@ class TypeTuple extends ValueType {
 
 	public itemTypes(): Type {
 		return Union.all(...this.typeargs.map((t) => t.type));
-	}
-
-	public isIndexCanonical(index: bigint): boolean {
-		return 0 <= index && index < this.typeargs.length;
 	}
 }
 export {TypeTuple as Tuple};

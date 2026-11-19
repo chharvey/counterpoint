@@ -14,14 +14,19 @@ export * from './CollectionLinearNew.ts';
 export * from './RecordNew.ts';
 export * from './DictNew.ts';
 export * from './MapNew.ts';
+export * from './ObjectNew.ts';
+export * from './ExcpNew.ts';
 export * from './MaybeNew.ts';
+export * from './ResultNew.ts';
+export * from './TupleHas.ts';
+export * from './RecordHas.ts';
 export * from './TupleGet.ts';
 export * from './RecordGet.ts';
 export * from './CollectionDynamicGet.ts';
 export * from './Call.ts';
 export * from './Unop.ts';
-export * from './Instance.ts';
 export * from './Binop.ts';
+export * from './Function.ts';
 
 export * from './Instruction.ts';
 export * from './Drop.ts';
@@ -29,6 +34,7 @@ export * from './Decl.ts';
 export * from './Set.ts';
 export * from './CollectionDynamicSet.ts';
 export * from './CollectionDynamicCopy.ts';
+export * from './Return.ts';
 
 export * from './Terminator.ts';
 export * from './Goto.ts';

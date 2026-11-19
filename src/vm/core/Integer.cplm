@@ -1,11 +1,7 @@
-from "cplvm" import ('::op::toInt');
-from "./utils.cplm" import (
+from "core/vm" import ('op::toInt');
+from "./utils" import (
 	DIGITS,
 	mod,
-);
-from "./Natural.cplm" import (
-	DIGITS,
-	Natural,
 );
 
 
@@ -14,8 +10,9 @@ from "./Natural.cplm" import (
 public class Integer {
 	public new (private readonly data?: int = 0) {;}
 	public new (arg: nat | float) {
-		this('::op::toInt'(arg) as :int:);
+		this('op::toInt'(arg) as :int:);
 	}
+
 
 	internal toString(radix?: nat = +10): Result[str, RangeException] {
 		if radix < +2 || +36 < radix then {

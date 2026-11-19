@@ -4,7 +4,7 @@ import {LexError} from './LexError.ts';
 
 
 /**
- * A LexError01 is thrown when the lexer reaches an unrecognized character.
+ * A LexError01 is raised when the lexer reaches an unrecognized character.
  */
 export class LexError01 extends LexError {
 	/**

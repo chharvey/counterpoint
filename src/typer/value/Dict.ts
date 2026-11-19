@@ -18,9 +18,6 @@ import {CollectionKeyed} from './CollectionKeyed.ts';
  * @final
  */
 export class Dict<T extends Value = Value> extends CollectionKeyed<T> {
-	public override readonly isReference = true;
-
-
 	public override toString(): string {
 		return `[${super.toString()}]`;
 	}

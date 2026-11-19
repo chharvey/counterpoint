@@ -27,6 +27,9 @@ import {Primitive} from './Primitive.ts';
  * @final
  */
 export class Null extends Primitive {
+	public override readonly isTruthy: boolean = false;
+
+
 	public constructor() {
 		super();
 	}
@@ -35,14 +38,10 @@ export class Null extends Primitive {
 		return 'null';
 	}
 
-	public override get isTruthy(): boolean {
-		return false;
-	}
-
 	@strictEqual
 	@noopMethod(memoizeBinOp(true, true))
 	@instanceOf(() => Null)
-	public override identical(_value: Value): boolean {
+	public override identical(_: Value): boolean {
 		return true;
 	}
 
@@ -54,6 +53,6 @@ export class Null extends Primitive {
 
 	@noopMethod(memoizeMethod)
 	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
-		return cg.getConst(null);
+		return cg.vm.Value.NULL;
 	}
 }

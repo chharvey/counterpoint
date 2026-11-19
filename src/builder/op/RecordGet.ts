@@ -50,7 +50,7 @@ export class RecordGet extends Value {
 	@memoizeMethod
 	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
 		return cg.vm.Record.get(
-			cg.vm.Value.cast(this.record.codegen(cg), cg.vm.reftype.Record),
+			cg.vm.Value.asRecord(this.record.codegen(cg)),
 			cg.mod.wasm.i64.const(this.accessor.keyid),
 		);
 	}

@@ -8,8 +8,8 @@ import {AstNode} from './AstNode.ts';
 export class Case extends AstNode {
 	public constructor(
 		start_node: (
-			| SyntaxNodeFamily<'case_map',    ['break']>
-			| SyntaxNodeFamily<'case_switch', ['break']>
+			| SyntaxNodeFamily<'case_map',    ['break', 'return']>
+			| SyntaxNodeFamily<'case_switch', ['break', 'return']>
 		),
 		public readonly antecedents: Readonly<NonemptyArray<EXPR.Expression>>,
 		public readonly consequent:  EXPR.Expression,

@@ -13,7 +13,6 @@ import {
 	repeat,
 	assertAssignable,
 	assertEqualTypes,
-	setupScript,
 } from '../utils.ts';
 
 
@@ -33,8 +32,13 @@ test.suite('Call', () => {
 			(2, 0.2),
 			(3, 0.4),
 		))`,
+		'Exception.("message")',
 		'None.<int>()',
 		'Some.<int>(42)',
+		'Fail.<int>(Exception.("message"))',
+		'Ok.<int>(42)',
+		'Fail.<int, Exception>(Exception.("message"))',
+		'Ok.<int, Exception>(42)',
 	] as const;
 	const BOOL_CONS = [
 		'Boolean.(null)',
@@ -200,22 +204,17 @@ test.suite('Call', () => {
 			3 -> 0.4,
 		})`,
 	] as const;
-
-
-	test.suite('#varCheck', () => {
-		test.test('throws if base is not one of the allowed strings.', () => {
-			xjs.Array.forEachAggregated(extract_lines`
-				SET.<str>()
-				Mapping.<bool>()
-			`, (src) => assert.throws(() => AST.EXPR.Call.fromSource(src).varCheck(), SyntaxError));
-		});
-	});
+	const EXCEPTION_CONS = [
+		'Exception.("message")',
+		'Exception.("message", Exception.("cause"))',
+	] as const;
 
 
 	test.suite('#type', () => {
-		test.test('evaluates Boolean, Integer, Natural, Float, String, List, Dict, Set, Map, None, and Some.', () => {
+		const VISITOR = new AST.ExprVisitorType();
+		test.test('evaluates Callable Class Names.', () => {
 			assertEqualTypes(
-				EVALUATE.map((src) => AST.EXPR.Call.fromSource(src).type()),
+				EVALUATE.map((src) => VISITOR.visit(AST.EXPR.Call.fromSource(src))),
 				[
 					TYPE.BOOL,
 					TYPE.INT,
@@ -226,72 +225,85 @@ test.suite('Call', () => {
 					new TYPE.Dict(TYPE.INT, true),
 					new TYPE.Set(TYPE.INT, true),
 					new TYPE.Map(TYPE.INT, TYPE.FLOAT, true),
+					TYPE.EXCP,
 					new TYPE.None(TYPE.INT),
 					new TYPE.Some(TYPE.INT),
+					new TYPE.Fail(TYPE.INT),
+					new TYPE.Ok(TYPE.INT),
+					new TYPE.Fail(TYPE.INT),
+					new TYPE.Ok(TYPE.INT),
 				],
 			);
 		});
 		test.test('`Boolean.(‹…›)`', () => {
 			assertEqualTypes(
-				BOOL_CONS.map((src) => AST.EXPR.Call.fromSource(src).type()),
+				BOOL_CONS.map((src) => VISITOR.visit(AST.EXPR.Call.fromSource(src))),
 				repeat(TYPE.BOOL, BOOL_CONS.length),
 			);
 		});
 		test.test('`Integer.(‹…›)`', () => {
 			assertEqualTypes(
-				INT_CONS.map((src) => AST.EXPR.Call.fromSource(src).type()),
+				INT_CONS.map((src) => VISITOR.visit(AST.EXPR.Call.fromSource(src))),
 				repeat(TYPE.INT, INT_CONS.length),
 			);
 		});
 		test.test('`Natural.(‹…›)`', () => {
 			assertEqualTypes(
-				NAT_CONS.map((src) => AST.EXPR.Call.fromSource(src).type()),
+				NAT_CONS.map((src) => VISITOR.visit(AST.EXPR.Call.fromSource(src))),
 				repeat(TYPE.NAT, NAT_CONS.length),
 			);
 		});
 		test.test('`Float.(‹…›)`', () => {
 			assertEqualTypes(
-				FLOAT_CONS.map((src) => AST.EXPR.Call.fromSource(src).type()),
+				FLOAT_CONS.map((src) => VISITOR.visit(AST.EXPR.Call.fromSource(src))),
 				repeat(TYPE.FLOAT, FLOAT_CONS.length),
 			);
 		});
 		test.test('`String.(‹…›)`', () => {
 			assertEqualTypes(
-				STRING_CONS.map((src) => AST.EXPR.Call.fromSource(src).type()),
+				STRING_CONS.map((src) => VISITOR.visit(AST.EXPR.Call.fromSource(src))),
 				repeat(TYPE.STR, STRING_CONS.length),
 			);
 		});
 		test.test('`List.(‹…›)`', () => {
 			assertEqualTypes(
-				LIST_CONS.map((src) => AST.EXPR.Call.fromSource(src).type()),
+				LIST_CONS.map((src) => VISITOR.visit(AST.EXPR.Call.fromSource(src))),
 				repeat(new TYPE.List(TYPE.INT, true), LIST_CONS.length),
 			);
 		});
 		test.test('`Dict.(‹…›)`', () => {
 			assertEqualTypes(
-				DICT_CONS.map((src) => AST.EXPR.Call.fromSource(src).type()),
+				DICT_CONS.map((src) => VISITOR.visit(AST.EXPR.Call.fromSource(src))),
 				repeat(new TYPE.Dict(TYPE.INT, true), DICT_CONS.length),
 			);
 		});
 		test.test('`Set.(‹…›)`', () => {
 			assertEqualTypes(
-				SET_CONS.map((src) => AST.EXPR.Call.fromSource(src).type()),
+				SET_CONS.map((src) => VISITOR.visit(AST.EXPR.Call.fromSource(src))),
 				repeat(new TYPE.Set(TYPE.INT, true), SET_CONS.length),
 			);
 		});
 		test.test('`Map.(‹…›)`', () => {
 			assertEqualTypes(
-				MAP_CONS.map((src) => AST.EXPR.Call.fromSource(src).type()),
+				MAP_CONS.map((src) => VISITOR.visit(AST.EXPR.Call.fromSource(src))),
 				repeat(new TYPE.Map(TYPE.INT, TYPE.FLOAT, true), MAP_CONS.length),
 			);
 		});
-		test.test('`Maybe.()` throws.', () => {
+		test.test('`Exception.(‹…›)`', () => {
+			assertEqualTypes(
+				EXCEPTION_CONS.map((src) => VISITOR.visit(AST.EXPR.Call.fromSource(src))),
+				repeat(TYPE.EXCP, EXCEPTION_CONS.length),
+			);
+		});
+		test.test('`Maybe.()` and `Result.()` throw.', () => {
 			xjs.Array.forEachAggregated([
 				'Maybe.<int>()',
 				'Maybe.<int>(42)',
+				'Result.<int>(42)',
+				'Result.<int>(Exception.("message"))',
 			], (src) => {
 				const call: AST.EXPR.Call = AST.EXPR.Call.fromSource(src);
-				return assert.throws(() => call.type(), TypeErrorNotCallable);
+				return assert.throws(() => VISITOR.visit(call), TypeErrorNotCallable);
 			});
 		});
 		test.test('bypasses invariance for generic arguments.', () => {
@@ -301,19 +313,13 @@ test.suite('Call', () => {
 				Set .<mut {int}>((   {42},))
 				Map.<float, mut {int}>(((4.2, {42}),))
 				Map.<mut {int}, float>((({42}, 4.2),))
-			`.map((src) => AST.EXPR.Call.fromSource(src).type());
-		});
-		test.test('Map has a default type parameter.', () => {
-			assertEqualTypes(
-				AST.EXPR.Call.fromSource('Map.<int>()').type(),
-				new TYPE.Map(TYPE.INT, TYPE.INT, true),
-			);
+			`.map((src) => VISITOR.visit(AST.EXPR.Call.fromSource(src)));
 		});
 		test.test('throws if base is not a Variable.', () => {
 			xjs.Array.forEachAggregated(extract_lines`
 				null.()
 				(42 || 43).<bool>()
-			`, (src) => assert.throws(() => AST.EXPR.Call.fromSource(src).type(), TypeErrorNotCallable));
+			`, (src) => assert.throws(() => VISITOR.visit(AST.EXPR.Call.fromSource(src)), TypeErrorNotCallable));
 		});
 		test.test('throws when providing incorrect number of arguments.', () => {
 			xjs.Array.forEachAggregated(extract_lines`
@@ -328,16 +334,17 @@ test.suite('Call', () => {
 				List.<int>((), ())
 				Dict.<int>((), ())
 				Set.<int>((), ())
-				Map.<int>((), ())
+				Map.<int, int>((), ())
+				Map.<int>()
 				None.<int>(42)
 				Some.<int>()
-			`, (src) => assert.throws(() => AST.EXPR.Call.fromSource(src).type(), TypeErrorArgCount));
+			`, (src) => assert.throws(() => VISITOR.visit(AST.EXPR.Call.fromSource(src)), TypeErrorArgCount));
 		});
 		test.test('throws when providing incorrect type of arguments.', () => {
 			// API overload checks
 			xjs.Map.forEachAggregated(new Map<string, readonly [string, readonly string[]]>(['Integer', 'Natural', 'Float'].flatMap((basesrc) => ['()', '[]', '{}'].map((argsrc) => (
 				[`${basesrc}.(${argsrc})`, [argsrc, ['int', 'nat', 'float']]] as const
-			)))), ([argexpr, allowed_types], src) => assert.throws(() => AST.EXPR.Call.fromSource(src).type(), (thrown) => {
+			)))), ([argexpr, allowed_types], src) => assert.throws(() => VISITOR.visit(AST.EXPR.Call.fromSource(src)), (thrown) => {
 				assertAssignable(thrown as Error, {
 					cons:   AggregateError,
 					errors: allowed_types.map((allowed_type) => ({
@@ -348,12 +355,12 @@ test.suite('Call', () => {
 				return true;
 			}));
 			xjs.Map.forEachAggregated(new Map<string, readonly [string, readonly string[]]>([
-				['List.<int>(42)', ['42', ['List.<int>', 'Set.<int>']]],
-				['Dict.<int>(42)', ['42', ['List.<(sym, int)>', 'Dict.<int>', 'Set.<(sym, int)>', 'Map.<sym, int>']]],
-				['Set.<int>(42)',  ['42', ['List.<int>', 'Set.<int>']]],
-				['Map.<int>(42)',  ['42', ['List.<(int, int)>', 'Set.<(int, int)>', 'Map.<int, int>']]],
+				['List.<int>(42)',     ['42', ['List.<int>', 'Set.<int>']]],
+				['Dict.<int>(42)',     ['42', ['List.<(sym, int)>', 'Dict.<int>', 'Set.<(sym, int)>', 'Map.<sym, int>']]],
+				['Set.<int>(42)',      ['42', ['List.<int>', 'Set.<int>']]],
+				['Map.<int, int>(42)', ['42', ['List.<(int, int)>', 'Set.<(int, int)>', 'Map.<int, int>']]],
 			]), ([argexpr, allowed_types], src) => assert.throws(
-				() => AST.EXPR.Call.fromSource(src).type(),
+				() => VISITOR.visit(AST.EXPR.Call.fromSource(src)),
 				(err) => {
 					assertAssignable(err as Error, {
 						cons:   AggregateError,
@@ -373,403 +380,9 @@ test.suite('Call', () => {
 				List.<int>((4.2,))
 				Dict.<int>((a= 4.2))
 				Set.<int>((42, "42"))
-				Map.<int>(((42, "42"),))
+				Map.<int, int>(((42, "42"),))
 				Some.<int>(4.2)
-			`, (src) => assert.throws(() => AST.EXPR.Call.fromSource(src).type(), TypeErrorNotAssignable));
-		});
-	});
-
-
-	test.suite('#build', () => {
-		test.test('`Boolean.(‹…›)`', () => {
-			assert.strictEqual(setupScript(`{
-				${BOOL_CONS.map((src) => `${src};`).join('\n')}
-			}`, {codegen: false}).builder.print(), xjs.String.dedent`
-				"block-0":
-					(DROP (BOOL.FROM (NULL.CONST null)))
-					(DROP (BOOL.FROM (BOOL.CONST false)))
-					(DROP (BOOL.FROM (BOOL.CONST true)))
-					(DROP (BOOL.FROM (SYM.CONST @hello)))
-					(DROP (BOOL.FROM (INT.CONST 0)))
-					(DROP (BOOL.FROM (INT.CONST -42)))
-					(DROP (BOOL.FROM (NAT.CONST +0)))
-					(DROP (BOOL.FROM (NAT.CONST +42)))
-					(DROP (BOOL.FROM (FLOAT.CONST 0.0)))
-					(DROP (BOOL.FROM (FLOAT.CONST 4.2)))
-					(DROP (BOOL.FROM (STR.CONST "hello")))
-					(ENDPROGRAM)
-			`.trim());
-		});
-		test.test('`Integer.(‹…›)`', () => {
-			assert.strictEqual(setupScript(`{
-				${INT_CONS.map((src) => `${src};`).join('\n')}
-			}`, {codegen: false}).builder.print(), xjs.String.dedent`
-				"block-0":
-					(DROP (INT.FROM (INT.CONST -42)))
-					(DROP (INT.FROM (NAT.CONST +42)))
-					(DROP (INT.FROM (FLOAT.CONST 4.2)))
-					(ENDPROGRAM)
-			`.trim());
-		});
-		test.test('`Natural.(‹…›)`', () => {
-			assert.strictEqual(setupScript(`{
-				${NAT_CONS.map((src) => `${src};`).join('\n')}
-			}`, {codegen: false}).builder.print(), xjs.String.dedent`
-				"block-0":
-					(DROP (NAT.FROM (INT.CONST -42)))
-					(DROP (NAT.FROM (NAT.CONST +42)))
-					(DROP (NAT.FROM (FLOAT.CONST 4.2)))
-					(ENDPROGRAM)
-			`.trim());
-		});
-		test.test('`Float.(‹…›)`', () => {
-			assert.strictEqual(setupScript(`{
-				${FLOAT_CONS.map((src) => `${src};`).join('\n')}
-			}`, {codegen: false}).builder.print(), xjs.String.dedent`
-				"block-0":
-					(DROP (FLOAT.FROM (INT.CONST -42)))
-					(DROP (FLOAT.FROM (NAT.CONST +42)))
-					(DROP (FLOAT.FROM (FLOAT.CONST 4.2)))
-					(ENDPROGRAM)
-			`.trim());
-		});
-		test.test('`String.(‹…›)`', () => {
-			assert.strictEqual(setupScript(`{
-				${STRING_CONS.map((src) => `${src};`).join('\n')}
-			}`, {codegen: false}).builder.print(), xjs.String.dedent`
-				"block-0":
-					(DROP (STR.FROM (NULL.CONST null)))
-					(DROP (STR.FROM (BOOL.CONST true)))
-					(DROP (STR.FROM (INT.CONST -42)))
-					(DROP (STR.FROM (NAT.CONST +42)))
-					(DROP (STR.FROM (FLOAT.CONST 4.2)))
-					(DROP (STR.FROM (STR.CONST "hello")))
-					(DECL <tuple> $0 (TUPLE.NEW))
-					(DROP (STR.FROM (GET $0)))
-					(DECL <record> $1 (RECORD.NEW @a->(INT.CONST 1)))
-					(DROP (STR.FROM (GET $1)))
-					(DECL <List> $2 (LIST.NEW))
-					(DROP (STR.FROM (GET $2)))
-					(DECL <Dict> $3 (DICT.NEW @a->(INT.CONST 1)))
-					(DROP (STR.FROM (GET $3)))
-					(DECL <Set> $4 (SET.NEW))
-					(DROP (STR.FROM (GET $4)))
-					(DECL <Map> $5 (MAP.NEW (STR.CONST "a")->(INT.CONST 1)))
-					(DROP (STR.FROM (GET $5)))
-					(ENDPROGRAM)
-			`.trim());
-		});
-		test.test('`List.(‹…›)`', () => {
-			assert.strictEqual(setupScript(`{
-				${LIST_CONS.map((src) => `${src};`).join('\n')}
-			}`, {codegen: false}).builder.print(), xjs.String.dedent`
-				"block-0":
-					(DROP (LIST.NEW))
-					(DECL <List> $0 (LIST.NEW))
-					(DECL <tuple> $1 (TUPLE.NEW))
-					(LIST.COPY (GET $0) (GET $1))
-					(DROP (GET $0))
-					(DECL <List> $2 (LIST.NEW))
-					(DECL <List> $3 (LIST.NEW))
-					(LIST.COPY (GET $2) (GET $3))
-					(DROP (GET $2))
-					(DECL <List> $4 (LIST.NEW))
-					(DECL <List> $5 (LIST.NEW))
-					(LIST.COPY (GET $4) (GET $5))
-					(DROP (GET $4))
-					(DECL <List> $6 (LIST.NEW))
-					(DECL <Set> $7 (SET.NEW))
-					(LIST.COPY (GET $6) (GET $7))
-					(DROP (GET $6))
-					(DECL <List> $8 (LIST.NEW))
-					(DECL <Set> $9 (SET.NEW))
-					(LIST.COPY (GET $8) (GET $9))
-					(DROP (GET $8))
-					(DECL <List> $10 (LIST.NEW))
-					(DECL <tuple> $11 (TUPLE.NEW (INT.CONST 1) (INT.CONST 2) (INT.CONST 3)))
-					(LIST.COPY (GET $10) (GET $11))
-					(DROP (GET $10))
-					(DECL <List> $12 (LIST.NEW))
-					(DECL <List> $13 (LIST.NEW))
-					(DECL <tuple> $14 (TUPLE.NEW (INT.CONST 1) (INT.CONST 2) (INT.CONST 3)))
-					(LIST.COPY (GET $13) (GET $14))
-					(LIST.COPY (GET $12) (GET $13))
-					(DROP (GET $12))
-					(DECL <List> $15 (LIST.NEW))
-					(DECL <List> $16 (LIST.NEW (INT.CONST 1) (INT.CONST 2) (INT.CONST 3)))
-					(LIST.COPY (GET $15) (GET $16))
-					(DROP (GET $15))
-					(DECL <List> $17 (LIST.NEW))
-					(DECL <Set> $18 (SET.NEW))
-					(DECL <tuple> $19 (TUPLE.NEW (INT.CONST 1) (INT.CONST 2) (INT.CONST 3)))
-					(SET.COPY (GET $18) (GET $19))
-					(LIST.COPY (GET $17) (GET $18))
-					(DROP (GET $17))
-					(DECL <List> $20 (LIST.NEW))
-					(DECL <Set> $21 (SET.NEW (INT.CONST 1) (INT.CONST 2) (INT.CONST 3)))
-					(LIST.COPY (GET $20) (GET $21))
-					(DROP (GET $20))
-					(ENDPROGRAM)
-			`.trim());
-		});
-		test.test('`Dict.(‹…›)`', () => {
-			assert.strictEqual(setupScript(`{
-				${DICT_CONS.map((src) => `${src};`).join('\n')}
-			}`, {codegen: false}).builder.print(), xjs.String.dedent`
-				"block-0":
-					(DROP (DICT.NEW))
-					(DECL <Dict> $0 (DICT.NEW))
-					(DECL <tuple> $1 (TUPLE.NEW))
-					(DICT.COPY (GET $0) (GET $1))
-					(DROP (GET $0))
-					(DECL <Dict> $2 (DICT.NEW))
-					(DECL <List> $3 (LIST.NEW))
-					(DICT.COPY (GET $2) (GET $3))
-					(DROP (GET $2))
-					(DECL <Dict> $4 (DICT.NEW))
-					(DECL <List> $5 (LIST.NEW))
-					(DICT.COPY (GET $4) (GET $5))
-					(DROP (GET $4))
-					(DECL <Dict> $6 (DICT.NEW))
-					(DECL <Dict> $7 (DICT.NEW))
-					(DICT.COPY (GET $6) (GET $7))
-					(DROP (GET $6))
-					(DECL <Dict> $8 (DICT.NEW))
-					(DECL <Set> $9 (SET.NEW))
-					(DICT.COPY (GET $8) (GET $9))
-					(DROP (GET $8))
-					(DECL <Dict> $10 (DICT.NEW))
-					(DECL <Set> $11 (SET.NEW))
-					(DICT.COPY (GET $10) (GET $11))
-					(DROP (GET $10))
-					(DECL <Dict> $12 (DICT.NEW))
-					(DECL <Map> $13 (MAP.NEW))
-					(DICT.COPY (GET $12) (GET $13))
-					(DROP (GET $12))
-					(DECL <Dict> $14 (DICT.NEW))
-					(DECL <tuple> $15 (TUPLE.NEW (SYM.CONST @a) (INT.CONST 1)))
-					(DECL <tuple> $16 (TUPLE.NEW (SYM.CONST @b) (INT.CONST 2)))
-					(DECL <tuple> $17 (TUPLE.NEW (SYM.CONST @c) (INT.CONST 3)))
-					(DECL <tuple> $18 (TUPLE.NEW (GET $15) (GET $16) (GET $17)))
-					(DICT.COPY (GET $14) (GET $18))
-					(DROP (GET $14))
-					(DECL <Dict> $19 (DICT.NEW))
-					(DECL <record> $20 (RECORD.NEW @a->(INT.CONST 1) @b->(INT.CONST 2) @c->(INT.CONST 3)))
-					(DICT.COPY (GET $19) (GET $20))
-					(DROP (GET $19))
-					(DECL <Dict> $21 (DICT.NEW))
-					(DECL <List> $22 (LIST.NEW))
-					(DECL <tuple> $23 (TUPLE.NEW (SYM.CONST @a) (INT.CONST 1)))
-					(DECL <tuple> $24 (TUPLE.NEW (SYM.CONST @b) (INT.CONST 2)))
-					(DECL <tuple> $25 (TUPLE.NEW (SYM.CONST @c) (INT.CONST 3)))
-					(DECL <tuple> $26 (TUPLE.NEW (GET $23) (GET $24) (GET $25)))
-					(LIST.COPY (GET $22) (GET $26))
-					(DICT.COPY (GET $21) (GET $22))
-					(DROP (GET $21))
-					(DECL <Dict> $27 (DICT.NEW))
-					(DECL <tuple> $28 (TUPLE.NEW (SYM.CONST @a) (INT.CONST 1)))
-					(DECL <tuple> $29 (TUPLE.NEW (SYM.CONST @b) (INT.CONST 2)))
-					(DECL <tuple> $30 (TUPLE.NEW (SYM.CONST @c) (INT.CONST 3)))
-					(DECL <List> $31 (LIST.NEW (GET $28) (GET $29) (GET $30)))
-					(DICT.COPY (GET $27) (GET $31))
-					(DROP (GET $27))
-					(DECL <Dict> $32 (DICT.NEW))
-					(DECL <Dict> $33 (DICT.NEW))
-					(DECL <record> $34 (RECORD.NEW @a->(INT.CONST 1) @b->(INT.CONST 2) @c->(INT.CONST 3)))
-					(DICT.COPY (GET $33) (GET $34))
-					(DICT.COPY (GET $32) (GET $33))
-					(DROP (GET $32))
-					(DECL <Dict> $35 (DICT.NEW))
-					(DECL <Dict> $36 (DICT.NEW @a->(INT.CONST 1) @b->(INT.CONST 2) @c->(INT.CONST 3)))
-					(DICT.COPY (GET $35) (GET $36))
-					(DROP (GET $35))
-					(DECL <Dict> $37 (DICT.NEW))
-					(DECL <Set> $38 (SET.NEW))
-					(DECL <tuple> $39 (TUPLE.NEW (SYM.CONST @a) (INT.CONST 1)))
-					(DECL <tuple> $40 (TUPLE.NEW (SYM.CONST @b) (INT.CONST 2)))
-					(DECL <tuple> $41 (TUPLE.NEW (SYM.CONST @c) (INT.CONST 3)))
-					(DECL <tuple> $42 (TUPLE.NEW (GET $39) (GET $40) (GET $41)))
-					(SET.COPY (GET $38) (GET $42))
-					(DICT.COPY (GET $37) (GET $38))
-					(DROP (GET $37))
-					(DECL <Dict> $43 (DICT.NEW))
-					(DECL <tuple> $44 (TUPLE.NEW (SYM.CONST @a) (INT.CONST 1)))
-					(DECL <tuple> $45 (TUPLE.NEW (SYM.CONST @b) (INT.CONST 2)))
-					(DECL <tuple> $46 (TUPLE.NEW (SYM.CONST @c) (INT.CONST 3)))
-					(DECL <Set> $47 (SET.NEW (GET $44) (GET $45) (GET $46)))
-					(DICT.COPY (GET $43) (GET $47))
-					(DROP (GET $43))
-					(DECL <Dict> $48 (DICT.NEW))
-					(DECL <Map> $49 (MAP.NEW))
-					(DECL <tuple> $50 (TUPLE.NEW (SYM.CONST @a) (INT.CONST 1)))
-					(DECL <tuple> $51 (TUPLE.NEW (SYM.CONST @b) (INT.CONST 2)))
-					(DECL <tuple> $52 (TUPLE.NEW (SYM.CONST @c) (INT.CONST 3)))
-					(DECL <tuple> $53 (TUPLE.NEW (GET $50) (GET $51) (GET $52)))
-					(MAP.COPY (GET $49) (GET $53))
-					(DICT.COPY (GET $48) (GET $49))
-					(DROP (GET $48))
-					(DECL <Dict> $54 (DICT.NEW))
-					(DECL <Map> $55 (MAP.NEW (SYM.CONST @a)->(INT.CONST 1) (SYM.CONST @b)->(INT.CONST 2) (SYM.CONST @c)->(INT.CONST 3)))
-					(DICT.COPY (GET $54) (GET $55))
-					(DROP (GET $54))
-					(ENDPROGRAM)
-			`.trim());
-		});
-		test.test('`Set.(‹…›)`', () => {
-			assert.strictEqual(setupScript(`{
-				${SET_CONS.map((src) => `${src};`).join('\n')}
-			}`, {codegen: false}).builder.print(), xjs.String.dedent`
-				"block-0":
-					(DROP (SET.NEW))
-					(DECL <Set> $0 (SET.NEW))
-					(DECL <tuple> $1 (TUPLE.NEW))
-					(SET.COPY (GET $0) (GET $1))
-					(DROP (GET $0))
-					(DECL <Set> $2 (SET.NEW))
-					(DECL <List> $3 (LIST.NEW))
-					(SET.COPY (GET $2) (GET $3))
-					(DROP (GET $2))
-					(DECL <Set> $4 (SET.NEW))
-					(DECL <List> $5 (LIST.NEW))
-					(SET.COPY (GET $4) (GET $5))
-					(DROP (GET $4))
-					(DECL <Set> $6 (SET.NEW))
-					(DECL <Set> $7 (SET.NEW))
-					(SET.COPY (GET $6) (GET $7))
-					(DROP (GET $6))
-					(DECL <Set> $8 (SET.NEW))
-					(DECL <Set> $9 (SET.NEW))
-					(SET.COPY (GET $8) (GET $9))
-					(DROP (GET $8))
-					(DECL <Set> $10 (SET.NEW))
-					(DECL <tuple> $11 (TUPLE.NEW (INT.CONST 1) (INT.CONST 2) (INT.CONST 3)))
-					(SET.COPY (GET $10) (GET $11))
-					(DROP (GET $10))
-					(DECL <Set> $12 (SET.NEW))
-					(DECL <List> $13 (LIST.NEW))
-					(DECL <tuple> $14 (TUPLE.NEW (INT.CONST 1) (INT.CONST 2) (INT.CONST 3)))
-					(LIST.COPY (GET $13) (GET $14))
-					(SET.COPY (GET $12) (GET $13))
-					(DROP (GET $12))
-					(DECL <Set> $15 (SET.NEW))
-					(DECL <List> $16 (LIST.NEW (INT.CONST 1) (INT.CONST 2) (INT.CONST 3)))
-					(SET.COPY (GET $15) (GET $16))
-					(DROP (GET $15))
-					(DECL <Set> $17 (SET.NEW))
-					(DECL <Set> $18 (SET.NEW))
-					(DECL <tuple> $19 (TUPLE.NEW (INT.CONST 1) (INT.CONST 2) (INT.CONST 3)))
-					(SET.COPY (GET $18) (GET $19))
-					(SET.COPY (GET $17) (GET $18))
-					(DROP (GET $17))
-					(DECL <Set> $20 (SET.NEW))
-					(DECL <Set> $21 (SET.NEW (INT.CONST 1) (INT.CONST 2) (INT.CONST 3)))
-					(SET.COPY (GET $20) (GET $21))
-					(DROP (GET $20))
-					(ENDPROGRAM)
-			`.trim());
-		});
-		test.test('`Map.(‹…›)`', () => {
-			assert.strictEqual(setupScript(`{
-				${MAP_CONS.map((src) => `${src};`).join('\n')}
-			}`, {codegen: false}).builder.print(), xjs.String.dedent`
-				"block-0":
-					(DROP (MAP.NEW))
-					(DECL <Map> $0 (MAP.NEW))
-					(DECL <tuple> $1 (TUPLE.NEW))
-					(MAP.COPY (GET $0) (GET $1))
-					(DROP (GET $0))
-					(DECL <Map> $2 (MAP.NEW))
-					(DECL <List> $3 (LIST.NEW))
-					(MAP.COPY (GET $2) (GET $3))
-					(DROP (GET $2))
-					(DECL <Map> $4 (MAP.NEW))
-					(DECL <List> $5 (LIST.NEW))
-					(MAP.COPY (GET $4) (GET $5))
-					(DROP (GET $4))
-					(DECL <Map> $6 (MAP.NEW))
-					(DECL <Set> $7 (SET.NEW))
-					(MAP.COPY (GET $6) (GET $7))
-					(DROP (GET $6))
-					(DECL <Map> $8 (MAP.NEW))
-					(DECL <Set> $9 (SET.NEW))
-					(MAP.COPY (GET $8) (GET $9))
-					(DROP (GET $8))
-					(DECL <Map> $10 (MAP.NEW))
-					(DECL <Map> $11 (MAP.NEW))
-					(MAP.COPY (GET $10) (GET $11))
-					(DROP (GET $10))
-					(DECL <Map> $12 (MAP.NEW))
-					(DECL <tuple> $13 (TUPLE.NEW (INT.CONST 1) (FLOAT.CONST 0.1)))
-					(DECL <tuple> $14 (TUPLE.NEW (INT.CONST 2) (FLOAT.CONST 0.2)))
-					(DECL <tuple> $15 (TUPLE.NEW (INT.CONST 3) (FLOAT.CONST 0.4)))
-					(DECL <tuple> $16 (TUPLE.NEW (GET $13) (GET $14) (GET $15)))
-					(MAP.COPY (GET $12) (GET $16))
-					(DROP (GET $12))
-					(DECL <Map> $17 (MAP.NEW))
-					(DECL <List> $18 (LIST.NEW))
-					(DECL <tuple> $19 (TUPLE.NEW (INT.CONST 1) (FLOAT.CONST 0.1)))
-					(DECL <tuple> $20 (TUPLE.NEW (INT.CONST 2) (FLOAT.CONST 0.2)))
-					(DECL <tuple> $21 (TUPLE.NEW (INT.CONST 3) (FLOAT.CONST 0.4)))
-					(DECL <tuple> $22 (TUPLE.NEW (GET $19) (GET $20) (GET $21)))
-					(LIST.COPY (GET $18) (GET $22))
-					(MAP.COPY (GET $17) (GET $18))
-					(DROP (GET $17))
-					(DECL <Map> $23 (MAP.NEW))
-					(DECL <tuple> $24 (TUPLE.NEW (INT.CONST 1) (FLOAT.CONST 0.1)))
-					(DECL <tuple> $25 (TUPLE.NEW (INT.CONST 2) (FLOAT.CONST 0.2)))
-					(DECL <tuple> $26 (TUPLE.NEW (INT.CONST 3) (FLOAT.CONST 0.4)))
-					(DECL <List> $27 (LIST.NEW (GET $24) (GET $25) (GET $26)))
-					(MAP.COPY (GET $23) (GET $27))
-					(DROP (GET $23))
-					(DECL <Map> $28 (MAP.NEW))
-					(DECL <Set> $29 (SET.NEW))
-					(DECL <tuple> $30 (TUPLE.NEW (INT.CONST 1) (FLOAT.CONST 0.1)))
-					(DECL <tuple> $31 (TUPLE.NEW (INT.CONST 2) (FLOAT.CONST 0.2)))
-					(DECL <tuple> $32 (TUPLE.NEW (INT.CONST 3) (FLOAT.CONST 0.4)))
-					(DECL <tuple> $33 (TUPLE.NEW (GET $30) (GET $31) (GET $32)))
-					(SET.COPY (GET $29) (GET $33))
-					(MAP.COPY (GET $28) (GET $29))
-					(DROP (GET $28))
-					(DECL <Map> $34 (MAP.NEW))
-					(DECL <tuple> $35 (TUPLE.NEW (INT.CONST 1) (FLOAT.CONST 0.1)))
-					(DECL <tuple> $36 (TUPLE.NEW (INT.CONST 2) (FLOAT.CONST 0.2)))
-					(DECL <tuple> $37 (TUPLE.NEW (INT.CONST 3) (FLOAT.CONST 0.4)))
-					(DECL <Set> $38 (SET.NEW (GET $35) (GET $36) (GET $37)))
-					(MAP.COPY (GET $34) (GET $38))
-					(DROP (GET $34))
-					(DECL <Map> $39 (MAP.NEW))
-					(DECL <Map> $40 (MAP.NEW))
-					(DECL <tuple> $41 (TUPLE.NEW (INT.CONST 1) (FLOAT.CONST 0.1)))
-					(DECL <tuple> $42 (TUPLE.NEW (INT.CONST 2) (FLOAT.CONST 0.2)))
-					(DECL <tuple> $43 (TUPLE.NEW (INT.CONST 3) (FLOAT.CONST 0.4)))
-					(DECL <tuple> $44 (TUPLE.NEW (GET $41) (GET $42) (GET $43)))
-					(MAP.COPY (GET $40) (GET $44))
-					(MAP.COPY (GET $39) (GET $40))
-					(DROP (GET $39))
-					(DECL <Map> $45 (MAP.NEW))
-					(DECL <Map> $46 (MAP.NEW (INT.CONST 1)->(FLOAT.CONST 0.1) (INT.CONST 2)->(FLOAT.CONST 0.2) (INT.CONST 3)->(FLOAT.CONST 0.4)))
-					(MAP.COPY (GET $45) (GET $46))
-					(DROP (GET $45))
-					(ENDPROGRAM)
-			`.trim());
-		});
-		test.test('`None.()`', () => {
-			assert.strictEqual(setupScript(`{
-				None.<int>();
-			}`, {codegen: false}).builder.print(), xjs.String.dedent`
-				"block-0":
-					(DROP (MAYBE.NEW))
-					(ENDPROGRAM)
-			`.trim());
-		});
-		test.test('`Some.(‹…›)`', () => {
-			assert.strictEqual(setupScript(`{
-				Some.<int>(42);
-			}`, {codegen: false}).builder.print(), xjs.String.dedent`
-				"block-0":
-					(DROP (MAYBE.NEW (INT.CONST 42)))
-					(ENDPROGRAM)
-			`.trim());
+			`, (src) => assert.throws(() => VISITOR.visit(AST.EXPR.Call.fromSource(src)), TypeErrorNotAssignable));
 		});
 	});
 });

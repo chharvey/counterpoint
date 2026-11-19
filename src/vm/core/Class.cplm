@@ -1,0 +1,5 @@
+from "./Object" import await (Object);
+
+
+
+public class open Class extends Object is Class {}

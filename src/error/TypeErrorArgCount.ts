@@ -4,7 +4,7 @@ import {TypeError as CplTypeError} from './TypeError.ts';
 
 
 /**
- * A TypeErrorArgCount is thrown when an attempt is made to call a callable object with an incorrect number of arguments.
+ * A TypeErrorArgCount is raised when an attempt is made to call a callable object with an incorrect number of arguments.
  * @example
  * type U<V, W> = V | W;
  * type T = U.<V>;       % TypeErrorArgCount: Got 1 type arguments, but expected 2.

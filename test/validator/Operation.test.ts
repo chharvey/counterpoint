@@ -3,7 +3,7 @@ import * as test from 'node:test';
 import * as xjs from 'extrajs';
 import {
 	assert_instanceof,
-	INTRINSICS,
+	CORE_LIB_NAMES,
 	Validator,
 	AST,
 	SymbolSchemaVar,
@@ -17,26 +17,25 @@ import {
 	repeat,
 	assert_shallowStrictEqual,
 	assertEqualTypes,
-	op_maybe_string,
 	typeUnit,
 	setupScript,
 } from '../utils.ts';
 
 
 
-function typeOperations(tests: ReadonlyMap<string, TYPE.Type>): void {
-	return assertEqualTypes(
-		[...tests.keys()].map((src) => AST.EXPR.Operation.fromSource(src).type()),
-		[...tests.values()],
-	);
-}
-
-
-
 test.suite('Operation', () => {
+	const VISITOR = new AST.ExprVisitorType();
+
+	function typeOperations(tests: ReadonlyMap<string, TYPE.Type>): void {
+		return assertEqualTypes(
+			[...tests.keys()].map((src) => VISITOR.visit(AST.EXPR.Operation.fromSource(src))),
+			[...tests.values()],
+		);
+	}
+
 	function typeOfStmtExpr(stmt: AST.STMT.Statement): TYPE.Type {
 		assert_instanceof(stmt, AST.STMT.StatementExpression);
-		return stmt.expr!.type();
+		return VISITOR.visit(stmt.expr!);
 	}
 
 
@@ -44,7 +43,7 @@ test.suite('Operation', () => {
 	test.suite('#type', () => {
 		test.suite('OperationUnary', () => {
 			test.test('[operator=UN_MAYBE]', () => {
-				assert.deepStrictEqual(setupScript(`{
+				assertEqualTypes(setupScript(`{
 					val mut x?: int;
 					val mut y?: nat;
 					val mut z?: float;
@@ -57,10 +56,31 @@ test.suite('Operation', () => {
 					x~?;
 					y~?;
 					z~?;
-				}`, {build: false}).stmts.slice(6).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()), [
+				}`, {build: false}).stmts.slice(6).map((stmt) => VISITOR.visit((stmt as AST.STMT.StatementExpression).expr!)), [
 					new TYPE.Maybe(TYPE.INT),
 					new TYPE.Maybe(TYPE.NAT),
 					new TYPE.Maybe(TYPE.FLOAT),
+					TYPE.INT,
+					TYPE.NAT,
+					TYPE.FLOAT,
+				]);
+			});
+
+			test.test('[operator=UN_RESULT]', () => {
+				assertEqualTypes(setupScript(`{
+					val x: int! = Fail.<int>(Exception.("42"));
+					val y: Result.<nat> = Ok.<nat>(+42);
+					val z: Result.<float, Exception> = Ok.<float>(4.2);
+					x;
+					y;
+					z;
+					x~!;
+					y~!;
+					z~!;
+				}`, {build: false}).stmts.slice(3).map((stmt) => VISITOR.visit((stmt as AST.STMT.StatementExpression).expr!)), [
+					new TYPE.Result(TYPE.INT),
+					new TYPE.Result(TYPE.NAT),
+					new TYPE.Result(TYPE.FLOAT, TYPE.EXCP),
 					TYPE.INT,
 					TYPE.NAT,
 					TYPE.FLOAT,
@@ -93,7 +113,7 @@ test.suite('Operation', () => {
 							?j;
 							?k;
 							?l;
-						}`, {build: false}).stmts.slice(11).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()),
+						}`, {build: false}).stmts.slice(11).map((stmt) => VISITOR.visit((stmt as AST.STMT.StatementExpression).expr!)),
 						repeat(TYPE.BOOL, 11),
 					);
 				});
@@ -102,13 +122,32 @@ test.suite('Operation', () => {
 
 
 		test.suite('OperationBinaryCast', () => {
+			test.test('returns `nothing` if either operand is `nothing`.', () => {
+				assertEqualTypes(
+					setupScript(`{
+						val x: nothing = 42 as <nothing>;
+						val y: nothing = "hello" as <nothing>;
+						x as Exception;
+						Exception.("") as y;
+					}`, {build: false}).stmts.slice(2).map((stmt) => typeOfStmtExpr(stmt)),
+					repeat(TYPE.NOTHING, 2),
+				);
+			});
+
+			test.test('throws if right-hand operand is not an instance of `Class`.', () => {
+				const {stmts} = setupScript(`{
+					Exception.("hello") as (message= "hello");
+				}`, {typeCheck: false});
+				return assert.throws(() => typeOfStmtExpr(stmts[0]), TypeErrorInvalidOperation);
+			});
+
 			test.test('[operator=IS] always returns `bool`.', () => {
 				assert_shallowStrictEqual(
 					setupScript(`{
 						val n: null = null;
-						${INTRINSICS.map((t) => `n is ${t};`).join('\n')}
-					}`, {build: false}).stmts.slice(1).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()),
-					repeat(TYPE.BOOL, 15),
+						${CORE_LIB_NAMES.map((t) => `n is ${t};`).join('\n')}
+					}`, {build: false}).stmts.slice(1).map((stmt) => VISITOR.visit((stmt as AST.STMT.StatementExpression).expr!)),
+					repeat(TYPE.BOOL, 21),
 				);
 			});
 
@@ -117,8 +156,8 @@ test.suite('Operation', () => {
 					assertEqualTypes(
 						setupScript(`{
 							val n: anything = null;
-							${INTRINSICS.map((t) => `n as ${t};`).join('\n')}
-						}`, {build: false}).stmts.slice(1).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()),
+							${CORE_LIB_NAMES.map((t) => `n as ${t};`).join('\n')}
+						}`, {build: false}).stmts.slice(1).map((stmt) => VISITOR.visit((stmt as AST.STMT.StatementExpression).expr!)),
 						[
 							TYPE.NULL,
 							TYPE.BOOL,
@@ -132,19 +171,42 @@ test.suite('Operation', () => {
 							new TYPE.Dict(TYPE.ANYTHING),
 							new TYPE.Set(TYPE.ANYTHING),
 							new TYPE.Map(TYPE.ANYTHING, TYPE.ANYTHING),
+							TYPE.EXCP,
 							new TYPE.Maybe(TYPE.ANYTHING),
 							new TYPE.None(TYPE.ANYTHING),
 							new TYPE.Some(TYPE.ANYTHING),
+							new TYPE.Result(TYPE.ANYTHING),
+							new TYPE.Fail(TYPE.ANYTHING),
+							new TYPE.Ok(TYPE.ANYTHING),
+							TYPE.FUNCTION,
+							TYPE.CLASS,
 						],
 					);
 				});
 				test.test('throws when the assigned type is not equal or narrower.', () => {
-					const {stmts} = setupScript(`{
+					const {stmts, visitors} = setupScript(`{
 						val n: int = 42;
 						n as Float;
 					}`, {typeCheck: false});
-					stmts[0].typeCheck();
-					return assert.throws(() => stmts[1].typeCheck(), TypeErrorNotNarrow);
+					visitors.typeCheck.visit(stmts[0]);
+					return assert.throws(() => visitors.typeCheck.visit(stmts[1]), TypeErrorNotNarrow);
+				});
+				test.test('returns the uncast type if a referenced type cannot be found.', () => {
+					assertEqualTypes(
+						setupScript(`{
+							val a: anything          = null;
+							val b: int | nat | float = 42;
+							val c: sym               = @hello;
+							a as (Symbol || String);
+							b as (Integer || Float);
+							c as (Function && Class);
+						}`, {build: false}).stmts.slice(3).map((stmt) => typeOfStmtExpr(stmt)),
+						[
+							TYPE.ANYTHING,
+							TYPE.NUMBER,
+							TYPE.SYM,
+						],
+					);
 				});
 			});
 
@@ -153,8 +215,8 @@ test.suite('Operation', () => {
 					assertEqualTypes(
 						setupScript(`{
 							val n: anything = null;
-							${INTRINSICS.map((t) => `n as? ${t};`).join('\n')}
-						}`, {build: false}).stmts.slice(1).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()),
+							${CORE_LIB_NAMES.map((t) => `n as? ${t};`).join('\n')}
+						}`, {build: false}).stmts.slice(1).map((stmt) => VISITOR.visit((stmt as AST.STMT.StatementExpression).expr!)),
 						[
 							new TYPE.Maybe(TYPE.NULL),
 							new TYPE.Maybe(TYPE.BOOL),
@@ -168,23 +230,44 @@ test.suite('Operation', () => {
 							new TYPE.Maybe(new TYPE.Dict(TYPE.ANYTHING)),
 							new TYPE.Maybe(new TYPE.Set(TYPE.ANYTHING)),
 							new TYPE.Maybe(new TYPE.Map(TYPE.ANYTHING, TYPE.ANYTHING)),
+							new TYPE.Maybe(TYPE.EXCP),
 							new TYPE.Maybe(new TYPE.Maybe(TYPE.ANYTHING)),
 							new TYPE.Maybe(new TYPE.None(TYPE.ANYTHING)),
 							new TYPE.Maybe(new TYPE.Some(TYPE.ANYTHING)),
+							new TYPE.Maybe(new TYPE.Result(TYPE.ANYTHING)),
+							new TYPE.Maybe(new TYPE.Fail(TYPE.ANYTHING)),
+							new TYPE.Maybe(new TYPE.Ok(TYPE.ANYTHING)),
+							new TYPE.Maybe(TYPE.FUNCTION),
+							new TYPE.Maybe(TYPE.CLASS),
 						],
 					);
 				});
 				test.test('throws when the assigned type is not equal or narrower.', () => {
-					const {stmts} = setupScript(`{
+					const {stmts, visitors} = setupScript(`{
 						val n: int = 42;
 						n as? Float;
 					}`, {typeCheck: false});
-					stmts[0].typeCheck();
-					return assert.throws(() => stmts[1].typeCheck(), TypeErrorNotNarrow);
+					visitors.typeCheck.visit(stmts[0]);
+					return assert.throws(() => visitors.typeCheck.visit(stmts[1]), TypeErrorNotNarrow);
+				});
+				test.test('returns the uncast type, wrapped in Maybe, if a referenced type cannot be found.', () => {
+					assertEqualTypes(
+						setupScript(`{
+							val a: anything          = null;
+							val b: int | nat | float = 42;
+							val c: sym               = @hello;
+							a as? (Symbol || String);
+							b as? (Integer || Float);
+							c as? (Function && Class);
+						}`, {build: false}).stmts.slice(3).map((stmt) => typeOfStmtExpr(stmt)),
+						[
+							new TYPE.Maybe(TYPE.ANYTHING),
+							new TYPE.Maybe(TYPE.NUMBER),
+							new TYPE.Maybe(TYPE.SYM),
+						],
+					);
 				});
 			});
-
-			test.test.todo('[operator=RESULT');
 		});
 
 
@@ -205,7 +288,7 @@ test.suite('Operation', () => {
 						(i1 + i2) * i3;
 						(n1 + n2) * n3;
 						f1 * f2 ^ f3;
-					}`, {build: false}).stmts.slice(9).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()),
+					}`, {build: false}).stmts.slice(9).map((stmt) => VISITOR.visit((stmt as AST.STMT.StatementExpression).expr!)),
 					[TYPE.INT, TYPE.NAT, TYPE.FLOAT],
 				);
 			});
@@ -224,7 +307,7 @@ test.suite('Operation', () => {
 						val mut f2: float = 3.1;
 
 						${['i1', 'n1', 'f1'].flatMap((left) => ['i2', 'n2', 'f2'].flatMap((right) => ['<', '>', '<=', '>=', '!<', '!>'].map((op) => `${left} ${op} ${right};`))).join('\n')}
-					}`).stmts.slice(6).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()),
+					}`).stmts.slice(6).map((stmt) => VISITOR.visit((stmt as AST.STMT.StatementExpression).expr!)),
 					repeat(TYPE.BOOL, 3 * 3 * 6),
 				);
 			});
@@ -238,11 +321,11 @@ test.suite('Operation', () => {
 					"hello" === "world"
 					@symb1  ==  @symb2
 					"hello" ==  "world"
-				`, (expr) => assert.strictEqual(AST.EXPR.Operation.fromSource(expr).type(), TYPE.FALSE));
+				`, (expr) => assert.strictEqual(VISITOR.visit(AST.EXPR.Operation.fromSource(expr)), TYPE.FALSE));
 			});
 			test.test('returns `false` if operands are of disjoint types in general.', () => {
-				assert.strictEqual(AST.EXPR.Operation.fromSource('7      == null').type(), TYPE.FALSE);
-				assert.strictEqual(AST.EXPR.Operation.fromSource('@symb1 == 256').type(),  TYPE.FALSE);
+				assert.strictEqual(VISITOR.visit(AST.EXPR.Operation.fromSource('7      == null')), TYPE.FALSE);
+				assert.strictEqual(VISITOR.visit(AST.EXPR.Operation.fromSource('@symb1 == 256')),  TYPE.FALSE);
 			});
 			test.test('without constant folding: returns `bool` for operands of same numeric type.', () => {
 				assert_shallowStrictEqual(
@@ -260,7 +343,7 @@ test.suite('Operation', () => {
 						i1 == i2;
 						n1 == n2;
 						f1 == f2;
-					}`).stmts.slice(6).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()),
+					}`).stmts.slice(6).map((stmt) => VISITOR.visit((stmt as AST.STMT.StatementExpression).expr!)),
 					repeat(TYPE.BOOL, 6),
 				);
 			});
@@ -276,7 +359,7 @@ test.suite('Operation', () => {
 							i1 === n1;
 							i1 === f1;
 							n1 === f1;
-						}`).stmts.slice(3).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()),
+						}`).stmts.slice(3).map((stmt) => VISITOR.visit((stmt as AST.STMT.StatementExpression).expr!)),
 						repeat(TYPE.FALSE, 3),
 					);
 				});
@@ -293,514 +376,11 @@ test.suite('Operation', () => {
 							i1 == n1;
 							i1 == f1;
 							n1 == f1;
-						}`).stmts.slice(3).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()),
+						}`).stmts.slice(3).map((stmt) => VISITOR.visit((stmt as AST.STMT.StatementExpression).expr!)),
 						repeat(TYPE.BOOL, 3),
 					);
 				});
 			});
-		});
-	});
-
-
-
-	test.suite('#build', () => {
-		test.test('with block-expressions.', () => {
-			assert.strictEqual(setupScript(`{
-				val mut x: int = 42;
-				val mut y: int = 69;
-				x + { x; x * y; };
-			}`, {codegen: false}).builder.print(), xjs.String.dedent`
-				"block-0":
-					(DECL <int> x (INT.CONST 42))
-					(DECL <int> y (INT.CONST 69))
-					(DROP (GET x))
-					(DECL <int> $0 (INT.MUL (GET x) (GET y)))
-					(DROP (INT.ADD (GET x) (GET $0)))
-					(ENDPROGRAM)
-			`.trim());
-		});
-		test.test('OperationUnary[operator=UN_MAYBE]', () => {
-			assert.strictEqual(setupScript(`{
-				val mut x?: int;
-				val mut y?: nat;
-				val mut z?: float;
-				set y = +42;
-				set z = 4.2;
-				delete y;
-				x~?;
-				y~?;
-				z~?;
-			}`, {codegen: false}).builder.print(), xjs.String.dedent`
-				"block-0":
-					(DECL <Maybe> x (MAYBE.NEW))
-					(DECL <Maybe> y (MAYBE.NEW))
-					(DECL <Maybe> z (MAYBE.NEW))
-					(SET y (MAYBE.NEW (NAT.CONST +42)))
-					(SET z (MAYBE.NEW (FLOAT.CONST 4.2)))
-					(SET y (MAYBE.NEW))
-					(DROP (MAYBE.UNWRAP (GET x)))
-					(DROP (MAYBE.UNWRAP (GET y)))
-					(DROP (MAYBE.UNWRAP (GET z)))
-					(ENDPROGRAM)
-			`.trim());
-		});
-		test.test('OperationUnary[operator=NOT]', () => {
-			assert.strictEqual(setupScript(`{
-				!42;
-				val y: int = 42 / 7;
-				!(42 + y);
-			}`, {codegen: false}).builder.print(), xjs.String.dedent`
-				"block-0":
-					(DROP (NOT (INT.CONST 42)))
-					(DECL <int> y (INT.DIV (INT.CONST 42) (INT.CONST 7)))
-					(DECL <int> $0 (INT.ADD (INT.CONST 42) (GET y)))
-					(DROP (NOT (GET $0)))
-					(ENDPROGRAM)
-			`.trim());
-		});
-		test.test('OperationUnary[operator=EMP]', () => {
-			assert.strictEqual(setupScript(`{
-				val x: int = 42;
-				?x;
-				val y: int = x / 7;
-				?(x + y);
-			}`, {codegen: false}).builder.print(), xjs.String.dedent`
-				"block-0":
-					(DECL <int> x (INT.CONST 42))
-					(DROP (EMP (GET x)))
-					(DECL <int> y (INT.DIV (GET x) (INT.CONST 7)))
-					(DECL <int> $0 (INT.ADD (GET x) (GET y)))
-					(DROP (EMP (GET $0)))
-					(ENDPROGRAM)
-			`.trim());
-		});
-		test.test('OperationUnary[operator=NEG]', () => {
-			assert.strictEqual(setupScript(`{
-				val mut x: int = 42;
-				-x;
-				val mut y: float = 42.0 / 7.0;
-				-(3.0 + y);
-				val mut z: int | float = if false then 42 else 4.2;
-				-z;
-			}`, {codegen: false}).builder.print(), xjs.String.dedent`
-				"block-0":
-					(DECL <int> x (INT.CONST 42))
-					(DROP (NEG (GET x)))
-					(DECL <float> y (FLOAT.DIV (FLOAT.CONST 42.0) (FLOAT.CONST 7.0)))
-					(DECL <float> $0 (FLOAT.ADD (FLOAT.CONST 3.0) (GET y)))
-					(DROP (NEG (GET $0)))
-					(DECL <anything> $1)
-					(GOTO.IF (BOOL.CONST false) "block-1" "block-2")
-				"block-1":
-					(SET $1 (INT.CONST 42))
-					(GOTO "block-3")
-				"block-2":
-					(SET $1 (FLOAT.CONST 4.2))
-					(GOTO "block-3")
-				"block-3":
-					(DECL <anything> z (GET $1))
-					(DROP (NEG (GET z)))
-					(ENDPROGRAM)
-			`.trim());
-		});
-
-		test.suite('OperationBinaryCast', () => {
-			test.suite('[operator=IS]', () => {
-				test.test('"Null"', () => {
-					assert.strictEqual(setupScript(`{
-						42 is Null;
-					}`, {codegen: false}).builder.print(), xjs.String.dedent`
-						"block-0":
-							(DROP (ID (INT.CONST 42) (NULL.CONST null)))
-							(ENDPROGRAM)
-					`.trim());
-				});
-				test.test('"Boolean"', () => {
-					assert.strictEqual(setupScript(`{
-						42 is Boolean;
-					}`, {codegen: false}).builder.print(), xjs.String.dedent`
-						"block-0":
-							(DECL <bool> $0 (ID (INT.CONST 42) (BOOL.CONST false)))
-							(DECL <bool> $1)
-							(GOTO.IF (GET $0) "block-1" "block-2")
-						"block-1":
-							(SET $1 (GET $0))
-							(GOTO "block-3")
-						"block-2":
-							(SET $1 (ID (INT.CONST 42) (BOOL.CONST true)))
-							(GOTO "block-3")
-						"block-3":
-							(DROP (GET $1))
-							(ENDPROGRAM)
-					`.trim());
-				});
-				test.test('if not "Null" nor "Boolean", returns INSTANCEOF.', () => {
-					assert.strictEqual(setupScript(`{
-						val n: null = null;
-						${INTRINSICS.slice(2).map((t) => `n is ${t};`).join('\n')}
-					}`, {codegen: false}).builder.print(), xjs.String.dedent`
-						"block-0":
-							(DECL <null> n (NULL.CONST null))
-							${INTRINSICS.slice(2).map((t) => `(DROP (INSTANCEOF ${t} (GET n)))`).join('\n\t')}
-							(ENDPROGRAM)
-					`.trim());
-				});
-			});
-
-			test.test('[operator=CAST]', () => {
-				assert.strictEqual(setupScript(`{
-					val n: anything = null;
-					${INTRINSICS.map((t) => `n as ${t};`).join('\n')}
-				}`, {codegen: false}).builder.print(), xjs.String.dedent`
-					"block-0":
-						(DECL <null> n (NULL.CONST null))
-						${INTRINSICS.map((t) => `(DROP (CAST ${t} (GET n)))`).join('\n\t')}
-						(ENDPROGRAM)
-				`.trim());
-			});
-
-			test.suite('[operator=MAYBE]', () => {
-				test.test('"Null"', () => {
-					assert.strictEqual(setupScript(`{
-						val n: anything = null;
-						val i: anything = 42;
-						n as? Null;
-						i as? Null;
-					}`, {codegen: false}).builder.print(), xjs.String.dedent`
-						"block-0":
-							(DECL <null> n (NULL.CONST null))
-							(DECL <int> i (INT.CONST 42))
-							(DECL <Maybe> $0)
-							(GOTO.IF (ID (GET n) (NULL.CONST null)) "block-1" "block-2")
-						"block-1":
-							(SET $0 ${op_maybe_string('(CAST Null (GET n))')})
-							(GOTO "block-3")
-						"block-2":
-							(SET $0 ${op_maybe_string()})
-							(GOTO "block-3")
-						"block-3":
-							(DROP (GET $0))
-							(DECL <Maybe> $1)
-							(GOTO.IF (ID (GET i) (NULL.CONST null)) "block-4" "block-5")
-						"block-4":
-							(SET $1 ${op_maybe_string('(CAST Null (GET i))')})
-							(GOTO "block-6")
-						"block-5":
-							(SET $1 ${op_maybe_string()})
-							(GOTO "block-6")
-						"block-6":
-							(DROP (GET $1))
-							(ENDPROGRAM)
-					`.trim());
-				});
-				test.test('"Boolean"', () => {
-					assert.strictEqual(setupScript(`{
-						val n: anything = null;
-						val i: anything = 42;
-						n as? Boolean;
-						i as? Boolean;
-					}`, {codegen: false}).builder.print(), xjs.String.dedent`
-						"block-0":
-							(DECL <null> n (NULL.CONST null))
-							(DECL <int> i (INT.CONST 42))
-							(DECL <Maybe> $0)
-							(DECL <bool> $1 (ID (GET n) (BOOL.CONST false)))
-							(DECL <bool> $2)
-							(GOTO.IF (GET $1) "block-4" "block-5")
-						"block-4":
-							(SET $2 (GET $1))
-							(GOTO "block-6")
-						"block-5":
-							(SET $2 (ID (GET n) (BOOL.CONST true)))
-							(GOTO "block-6")
-						"block-6":
-							(GOTO.IF (GET $2) "block-1" "block-2")
-						"block-1":
-							(SET $0 ${op_maybe_string('(CAST Boolean (GET n))')})
-							(GOTO "block-3")
-						"block-2":
-							(SET $0 ${op_maybe_string()})
-							(GOTO "block-3")
-						"block-3":
-							(DROP (GET $0))
-							(DECL <Maybe> $3)
-							(DECL <bool> $4 (ID (GET i) (BOOL.CONST false)))
-							(DECL <bool> $5)
-							(GOTO.IF (GET $4) "block-10" "block-11")
-						"block-10":
-							(SET $5 (GET $4))
-							(GOTO "block-12")
-						"block-11":
-							(SET $5 (ID (GET i) (BOOL.CONST true)))
-							(GOTO "block-12")
-						"block-12":
-							(GOTO.IF (GET $5) "block-7" "block-8")
-						"block-7":
-							(SET $3 ${op_maybe_string('(CAST Boolean (GET i))')})
-							(GOTO "block-9")
-						"block-8":
-							(SET $3 ${op_maybe_string()})
-							(GOTO "block-9")
-						"block-9":
-							(DROP (GET $3))
-							(ENDPROGRAM)
-					`.trim());
-				});
-				test.test('not "Null" nor "Boolean".', () => {
-					assert.strictEqual(setupScript(`{
-						val n: anything = null;
-						${INTRINSICS.slice(2).map((t) => `n as? ${t};`).join('\n')}
-					}`, {codegen: false}).builder.print(), xjs.String.dedent`
-						"block-0":
-							(DECL <null> n (NULL.CONST null))
-							${INTRINSICS.slice(2).map((t, i) => {
-								const block_then:  string = `block-${3 * i + 1}`;
-								const block_else:  string = `block-${3 * i + 2}`;
-								const block_endif: string = `block-${3 * i + 3}`;
-								const result_name: string = `$${i}`;
-								return xjs.String.dedent`
-									${'\t'}(DECL <Maybe> ${result_name})
-									${'\t'}(GOTO.IF (INSTANCEOF ${t} (GET n)) "${block_then}" "${block_else}")
-									"${block_then}":
-										(SET ${result_name} ${op_maybe_string(`(CAST ${t} (GET n))`)})
-										(GOTO "${block_endif}")
-									"${block_else}":
-										(SET ${result_name} ${op_maybe_string()})
-										(GOTO "${block_endif}")
-									"${block_endif}":
-										(DROP (GET ${result_name}))
-								`.trim();
-							}).join('\n\t').trimStart()}
-							(ENDPROGRAM)
-					`.trim());
-				});
-			});
-
-			test.suite.todo('[operator=RESULT]');
-		});
-
-		test.test('OperationBinaryArithmetic', () => {
-			assert.strictEqual(setupScript(`{
-				val mut x: int = 42;
-				3 + x^2 / 2^3;
-			}`, {codegen: false}).builder.print(), xjs.String.dedent`
-				"block-0":
-					(DECL <int> x (INT.CONST 42))
-					(DECL <int> $0 (INT.EXP (GET x) (INT.CONST 2)))
-					(DECL <int> $1 (INT.EXP (INT.CONST 2) (INT.CONST 3)))
-					(DECL <int> $2 (INT.DIV (GET $0) (GET $1)))
-					(DROP (INT.ADD (INT.CONST 3) (GET $2)))
-					(ENDPROGRAM)
-			`.trim());
-		});
-
-		test.test('OperationBinaryComparative', () => {
-			assert.strictEqual(setupScript(`{
-				val mut a: int = 10;
-				val mut b: int = 100;
-				val mut c: float = 0.1;
-				val mut d: float = 0.01;
-				a < b;
-				c > d;
-				a <= b;
-				c >= d;
-				a !< d;
-				b !> c;
-			}`, {codegen: false}).builder.print(), xjs.String.dedent`
-				"block-0":
-					(DECL <int> a (INT.CONST 10))
-					(DECL <int> b (INT.CONST 100))
-					(DECL <float> c (FLOAT.CONST 0.1))
-					(DECL <float> d (FLOAT.CONST 0.01))
-					(DROP (LT (GET a) (GET b)))
-					(DROP (GT (GET c) (GET d)))
-					(DROP (LE (GET a) (GET b)))
-					(DROP (GE (GET c) (GET d)))
-					(DECL <bool> $0 (LT (GET a) (GET d)))
-					(DROP (NOT (GET $0)))
-					(DECL <bool> $1 (GT (GET b) (GET c)))
-					(DROP (NOT (GET $1)))
-					(ENDPROGRAM)
-			`.trim());
-		});
-
-		test.test('OperationBinaryEquality', () => {
-			assert.strictEqual(setupScript(`{
-				val mut a: null  = null;
-				val mut b: bool  = false;
-				val mut c: int   = 10;
-				val mut d: float = 0.1;
-				a === b;
-				c ==  d;
-				c !== a;
-				d !=  b;
-			}`, {codegen: false}).builder.print(), xjs.String.dedent`
-				"block-0":
-					(DECL <null> a (NULL.CONST null))
-					(DECL <bool> b (BOOL.CONST false))
-					(DECL <int> c (INT.CONST 10))
-					(DECL <float> d (FLOAT.CONST 0.1))
-					(DROP (ID (GET a) (GET b)))
-					(DROP (EQ (GET c) (GET d)))
-					(DECL <bool> $0 (ID (GET c) (GET a)))
-					(DROP (NOT (GET $0)))
-					(DECL <bool> $1 (EQ (GET d) (GET b)))
-					(DROP (NOT (GET $1)))
-					(ENDPROGRAM)
-			`.trim());
-		});
-
-		test.suite('OperationBinaryLogical', () => {
-			test.test('[operator=AND]', () => {
-				assert.strictEqual(setupScript(`{
-					val mut a: null  = null;
-					val mut b: bool  = false;
-					a && b;
-					!a && !b;
-				}`, {codegen: false}).builder.print(), xjs.String.dedent`
-					"block-0":
-						(DECL <null> a (NULL.CONST null))
-						(DECL <bool> b (BOOL.CONST false))
-						(DECL <anything> $0)
-						(GOTO.IF (BOOL.FROM (GET a)) "block-1" "block-2")
-					"block-1":
-						(SET $0 (GET b))
-						(GOTO "block-3")
-					"block-2":
-						(SET $0 (GET a))
-						(GOTO "block-3")
-					"block-3":
-						(DROP (GET $0))
-						(DECL <bool> $1 (NOT (GET a)))
-						(DECL <bool> $2)
-						(GOTO.IF (BOOL.FROM (GET $1)) "block-4" "block-5")
-					"block-4":
-						(SET $2 (NOT (GET b)))
-						(GOTO "block-6")
-					"block-5":
-						(SET $2 (GET $1))
-						(GOTO "block-6")
-					"block-6":
-						(DROP (GET $2))
-						(ENDPROGRAM)
-				`.trim());
-			});
-			test.test('[operator=OR]', () => {
-				assert.strictEqual(setupScript(`{
-					val mut c: int   = 10;
-					val mut d: float = 0.1;
-					c || d;
-					-c + 1 || 1.0 - d;
-				}`, {codegen: false}).builder.print(), xjs.String.dedent`
-					"block-0":
-						(DECL <int> c (INT.CONST 10))
-						(DECL <float> d (FLOAT.CONST 0.1))
-						(DECL <anything> $0)
-						(GOTO.IF (BOOL.FROM (GET c)) "block-1" "block-2")
-					"block-1":
-						(SET $0 (GET c))
-						(GOTO "block-3")
-					"block-2":
-						(SET $0 (GET d))
-						(GOTO "block-3")
-					"block-3":
-						(DROP (GET $0))
-						(DECL <int> $1 (NEG (GET c)))
-						(DECL <int> $2 (INT.ADD (GET $1) (INT.CONST 1)))
-						(DECL <anything> $3)
-						(GOTO.IF (BOOL.FROM (GET $2)) "block-4" "block-5")
-					"block-4":
-						(SET $3 (GET $2))
-						(GOTO "block-6")
-					"block-5":
-						(SET $3 (FLOAT.SUB (FLOAT.CONST 1.0) (GET d)))
-						(GOTO "block-6")
-					"block-6":
-						(DROP (GET $3))
-						(ENDPROGRAM)
-				`.trim());
-			});
-			test.test('[operator=NAND]', () => {
-				assert.strictEqual(setupScript(`{
-					val mut a: null  = null;
-					val mut b: bool  = false;
-					a !& b;
-				}`, {codegen: false}).builder.print(), xjs.String.dedent`
-					"block-0":
-						(DECL <null> a (NULL.CONST null))
-						(DECL <bool> b (BOOL.CONST false))
-						(DECL <anything> $0)
-						(GOTO.IF (BOOL.FROM (GET a)) "block-1" "block-2")
-					"block-1":
-						(SET $0 (GET b))
-						(GOTO "block-3")
-					"block-2":
-						(SET $0 (GET a))
-						(GOTO "block-3")
-					"block-3":
-						(DROP (NOT (GET $0)))
-						(ENDPROGRAM)
-				`.trim());
-			});
-			test.test('[operator=NOR]', () => {
-				assert.strictEqual(setupScript(`{
-					val mut c: int   = 10;
-					val mut d: float = 0.1;
-					c !| d;
-				}`, {codegen: false}).builder.print(), xjs.String.dedent`
-					"block-0":
-						(DECL <int> c (INT.CONST 10))
-						(DECL <float> d (FLOAT.CONST 0.1))
-						(DECL <anything> $0)
-						(GOTO.IF (BOOL.FROM (GET c)) "block-1" "block-2")
-					"block-1":
-						(SET $0 (GET c))
-						(GOTO "block-3")
-					"block-2":
-						(SET $0 (GET d))
-						(GOTO "block-3")
-					"block-3":
-						(DROP (NOT (GET $0)))
-						(ENDPROGRAM)
-				`.trim());
-			});
-		});
-		test.test('OperationTernary', () => {
-			assert.strictEqual(setupScript(`{
-				val mut x: bool  = false;
-				val mut y: float = 0.5;
-				val mut z: float = 0.2;
-				if x then y else z;
-				if y < z then 0.03 + y * 2.0 else 3.0 * z + 0.02;
-			}`, {codegen: false}).builder.print(), xjs.String.dedent`
-				"block-0":
-					(DECL <bool> x (BOOL.CONST false))
-					(DECL <float> y (FLOAT.CONST 0.5))
-					(DECL <float> z (FLOAT.CONST 0.2))
-					(DECL <float> $0)
-					(GOTO.IF (GET x) "block-1" "block-2")
-				"block-1":
-					(SET $0 (GET y))
-					(GOTO "block-3")
-				"block-2":
-					(SET $0 (GET z))
-					(GOTO "block-3")
-				"block-3":
-					(DROP (GET $0))
-					(DECL <float> $1)
-					(GOTO.IF (LT (GET y) (GET z)) "block-4" "block-5")
-				"block-4":
-					(DECL <float> $2 (FLOAT.MUL (GET y) (FLOAT.CONST 2.0)))
-					(SET $1 (FLOAT.ADD (FLOAT.CONST 0.03) (GET $2)))
-					(GOTO "block-6")
-				"block-5":
-					(DECL <float> $3 (FLOAT.MUL (FLOAT.CONST 3.0) (GET z)))
-					(SET $1 (FLOAT.ADD (GET $3) (FLOAT.CONST 0.02)))
-					(GOTO "block-6")
-				"block-6":
-					(DROP (GET $1))
-					(ENDPROGRAM)
-			`.trim());
 		});
 	});
 
@@ -839,7 +419,7 @@ test.suite('Operation', () => {
 					]));
 				});
 				test.test('[operator=NEG] throws for Natural number literals (foldable).', () => {
-					assert.throws(() => AST.EXPR.Operation.fromSource('-+42').type(), TypeErrorInvalidOperation);
+					assert.throws(() => VISITOR.visit(AST.EXPR.Operation.fromSource('-+42')), TypeErrorInvalidOperation);
 				});
 			});
 
@@ -895,12 +475,12 @@ test.suite('Operation', () => {
 					});
 				});
 				test.test('[operator=NEG] throws for `nat` type.', () => {
-					const {stmts} = setupScript(`{
+					const {stmts, visitors} = setupScript(`{
 						val mut n: nat = +42;
 						-n;
 					}`, {typeCheck: false});
-					stmts[0].typeCheck(); // assert does not throw
-					assert.throws(() => ((stmts[1] as AST.STMT.StatementExpression).expr as AST.EXPR.OperationUnary).type(), TypeErrorInvalidOperation);
+					visitors.typeCheck.visit(stmts[0]); // assert does not throw
+					assert.throws(() => VISITOR.visit((stmts[1] as AST.STMT.StatementExpression).expr as AST.EXPR.OperationUnary), TypeErrorInvalidOperation);
 				});
 			});
 		});
@@ -918,21 +498,27 @@ test.suite('Operation', () => {
 				]));
 			});
 			test.test('throws for any operation of mix of numeric types.', () => {
-				assert.throws(() => AST.EXPR.OperationBinaryArithmetic.fromSource('+3 * 2')      .type(), TypeErrorInvalidOperation);
-				assert.throws(() => AST.EXPR.OperationBinaryArithmetic.fromSource('+3 * 2.7')    .type(), TypeErrorInvalidOperation);
-				assert.throws(() => AST.EXPR.OperationBinaryArithmetic.fromSource('3 * 2.7')     .type(), TypeErrorInvalidOperation);
-				assert.throws(() => AST.EXPR.OperationBinaryArithmetic.fromSource('7 * 3.0 * 2') .type(), TypeErrorInvalidOperation);
+				xjs.Array.forEachAggregated(extract_lines`
+					+3 * 2
+					+3 * 2.7
+					3 * 2.7
+					7 * 3.0 * 2
+				`, (src) => {
+					const op = AST.EXPR.OperationBinaryArithmetic.fromSource(src);
+					return assert.throws(() => VISITOR.visit(op), TypeErrorInvalidOperation);
+				});
 			});
 			test.test('throws for arithmetic operation of non-numbers.', () => {
-				[
-					'null + 5',
-					'5 * null',
-					'false - 2',
-					'2 / true',
-					'null ^ false',
-					'"hello" + 5',
-				].forEach((src) => {
-					assert.throws(() => AST.EXPR.OperationBinaryArithmetic.fromSource(src).type(), TypeErrorInvalidOperation);
+				xjs.Array.forEachAggregated(extract_lines`
+					null + 5
+					5 * null
+					false - 2
+					2 / true
+					null ^ false
+					"hello" + 5
+				`, (src) => {
+					const op = AST.EXPR.OperationBinaryArithmetic.fromSource(src);
+					return assert.throws(() => VISITOR.visit(op), TypeErrorInvalidOperation);
 				});
 			});
 		});
@@ -962,10 +548,10 @@ test.suite('Operation', () => {
 					2   >= 3.0
 					2   !< 3.0
 					2   !> 3.0
-				`, (src) => assert.strictEqual(AST.EXPR.Operation.fromSource(src).type(), TYPE.BOOL));
+				`, (src) => assert.strictEqual(VISITOR.visit(AST.EXPR.Operation.fromSource(src)), TYPE.BOOL));
 			});
 			test.test('throws for comparative operation of non-numbers.', () => {
-				assert.throws(() => AST.EXPR.OperationBinaryComparative.fromSource('7.0 <= null').type(), TypeErrorInvalidOperation);
+				assert.throws(() => VISITOR.visit(AST.EXPR.OperationBinaryComparative.fromSource('7.0 <= null')), TypeErrorInvalidOperation);
 			});
 		});
 	});
@@ -1018,7 +604,7 @@ test.suite('Operation', () => {
 						d != {41 -> 43};
 						d != {43 -> 42};
 					}`, {build: false}).stmts.slice(4).forEach((stmt) => assert.strictEqual(
-						((stmt as AST.STMT.StatementExpression).expr as AST.EXPR.OperationBinaryEquality).type(),
+						VISITOR.visit((stmt as AST.STMT.StatementExpression).expr as AST.EXPR.OperationBinaryEquality),
 						TYPE.BOOL,
 					));
 				});
@@ -1153,11 +739,11 @@ test.suite('Operation', () => {
 			});
 			test.test('returns `nothing` when condition is `nothing`.', () => {
 				const ternary: AST.EXPR.OperationTernary = AST.EXPR.OperationTernary.fromSource('if n as <nothing> then true else false');
-				ternary.validator.addSymbol(new SymbolSchemaVar(Validator.cookTokenIdentifier('n'), (ternary.operand0 as AST.EXPR.Claim).operand, false, false));
-				return assert.ok(ternary.type().isBottomType);
+				ternary.validator.addSymbol(new SymbolSchemaVar(Validator.keyId('n'), (ternary.operand0 as AST.EXPR.Claim).operand, false, false));
+				return assert.ok(VISITOR.visit(ternary).isBottomType);
 			});
 			test.test('throws when condition is not a subtype of `boolean`.', () => {
-				assert.throws(() => AST.EXPR.OperationTernary.fromSource('if 2 then true else false').type(), TypeErrorInvalidOperation);
+				assert.throws(() => VISITOR.visit(AST.EXPR.OperationTernary.fromSource('if 2 then true else false')), TypeErrorInvalidOperation);
 			});
 		});
 	});
