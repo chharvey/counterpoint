@@ -266,8 +266,8 @@ test.suite('ValueVisitorInterpret#visit', () => {
 		const record: OP.Value = new AST.ExprVisitorBuild(new Builder()).visit(AST.EXPR.Record.fromSource('(a= 10, c= 20)'));
 		const VISITOR          = new OP.ValueVisitorInterpret(new Interpreter());
 		return assert_equal_values(new Map<VALUE.Value, VALUE.Boolean>([
-			[VISITOR.visit(new OP.RecordHas(record, {keyid: Validator.keyId('a'), keysrc: 'a'})), VALUE.TRUE],
-			[VISITOR.visit(new OP.RecordHas(record, {keyid: Validator.keyId('b'), keysrc: 'b'})), VALUE.FALSE],
+			[VISITOR.visit(new OP.RecordHas(record, Validator.keyId('a'))), VALUE.TRUE],
+			[VISITOR.visit(new OP.RecordHas(record, Validator.keyId('b'))), VALUE.FALSE],
 		]));
 	});
 

@@ -69,7 +69,7 @@ export class ExprVisitorBuild extends EXPR.ExprVisitor<OP.Value> {
 	public override visitRecord(expr: EXPR.Record): OP.Value {
 		return new OP.RecordNew(new Map(expr.children.map((c) => ([
 			c.key.id,
-			{keysrc: c.key.source, value: this.visit(c.val).asTac(this.builder)},
+			this.visit(c.val).asTac(this.builder),
 		]))), expr.type!);
 	}
 
@@ -401,12 +401,11 @@ export class ExprVisitorBuild extends EXPR.ExprVisitor<OP.Value> {
 			}
 			case access.accessor instanceof Key: {
 				assert_instanceof(base_val.type, TYPE.Record);
-				const key      = {keyid: access.accessor.id, keysrc: access.accessor.source} as const;
-				const returned = new OP.RecordGet(base_val, key, return_type);
+				const returned = new OP.RecordGet(base_val, access.accessor.id, return_type);
 				return access.isEntryOptional ? OP.conditional_expression(
 					this.builder,
 					new TYPE.Maybe(return_type),
-					() => new OP.RecordHas(base_val, key),
+					() => new OP.RecordHas(base_val, (access.accessor as Key).id),
 					() => new OP.MaybeNew(return_type, returned.asTac(this.builder)),
 					() => new OP.MaybeNew(return_type),
 				) : returned;
