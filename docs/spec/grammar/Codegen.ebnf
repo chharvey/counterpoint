@@ -409,5 +409,6 @@ Codegen((MAP.COPY `dest` `src:Map`)) := (call $Map.copy-from-map
 	(call $value.as-map `Codegen(src)`)
 );
 
-Codegen((RETURN `value` nil)) := (return `Codegen(value)`  (ref.null $Exception));
-Codegen((RETURN nil `excp`))  := (return (ref.null $Value) `Codegen(excp)`);
+Codegen((RETURN "nop"   nil))    := (return (ref.null $Value) (ref.null $Exception));
+Codegen((RETURN `value` nil))    := (return `Codegen(value)`  (ref.null $Exception));
+Codegen((RETURN nil     `excp`)) := (return (ref.null $Value) `Codegen(excp)`);

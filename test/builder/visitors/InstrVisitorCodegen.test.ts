@@ -437,22 +437,25 @@ test.suite('InstrVisitorCodegen#visit', () => {
 			\\(): anything => @hello;
 			\\(): anything => 42;
 			\\(): anything => 4.2;
+			\\(): void { return; };
 			panic Exception.("hello");
 		}`, {build: false});
 		const {heaptype, reftype} = cg.vm;
-		stmts.slice(0, 5).forEach((stmt) => visitors.build.node.visit(((stmt as AST.STMT.StatementExpression).expr as AST.EXPR.Function).block.children[0]));
-		visitors.build.node.visit(stmts[5]);
+		stmts.slice(0, 6).forEach((stmt) => visitors.build.node.visit(((stmt as AST.STMT.StatementExpression).expr as AST.EXPR.Function).block.children[0]));
+		visitors.build.node.visit(stmts[6]);
 		builder.instructions.map((instr) => VISITOR.visit(instr));
+		const ref_null_Value:     binaryen.ExpressionRef = wasm.ref.null(heaptype.Value);
 		const ref_null_Exception: binaryen.ExpressionRef = wasm.ref.null(heaptype.Exception);
 		return assertEqualBins(
 			builder.instructions.filter((instr) => instr instanceof OP.Return).map((instr) => VISITOR.visit(instr)),
 			[
-				wasm.return(wasm.tuple.make([genConst(cg),                        ref_null_Exception])),
-				wasm.return(wasm.tuple.make([genConst(cg, false),                 ref_null_Exception])),
-				wasm.return(wasm.tuple.make([genConst(cg, 'hello', 'sym'),        ref_null_Exception])),
-				wasm.return(wasm.tuple.make([genConst(cg, 42n),                   ref_null_Exception])),
-				wasm.return(wasm.tuple.make([genConst(cg, 4.2),                   ref_null_Exception])),
-				wasm.return(wasm.tuple.make([wasm.ref.null(heaptype.Value), wasm.local.get(0, reftype.Exception)])),
+				wasm.return(wasm.tuple.make([genConst(cg),                 ref_null_Exception])),
+				wasm.return(wasm.tuple.make([genConst(cg, false),          ref_null_Exception])),
+				wasm.return(wasm.tuple.make([genConst(cg, 'hello', 'sym'), ref_null_Exception])),
+				wasm.return(wasm.tuple.make([genConst(cg, 42n),            ref_null_Exception])),
+				wasm.return(wasm.tuple.make([genConst(cg, 4.2),            ref_null_Exception])),
+				wasm.return(wasm.tuple.make([ref_null_Value,               ref_null_Exception])),
+				wasm.return(wasm.tuple.make([ref_null_Value,               wasm.local.get(0, reftype.Exception)])),
 			],
 		);
 	});
