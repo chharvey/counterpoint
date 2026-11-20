@@ -1,7 +1,7 @@
 import * as assert from 'node:assert';
 import {
 	type Temp,
-	type Builder,
+	Builder,
 	OP,
 } from '../../../index.ts';
 import {assert_instanceof} from '../../../lib/index.ts';
@@ -30,6 +30,7 @@ import * as EXPR from '../expression/index.ts';
 import type * as STMT from '../statement/index.ts';
 import {StatementBreakable} from '../statement/StatementBreakable.ts';
 import {runOncePerNode} from './decorators.ts';
+import {ExprVisitorType} from './ExprVisitorType.ts';
 import {ExprVisitorBuild} from './ExprVisitorBuild.ts';
 
 
@@ -96,16 +97,21 @@ export class AstNodeVisitorBuild extends AstNodeVisitor<void> {
 	@runOncePerNode
 	public override visitDeclFunction(stmt: STMT.DeclarationFunction): void {
 		if (stmt.identifier) {
-			const label_func:    string = this.builder.newLabel();
-			const label_endfunc: string = this.builder.newLabel();
+			// get these before building, to throw early
+			const typ:  TYPE.Function = new ExprVisitorType().visitFunctionlike(stmt);
+			const name: string        = stmt.validator.getSymbol(stmt.id!)!.source;
 
-			this.builder.terminateBlock(new OP.Goto(label_endfunc));
-			this.builder.initiateBlock(label_func);
-			stmt.captures   .forEach((capt)  => this.visit(capt));
-			stmt.parameters .forEach((param) => this.visit(param));
-			this.visit(stmt.block);
-			this.builder.terminateBlock(new OP.EndProgram());
-			return this.builder.initiateBlock(label_endfunc);
+			const func_visitor = new AstNodeVisitorBuild(new Builder(this.builder));
+			stmt.captures   .forEach((capt)  => func_visitor.visit(capt));
+			stmt.parameters .forEach((param) => func_visitor.visit(param));
+			func_visitor.visit(stmt.block);
+
+			return this.builder.pushInstruction(new OP.Decl(this.builder.newTemp(new OP.Function(
+				typ,
+				name,
+				stmt.source.replaceAll(/\s+/g, ' '),
+				func_visitor.builder,
+			))));
 		}
 	}
 

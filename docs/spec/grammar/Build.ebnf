@@ -482,12 +482,9 @@ Build(SemanticDeclarationVariable[id: RealNumber][writable=true] ::= SemanticTyp
 
 Build(SemanticDeclarationFunction[id=*nil*]) := [];
 Build(SemanticDeclarationFunction[id: RealNumber] ::= SemanticParameterFunction* SemanticCapture* SemanticType? SemanticBlock) := [
-	"func":
-	`SemanticCapture*.map(Build)`
-	`SemanticParameterFunction*.map(Build)`
-	`Build(SemanticBlock)`
-	// *Note:* A return/panic statement should have been encountered in the function body by now.
-	"endfunc":
+	(DECL <Function> `GetSymbolSchema(id)`
+		(FUNCTION ‹temp_name› `SemanticDeclarationFunction.source` `Build(SemanticCapture* SemanticParameterFunction* SemanticBlock)`)
+	)
 ];
 
 Build(SemanticStatementExpression:has(SemanticExpression) stmt) := [

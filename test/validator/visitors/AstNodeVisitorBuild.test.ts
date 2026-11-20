@@ -93,14 +93,13 @@ test.suite('AstNodeVisitorBuild#visit', () => {
 				}
 			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
-					(GOTO "block-2")
-				"block-1":
-					(DECL <int> $0 (INT.ADD (INT.CONST 1) (INT.CONST 2)))
-					(DROP (ID (GET $0) (INT.CONST 3)))
-					(GOTO "caller")
-				"unreachable-3":
-					(ENDPROGRAM)
-				"block-2":
+					(DECL <Function> $0 (FUNCTION f {${xjs.String.dedent`
+						"block-0":
+							(DECL <int> $0 (INT.ADD (INT.CONST 1) (INT.CONST 2)))
+							(DROP (ID (GET $0) (INT.CONST 3)))
+							(GOTO "caller")
+						"unreachable-1":
+					`}}))
 					(ENDPROGRAM)
 			`.trim());
 		});
@@ -110,15 +109,14 @@ test.suite('AstNodeVisitorBuild#visit', () => {
 					=> 1 + 2 === 3;
 			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
-					(GOTO "block-2")
-				"block-1":
-					(DECL <int> $0 (INT.ADD (INT.CONST 1) (INT.CONST 2)))
-					(DECL <bool> $1 (ID (GET $0) (INT.CONST 3)))
-					(RETURN (GET $1) nil)
-					(GOTO "caller")
-				"unreachable-3":
-					(ENDPROGRAM)
-				"block-2":
+					(DECL <Function> $0 (FUNCTION f {${xjs.String.dedent`
+						"block-0":
+							(DECL <int> $0 (INT.ADD (INT.CONST 1) (INT.CONST 2)))
+							(DECL <bool> $1 (ID (GET $0) (INT.CONST 3)))
+							(RETURN (GET $1) nil)
+							(GOTO "caller")
+						"unreachable-1":
+					`}}))
 					(ENDPROGRAM)
 			`.trim());
 		});
@@ -135,15 +133,14 @@ test.suite('AstNodeVisitorBuild#visit', () => {
 				"block-0":
 					(DECL <int> x (INT.CONST 42))
 					(DECL <float> y (FLOAT.CONST 4.2))
-					(GOTO "block-2")
-				"block-1":
-					(DECL <int> x (GET x))
-					(DROP (INT.ADD (GET x) (INT.CONST 10)))
-					(SET y (FLOAT.CONST 5.2))
-					(GOTO "caller")
-				"unreachable-3":
-					(ENDPROGRAM)
-				"block-2":
+					(DECL <Function> $0 (FUNCTION f {${xjs.String.dedent`
+						"block-0":
+							(DECL <int> x (GET x))
+							(DROP (INT.ADD (GET x) (INT.CONST 10)))
+							(SET y (FLOAT.CONST 5.2))
+							(GOTO "caller")
+						"unreachable-1":
+					`}}))
 					(ENDPROGRAM)
 			`.trim());
 		});
@@ -156,17 +153,16 @@ test.suite('AstNodeVisitorBuild#visit', () => {
 				}
 			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
-					(GOTO "block-2")
-				"block-1":
-					(DECL <int> foo)
-					(DECL <int> bar (INT.CONST 41))
-					(DECL <Maybe> qux (MAYBE.NEW))
-					(DROP (GET foo))
-					(GOTO "caller")
-				"unreachable-3":
-					(DROP (INT.CONST 42))
-					(ENDPROGRAM)
-				"block-2":
+					(DECL <Function> $0 (FUNCTION f {${xjs.String.dedent`
+						"block-0":
+							(DECL <int> foo)
+							(DECL <int> bar (INT.CONST 41))
+							(DECL <Maybe> qux (MAYBE.NEW))
+							(DROP (GET foo))
+							(GOTO "caller")
+						"unreachable-1":
+							(DROP (INT.CONST 42))
+					`}}))
 					(ENDPROGRAM)
 			`.trim());
 		});
@@ -184,25 +180,24 @@ test.suite('AstNodeVisitorBuild#visit', () => {
 				}
 			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
-					(GOTO "block-2")
-				"block-1":
-					(GOTO.IF (LT (INT.CONST 42) (INT.CONST 43)) "block-3" "block-4")
-				"block-3":
-					(DROP (INT.CONST 44))
-					(RETURN (FLOAT.CONST 1.1) nil)
-					(GOTO "caller")
-				"unreachable-6":
-					(GOTO "block-5")
-				"block-4":
-					(DROP (INT.CONST 45))
-					(RETURN (FLOAT.CONST 2.2) nil)
-					(GOTO "caller")
-				"unreachable-7":
-					(GOTO "block-5")
-				"block-5":
-					(DROP (INT.CONST 46))
-					(ENDPROGRAM)
-				"block-2":
+					(DECL <Function> $0 (FUNCTION f {${xjs.String.dedent`
+						"block-0":
+							(GOTO.IF (LT (INT.CONST 42) (INT.CONST 43)) "block-1" "block-2")
+						"block-1":
+							(DROP (INT.CONST 44))
+							(RETURN (FLOAT.CONST 1.1) nil)
+							(GOTO "caller")
+						"unreachable-4":
+							(GOTO "block-3")
+						"block-2":
+							(DROP (INT.CONST 45))
+							(RETURN (FLOAT.CONST 2.2) nil)
+							(GOTO "caller")
+						"unreachable-5":
+							(GOTO "block-3")
+						"block-3":
+							(DROP (INT.CONST 46))
+					`}}))
 					(ENDPROGRAM)
 			`.trim());
 		});
@@ -220,28 +215,52 @@ test.suite('AstNodeVisitorBuild#visit', () => {
 				}
 			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
-					(GOTO "block-2")
-				"block-1":
-					(GOTO.IF (LT (INT.CONST 42) (INT.CONST 43)) "block-3" "block-4")
-				"block-3":
-					(DROP (INT.CONST 44))
-					(DECL <Exception> $0 (EXCP.NEW (STR.CONST "hello")))
-					(RETURN nil (GET $0))
-					(GOTO "caller")
-				"unreachable-6":
-					(GOTO "block-5")
-				"block-4":
-					(DROP (INT.CONST 45))
-					(DECL <Exception> $1 (EXCP.NEW (STR.CONST "world")))
-					(DECL <Exception> $2 (EXCP.NEW (STR.CONST "hello") (GET $1)))
-					(RETURN nil (GET $2))
-					(GOTO "caller")
-				"unreachable-7":
-					(GOTO "block-5")
-				"block-5":
-					(DROP (INT.CONST 46))
+					(DECL <Function> $0 (FUNCTION f {${xjs.String.dedent`
+						"block-0":
+							(GOTO.IF (LT (INT.CONST 42) (INT.CONST 43)) "block-1" "block-2")
+						"block-1":
+							(DROP (INT.CONST 44))
+							(DECL <Exception> $0 (EXCP.NEW (STR.CONST "hello")))
+							(RETURN nil (GET $0))
+							(GOTO "caller")
+						"unreachable-4":
+							(GOTO "block-3")
+						"block-2":
+							(DROP (INT.CONST 45))
+							(DECL <Exception> $1 (EXCP.NEW (STR.CONST "world")))
+							(DECL <Exception> $2 (EXCP.NEW (STR.CONST "hello") (GET $1)))
+							(RETURN nil (GET $2))
+							(GOTO "caller")
+						"unreachable-5":
+							(GOTO "block-3")
+						"block-3":
+							(DROP (INT.CONST 46))
+					`}}))
 					(ENDPROGRAM)
-				"block-2":
+			`.trim());
+		});
+		test.test('multiple overloads.', () => {
+			assert.strictEqual(setupScript(`{
+				func inc(x: int): int => x + 1;
+				func inc(x: float): float => x + 1.0;
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
+				"block-0":
+					(DECL <Function> $0 (FUNCTION inc {${xjs.String.dedent`
+						"block-0":
+							(DECL <int> x)
+							(DECL <int> $0 (INT.ADD (GET x) (INT.CONST 1)))
+							(RETURN (GET $0) nil)
+							(GOTO "caller")
+						"unreachable-1":
+					`}}))
+					(DECL <Function> $1 (FUNCTION inc {${xjs.String.dedent`
+						"block-0":
+							(DECL <float> x)
+							(DECL <float> $0 (FLOAT.ADD (GET x) (FLOAT.CONST 1.0)))
+							(RETURN (GET $0) nil)
+							(GOTO "caller")
+						"unreachable-1":
+					`}}))
 					(ENDPROGRAM)
 			`.trim());
 		});
