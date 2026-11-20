@@ -108,7 +108,7 @@ ID([Value Value]) -> Boolean;
 EQ([Value Value]) -> Boolean;
 IS([Value Class]) -> Boolean;
 
-FUNCTION(native-string native-bigint native-string);
+FUNCTION(native-string native-string ‹instructions›);
 
 DROP([Value]);
 
@@ -463,7 +463,8 @@ Build(SemanticExpressionSwitch ::= SemanticExpression__0 SemanticExpression__1) 
 	return `Build(SemanticExpression__1)`.
 ];
 
-Build(SemanticExpressionFunction) := (FUNCTION ‹temp_name› ‹arity› `SemanticExpressionFunction.source`);
+Build(SemanticExpressionFunction ::= SemanticParameterFunction* SemanticCapture* SemanticType? SemanticBlock)
+	:= (FUNCTION ‹temp_name› `SemanticExpressionFunction.source` `Build(SemanticCapture* SemanticParameterFunction* SemanticBlock)`);
 
 
 

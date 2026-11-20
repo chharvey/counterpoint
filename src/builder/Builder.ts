@@ -50,6 +50,14 @@ export class Builder {
 	readonly #blocks: CfgNode[] = [];
 
 
+	/**
+	 * Construct a new Builder object.
+	 * @param parent - an enlosing Builder
+	 */
+	public constructor(private readonly parent?: Builder) {
+	}
+
+
 	public get instructions(): OP.Instruction[] {
 		return this.#blocks.flatMap((block) => block.instructions).concat(this.currentBlock?.instructions ?? []);
 	}
