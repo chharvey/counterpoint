@@ -12,7 +12,7 @@ class OpFunction extends Value {
 		public  readonly source: string,
 		_instrs: () => void,
 	) {
-		super(OpCode.LAMBDA, type);
+		super(OpCode.FUNCTION, type);
 	}
 
 	public override toString(): string {

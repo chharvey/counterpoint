@@ -30,10 +30,11 @@ function stringify_type_name(typename: TypeName): string | undefined {
 		[TypeName.SET,       'Set'],
 		[TypeName.MAP,       'Map'],
 		[TypeName.OBJECT,    'Object'],
-		[TypeName.CLASS,     'Class'],
 		[TypeName.EXCEPTION, 'Exception'],
 		[TypeName.MAYBE,     'Maybe'],
 		[TypeName.RESULT,    'Result'],
+		[TypeName.FUNCTION,  'Function'],
+		[TypeName.CLASS,     'Class'],
 		[TypeName.ANYTHING,  'anything'],
 	]).get(typename);
 }

@@ -108,7 +108,7 @@ ID([Value Value]) -> Boolean;
 EQ([Value Value]) -> Boolean;
 IS([Value Class]) -> Boolean;
 
-LAMBDA(native-string native-bigint native-string);
+FUNCTION(native-string native-bigint native-string);
 
 DROP([Value]);
 
@@ -463,7 +463,7 @@ Build(SemanticExpressionSwitch ::= SemanticExpression__0 SemanticExpression__1) 
 	return `Build(SemanticExpression__1)`.
 ];
 
-Build(SemanticExpressionFunction) := (LAMBDA ‹temp_name› ‹arity› `SemanticExpressionFunction.source`);
+Build(SemanticExpressionFunction) := (FUNCTION ‹temp_name› ‹arity› `SemanticExpressionFunction.source`);
 
 
 
