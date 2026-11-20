@@ -162,6 +162,7 @@ Build(SemanticBlock block) := block.children.map(Build);
 Build(SemanticGoal goal) := [
 	"start":
 	`Build(goal.0)`
+	(ENDPROGRAM)
 ];
 
 
@@ -465,7 +466,7 @@ Build(SemanticExpressionSwitch ::= SemanticExpression__0 SemanticExpression__1) 
 ];
 
 Build(SemanticExpressionFunction ::= SemanticParameterFunction* SemanticCapture* SemanticType? SemanticBlock)
-	:= (FUNCTION ‹temp_name› `SemanticExpressionFunction.source` `Build(SemanticCapture* SemanticParameterFunction* SemanticBlock)`);
+	:= (FUNCTION ‹temp_name› `SemanticExpressionFunction.source` `Build(SemanticCapture* SemanticParameterFunction* SemanticBlock)` (ENDPROGRAM));
 
 
 
@@ -484,7 +485,7 @@ Build(SemanticDeclarationVariable[id: RealNumber][writable=true] ::= SemanticTyp
 Build(SemanticDeclarationFunction[id=*nil*]) := [];
 Build(SemanticDeclarationFunction[id: RealNumber] ::= SemanticParameterFunction* SemanticCapture* SemanticType? SemanticBlock) := [
 	(DECL <Function> `GetSymbolSchema(id)`
-		(FUNCTION ‹temp_name› `SemanticDeclarationFunction.source` `Build(SemanticCapture* SemanticParameterFunction* SemanticBlock)`)
+		(FUNCTION ‹temp_name› `SemanticDeclarationFunction.source` `Build(SemanticCapture* SemanticParameterFunction* SemanticBlock)` (ENDPROGRAM))
 	)
 ];
 

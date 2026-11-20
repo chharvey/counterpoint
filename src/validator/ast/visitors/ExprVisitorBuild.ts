@@ -384,6 +384,9 @@ export class ExprVisitorBuild extends EXPR.ExprVisitor<OP.Value> {
 		expr.captures   .forEach((capt)  => func_visitor.visit(capt));
 		expr.parameters .forEach((param) => func_visitor.visit(param));
 		func_visitor.visit(expr.block);
+		func_builder.terminateBlock(new OP.EndProgram());
+		// eslint-disable-next-line no-constant-binary-expression, @typescript-eslint/no-unnecessary-condition --- TODO: validate parameter-setting
+		false && func_builder.validate();
 
 		return new OP.Function(temp.type as TYPE.Function, temp.name, expr.source.replaceAll(/\s+/g, ' '), func_builder);
 	}

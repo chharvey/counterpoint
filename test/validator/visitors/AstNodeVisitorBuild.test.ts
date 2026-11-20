@@ -98,6 +98,7 @@ test.suite('AstNodeVisitorBuild#visit', () => {
 							(DECL <int> $0 (INT.ADD (INT.CONST 1) (INT.CONST 2)))
 							(DROP (ID (GET $0) (INT.CONST 3)))
 							(RETURN nop nil)
+							(ENDPROGRAM)
 					`}}))
 					(ENDPROGRAM)
 			`.trim());
@@ -113,6 +114,7 @@ test.suite('AstNodeVisitorBuild#visit', () => {
 							(DECL <int> $0 (INT.ADD (INT.CONST 1) (INT.CONST 2)))
 							(DECL <bool> $1 (ID (GET $0) (INT.CONST 3)))
 							(RETURN (GET $1) nil)
+							(ENDPROGRAM)
 					`}}))
 					(ENDPROGRAM)
 			`.trim());
@@ -136,6 +138,7 @@ test.suite('AstNodeVisitorBuild#visit', () => {
 							(DROP (INT.ADD (GET x) (INT.CONST 10)))
 							(SET y (FLOAT.CONST 5.2))
 							(RETURN nop nil)
+							(ENDPROGRAM)
 					`}}))
 					(ENDPROGRAM)
 			`.trim());
@@ -157,6 +160,7 @@ test.suite('AstNodeVisitorBuild#visit', () => {
 							(DROP (GET foo))
 							(RETURN nop nil)
 							(DROP (INT.CONST 42))
+							(ENDPROGRAM)
 					`}}))
 					(ENDPROGRAM)
 			`.trim());
@@ -188,6 +192,7 @@ test.suite('AstNodeVisitorBuild#visit', () => {
 							(GOTO "block-3")
 						"block-3":
 							(DROP (INT.CONST 46))
+							(ENDPROGRAM)
 					`}}))
 					(ENDPROGRAM)
 			`.trim());
@@ -222,6 +227,7 @@ test.suite('AstNodeVisitorBuild#visit', () => {
 							(GOTO "block-3")
 						"block-3":
 							(DROP (INT.CONST 46))
+							(ENDPROGRAM)
 					`}}))
 					(ENDPROGRAM)
 			`.trim());
@@ -237,12 +243,14 @@ test.suite('AstNodeVisitorBuild#visit', () => {
 							(DECL <int> x)
 							(DECL <int> $0 (INT.ADD (GET x) (INT.CONST 1)))
 							(RETURN (GET $0) nil)
+							(ENDPROGRAM)
 					`}}))
 					(DECL <Function> $1 (FUNCTION inc {${xjs.String.dedent`
 						"block-0":
 							(DECL <float> x)
 							(DECL <float> $0 (FLOAT.ADD (GET x) (FLOAT.CONST 1.0)))
 							(RETURN (GET $0) nil)
+							(ENDPROGRAM)
 					`}}))
 					(ENDPROGRAM)
 			`.trim());

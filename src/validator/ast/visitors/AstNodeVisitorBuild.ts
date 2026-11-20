@@ -105,6 +105,9 @@ export class AstNodeVisitorBuild extends AstNodeVisitor<void> {
 			stmt.captures   .forEach((capt)  => func_visitor.visit(capt));
 			stmt.parameters .forEach((param) => func_visitor.visit(param));
 			func_visitor.visit(stmt.block);
+			func_visitor.builder.terminateBlock(new OP.EndProgram());
+			// eslint-disable-next-line no-constant-binary-expression, @typescript-eslint/no-unnecessary-condition --- TODO: validate parameter-setting
+			false && func_visitor.builder.validate();
 
 			return this.builder.pushInstruction(new OP.Decl(this.builder.newTemp(new OP.Function(
 				typ,
