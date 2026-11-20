@@ -1899,8 +1899,7 @@ test.suite('ExprVisitorBuild#visit', () => {
 					"block-0":
 						(DECL <int> x)
 						(DROP (GET x))
-						(GOTO "caller")
-					"unreachable-1":
+						(RETURN nop nil)
 				`}}))
 				(DROP (FUNCTION $1 {${xjs.String.dedent`
 					"block-0":
@@ -1909,8 +1908,7 @@ test.suite('ExprVisitorBuild#visit', () => {
 						(DECL <float> y)
 						(DROP (FLOAT.ADD (GET x) (GET y)))
 						(DROP (INT.ADD (GET z) (INT.CONST 10)))
-						(GOTO "caller")
-					"unreachable-1":
+						(RETURN nop nil)
 				`}}))
 				(ENDPROGRAM)
 		`.trim());

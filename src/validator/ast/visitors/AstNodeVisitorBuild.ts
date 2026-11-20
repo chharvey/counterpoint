@@ -272,14 +272,10 @@ export class AstNodeVisitorBuild extends AstNodeVisitor<void> {
 
 	@runOncePerNode
 	public override visitStmtReturn(stmt: STMT.StatementReturn): void {
-		if (stmt.expression) {
-			this.builder.pushInstruction(new OP.Return(
-				!stmt.panic,
-				this.#exprVisitorBuild.visit(stmt.expression).asTac(this.builder),
-			));
-		}
-		this.builder.terminateBlock(new OP.Goto('caller'));
-		return this.builder.initiateBlock(this.builder.newLabel(true));
+		return this.builder.pushInstruction(new OP.Return(
+			!stmt.panic,
+			stmt.expression ? this.#exprVisitorBuild.visit(stmt.expression).asTac(this.builder) : undefined,
+		));
 	}
 
 	public override defaultVisit(_node: AstNode): void {

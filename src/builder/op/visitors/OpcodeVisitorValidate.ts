@@ -323,9 +323,9 @@ export class OpcodeVisitorValidate extends OpcodeVisitor<void> {
 	}
 
 	public override visitReturn(instr: Return): void {
-		this.visit(instr.value);
+		instr.value && this.visit(instr.value);
 		if (!instr.isReturn) {
-			assert.ok(instr.value.type.isSubtypeOf(TYPE.EXCP));
+			assert.ok(instr.value!.type.isSubtypeOf(TYPE.EXCP));
 		}
 	}
 
