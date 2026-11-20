@@ -85,6 +85,43 @@ test.suite('AstNodeVisitorBuild#visit', () => {
 					(ENDPROGRAM)
 			`.trim());
 		});
+		test.test('void function, no parameters.', () => {
+			assert.strictEqual(setupScript(`{
+				func f(): void {
+					1 + 2 === 3;
+					return;
+				}
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
+				"block-0":
+					(GOTO "block-2")
+				"block-1":
+					(DECL <int> $0 (INT.ADD (INT.CONST 1) (INT.CONST 2)))
+					(DROP (ID (GET $0) (INT.CONST 3)))
+					(GOTO "caller")
+				"unreachable-3":
+					(ENDPROGRAM)
+				"block-2":
+					(ENDPROGRAM)
+			`.trim());
+		});
+		test.test('direct return, no parameters.', () => {
+			assert.strictEqual(setupScript(`{
+				func f(): bool
+					=> 1 + 2 === 3;
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
+				"block-0":
+					(GOTO "block-2")
+				"block-1":
+					(DECL <int> $0 (INT.ADD (INT.CONST 1) (INT.CONST 2)))
+					(DECL <bool> $1 (ID (GET $0) (INT.CONST 3)))
+					(RETURN (GET $1) nil)
+					(GOTO "caller")
+				"unreachable-3":
+					(ENDPROGRAM)
+				"block-2":
+					(ENDPROGRAM)
+			`.trim());
+		});
 		test.test('captures.', () => {
 			assert.strictEqual(setupScript(`{
 				val x: int = 42;
