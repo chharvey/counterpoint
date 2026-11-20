@@ -512,7 +512,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 		return TYPE.ANYTHING;
 	}
 
-	public visitFunctionlike(node: Functionlike): TYPE.Type {
+	public visitFunctionlike(node: Functionlike): TYPE.Function {
 		return new TYPE.Function(
 			new TYPE.Tuple(node.parameters.filter((param) => !param.named).map((param) => ({
 				type:     this.#typeVisitorTypevalue.visit(param.typenode),

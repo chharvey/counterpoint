@@ -175,8 +175,7 @@ export class AstNodeVisitorTypeCheck extends AstNodeVisitor<void> {
 
 	public override visitDeclFunction(stmt: STMT.DeclarationFunction): void {
 		this.defaultVisit(stmt);
-		const fn_type: TYPE.Type = this.#exprVisitorType.visitFunctionlike(stmt);
-		assert_instanceof(fn_type, TYPE.Function);
+		const fn_type: TYPE.Function = this.#exprVisitorType.visitFunctionlike(stmt);
 		if (stmt.identifier) {
 			assert.ok(stmt.validator.hasSymbol(stmt.id!), `The validator symbol table should include ${stmt.id}.`);
 			const schema = stmt.validator.getSymbol(stmt.id!) as SymbolSchemaFunc;
