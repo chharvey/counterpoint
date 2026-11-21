@@ -1,6 +1,5 @@
 import * as assert from 'node:assert';
 import {
-	type Temp,
 	Builder,
 	OP,
 } from '../../../index.ts';
@@ -377,8 +376,6 @@ export class ExprVisitorBuild extends EXPR.ExprVisitor<OP.Value> {
 
 	@memoizePerNode
 	public override visitFunction(expr: EXPR.Function): OP.Value {
-		const temp: Temp = this.builder.newTemp(expr.type);
-
 		const func_builder = new Builder(this.builder);
 		const func_visitor = new AstNodeVisitorBuild(func_builder);
 		expr.captures   .forEach((capt)  => func_visitor.visit(capt));
@@ -388,7 +385,7 @@ export class ExprVisitorBuild extends EXPR.ExprVisitor<OP.Value> {
 		// eslint-disable-next-line no-constant-binary-expression, @typescript-eslint/no-unnecessary-condition --- TODO: validate parameter-setting
 		false && func_builder.validate();
 
-		return new OP.Function(temp.type as TYPE.Function, temp.name, expr.source.replaceAll(/\s+/g, ' '), func_builder);
+		return new OP.Function(expr.type as TYPE.Function, '', expr.source.replaceAll(/\s+/g, ' '), func_builder);
 	}
 
 	public override defaultVisit(_expr: EXPR.Expression): OP.Value {
