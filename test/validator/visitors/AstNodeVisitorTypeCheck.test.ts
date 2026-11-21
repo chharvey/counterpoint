@@ -633,6 +633,12 @@ test.suite('AstNodeVisitorTypeCheck#visit', () => {
 			VISITOR.visit(stmts[0]); // assert does not throw
 			return assert.throws(() => VISITOR.visit(stmts[1]), TypeErrorAmbiguousOverload);
 		});
+		test.test('hoists function type-checking.', () => {
+			assertEqualTypes((setupScript(`{
+				f;
+				func f(): void { return; };
+			}`, {build: false}).stmts[0] as AST.STMT.StatementExpression).expr!.type, new TYPE.Function());
+		});
 	});
 
 
