@@ -6,6 +6,16 @@ import {setupScript} from '../../utils.ts';
 
 
 test.suite('AstNodeVisitorBuild#visit', () => {
+	test.suite('Block', () => {
+		test.test('hoists function declaration.', {expectFailure: true}, () => {
+			setupScript(`{
+				f.();
+				func f(): void { return; };
+			}`, {codegen: false}); // assert does not throw
+		});
+	});
+
+
 	test.test('Goal builds each statement.', () => {
 		assert.strictEqual(setupScript(`{
 			val mut assignee_b?: int;

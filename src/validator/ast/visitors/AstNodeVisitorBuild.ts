@@ -1,4 +1,5 @@
 import * as assert from 'node:assert';
+import * as xjs from 'extrajs';
 import {
 	type Temp,
 	Builder,
@@ -28,9 +29,12 @@ import type {Capture} from '../Capture.ts';
 import type {Block} from '../Block.ts';
 import type {Goal} from '../Goal.ts';
 import * as EXPR from '../expression/index.ts';
-import type * as STMT from '../statement/index.ts';
+import * as STMT from '../statement/index.ts';
 import {StatementBreakable} from '../statement/StatementBreakable.ts';
-import {runOncePerNode} from './decorators.ts';
+import {
+	memoizePerNode,
+	runOncePerNode,
+} from './decorators.ts';
 import {ExprVisitorBuild} from './ExprVisitorBuild.ts';
 
 
@@ -67,7 +71,12 @@ export class AstNodeVisitorBuild extends AstNodeVisitor<void> {
 
 	@runOncePerNode
 	public override visitBlock(node: Block): void {
-		return node.children.forEach((stmt) => this.visit(stmt));
+		xjs.Array.forEachAggregated(node.children.filter((stmt) => stmt instanceof STMT.DeclarationFunction), (fn) => {
+			if (fn.identifier) {
+				this.#hoistFuncDecl(fn);
+			}
+		});
+		return xjs.Array.forEachAggregated(node.children, (stmt) => this.visit(stmt));
 	}
 
 	@runOncePerNode
@@ -97,27 +106,15 @@ export class AstNodeVisitorBuild extends AstNodeVisitor<void> {
 	@runOncePerNode
 	public override visitDeclFunction(stmt: STMT.DeclarationFunction): void {
 		if (stmt.identifier) {
-			const symbol = stmt.validator.getSymbol(stmt.id!) as SymbolSchemaFunc;
-
-			const func_visitor = new AstNodeVisitorBuild(new Builder(this.builder));
+			const [temp, func_builder] = this.#hoistFuncDecl(stmt);
+			const func_visitor = new AstNodeVisitorBuild(func_builder);
 			stmt.captures   .forEach((capt)  => func_visitor.visit(capt));
 			stmt.parameters .forEach((param) => func_visitor.visit(param));
 			func_visitor.visit(stmt.block);
-			func_visitor.builder.terminateBlock(new OP.EndProgram());
+			func_builder.terminateBlock(new OP.EndProgram());
 			// eslint-disable-next-line no-constant-binary-expression, @typescript-eslint/no-unnecessary-condition --- TODO: validate parameter-setting
-			false && func_visitor.builder.validate();
+			false && func_builder.validate();
 
-			const ovl_type: TYPE.Function = symbol.types.get(stmt)!;
-			const temp:     Temp          = this.builder.newTemp(new OP.Function(
-				ovl_type,
-				symbol.source,
-				stmt.source.replaceAll(/\s+/g, ' '),
-				func_visitor.builder,
-			));
-			if (!this.builder.funcs.has(symbol.id)) {
-				this.builder.funcs.set(symbol.id, new Map());
-			}
-			this.builder.funcs.get(symbol.id)!.set(ovl_type, temp);
 			return this.builder.pushInstruction(new OP.Decl(temp));
 		}
 	}
@@ -287,5 +284,24 @@ export class AstNodeVisitorBuild extends AstNodeVisitor<void> {
 
 	public override defaultVisit(_node: AstNode): void {
 		return;
+	}
+
+	@memoizePerNode
+	#hoistFuncDecl(decl: STMT.DeclarationFunction): [Temp, Builder] {
+		const symbol = decl.validator.getSymbol(decl.id!) as SymbolSchemaFunc;
+		const ovl_type: TYPE.Function = symbol.types.get(decl)!;
+
+		const func_builder = new Builder(this.builder);
+		const temp: Temp = this.builder.newTemp(new OP.Function(
+			ovl_type,
+			symbol.source,
+			decl.source.replaceAll(/\s+/g, ' '),
+			func_builder,
+		));
+		if (!this.builder.funcs.has(symbol.id)) {
+			this.builder.funcs.set(symbol.id, new Map());
+		}
+		this.builder.funcs.get(symbol.id)!.set(ovl_type, temp);
+		return [temp, func_builder];
 	}
 }
