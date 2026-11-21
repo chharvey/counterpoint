@@ -156,6 +156,8 @@ test.suite('AstNodeVisitorBuild#visit', () => {
 			assert.strictEqual(setupScript(`{
 				func f(foo: int, bar?: int = 41, qux?: int): void {
 					foo;
+					bar;
+					qux;
 					return;
 					42;
 				}
@@ -164,9 +166,11 @@ test.suite('AstNodeVisitorBuild#visit', () => {
 					(DECL <Function> $0 (FUNCTION f {${xjs.String.dedent`
 						"block-0":
 							(DECL <int> foo)
-							(DECL <int> bar (INT.CONST 41))
-							(DECL <Maybe> qux (MAYBE.NEW))
+							(DECL <int> bar)
+							(DECL <Maybe> qux)
 							(DROP (GET foo))
+							(DROP (GET bar))
+							(DROP (GET qux))
 							(RETURN nop nil)
 							(DROP (INT.CONST 42))
 							(ENDPROGRAM)

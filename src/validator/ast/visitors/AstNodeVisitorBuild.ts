@@ -52,11 +52,9 @@ export class AstNodeVisitorBuild extends AstNodeVisitor<void> {
 	@runOncePerNode
 	public override visitParameterFunction(node: ParameterFunction): void {
 		if (node.identifier) {
-			const block: Block                        = (node.parent as Functionlike).block;
-			const symbol                              = block.validator.getSymbol(node.id!) as SymbolSchemaVar;
-			const default_value: OP.Value | undefined = node.expr ? this.#exprVisitorBuild.visit(node.expr) : node.optional ? new OP.MaybeNew(symbol.type) : undefined;
-			symbol.irType = default_value?.type ?? symbol.type;
-			return this.builder.pushInstruction(new OP.Decl(symbol, symbol.irType, default_value));
+			const symbol = (node.parent as Functionlike).block.validator.getSymbol(node.id!) as SymbolSchemaVar;
+			symbol.irType = symbol.isUninitialized ? new TYPE.Maybe(symbol.type) : symbol.type;
+			return this.builder.pushInstruction(new OP.Decl(symbol, symbol.irType));
 		}
 	}
 
