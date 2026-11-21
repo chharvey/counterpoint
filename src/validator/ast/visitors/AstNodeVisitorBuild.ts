@@ -107,12 +107,18 @@ export class AstNodeVisitorBuild extends AstNodeVisitor<void> {
 			// eslint-disable-next-line no-constant-binary-expression, @typescript-eslint/no-unnecessary-condition --- TODO: validate parameter-setting
 			false && func_visitor.builder.validate();
 
-			return this.builder.pushInstruction(new OP.Decl(this.builder.newTemp(new OP.Function(
-				symbol.types.get(stmt)!,
+			const ovl_type: TYPE.Function = symbol.types.get(stmt)!;
+			const temp:     Temp          = this.builder.newTemp(new OP.Function(
+				ovl_type,
 				symbol.source,
 				stmt.source.replaceAll(/\s+/g, ' '),
 				func_visitor.builder,
-			))));
+			));
+			if (!this.builder.funcs.has(symbol.id)) {
+				this.builder.funcs.set(symbol.id, new Map());
+			}
+			this.builder.funcs.get(symbol.id)!.set(ovl_type, temp);
+			return this.builder.pushInstruction(new OP.Decl(temp));
 		}
 	}
 

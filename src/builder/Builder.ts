@@ -45,6 +45,13 @@ export class Builder {
 	/** A map containing local variable/temp statuses. */
 	readonly #locals = new Map<BuilderLocalSymbol, 'declared' | 'set'>();
 
+	/**
+	 * Declared function overloads, stored in Temps.
+	 * Function overload declarations all share the same id, so SymbolSchemaFunc cannot be used.
+	 * Every function declaration visited has its own Temp.
+	 */
+	public readonly funcs = new Map<bigint, Map<TYPE.Function, Temp>>();
+
 	private currentBlock?: CfgNode = new CfgNode(this.newLabel());
 
 	readonly #blocks: CfgNode[] = [];
