@@ -257,6 +257,7 @@ test.suite('ExprVisitorBuild#visit', () => {
 			base_type:    'TUPLE' | 'RECORD',
 			base_name:    string,
 			accessor_idx: string,
+			access_type:  string,
 			return_n:     number,
 			return_doer:  (value: string) => string = (value) => `(DROP ${value})`,
 		): string {
@@ -270,7 +271,7 @@ test.suite('ExprVisitorBuild#visit', () => {
 					(DECL <Maybe> ${return_name})
 					(GOTO.IF (${base_type}.HAS ${accessor_idx} (GET ${base_name})) "${block_then}" "${block_else}")
 				"${block_then}":
-					(DECL <Maybe> ${get_name} (${base_type}.GET ${accessor_idx} (GET ${base_name})))
+					(DECL <${access_type}> ${get_name} (${base_type}.GET ${accessor_idx} (GET ${base_name})))
 					(SET ${return_name} (MAYBE.NEW (GET ${get_name})))
 					(GOTO "${block_endif}")
 				"${block_else}":
@@ -311,8 +312,8 @@ test.suite('ExprVisitorBuild#visit', () => {
 							(DECL <int> $3 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
 							(DECL <int> $4 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
 							(DECL <tuple> my_tupleB (TUPLE.NEW (GET $3) (GET $4)))
-							${optional_access_output(1, 'TUPLE', 'my_tupleA', '2', 5)}
-							${optional_access_output(4, 'TUPLE', 'my_tupleB', '2', 7)}
+							${optional_access_output(1, 'TUPLE', 'my_tupleA', '2', 'int', 5)}
+							${optional_access_output(4, 'TUPLE', 'my_tupleB', '2', 'int', 7)}
 							(ENDPROGRAM)
 					`.trim());
 				});
@@ -347,8 +348,8 @@ test.suite('ExprVisitorBuild#visit', () => {
 							(DECL <int> $3 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
 							(DECL <int> $4 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
 							(DECL <record> my_recordY (RECORD.NEW @a->(GET $3) @c->(GET $4)))
-							${optional_access_output(1, 'RECORD', 'my_recordX', '@b', 5)}
-							${optional_access_output(4, 'RECORD', 'my_recordY', '@b', 7)}
+							${optional_access_output(1, 'RECORD', 'my_recordX', '@b', 'int', 5)}
+							${optional_access_output(4, 'RECORD', 'my_recordY', '@b', 'int', 7)}
 							(ENDPROGRAM)
 					`.trim());
 				});
@@ -512,12 +513,12 @@ test.suite('ExprVisitorBuild#visit', () => {
 						${maybe_access_output(7, 'some_tupleA', 13, (return_setter) => xjs.String.dedent`
 							${''}
 								(DECL <tuple> $14 (MAYBE.UNWRAP (GET some_tupleA)))
-								${optional_access_output(10, 'TUPLE', '$14', '2', 15, (ret_val) => return_setter(ret_val))}
+								${optional_access_output(10, 'TUPLE', '$14', '2', 'int', 15, (ret_val) => return_setter(ret_val))}
 						`.trim())}
 						${maybe_access_output(13, 'some_tupleB', 17, (return_setter) => xjs.String.dedent`
 							${''}
 								(DECL <tuple> $18 (MAYBE.UNWRAP (GET some_tupleB)))
-								${optional_access_output(16, 'TUPLE', '$18', '2', 19, (ret_val) => return_setter(ret_val))}
+								${optional_access_output(16, 'TUPLE', '$18', '2', 'int', 19, (ret_val) => return_setter(ret_val))}
 						`.trim())}
 						(ENDPROGRAM)
 				`.trim());
@@ -557,12 +558,12 @@ test.suite('ExprVisitorBuild#visit', () => {
 						${maybe_access_output(7, 'some_recordX', 13, (return_setter) => xjs.String.dedent`
 							${''}
 								(DECL <record> $14 (MAYBE.UNWRAP (GET some_recordX)))
-								${optional_access_output(10, 'RECORD', '$14', '@b', 15, (ret_val) => return_setter(ret_val))}
+								${optional_access_output(10, 'RECORD', '$14', '@b', 'int', 15, (ret_val) => return_setter(ret_val))}
 						`.trim())}
 						${maybe_access_output(13, 'some_recordY', 17, (return_setter) => xjs.String.dedent`
 							${''}
 								(DECL <record> $18 (MAYBE.UNWRAP (GET some_recordY)))
-								${optional_access_output(16, 'RECORD', '$18', '@b', 19, (ret_val) => return_setter(ret_val))}
+								${optional_access_output(16, 'RECORD', '$18', '@b', 'int', 19, (ret_val) => return_setter(ret_val))}
 						`.trim())}
 						(ENDPROGRAM)
 				`.trim());
@@ -742,12 +743,12 @@ test.suite('ExprVisitorBuild#visit', () => {
 						${result_access_output(7, 'ok_tupleA', 15, (return_setter) => xjs.String.dedent`
 							${''}
 								(DECL <tuple> $17 (RESULT.UNWRAP (GET ok_tupleA)))
-								${optional_access_output(10, 'TUPLE', '$17', '2', 18, (ret_val) => return_setter(ret_val))}
+								${optional_access_output(10, 'TUPLE', '$17', '2', 'int', 18, (ret_val) => return_setter(ret_val))}
 						`.trim())}
 						${result_access_output(13, 'ok_tupleB', 20, (return_setter) => xjs.String.dedent`
 							${''}
 								(DECL <tuple> $22 (RESULT.UNWRAP (GET ok_tupleB)))
-								${optional_access_output(16, 'TUPLE', '$22', '2', 23, (ret_val) => return_setter(ret_val))}
+								${optional_access_output(16, 'TUPLE', '$22', '2', 'int', 23, (ret_val) => return_setter(ret_val))}
 						`.trim())}
 						(ENDPROGRAM)
 				`.trim());
@@ -787,12 +788,12 @@ test.suite('ExprVisitorBuild#visit', () => {
 						${result_access_output(7, 'ok_recordX', 15, (return_setter) => xjs.String.dedent`
 							${''}
 								(DECL <record> $17 (RESULT.UNWRAP (GET ok_recordX)))
-								${optional_access_output(10, 'RECORD', '$17', '@b', 18, (ret_val) => return_setter(ret_val))}
+								${optional_access_output(10, 'RECORD', '$17', '@b', 'int', 18, (ret_val) => return_setter(ret_val))}
 						`.trim())}
 						${result_access_output(13, 'ok_recordY', 20, (return_setter) => xjs.String.dedent`
 							${''}
 								(DECL <record> $22 (RESULT.UNWRAP (GET ok_recordY)))
-								${optional_access_output(16, 'RECORD', '$22', '@b', 23, (ret_val) => return_setter(ret_val))}
+								${optional_access_output(16, 'RECORD', '$22', '@b', 'int', 23, (ret_val) => return_setter(ret_val))}
 						`.trim())}
 						(ENDPROGRAM)
 				`.trim());

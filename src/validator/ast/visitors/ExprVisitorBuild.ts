@@ -395,26 +395,34 @@ export class ExprVisitorBuild extends EXPR.ExprVisitor<OP.Value> {
 			case access.accessor instanceof Index: {
 				assert_instanceof(base_val.type, TYPE.Tuple);
 				const index: bigint = access.accessor.index;
-				const returned      = new OP.TupleGet(base_val, index, return_type);
-				return access.isEntryOptional ? OP.conditional_expression(
-					this.builder,
-					new TYPE.Maybe(return_type),
-					() => new OP.TupleHas(base_val, index),
-					() => new OP.MaybeNew(return_type, returned.asTac(this.builder)),
-					() => new OP.MaybeNew(return_type),
-				) : returned;
+				if (access.isEntryOptional) {
+					const get_type: TYPE.Type = (return_type as TYPE.Maybe).typearg;
+					return OP.conditional_expression(
+						this.builder,
+						new TYPE.Maybe(get_type),
+						() => new OP.TupleHas(base_val, index),
+						() => new OP.MaybeNew(get_type, new OP.TupleGet(base_val, index, get_type).asTac(this.builder)),
+						() => new OP.MaybeNew(get_type),
+					);
+				} else {
+					return new OP.TupleGet(base_val, index, return_type);
+				}
 			}
 			case access.accessor instanceof Key: {
 				assert_instanceof(base_val.type, TYPE.Record);
 				const key      = {keyid: access.accessor.id, keysrc: access.accessor.source} as const;
-				const returned = new OP.RecordGet(base_val, key, return_type);
-				return access.isEntryOptional ? OP.conditional_expression(
-					this.builder,
-					new TYPE.Maybe(return_type),
-					() => new OP.RecordHas(base_val, key),
-					() => new OP.MaybeNew(return_type, returned.asTac(this.builder)),
-					() => new OP.MaybeNew(return_type),
-				) : returned;
+				if (access.isEntryOptional) {
+					const get_type: TYPE.Type = (return_type as TYPE.Maybe).typearg;
+					return OP.conditional_expression(
+						this.builder,
+						new TYPE.Maybe(get_type),
+						() => new OP.RecordHas(base_val, key),
+						() => new OP.MaybeNew(get_type, new OP.RecordGet(base_val, key, get_type).asTac(this.builder)),
+						() => new OP.MaybeNew(get_type),
+					);
+				} else {
+					return new OP.RecordGet(base_val, key, return_type);
+				}
 			}
 			default: {
 				assert_instanceof(access.accessor, EXPR.Expression);
