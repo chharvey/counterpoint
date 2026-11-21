@@ -866,6 +866,36 @@ test.suite('AstNodeVisitorRefCheck#visit', () => {
 				};
 			}`, {typeCheck: false}), AssignmentErrorDeletion);
 		});
+		test.test('throws when non-ref-captured variable is reassigned, even if writable.', () => {
+			const {stmts, visitors: {refCheck: VISITOR}} = setupScript(`{
+				val mut x: int = 42;
+				val mut y: float = 4.2;
+				func f() with (x, ref y): void {
+					set y = 5.2;
+					set x = 10;
+					return;
+				}
+			}`, {refCheck: false});
+			xjs.Array.forEachAggregated(stmts.slice(0, 2), (stmt) => VISITOR.visit(stmt));
+			const fn = stmts[2] as AST.STMT.DeclarationFunction;
+			xjs.Array.forEachAggregated(fn.captures, (capt) => VISITOR.visit(capt));
+			const fn_stmts = fn.block.children;
+			VISITOR.visit(fn_stmts[0]);
+			return assert.throws(() => VISITOR.visit(fn_stmts[1]), AssignmentErrorReassignment);
+		});
+		test.test('throws when ref-captured read-only variable is reassigned.', () => {
+			const {stmts, visitors: {refCheck: VISITOR}} = setupScript(`{
+				val y: float = 4.2;
+				func f() with (ref y): void {
+					set y = 5.2;
+					return;
+				}
+			}`, {refCheck: false});
+			VISITOR.visit(stmts[0]);
+			const fn = stmts[1] as AST.STMT.DeclarationFunction;
+			VISITOR.visit(fn.captures[0]);
+			return assert.throws(() => VISITOR.visit(fn.block.children[0]), AssignmentErrorReassignment);
+		});
 	});
 
 
