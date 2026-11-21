@@ -15,6 +15,7 @@ import {
 } from '../../../parser/index.ts';
 import {
 	type SymbolSchemaVar,
+	type SymbolSchemaFunc,
 	SymbolSchemaClass,
 } from '../../index.ts';
 import {
@@ -30,7 +31,6 @@ import * as EXPR from '../expression/index.ts';
 import type * as STMT from '../statement/index.ts';
 import {StatementBreakable} from '../statement/StatementBreakable.ts';
 import {runOncePerNode} from './decorators.ts';
-import {ExprVisitorType} from './ExprVisitorType.ts';
 import {ExprVisitorBuild} from './ExprVisitorBuild.ts';
 
 
@@ -97,9 +97,7 @@ export class AstNodeVisitorBuild extends AstNodeVisitor<void> {
 	@runOncePerNode
 	public override visitDeclFunction(stmt: STMT.DeclarationFunction): void {
 		if (stmt.identifier) {
-			// get these before building, to throw early
-			const typ:  TYPE.Function = new ExprVisitorType().visitFunctionlike(stmt);
-			const name: string        = stmt.validator.getSymbol(stmt.id!)!.source;
+			const symbol = stmt.validator.getSymbol(stmt.id!) as SymbolSchemaFunc;
 
 			const func_visitor = new AstNodeVisitorBuild(new Builder(this.builder));
 			stmt.captures   .forEach((capt)  => func_visitor.visit(capt));
@@ -110,8 +108,8 @@ export class AstNodeVisitorBuild extends AstNodeVisitor<void> {
 			false && func_visitor.builder.validate();
 
 			return this.builder.pushInstruction(new OP.Decl(this.builder.newTemp(new OP.Function(
-				typ,
-				name,
+				symbol.types.get(stmt)!,
+				symbol.source,
 				stmt.source.replaceAll(/\s+/g, ' '),
 				func_visitor.builder,
 			))));

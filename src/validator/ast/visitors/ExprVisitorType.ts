@@ -76,7 +76,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 		if (symbol instanceof SymbolSchemaVar) {
 			return symbol.isUninitialized ? new TYPE.Maybe(symbol.type) : symbol.type;
 		} else if (symbol instanceof SymbolSchemaFunc) {
-			return TYPE.Intersection.all(...symbol.types);
+			return TYPE.Intersection.all(...symbol.types.values());
 		} else {
 			assert_instanceof(symbol, SymbolSchemaClass);
 			return TYPE.CLASS;

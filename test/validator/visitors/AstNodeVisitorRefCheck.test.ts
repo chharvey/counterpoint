@@ -173,6 +173,33 @@ test.suite('AstNodeVisitorRefCheck#visit', () => {
 				assert.throws(() => VISITOR.visit(blocks[1]), AssignmentErrorDuplicateDeclaration);
 				return assert.throws(() => VISITOR.visit(blocks[2]), AssignmentErrorDuplicateDeclaration);
 			});
+			test.test('disallows function declaration of existing symbols.', () => {
+				const errmsg = /Only function names should be hoisted/;
+				const {stmts, visitors: {refCheck: VISITOR}} = setupScript(`{
+					func f(): void { return; }
+					func f(a: int): void { return; }
+					type T = \\(int) => void;
+					func T(a: int): void { return; }
+					val x = \\(): void { return; };
+					func x(a: int): void { return; }
+				}`, {refCheck: false});
+				VISITOR.visit(stmts[0]);
+				VISITOR.visit(stmts[1]); // allows overloads
+				VISITOR.visit(stmts[2]);
+				assert.throws(() => VISITOR.visit(stmts[3]), errmsg);
+				VISITOR.visit(stmts[4]);
+				return assert.throws(() => VISITOR.visit(stmts[5]), errmsg);
+			});
+			test.test('allows function declaration backreferences.', () => {
+				setupScript(`{
+					f;
+					func f(): void { return; };
+				}`, {typeCheck: false});
+				setupScript(`{
+					func f(): void { g; return; };
+					func g(): void { f; return; };
+				}`, {typeCheck: false});
+			});
 		});
 		test.suite('function blocks.', () => {
 			test.test('allows implicit captures for type aliases and function names.', () => {
@@ -752,23 +779,6 @@ test.suite('AstNodeVisitorRefCheck#visit', () => {
 				func _(a: int): void { return; };
 			}`, {typeCheck: false}); // assert does not throw
 		});
-		test.test('hoists function names.', () => {
-			const errmsg = /Only function names should be hoisted/;
-			const {stmts, visitors: {refCheck: VISITOR}} = setupScript(`{
-				func f(): void { return; }
-				func f(a: int): void { return; }
-				type T = \\(int) => void;
-				func T(a: int): void { return; }
-				val x = \\(): void { return; };
-				func x(a: int): void { return; }
-			}`, {refCheck: false});
-			VISITOR.visit(stmts[0]);
-			VISITOR.visit(stmts[1]); // allows overloads
-			VISITOR.visit(stmts[2]);
-			assert.throws(() => VISITOR.visit(stmts[3]), errmsg);
-			VISITOR.visit(stmts[4]);
-			return assert.throws(() => VISITOR.visit(stmts[5]), errmsg);
-		});
 		test.test('allows self-reference, but not self-shadowing.', () => {
 			setupScript(`{
 				func f(): void {
@@ -789,16 +799,6 @@ test.suite('AstNodeVisitorRefCheck#visit', () => {
 					return;
 				};
 			}`, {typeCheck: false}), AssignmentErrorDuplicateDeclaration);
-		});
-		test.test('hoists function name.', () => {
-			setupScript(`{
-				f;
-				func f(): void { return; };
-			}`, {typeCheck: false});
-			setupScript(`{
-				func f(): void { g; return; };
-				func g(): void { f; return; };
-			}`, {typeCheck: false});
 		});
 	});
 
