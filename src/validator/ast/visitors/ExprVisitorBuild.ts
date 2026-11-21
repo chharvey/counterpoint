@@ -111,36 +111,41 @@ export class ExprVisitorBuild extends EXPR.ExprVisitor<OP.Value> {
 		const typ:        TYPE.Type   = expr.type;
 		const base_value: OP.ValueTac = this.visit(expr.base).asTac(this.builder);
 
-		if (expr.kind === Operator.DOT_MAYBE) {
-			assert_instanceof(typ, TYPE.Maybe);
-			return OP.conditional_expression(
-				this.builder,
-				typ,
-				() => new OP.Unop(OP.OpCode.NONE_IS, base_value, TYPE.BOOL),
-				() => new OP.MaybeNew(typ.typearg),
-				() => new OP.MaybeNew(typ.typearg, this.#buildUnwrappedGet(
-					expr,
-					// TODO: `base_value.type` should always be `Maybe` once expression access is removed. put the assertion underneath `typ`
-					base_value.type instanceof TYPE.Maybe ? new OP.Unop(OP.OpCode.MAYBE_UNWRAP, base_value, base_value.type.typearg).asTac(this.builder) : base_value,
-					typ.typearg,
-				).asTac(this.builder)),
-			);
-		} else if (expr.kind === Operator.DOT_RESULT) {
-			assert_instanceof(typ,             TYPE.Result);
-			assert_instanceof(base_value.type, TYPE.Result);
-			return OP.conditional_expression(
-				this.builder,
-				typ,
-				() => new OP.Unop(OP.OpCode.FAIL_IS, base_value, TYPE.BOOL),
-				() => new OP.ResultNew(false, typ.typeargSuccess, typ.typeargFailure, new OP.Unop(OP.OpCode.RESULT_EXTRACT, base_value, (base_value.type as TYPE.Result).typeargFailure).asTac(this.builder)),
-				() => new OP.ResultNew(true,  typ.typeargSuccess, typ.typeargFailure, this.#buildUnwrappedGet(
-					expr,
-					new OP.Unop(OP.OpCode.RESULT_UNWRAP, base_value, (base_value.type as TYPE.Result).typeargSuccess).asTac(this.builder),
-					typ.typeargSuccess,
-				).asTac(this.builder)),
-			);
+		switch (expr.kind) {
+			case Operator.DOT: {
+				return this.#buildUnwrappedGet(expr, base_value, typ);
+			}
+			case Operator.DOT_MAYBE: {
+				assert_instanceof(typ, TYPE.Maybe);
+				return OP.conditional_expression(
+					this.builder,
+					typ,
+					() => new OP.Unop(OP.OpCode.NONE_IS, base_value, TYPE.BOOL),
+					() => new OP.MaybeNew(typ.typearg),
+					() => new OP.MaybeNew(typ.typearg, this.#buildUnwrappedGet(
+						expr,
+						// TODO: `base_value.type` should always be `Maybe` once expression access is removed. put the assertion underneath `typ`
+						base_value.type instanceof TYPE.Maybe ? new OP.Unop(OP.OpCode.MAYBE_UNWRAP, base_value, base_value.type.typearg).asTac(this.builder) : base_value,
+						typ.typearg,
+					).asTac(this.builder)),
+				);
+			}
+			case Operator.DOT_RESULT: {
+				assert_instanceof(typ,             TYPE.Result);
+				assert_instanceof(base_value.type, TYPE.Result);
+				return OP.conditional_expression(
+					this.builder,
+					typ,
+					() => new OP.Unop(OP.OpCode.FAIL_IS, base_value, TYPE.BOOL),
+					() => new OP.ResultNew(false, typ.typeargSuccess, typ.typeargFailure, new OP.Unop(OP.OpCode.RESULT_EXTRACT, base_value, (base_value.type as TYPE.Result).typeargFailure).asTac(this.builder)),
+					() => new OP.ResultNew(true,  typ.typeargSuccess, typ.typeargFailure, this.#buildUnwrappedGet(
+						expr,
+						new OP.Unop(OP.OpCode.RESULT_UNWRAP, base_value, (base_value.type as TYPE.Result).typeargSuccess).asTac(this.builder),
+						typ.typeargSuccess,
+					).asTac(this.builder)),
+				);
+			}
 		}
-		return this.#buildUnwrappedGet(expr, base_value, typ);
 	}
 
 	@memoizePerNode
@@ -390,26 +395,34 @@ export class ExprVisitorBuild extends EXPR.ExprVisitor<OP.Value> {
 			case access.accessor instanceof Index: {
 				assert_instanceof(base_val.type, TYPE.Tuple);
 				const index: bigint = access.accessor.index;
-				const returned      = new OP.TupleGet(base_val, index, return_type);
-				return access.isEntryOptional ? OP.conditional_expression(
-					this.builder,
-					new TYPE.Maybe(return_type),
-					() => new OP.TupleHas(base_val, index),
-					() => new OP.MaybeNew(return_type, returned.asTac(this.builder)),
-					() => new OP.MaybeNew(return_type),
-				) : returned;
+				if (access.isEntryOptional) {
+					const get_type: TYPE.Type = (return_type as TYPE.Maybe).typearg;
+					return OP.conditional_expression(
+						this.builder,
+						new TYPE.Maybe(get_type),
+						() => new OP.TupleHas(base_val, index),
+						() => new OP.MaybeNew(get_type, new OP.TupleGet(base_val, index, get_type).asTac(this.builder)),
+						() => new OP.MaybeNew(get_type),
+					);
+				} else {
+					return new OP.TupleGet(base_val, index, return_type);
+				}
 			}
 			case access.accessor instanceof Key: {
 				assert_instanceof(base_val.type, TYPE.Record);
 				const key      = {keyid: access.accessor.id, keysrc: access.accessor.source} as const;
-				const returned = new OP.RecordGet(base_val, key, return_type);
-				return access.isEntryOptional ? OP.conditional_expression(
-					this.builder,
-					new TYPE.Maybe(return_type),
-					() => new OP.RecordHas(base_val, key),
-					() => new OP.MaybeNew(return_type, returned.asTac(this.builder)),
-					() => new OP.MaybeNew(return_type),
-				) : returned;
+				if (access.isEntryOptional) {
+					const get_type: TYPE.Type = (return_type as TYPE.Maybe).typearg;
+					return OP.conditional_expression(
+						this.builder,
+						new TYPE.Maybe(get_type),
+						() => new OP.RecordHas(base_val, key),
+						() => new OP.MaybeNew(get_type, new OP.RecordGet(base_val, key, get_type).asTac(this.builder)),
+						() => new OP.MaybeNew(get_type),
+					);
+				} else {
+					return new OP.RecordGet(base_val, key, return_type);
+				}
 			}
 			default: {
 				assert_instanceof(access.accessor, EXPR.Expression);
