@@ -251,32 +251,107 @@ test.suite('ExprVisitorBuild#visit', () => {
 
 
 	test.suite('Access', () => {
+		/** Output for accessing an optional entry. */
+		function optional_access_output(
+			block_n:      number,
+			base_type:    'TUPLE' | 'RECORD',
+			base_name:    string,
+			accessor_idx: string,
+			return_n:     number,
+			return_doer:  (value: string) => string = (value) => `(DROP ${value})`,
+		): string {
+			const block_then:  string = `block-${block_n}`;
+			const block_else:  string = `block-${block_n + 1}`;
+			const block_endif: string = `block-${block_n + 2}`;
+			const return_name: string = `$${return_n}`;
+			const get_name:    string = `$${return_n + 1}`;
+			return xjs.String.dedent`
+				${''}
+					(DECL <Maybe> ${return_name})
+					(GOTO.IF (${base_type}.HAS ${accessor_idx} (GET ${base_name})) "${block_then}" "${block_else}")
+				"${block_then}":
+					(DECL <Maybe> ${get_name} (${base_type}.GET ${accessor_idx} (GET ${base_name})))
+					(SET ${return_name} (MAYBE.NEW (GET ${get_name})))
+					(GOTO "${block_endif}")
+				"${block_else}":
+					(SET ${return_name} (MAYBE.NEW))
+					(GOTO "${block_endif}")
+				"${block_endif}":
+					${return_doer(`(GET ${return_name})`)}
+			`.trim();
+		}
 		test.suite('access kind: normal access (`a.‹b›`).', () => {
-			test.test('tuple access returns an OP.TupleGet.', () => {
-				assert.strictEqual(setupScript(`{
-					(41 + 1, 42 / 2, 43 - 3).1;
-				}`, {codegen: false}).builder.print(), xjs.String.dedent`
-					"block-0":
-						(DECL <int> $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
-						(DECL <int> $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
-						(DECL <int> $2 (INT.SUB (INT.CONST 43) (INT.CONST 3)))
-						(DECL <tuple> $3 (TUPLE.NEW (GET $0) (GET $1) (GET $2)))
-						(DROP (TUPLE.GET 1 (GET $3)))
-						(ENDPROGRAM)
-				`.trim());
+			test.suite('tuple access.', () => {
+				test.test('required entry returns an OP.TupleGet.', () => {
+					assert.strictEqual(setupScript(`{
+						(41 + 1, 42 / 2, 43 - 3).1;
+					}`, {codegen: false}).builder.print(), xjs.String.dedent`
+						"block-0":
+							(DECL <int> $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
+							(DECL <int> $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
+							(DECL <int> $2 (INT.SUB (INT.CONST 43) (INT.CONST 3)))
+							(DECL <tuple> $3 (TUPLE.NEW (GET $0) (GET $1) (GET $2)))
+							(DROP (TUPLE.GET 1 (GET $3)))
+							(ENDPROGRAM)
+					`.trim());
+				});
+				test.test('optional entry returns a Maybe.', () => {
+					assert.strictEqual(setupScript(`{
+						type T = (int, int, ?:int);
+						val my_tupleA: T  = (41 + 1, 42 / 2, 43 ^ 3);
+						val my_tupleB: T  = (41 + 1, 42 / 2);
+						my_tupleA.2;
+						my_tupleB.2;
+					}`, {codegen: false}).builder.print(), xjs.String.dedent`
+						"block-0":
+							(DECL <int> $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
+							(DECL <int> $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
+							(DECL <int> $2 (INT.EXP (INT.CONST 43) (INT.CONST 3)))
+							(DECL <tuple> my_tupleA (TUPLE.NEW (GET $0) (GET $1) (GET $2)))
+							(DECL <int> $3 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
+							(DECL <int> $4 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
+							(DECL <tuple> my_tupleB (TUPLE.NEW (GET $3) (GET $4)))
+							${optional_access_output(1, 'TUPLE', 'my_tupleA', '2', 5)}
+							${optional_access_output(4, 'TUPLE', 'my_tupleB', '2', 7)}
+							(ENDPROGRAM)
+					`.trim());
+				});
 			});
-			test.test('record access returns an OP.RecordGet.', () => {
-				assert.strictEqual(setupScript(`{
-					(a= 41 + 1, b= 42 / 2, c= 43 - 3).b;
-				}`, {codegen: false}).builder.print(), xjs.String.dedent`
-					"block-0":
-						(DECL <int> $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
-						(DECL <int> $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
-						(DECL <int> $2 (INT.SUB (INT.CONST 43) (INT.CONST 3)))
-						(DECL <record> $3 (RECORD.NEW @a->(GET $0) @b->(GET $1) @c->(GET $2)))
-						(DROP (RECORD.GET @b (GET $3)))
-						(ENDPROGRAM)
-				`.trim());
+			test.suite('record access.', () => {
+				test.test('required entry returns an OP.RecordGet.', () => {
+					assert.strictEqual(setupScript(`{
+						(a= 41 + 1, b= 42 / 2, c= 43 - 3).b;
+					}`, {codegen: false}).builder.print(), xjs.String.dedent`
+						"block-0":
+							(DECL <int> $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
+							(DECL <int> $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
+							(DECL <int> $2 (INT.SUB (INT.CONST 43) (INT.CONST 3)))
+							(DECL <record> $3 (RECORD.NEW @a->(GET $0) @b->(GET $1) @c->(GET $2)))
+							(DROP (RECORD.GET @b (GET $3)))
+							(ENDPROGRAM)
+					`.trim());
+				});
+				test.test('optional entry returns a Maybe.', () => {
+					assert.strictEqual(setupScript(`{
+						type R = (a: int, b?: int, c: int);
+						val my_recordX: R  = (a= 41 + 1, c= 42 / 2, b= 43 ^ 3);
+						val my_recordY: R  = (a= 41 + 1, c= 42 / 2);
+						my_recordX.b;
+						my_recordY.b;
+					}`, {codegen: false}).builder.print(), xjs.String.dedent`
+						"block-0":
+							(DECL <int> $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
+							(DECL <int> $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
+							(DECL <int> $2 (INT.EXP (INT.CONST 43) (INT.CONST 3)))
+							(DECL <record> my_recordX (RECORD.NEW @a->(GET $0) @c->(GET $1) @b->(GET $2)))
+							(DECL <int> $3 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
+							(DECL <int> $4 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
+							(DECL <record> my_recordY (RECORD.NEW @a->(GET $3) @c->(GET $4)))
+							${optional_access_output(1, 'RECORD', 'my_recordX', '@b', 5)}
+							${optional_access_output(4, 'RECORD', 'my_recordY', '@b', 7)}
+							(ENDPROGRAM)
+					`.trim());
+				});
 			});
 			test.test('List access returns an OP.CollectionDynamicGet.', () => {
 				assert.strictEqual(setupScript(`{
@@ -376,35 +451,6 @@ test.suite('ExprVisitorBuild#visit', () => {
 				`.trim());
 			});
 		});
-		/** Output for accessing an optional entry. */
-		function optional_access_output(
-			block_n:      number,
-			base_type:    'TUPLE' | 'RECORD',
-			base_name:    string,
-			accessor_idx: string,
-			return_n:     number,
-			return_doer:  (value: string) => string = (value) => `(DROP ${value})`,
-		): string {
-			const block_then:  string = `block-${block_n}`;
-			const block_else:  string = `block-${block_n + 1}`;
-			const block_endif: string = `block-${block_n + 2}`;
-			const return_name: string = `$${return_n}`;
-			const get_name:    string = `$${return_n + 1}`;
-			return xjs.String.dedent`
-				${''}
-					(DECL <Maybe> ${return_name})
-					(GOTO.IF (${base_type}.HAS ${accessor_idx} (GET ${base_name})) "${block_then}" "${block_else}")
-				"${block_then}":
-					(DECL <Maybe> ${get_name} (${base_type}.GET ${accessor_idx} (GET ${base_name})))
-					(SET ${return_name} (MAYBE.NEW (GET ${get_name})))
-					(GOTO "${block_endif}")
-				"${block_else}":
-					(SET ${return_name} (MAYBE.NEW))
-					(GOTO "${block_endif}")
-				"${block_endif}":
-					${return_doer(`(GET ${return_name})`)}
-			`.trim();
-		}
 		test.suite('access kind: maybe access (`a?.‹b›`).', () => {
 			/** Output for accessing a property of a Maybe’s value using maybe-access. */
 			function maybe_access_output(
@@ -434,12 +480,8 @@ test.suite('ExprVisitorBuild#visit', () => {
 			test.test('tuple access.', () => {
 				assert.strictEqual(setupScript(`{
 					type T = (int, int, ?:int);
-					val my_tupleA:   T  = (41 + 1, 42 / 2, 43 ^ 3);
-					val my_tupleB:   T  = (41 + 1, 42 / 2);
 					val some_tupleA: T? = Some.<T>((41 + 1, 42 / 2, 43 ^ 3));
 					val some_tupleB: T? = Some.<T>((41 + 1, 42 / 2));
-					my_tupleA.2;
-					my_tupleB.2;
 					some_tupleA?.1;
 					some_tupleB?.1;
 					some_tupleA?.2;
@@ -449,42 +491,33 @@ test.suite('ExprVisitorBuild#visit', () => {
 						(DECL <int> $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
 						(DECL <int> $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
 						(DECL <int> $2 (INT.EXP (INT.CONST 43) (INT.CONST 3)))
-						(DECL <tuple> my_tupleA (TUPLE.NEW (GET $0) (GET $1) (GET $2)))
-						(DECL <int> $3 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
-						(DECL <int> $4 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
-						(DECL <tuple> my_tupleB (TUPLE.NEW (GET $3) (GET $4)))
-						(DECL <int> $5 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
-						(DECL <int> $6 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
-						(DECL <int> $7 (INT.EXP (INT.CONST 43) (INT.CONST 3)))
-						(DECL <tuple> $8 (TUPLE.NEW (GET $5) (GET $6) (GET $7)))
-						(DECL <Maybe> some_tupleA (MAYBE.NEW (GET $8)))
-						(DECL <int> $9 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
-						(DECL <int> $10 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
-						(DECL <tuple> $11 (TUPLE.NEW (GET $9) (GET $10)))
-						(DECL <Maybe> some_tupleB (MAYBE.NEW (GET $11)))
-						${optional_access_output(1, 'TUPLE', 'my_tupleA', '2', 12)}
-						${optional_access_output(4, 'TUPLE', 'my_tupleB', '2', 14)}
-						${maybe_access_output(7, 'some_tupleA', 16, (return_setter) => xjs.String.dedent`
+						(DECL <tuple> $3 (TUPLE.NEW (GET $0) (GET $1) (GET $2)))
+						(DECL <Maybe> some_tupleA (MAYBE.NEW (GET $3)))
+						(DECL <int> $4 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
+						(DECL <int> $5 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
+						(DECL <tuple> $6 (TUPLE.NEW (GET $4) (GET $5)))
+						(DECL <Maybe> some_tupleB (MAYBE.NEW (GET $6)))
+						${maybe_access_output(1, 'some_tupleA', 7, (return_setter) => xjs.String.dedent`
 							${''}
-								(DECL <tuple> $17 (MAYBE.UNWRAP (GET some_tupleA)))
-								(DECL <int> $18 (TUPLE.GET 1 (GET $17)))
-								${return_setter('(GET $18)')}
+								(DECL <tuple> $8 (MAYBE.UNWRAP (GET some_tupleA)))
+								(DECL <int> $9 (TUPLE.GET 1 (GET $8)))
+								${return_setter('(GET $9)')}
 						`.trim())}
-						${maybe_access_output(10, 'some_tupleB', 19, (return_setter) => xjs.String.dedent`
+						${maybe_access_output(4, 'some_tupleB', 10, (return_setter) => xjs.String.dedent`
 							${''}
-								(DECL <tuple> $20 (MAYBE.UNWRAP (GET some_tupleB)))
-								(DECL <int> $21 (TUPLE.GET 1 (GET $20)))
-								${return_setter('(GET $21)')}
+								(DECL <tuple> $11 (MAYBE.UNWRAP (GET some_tupleB)))
+								(DECL <int> $12 (TUPLE.GET 1 (GET $11)))
+								${return_setter('(GET $12)')}
 						`.trim())}
-						${maybe_access_output(13, 'some_tupleA', 22, (return_setter) => xjs.String.dedent`
+						${maybe_access_output(7, 'some_tupleA', 13, (return_setter) => xjs.String.dedent`
 							${''}
-								(DECL <tuple> $23 (MAYBE.UNWRAP (GET some_tupleA)))
-								${optional_access_output(16, 'TUPLE', '$23', '2', 24, (ret_val) => return_setter(ret_val))}
+								(DECL <tuple> $14 (MAYBE.UNWRAP (GET some_tupleA)))
+								${optional_access_output(10, 'TUPLE', '$14', '2', 15, (ret_val) => return_setter(ret_val))}
 						`.trim())}
-						${maybe_access_output(19, 'some_tupleB', 26, (return_setter) => xjs.String.dedent`
+						${maybe_access_output(13, 'some_tupleB', 17, (return_setter) => xjs.String.dedent`
 							${''}
-								(DECL <tuple> $27 (MAYBE.UNWRAP (GET some_tupleB)))
-								${optional_access_output(22, 'TUPLE', '$27', '2', 28, (ret_val) => return_setter(ret_val))}
+								(DECL <tuple> $18 (MAYBE.UNWRAP (GET some_tupleB)))
+								${optional_access_output(16, 'TUPLE', '$18', '2', 19, (ret_val) => return_setter(ret_val))}
 						`.trim())}
 						(ENDPROGRAM)
 				`.trim());
@@ -492,12 +525,8 @@ test.suite('ExprVisitorBuild#visit', () => {
 			test.test('record access.', () => {
 				assert.strictEqual(setupScript(`{
 					type R = (a: int, b?: int, c: int);
-					val my_recordX:   R  = (a= 41 + 1, c= 42 / 2, b= 43 ^ 3);
-					val my_recordY:   R  = (a= 41 + 1, c= 42 / 2);
 					val some_recordX: R? = Some.<R>((a= 41 + 1, c= 42 / 2, b= 43 ^ 3));
 					val some_recordY: R? = Some.<R>((a= 41 + 1, c= 42 / 2));
-					my_recordX.b;
-					my_recordY.b;
 					some_recordX?.a;
 					some_recordY?.a;
 					some_recordX?.b;
@@ -507,42 +536,33 @@ test.suite('ExprVisitorBuild#visit', () => {
 						(DECL <int> $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
 						(DECL <int> $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
 						(DECL <int> $2 (INT.EXP (INT.CONST 43) (INT.CONST 3)))
-						(DECL <record> my_recordX (RECORD.NEW @a->(GET $0) @c->(GET $1) @b->(GET $2)))
-						(DECL <int> $3 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
-						(DECL <int> $4 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
-						(DECL <record> my_recordY (RECORD.NEW @a->(GET $3) @c->(GET $4)))
-						(DECL <int> $5 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
-						(DECL <int> $6 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
-						(DECL <int> $7 (INT.EXP (INT.CONST 43) (INT.CONST 3)))
-						(DECL <record> $8 (RECORD.NEW @a->(GET $5) @c->(GET $6) @b->(GET $7)))
-						(DECL <Maybe> some_recordX (MAYBE.NEW (GET $8)))
-						(DECL <int> $9 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
-						(DECL <int> $10 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
-						(DECL <record> $11 (RECORD.NEW @a->(GET $9) @c->(GET $10)))
-						(DECL <Maybe> some_recordY (MAYBE.NEW (GET $11)))
-						${optional_access_output(1, 'RECORD', 'my_recordX', '@b', 12)}
-						${optional_access_output(4, 'RECORD', 'my_recordY', '@b', 14)}
-						${maybe_access_output(7, 'some_recordX', 16, (return_setter) => xjs.String.dedent`
+						(DECL <record> $3 (RECORD.NEW @a->(GET $0) @c->(GET $1) @b->(GET $2)))
+						(DECL <Maybe> some_recordX (MAYBE.NEW (GET $3)))
+						(DECL <int> $4 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
+						(DECL <int> $5 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
+						(DECL <record> $6 (RECORD.NEW @a->(GET $4) @c->(GET $5)))
+						(DECL <Maybe> some_recordY (MAYBE.NEW (GET $6)))
+						${maybe_access_output(1, 'some_recordX', 7, (return_setter) => xjs.String.dedent`
 							${''}
-								(DECL <record> $17 (MAYBE.UNWRAP (GET some_recordX)))
-								(DECL <int> $18 (RECORD.GET @a (GET $17)))
-								${return_setter('(GET $18)')}
+								(DECL <record> $8 (MAYBE.UNWRAP (GET some_recordX)))
+								(DECL <int> $9 (RECORD.GET @a (GET $8)))
+								${return_setter('(GET $9)')}
 						`.trim())}
-						${maybe_access_output(10, 'some_recordY', 19, (return_setter) => xjs.String.dedent`
+						${maybe_access_output(4, 'some_recordY', 10, (return_setter) => xjs.String.dedent`
 							${''}
-								(DECL <record> $20 (MAYBE.UNWRAP (GET some_recordY)))
-								(DECL <int> $21 (RECORD.GET @a (GET $20)))
-								${return_setter('(GET $21)')}
+								(DECL <record> $11 (MAYBE.UNWRAP (GET some_recordY)))
+								(DECL <int> $12 (RECORD.GET @a (GET $11)))
+								${return_setter('(GET $12)')}
 						`.trim())}
-						${maybe_access_output(13, 'some_recordX', 22, (return_setter) => xjs.String.dedent`
+						${maybe_access_output(7, 'some_recordX', 13, (return_setter) => xjs.String.dedent`
 							${''}
-								(DECL <record> $23 (MAYBE.UNWRAP (GET some_recordX)))
-								${optional_access_output(16, 'RECORD', '$23', '@b', 24, (ret_val) => return_setter(ret_val))}
+								(DECL <record> $14 (MAYBE.UNWRAP (GET some_recordX)))
+								${optional_access_output(10, 'RECORD', '$14', '@b', 15, (ret_val) => return_setter(ret_val))}
 						`.trim())}
-						${maybe_access_output(19, 'some_recordY', 26, (return_setter) => xjs.String.dedent`
+						${maybe_access_output(13, 'some_recordY', 17, (return_setter) => xjs.String.dedent`
 							${''}
-								(DECL <record> $27 (MAYBE.UNWRAP (GET some_recordY)))
-								${optional_access_output(22, 'RECORD', '$27', '@b', 28, (ret_val) => return_setter(ret_val))}
+								(DECL <record> $18 (MAYBE.UNWRAP (GET some_recordY)))
+								${optional_access_output(16, 'RECORD', '$18', '@b', 19, (ret_val) => return_setter(ret_val))}
 						`.trim())}
 						(ENDPROGRAM)
 				`.trim());
