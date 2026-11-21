@@ -62,11 +62,7 @@ export class AstNodeVisitorBuild extends AstNodeVisitor<void> {
 
 	@runOncePerNode
 	public override visitCapture(node: Capture): void {
-		if (!node.ref) {
-			const schema = (node.parent as Functionlike).block.validator.getSymbol(node.variable.id) as SymbolSchemaVar;
-			schema.irType = schema.type;
-			return this.builder.pushInstruction(new OP.Decl(schema, schema.irType, this.#exprVisitorBuild.visit(node.variable)));
-		}
+		return this.builder.setLocalStatus((node.parent as Functionlike).block.validator.getSymbol(node.variable.id) as SymbolSchemaVar, 'set');
 	}
 
 	@runOncePerNode
@@ -112,8 +108,7 @@ export class AstNodeVisitorBuild extends AstNodeVisitor<void> {
 			stmt.parameters .forEach((param) => func_visitor.visit(param));
 			func_visitor.visit(stmt.block);
 			func_builder.terminateBlock(new OP.EndProgram());
-			// eslint-disable-next-line no-constant-binary-expression, @typescript-eslint/no-unnecessary-condition --- TODO: validate parameter-setting
-			false && func_builder.validate();
+			func_builder.validate();
 
 			return this.builder.pushInstruction(new OP.Decl(temp));
 		}

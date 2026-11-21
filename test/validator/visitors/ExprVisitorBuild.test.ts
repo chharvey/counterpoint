@@ -1904,7 +1904,6 @@ test.suite('ExprVisitorBuild#visit', () => {
 				`}}))
 				(DROP (FUNCTION {${xjs.String.dedent`
 					"block-0":
-						(DECL <int> z (GET z))
 						(DECL <float> x)
 						(DECL <float> y)
 						(DROP (FLOAT.ADD (GET x) (GET y)))

@@ -144,7 +144,6 @@ test.suite('AstNodeVisitorBuild#visit', () => {
 					(DECL <float> y (FLOAT.CONST 4.2))
 					(DECL <Function> $0 (FUNCTION f {${xjs.String.dedent`
 						"block-0":
-							(DECL <int> x (GET x))
 							(DROP (INT.ADD (GET x) (INT.CONST 10)))
 							(SET y (FLOAT.CONST 5.2))
 							(RETURN nop nil)

@@ -155,7 +155,7 @@ Build(SemanticParameterFunction[id: RealNumber][optional=true] ::= SemanticKey? 
 
 Build(SemanticCapture[ref: true]) := ();
 Build(SemanticCapture[ref: false] ::= SemanticExpressionVariable[id: RealNumber])
-	:= (DECL ‹type› `GetSymbolSchema(id)` `Build(SemanticExpressionVariable)`);
+	:= ();
 
 Build(SemanticBlock block) := block.children.map(Build);
 
