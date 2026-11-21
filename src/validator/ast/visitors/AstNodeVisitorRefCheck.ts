@@ -69,7 +69,7 @@ export class AstNodeVisitorRefCheck extends AstNodeVisitor<void> {
 		(node.parent as Functionlike).block.validator.addSymbol(node.ref ? schema : new SymbolSchemaVar(
 			schema.id,
 			node.variable,
-			schema.isWritable && node.ref,
+			false,
 			schema.isUninitialized,
 		));
 	}

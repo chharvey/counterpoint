@@ -1,7 +1,8 @@
 import * as assert from 'node:assert';
+import * as xjs from 'extrajs';
 import {
 	type Temp,
-	type Builder,
+	Builder,
 	OP,
 } from '../../../index.ts';
 import {assert_instanceof} from '../../../lib/index.ts';
@@ -15,6 +16,7 @@ import {
 } from '../../../parser/index.ts';
 import {
 	type SymbolSchemaVar,
+	type SymbolSchemaFunc,
 	SymbolSchemaClass,
 } from '../../index.ts';
 import {
@@ -27,9 +29,12 @@ import type {Capture} from '../Capture.ts';
 import type {Block} from '../Block.ts';
 import type {Goal} from '../Goal.ts';
 import * as EXPR from '../expression/index.ts';
-import type * as STMT from '../statement/index.ts';
+import * as STMT from '../statement/index.ts';
 import {StatementBreakable} from '../statement/StatementBreakable.ts';
-import {runOncePerNode} from './decorators.ts';
+import {
+	memoizePerNode,
+	runOncePerNode,
+} from './decorators.ts';
 import {ExprVisitorBuild} from './ExprVisitorBuild.ts';
 
 
@@ -47,26 +52,25 @@ export class AstNodeVisitorBuild extends AstNodeVisitor<void> {
 	@runOncePerNode
 	public override visitParameterFunction(node: ParameterFunction): void {
 		if (node.identifier) {
-			const block: Block                        = (node.parent as Functionlike).block;
-			const symbol                              = block.validator.getSymbol(node.id!) as SymbolSchemaVar;
-			const default_value: OP.Value | undefined = node.expr ? this.#exprVisitorBuild.visit(node.expr) : node.optional ? new OP.MaybeNew(symbol.type) : undefined;
-			symbol.irType = default_value?.type ?? symbol.type;
-			return this.builder.pushInstruction(new OP.Decl(symbol, symbol.irType, default_value));
+			const symbol = (node.parent as Functionlike).block.validator.getSymbol(node.id!) as SymbolSchemaVar;
+			symbol.irType = symbol.isUninitialized ? new TYPE.Maybe(symbol.type) : symbol.type;
+			return this.builder.pushInstruction(new OP.Decl(symbol, symbol.irType));
 		}
 	}
 
 	@runOncePerNode
 	public override visitCapture(node: Capture): void {
-		if (!node.ref) {
-			const schema = (node.parent as Functionlike).block.validator.getSymbol(node.variable.id) as SymbolSchemaVar;
-			schema.irType = schema.type;
-			return this.builder.pushInstruction(new OP.Decl(schema, schema.irType, this.#exprVisitorBuild.visit(node.variable)));
-		}
+		return this.builder.setLocalStatus((node.parent as Functionlike).block.validator.getSymbol(node.variable.id) as SymbolSchemaVar, 'set');
 	}
 
 	@runOncePerNode
 	public override visitBlock(node: Block): void {
-		return node.children.forEach((stmt) => this.visit(stmt));
+		xjs.Array.forEachAggregated(node.children.filter((stmt) => stmt instanceof STMT.DeclarationFunction), (fn) => {
+			if (fn.identifier) {
+				this.#hoistFuncDecl(fn);
+			}
+		});
+		return xjs.Array.forEachAggregated(node.children, (stmt) => this.visit(stmt));
 	}
 
 	@runOncePerNode
@@ -96,17 +100,15 @@ export class AstNodeVisitorBuild extends AstNodeVisitor<void> {
 	@runOncePerNode
 	public override visitDeclFunction(stmt: STMT.DeclarationFunction): void {
 		if (stmt.identifier) {
-			const label_func:    string = this.builder.newLabel();
-			const label_endfunc: string = this.builder.newLabel();
+			const [temp, func_builder] = this.#hoistFuncDecl(stmt);
+			const func_visitor = new AstNodeVisitorBuild(func_builder);
+			stmt.captures   .forEach((capt)  => func_visitor.visit(capt));
+			stmt.parameters .forEach((param) => func_visitor.visit(param));
+			func_visitor.visit(stmt.block);
+			func_builder.terminateBlock(new OP.EndProgram());
+			func_builder.validate();
 
-			this.builder.terminateBlock(new OP.Goto(label_endfunc));
-			this.builder.initiateBlock(label_func);
-			stmt.captures   .forEach((capt)  => this.visit(capt));
-			stmt.parameters .forEach((param) => this.visit(param));
-			this.visit(stmt.block);
-			this.builder.pushInstruction(new OP.Drop(new OP.Trap()));
-			this.builder.terminateBlock(new OP.EndProgram());
-			return this.builder.initiateBlock(label_endfunc);
+			return this.builder.pushInstruction(new OP.Decl(temp));
 		}
 	}
 
@@ -267,15 +269,32 @@ export class AstNodeVisitorBuild extends AstNodeVisitor<void> {
 
 	@runOncePerNode
 	public override visitStmtReturn(stmt: STMT.StatementReturn): void {
-		if (stmt.expression) {
-			const expr_build: OP.ValueTac = this.#exprVisitorBuild.visit(stmt.expression).asTac(this.builder);
-			this.builder.pushInstruction(new OP.Return(!stmt.panic, expr_build));
-		}
-		this.builder.terminateBlock(new OP.Goto('caller'));
-		return this.builder.initiateBlock(this.builder.newLabel(true));
+		return this.builder.pushInstruction(new OP.Return(
+			!stmt.panic,
+			stmt.expression ? this.#exprVisitorBuild.visit(stmt.expression).asTac(this.builder) : undefined,
+		));
 	}
 
 	public override defaultVisit(_node: AstNode): void {
 		return;
+	}
+
+	@memoizePerNode
+	#hoistFuncDecl(decl: STMT.DeclarationFunction): [Temp, Builder] {
+		const symbol = decl.validator.getSymbol(decl.id!) as SymbolSchemaFunc;
+		const ovl_type: TYPE.Function = symbol.types.get(decl)!;
+
+		const func_builder = new Builder(this.builder);
+		const temp: Temp = this.builder.newTemp(new OP.Function(
+			ovl_type,
+			symbol.source,
+			decl.source.replaceAll(/\s+/g, ' '),
+			func_builder,
+		));
+		if (!this.builder.funcs.has(symbol.id)) {
+			this.builder.funcs.set(symbol.id, new Map());
+		}
+		this.builder.funcs.get(symbol.id)!.set(ovl_type, temp);
+		return [temp, func_builder];
 	}
 }

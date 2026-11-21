@@ -193,10 +193,10 @@ message; %== "Hello world!"
 
 
 
-## Implicit Returns
+## Direct Returns
 When the body of any function (declaration or expression) contains a singular return statement,
 we can use a shorthand syntax that omits the curly braces.
-The returned expression follows a fat arrow `=>`. We call this an **implicit return**.
+The returned expression follows a fat arrow `=>`. We call this a **direct return**.
 ```cpl
 func add(a: int, b: int): int
 	=> a + b;

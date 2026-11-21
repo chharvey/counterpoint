@@ -1916,8 +1916,22 @@ test.suite('ExprVisitorBuild#visit', () => {
 		}`, {codegen: false}).builder.print(), xjs.String.dedent`
 			"block-0":
 				(DECL <int> z (INT.CONST 42))
-				(DROP (LAMBDA $0 \\(x: int): void { x; return; }))
-				(DROP (LAMBDA $1 \\(x: float, y: float) with (z): void { x + y; z + 10; return; }))
+				(DROP (FUNCTION {${xjs.String.dedent`
+					"block-0":
+						(DECL <int> x)
+						(DROP (GET x))
+						(RETURN nop nil)
+						(ENDPROGRAM)
+				`}}))
+				(DROP (FUNCTION {${xjs.String.dedent`
+					"block-0":
+						(DECL <float> x)
+						(DECL <float> y)
+						(DROP (FLOAT.ADD (GET x) (GET y)))
+						(DROP (INT.ADD (GET z) (INT.CONST 10)))
+						(RETURN nop nil)
+						(ENDPROGRAM)
+				`}}))
 				(ENDPROGRAM)
 		`.trim());
 	});

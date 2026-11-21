@@ -76,7 +76,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 		if (symbol instanceof SymbolSchemaVar) {
 			return symbol.isUninitialized ? new TYPE.Maybe(symbol.type) : symbol.type;
 		} else if (symbol instanceof SymbolSchemaFunc) {
-			return TYPE.Intersection.all(...symbol.types);
+			return TYPE.Intersection.all(...symbol.types.values());
 		} else {
 			assert_instanceof(symbol, SymbolSchemaClass);
 			return TYPE.CLASS;
@@ -512,7 +512,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type> {
 		return TYPE.ANYTHING;
 	}
 
-	public visitFunctionlike(node: Functionlike): TYPE.Type {
+	public visitFunctionlike(node: Functionlike): TYPE.Function {
 		return new TYPE.Function(
 			new TYPE.Tuple(node.parameters.filter((param) => !param.named).map((param) => ({
 				type:     this.#typeVisitorTypevalue.visit(param.typenode),

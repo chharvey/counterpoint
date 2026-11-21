@@ -275,10 +275,11 @@ export class InstrVisitorCodegen extends InstrVisitor<binaryen.ExpressionRef /* 
 
 	@memoizePerCode
 	public override visitReturn(instr: Return): binaryen.ExpressionRef /* void */ {
-		const value: binaryen.ExpressionRef = this.#valueVisitorCodegen.visit(instr.value);
+		const wasm_null_value: binaryen.ExpressionRef /* (ref null $Value) */ = this.wasm.ref.null(this.heaptype.Value);
+		const value:           binaryen.ExpressionRef /* (ref null $Value) */ = instr.value ? this.#valueVisitorCodegen.visit(instr.value) : wasm_null_value;
 		return this.wasm.return(this.wasm.tuple.make((instr.isReturn
-			? [value, this.wasm.ref.null(this.heaptype.Exception)]
-			: [this.wasm.ref.null(this.heaptype.Value), value]
+			? [value,           this.wasm.ref.null(this.heaptype.Exception)]
+			: [wasm_null_value, value]
 		)));
 	}
 

@@ -37,7 +37,7 @@ import type {Capture} from '../Capture.ts';
 import type {Block} from '../Block.ts';
 import type * as AST_TYPE from '../type/index.ts';
 import * as EXPR from '../expression/index.ts';
-import type * as STMT from '../statement/index.ts';
+import * as STMT from '../statement/index.ts';
 import {AstNodeVisitorCompletion} from './AstNodeVisitorCompletion.ts';
 import {TypeVisitorTypevalue} from './TypeVisitorTypevalue.ts';
 import {ExprVisitorType} from './ExprVisitorType.ts';
@@ -69,6 +69,7 @@ export class AstNodeVisitorTypeCheck extends AstNodeVisitor<void> {
 	}
 
 	public override visitBlock(node: Block): void {
+		xjs.Array.forEachAggregated(node.children.filter((stmt) => stmt instanceof STMT.DeclarationFunction), (fn) => this.#hoistFuncDecl(fn));
 		this.defaultVisit(node);
 		if (node.parent && is_Functionlike(node.parent) && this.#astNodeVisitorCompletion.visit(node) !== CompletionKind.RETURN_OR_PANIC) {
 			throw new AssignmentErrorFunctionExit(node.parent);
@@ -147,8 +148,7 @@ export class AstNodeVisitorTypeCheck extends AstNodeVisitor<void> {
 		const typevalue: TYPE.Type = this.#typeVisitorTypevalue.visit(stmt.assigned); // evaluate first before checking, to rethrow any errors
 		if (stmt.assignee) {
 			assert.ok(stmt.validator.hasSymbol(stmt.id!), `The validator symbol table should include ${stmt.id}.`);
-			const symbol = stmt.validator.getSymbol(stmt.id!) as SymbolSchemaType;
-			symbol.typevalue = typevalue;
+			(stmt.validator.getSymbol(stmt.id!) as SymbolSchemaType).typevalue = typevalue;
 		}
 	}
 
@@ -174,19 +174,8 @@ export class AstNodeVisitorTypeCheck extends AstNodeVisitor<void> {
 	}
 
 	public override visitDeclFunction(stmt: STMT.DeclarationFunction): void {
+		this.#hoistFuncDecl(stmt);
 		this.defaultVisit(stmt);
-		const fn_type: TYPE.Type = this.#exprVisitorType.visitFunctionlike(stmt);
-		assert_instanceof(fn_type, TYPE.Function);
-		if (stmt.identifier) {
-			assert.ok(stmt.validator.hasSymbol(stmt.id!), `The validator symbol table should include ${stmt.id}.`);
-			const schema = stmt.validator.getSymbol(stmt.id!) as SymbolSchemaFunc;
-			if (schema.types.find((t) => fn_type === t || fn_type.isMoreSpecificThan(t) && t.isMoreSpecificThan(fn_type))) {
-				// if there exists an identically-typed overload, as static dispatch won’t know which one to choose
-				throw new TypeErrorAmbiguousOverload(stmt);
-			} else {
-				schema.types.push(fn_type);
-			}
-		}
 	}
 
 	public override visitStmtClaim(stmt: STMT.StatementClaim): void {
@@ -298,6 +287,23 @@ export class AstNodeVisitorTypeCheck extends AstNodeVisitor<void> {
 
 	public override defaultVisit(node: AstNode): void {
 		return xjs.Array.forEachAggregated(node.children, (c) => this.visit(c));
+	}
+
+	#hoistFuncDecl(decl: STMT.DeclarationFunction): void {
+		if (decl.identifier) {
+			assert.ok(decl.validator.hasSymbol(decl.id!), `The validator symbol table should include ${decl.id}.`);
+			const schema = decl.validator.getSymbol(decl.id!) as SymbolSchemaFunc;
+			if (schema.types.has(decl)) {
+				return;
+			}
+			const fn_type: TYPE.Function = this.#exprVisitorType.visitFunctionlike(decl);
+			if (schema.types.values().find((t) => t.isMoreSpecificThan(fn_type) && fn_type.isMoreSpecificThan(t))) {
+				// throw if there exists an identically-typed overload, as static dispatch won’t know which one to choose
+				throw new TypeErrorAmbiguousOverload(decl);
+			} else {
+				schema.types.set(decl, fn_type);
+			}
+		}
 	}
 
 	#isExprInferrable(node?: EXPR.Expression): boolean {
