@@ -67,7 +67,7 @@ type ConstructorOverload = {
  * @property genericParams generic parameters for the function overload
  * @property funcType      a native function returning a function type based on the given generic arguments
  */
-type FuncSignature = {
+export type FuncSignature = {
 	readonly genericParams: GenericFuncParams,
 	readonly funcType:      (generic_args: GenericArgs) => TYPE.Function,
 };

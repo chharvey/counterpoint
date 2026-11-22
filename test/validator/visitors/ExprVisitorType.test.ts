@@ -20,6 +20,7 @@ import {
 	TypeErrorAmbiguousOverload,
 } from '../../../src/index.ts';
 import {
+	FUNC_CALLS,
 	CTOR_CALLS,
 	extract_tokens,
 	extract_lines,
@@ -890,6 +891,27 @@ test.suite('ExprVisitorType#visit', () => {
 					repeat(expected, srcs.length),
 				);
 			});
+		});
+		test.test('built-in function calls.', () => {
+			const {stmts, visitors} = setupScript(FUNC_CALLS, {typeCheck: false});
+			xjs.Array.forEachAggregated(stmts.slice(0, 4), (stmt) => visitors.typeCheck.visit(stmt));
+			assertEqualTypes(stmts.slice(4).map((stmt) => VISITOR.visit((stmt as AST.STMT.StatementExpression).expr!)), [
+				new TYPE.Some(TYPE.INT),
+				new TYPE.None(TYPE.INT),
+				new TYPE.Some(TYPE.INT),
+				new TYPE.None(TYPE.INT),
+				TYPE.BOOL,
+				TYPE.BOOL,
+				TYPE.BOOL,
+				new TYPE.Some(TYPE.INT),
+				new TYPE.None(TYPE.INT),
+				new TYPE.None(TYPE.INT),
+				...repeat(null, 9),
+				new TYPE.List(TYPE.INT, true),
+				new TYPE.Dict(TYPE.INT, true),
+				new TYPE.Set(TYPE.INT, true),
+				new TYPE.Map(TYPE.STR, TYPE.INT, true),
+			]);
 		});
 
 		test.test('bypasses invariance for generic arguments.', () => {

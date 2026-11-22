@@ -15,6 +15,41 @@ import {
 
 
 
+export const FUNC_CALLS = `{
+	val list: mut List.<int>     = [1000, 2000, 3000];
+	val dict: mut Dict.<int>     = [a= 1, b= 2, c= 3];
+	val sett: mut Set.<int>      = {1000, 2000, 3000};
+	val map:  mut Map.<str, int> = {"a" -> 1, "b" -> 2, "c" -> 3};
+
+	'List#get'.<int>(list, 0);      %== Some[int](1000)
+	'List#get'.<int>(list, 3);      %== None[int]()
+	'Dict#get'.<int>(dict, @a);     %== Some[int](1)
+	'Dict#get'.<int>(dict, @d);     %== None[int]()
+	'Set#has'.<int>(sett, 3000);    %== true
+	'Set#has'.<int>(sett, 4000);    %== false
+	'Set#has'.<int>(sett, 4.44);    %== false
+	'Map#get'.<str, int>(map, "a"); %== Some[int](1)
+	'Map#get'.<str, int>(map, "d"); %== None[int]()
+	'Map#get'.<str, int>(map, @a);  %== None[int]()
+
+	'List#set'.<int>(list, 0, 4000);   % void
+	'List#set'.<int>(list, 3, 5000);   % void
+	'Dict#set'.<int>(dict, @a, 4);     % void
+	'Dict#set'.<int>(dict, @d, 5);     % void
+	'Set#put'.<int>(sett, 4000);       % void
+	'Set#delete'.<int>(sett, 1000);    % void
+	'Set#delete'.<int>(sett, 4.44);    % void
+	'Map#set'.<str, int>(map, "a", 4); % void
+	'Map#set'.<str, int>(map, "d", 5); % void
+
+	list; %== [4000, 2000, 3000, 5000]
+	dict; %== [a= 4, b= 2, c= 3, d= 5]
+	sett; %== {2000, 3000, 4000}
+	map;  %== {"a" -> 4, "b" -> 2, "c" -> 3, "d" -> 5};
+}`;
+
+
+
 /**
  * List of example constructor calls for testing.
  *

@@ -14,7 +14,11 @@ import {
 	type EntryType,
 	TYPE,
 	type GenericArgs,
+	type FuncSignature,
 	type ClassSignature,
+	type CoreFuncName,
+	CORE_FUNC_NAMES,
+	FUNC_API,
 	CLASS_API,
 } from '../../../typer/index.ts';
 import {CoreLibName} from '../../../parser/index.ts';
@@ -222,7 +226,10 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type | null> {
 	public override visitCall(expr: EXPR.Call): TYPE.Type | null {
 		const symbol: SymbolSchema | undefined = expr.base instanceof EXPR.Variable ? expr.validator.getSymbol(expr.base.id) : undefined;
 		const base_types: readonly TYPE.Type[] = (
-			symbol instanceof SymbolSchemaFunc  ? [...symbol.types.values()] :
+			symbol instanceof SymbolSchemaFunc ? (CORE_FUNC_NAMES as string[]).includes(symbol.source) ? (() => {
+				const func_signature: FuncSignature = FUNC_API.get(symbol.source as CoreFuncName)!;
+				return [func_signature.funcType(this.#typeVisitorTypevalue.checkGenericArgs(expr, func_signature.genericParams))];
+			})() : [...symbol.types.values()] :
 			symbol instanceof SymbolSchemaClass ? symbol.classSignature.overloads ? (() => {
 				const generic_args: GenericArgs = this.#typeVisitorTypevalue.checkGenericArgs(expr, symbol.classSignature.genericParams);
 				let return_type: TYPE.Type = symbol.classSignature.returnType(generic_args);
