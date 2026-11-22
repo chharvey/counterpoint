@@ -4,6 +4,7 @@ import * as xjs from 'extrajs';
 import {
 	assert_instanceof,
 	TYPE,
+	FUNC_API,
 	CORE_LIB_NAMES,
 	Validator,
 	AST,
@@ -601,6 +602,12 @@ test.suite('AstNodeVisitorRefCheck#visit', () => {
 			visitors.refCheck.visit(stmts[0]);
 			return assert.throws(() => visitors.refCheck.visit((stmts[1] as AST.STMT.StatementExpression).expr!), ReferenceErrorKind);
 		});
+		test.test('disallows uncalled built-in function names.', () => {
+			const {stmts, visitors: {refCheck: VISITOR}} = setupScript(`{
+				${[...FUNC_API.keys().map((name) => `${name};`)].join('\n')}
+			}`, {refCheck: false});
+			return xjs.Array.forEachAggregated(stmts, (stmt) => assert.throws(() => VISITOR.visit((stmt as AST.STMT.StatementExpression).expr!), ReferenceErrorKind));
+		});
 		test.test('iteration variable of `for` loop is scoped only to the block.', () => {
 			setupScript(`{
 				for it: float in [1.1, 2.2, 3.3] do {
@@ -637,6 +644,12 @@ test.suite('AstNodeVisitorRefCheck#visit', () => {
 			}`, {refCheck: false});
 			xjs.Array.forEachAggregated(stmts.slice(0, 4), (stmt) => visitors.refCheck.visit(stmt));
 			return assert.throws(() => visitors.refCheck.visit((stmts[4] as AST.STMT.StatementExpression).expr!), ReferenceErrorKind);
+		});
+		test.test('allows built-in function names when called.', () => {
+			const {stmts, visitors: {refCheck: VISITOR}} = setupScript(`{
+				${[...FUNC_API.keys().map((name) => `${name}.(42);`)].join('\n')}
+			}`, {refCheck: false});
+			return xjs.Array.forEachAggregated(stmts, (stmt) => VISITOR.visit((stmt as AST.STMT.StatementExpression).expr!)); // assert does not throw
 		});
 		test.test('throws if named args have duplicate keys.', () => {
 			const {stmts, visitors: {refCheck: VISITOR}} = setupScript(`{
@@ -736,6 +749,12 @@ test.suite('AstNodeVisitorRefCheck#visit', () => {
 				};
 			}`], (src) => assert.throws(() => setupScript(src, {typeCheck: false}), AssignmentErrorDuplicateDeclaration));
 		});
+		test.test('disallows duplicate type declarations of built-in functions.', () => {
+			const {stmts, visitors: {refCheck: VISITOR}} = setupScript(`{
+				${[...FUNC_API.keys().map((name) => `type ${name} = int;`)].join('\n')}
+			}`, {refCheck: false});
+			return xjs.Array.forEachAggregated(stmts, (stmt) => assert.throws(() => VISITOR.visit(stmt), AssignmentErrorDuplicateDeclaration));
+		});
 		test.test('throws if the same identifier was declared in an outer scope (shadowing).', () => {
 			xjs.Array.forEachAggregated([`{
 				type T = int;
@@ -822,6 +841,12 @@ test.suite('AstNodeVisitorRefCheck#visit', () => {
 					val it: int = 42;
 				};
 			}`], (src) => assert.throws(() => setupScript(src, {typeCheck: false}), AssignmentErrorDuplicateDeclaration));
+		});
+		test.test('disallows duplicate variable declarations of built-in functions.', () => {
+			const {stmts, visitors: {refCheck: VISITOR}} = setupScript(`{
+				${[...FUNC_API.keys().map((name) => `val ${name}: int = 42;`)].join('\n')}
+			}`, {refCheck: false});
+			return xjs.Array.forEachAggregated(stmts, (stmt) => assert.throws(() => VISITOR.visit(stmt), AssignmentErrorDuplicateDeclaration));
 		});
 		test.test('throws if the same identifier was declared in an outer scope (shadowing).', () => {
 			xjs.Array.forEachAggregated([`{

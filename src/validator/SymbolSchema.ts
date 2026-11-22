@@ -1,6 +1,7 @@
 import {
 	TYPE,
 	type ClassSignature,
+	type CoreFuncName,
 } from '../typer/index.ts';
 import type {Serializable} from '../parser/index.ts';
 import type * as AST from './ast/index.ts';
@@ -94,11 +95,15 @@ export class SymbolSchemaFunc extends SymbolSchema {
 	public override readonly persists = true;
 
 	/** The declared function types (one per overload). */
-	public readonly types = new Map<AST.STMT.DeclarationFunction, TYPE.Function>();
+	public readonly types = new Map<AST.STMT.DeclarationFunction | CoreFuncName, TYPE.Function>();
 
 
-	public constructor(id: bigint, node: Serializable) {
-		super(id, node.line_index, node.col_index, node.source);
+	public constructor(id: bigint, node: Serializable | CoreFuncName) {
+		if (typeof node === 'string') {
+			super(id, 0, 0, node);
+		} else {
+			super(id, node.line_index, node.col_index, node.source);
+		}
 	}
 }
 

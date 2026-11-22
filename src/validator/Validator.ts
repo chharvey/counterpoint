@@ -4,7 +4,10 @@ import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../core/index.ts';
-import {CLASS_API} from '../typer/index.ts';
+import {
+	FUNC_API,
+	CLASS_API,
+} from '../typer/index.ts';
 import {
 	Punctuator,
 	type Keyword,
@@ -13,6 +16,7 @@ import {
 } from '../parser/index.ts';
 import {
 	type SymbolSchema,
+	SymbolSchemaFunc,
 	SymbolSchemaClass,
 } from './index.ts';
 import {
@@ -368,8 +372,11 @@ export class Validator {
 					throw new ReferenceError(`Class API is missing a definition for ${name}.`);
 				}
 			});
+			FUNC_API.forEach((signature, name) => {
+				this.addSymbol(new SymbolSchemaFunc(Validator.keyId(name), name));
+			});
 			CLASS_API.forEach((signature, name) => {
-				this.addSymbol(new SymbolSchemaClass(Validator.cookTokenIdentifier(name), name, signature));
+				this.addSymbol(new SymbolSchemaClass(Validator.keyId(name), name, signature));
 			});
 		}
 	}

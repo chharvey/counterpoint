@@ -105,6 +105,32 @@ const VARIANCE = {
 
 
 /**
+ * Temporary built-in function names.
+ * These will be removed once we have classes in the CPL Core Library.
+ */
+export type CoreFuncName = (
+	| '\'List#get\''
+	| '\'List#set\''
+	| '\'Dict#get\''
+	| '\'Dict#set\''
+	| '\'Set#has\''
+	| '\'Set#put\''
+	| '\'Set#delete\''
+	| '\'Map#get\''
+	| '\'Map#set\''
+);
+export const CORE_FUNC_NAMES: readonly CoreFuncName[] = [
+	'\'List#get\'',
+	'\'List#set\'',
+	'\'Dict#get\'',
+	'\'Dict#set\'',
+	'\'Set#has\'',
+	'\'Set#put\'',
+	'\'Set#delete\'',
+	'\'Map#get\'',
+	'\'Map#set\'',
+];
+/**
  * API for all core lib functions.
  * ```cpl
  * claim 'List#get'[T](List[T], int): Maybe[T];
@@ -121,7 +147,7 @@ const VARIANCE = {
  * claim 'Map#set'[K, V](mut Map[K, V], K, V): void;
  * ```
  */
-export const FUNC_API = new Map<string, FuncSignature>([
+export const FUNC_API = new Map<CoreFuncName, FuncSignature>([
 	['\'List#get\'', {
 		genericParams: {positional: [{}]},
 		funcType:      ({positional: [t]}) => new TYPE.Function(TYPE.Tuple.fromTypes([new TYPE.List(t), TYPE.INT]), undefined, new TYPE.Maybe(t)),
@@ -159,6 +185,9 @@ export const FUNC_API = new Map<string, FuncSignature>([
 		funcType:      ({positional: [k, v]}) => new TYPE.Function(TYPE.Tuple.fromTypes([new TYPE.Map(k, v, true), k, v])),
 	}],
 ]);
+
+
+
 /**
  * API for all core lib classes.
  */
