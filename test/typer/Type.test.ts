@@ -1083,8 +1083,13 @@ test.suite('Type', () => {
 	test.suite('ReferenceType#mutableOf', () => {
 		const without_mutability: readonly TYPE.ReferenceType[] = [
 			TYPE.OBJ,
-			...builtin_types.map((t) => new TYPE.Maybe(t)),
+			TYPE.EXCP,
+			...builtin_types.map((t) => new TYPE.None(t)),
+			...builtin_types.map((t) => new TYPE.Some(t)),
+			...builtin_types.map((t) => new TYPE.Fail(t)),
+			...builtin_types.map((t) => new TYPE.Ok(t)),
 			new TYPE.Function(),
+			TYPE.CLASS,
 		];
 		const with_mutability: readonly TYPE.ReferenceType[] = [
 			new TYPE.List(TYPE.BOOL),
