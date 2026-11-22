@@ -76,17 +76,18 @@ class TypeTuple extends ValueType {
 		);
 	}
 
+	public has(index: bigint): boolean {
+		return 0n <= index && index < this.typeargs.length;
+	}
+
 	public get(index: bigint, accessor: AST.Index): EntryType {
-		return 0 <= index && index < this.typeargs.length
-			? this.typeargs.at(Number(index))!
-			: assert.fail(new TypeErrorNoEntry('index', this, accessor));
+		return this.has(index) ? this.typeargs.at(Number(index))! : assert.fail(new TypeErrorNoEntry('index', this, accessor));
 	}
 
 	public set(index: bigint, typ: Type, accessor: AST.Index): void {
 		const i: number = Number(index);
-		const entrytype: EntryType | undefined = this.typeargs.at(i);
-		if (entrytype) {
-			(this.typeargs as EntryType[])[i] = {...entrytype, type: typ};
+		if (this.has(index)) {
+			(this.typeargs as EntryType[])[i] = {...this.get(index, accessor), type: typ};
 		} else {
 			throw new TypeErrorNoEntry('index', this, accessor);
 		}

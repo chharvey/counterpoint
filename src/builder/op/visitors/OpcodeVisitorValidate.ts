@@ -260,7 +260,7 @@ export class OpcodeVisitorValidate extends OpcodeVisitor<void> {
 	@runOncePerCode
 	public override visitDecl(instr: Decl): void {
 		// Use 'declared' only for declared, unset temps. Enforces setting before getting.
-		// Uninitialized variables can use 'set' becuase they always have a `Maybe` value.
+		// Uninitialized variables and parameters can use 'set' becuase they always have a `Maybe` value.
 		this.builder.setLocalStatus(instr.target, instr.target instanceof SymbolSchemaVar || instr.value ? 'set' : 'declared');
 		instr.value && this.visit(instr.value);
 		return instr.value && assert.ok(instr.value.type.isSubtypeOf(instr.targetType), `${instr.value.type} must be a subtype of ${instr.targetType}.`);
@@ -323,9 +323,9 @@ export class OpcodeVisitorValidate extends OpcodeVisitor<void> {
 	}
 
 	public override visitReturn(instr: Return): void {
-		this.visit(instr.value);
+		instr.value && this.visit(instr.value);
 		if (!instr.isReturn) {
-			assert.ok(instr.value.type.isSubtypeOf(TYPE.EXCP));
+			assert.ok(instr.value!.type.isSubtypeOf(TYPE.EXCP));
 		}
 	}
 

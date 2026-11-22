@@ -30,10 +30,11 @@ export enum TypeName {
 	SET,
 	MAP,
 	OBJECT,
-	CLASS,
 	EXCEPTION,
 	MAYBE,
 	RESULT,
+	FUNCTION,
+	CLASS,
 	ANYTHING,
 }
 
@@ -58,29 +59,34 @@ export function ast_type_name(typ: TYPE.Type): TypeName {
 		case typ.isSubtypeOf(TYPE.NAT):   { return TypeName.NAT; }
 		case typ.isSubtypeOf(TYPE.FLOAT): { return TypeName.FLOAT; }
 		case typ.isSubtypeOf(TYPE.STR):   { return TypeName.STR; }
-		case typ.isSubtypeOf(TYPE.CLASS): { return TypeName.CLASS; }
 		case typ.isSubtypeOf(TYPE.EXCP):  { return TypeName.EXCEPTION; }
+		case typ.isSubtypeOf(TYPE.CLASS): { return TypeName.CLASS; }
 
-		case typ instanceof TYPE.Tuple:  { return TypeName.TUPLE; }
-		case typ instanceof TYPE.Record: { return TypeName.RECORD; }
-		case typ instanceof TYPE.List:   { return TypeName.LIST; }
-		case typ instanceof TYPE.Dict:   { return TypeName.DICT; }
-		case typ instanceof TYPE.Set:    { return TypeName.SET; }
-		case typ instanceof TYPE.Map:    { return TypeName.MAP; }
-		case typ instanceof TYPE.Maybe:  { return TypeName.MAYBE; }
-		case typ instanceof TYPE.Result: { return TypeName.RESULT; }
+		case typ instanceof TYPE.Tuple:    { return TypeName.TUPLE; }
+		case typ instanceof TYPE.Record:   { return TypeName.RECORD; }
+		case typ instanceof TYPE.List:     { return TypeName.LIST; }
+		case typ instanceof TYPE.Dict:     { return TypeName.DICT; }
+		case typ instanceof TYPE.Set:      { return TypeName.SET; }
+		case typ instanceof TYPE.Map:      { return TypeName.MAP; }
+		case typ instanceof TYPE.Maybe:    { return TypeName.MAYBE; }
+		case typ instanceof TYPE.Result:   { return TypeName.RESULT; }
+		case typ instanceof TYPE.Function: { return TypeName.FUNCTION; }
 
-		case typ.isSubtypeOf(TYPE.OBJ): { return TypeName.OBJECT; }
+		case typ.isSubtypeOf(TYPE.FUNCTION): { return TypeName.FUNCTION; }
+		case typ.isSubtypeOf(TYPE.OBJ):      { return TypeName.OBJECT; }
 	}
 
 	if (typ instanceof TYPE.Union || typ instanceof TYPE.Intersection) {
 		switch (true) {
-			case typ.operands.every((op) => op instanceof TYPE.Tuple):  { return TypeName.TUPLE; }
-			case typ.operands.every((op) => op instanceof TYPE.Record): { return TypeName.RECORD; }
-			case typ.operands.every((op) => op instanceof TYPE.List):   { return TypeName.LIST; }
-			case typ.operands.every((op) => op instanceof TYPE.Dict):   { return TypeName.DICT; }
-			case typ.operands.every((op) => op instanceof TYPE.Set):    { return TypeName.SET; }
-			case typ.operands.every((op) => op instanceof TYPE.Map):    { return TypeName.MAP; }
+			case typ.operands.every((op) => op instanceof TYPE.Tuple):    { return TypeName.TUPLE; }
+			case typ.operands.every((op) => op instanceof TYPE.Record):   { return TypeName.RECORD; }
+			case typ.operands.every((op) => op instanceof TYPE.List):     { return TypeName.LIST; }
+			case typ.operands.every((op) => op instanceof TYPE.Dict):     { return TypeName.DICT; }
+			case typ.operands.every((op) => op instanceof TYPE.Set):      { return TypeName.SET; }
+			case typ.operands.every((op) => op instanceof TYPE.Map):      { return TypeName.MAP; }
+			case typ.operands.every((op) => op instanceof TYPE.Maybe):    { return TypeName.RESULT; }
+			case typ.operands.every((op) => op instanceof TYPE.Result):   { return TypeName.RESULT; }
+			case typ.operands.every((op) => op instanceof TYPE.Function): { return TypeName.FUNCTION; }
 		}
 	}
 	return TypeName.ANYTHING;

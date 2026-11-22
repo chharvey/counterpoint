@@ -571,7 +571,7 @@ test.suite('AstNodeVisitorTypeCheck#visit', () => {
 
 
 	test.suite('DeclarationFunction', () => {
-		test.test('sets the SymbolSchemaFunc `type`.', () => {
+		test.test('sets the SymbolSchemaFunc `types`.', () => {
 			const {stmts, visitors: {typeCheck: VISITOR}} = setupScript(`{
 				func f(a: float, mut b: str): void { return; };
 			}`, {typeCheck: false});
@@ -588,14 +588,15 @@ test.suite('AstNodeVisitorTypeCheck#visit', () => {
 			assert_instanceof(info_f, SymbolSchemaFunc);
 			assert_instanceof(info_a, SymbolSchemaVar);
 			assert_instanceof(info_b, SymbolSchemaVar);
-			assert.strictEqual(info_f.types.length, 0);
+			assert.strictEqual(info_f.types.size, 0);
 			assert_shallowStrictEqual(
 				[info_a.type, info_b.type],
 				repeat(TYPE.ANYTHING, 2),
 			);
 			VISITOR.visit(fn);
-			assert.strictEqual(info_f.types.length, 1);
-			assertEqualTypes(info_f.types[0], new TYPE.Function(TYPE.Tuple.fromTypes([
+			assert.strictEqual(info_f.types.size, 1);
+			assert.ok(info_f.types.has(fn));
+			assertEqualTypes(info_f.types.get(fn)!, new TYPE.Function(TYPE.Tuple.fromTypes([
 				TYPE.FLOAT,
 				TYPE.STR,
 			])));
@@ -614,10 +615,10 @@ test.suite('AstNodeVisitorTypeCheck#visit', () => {
 			assert.ok(validator.hasSymbol(id_f));
 			const info_f: SymbolSchema | undefined = validator.getSymbol(id_f);
 			assert_instanceof(info_f, SymbolSchemaFunc);
-			assert.strictEqual(info_f.types.length, 0);
+			assert.strictEqual(info_f.types.size, 0);
 			VISITOR.visit(stmts[0]);
 			VISITOR.visit(stmts[1]);
-			return assertEqualTypes(info_f.types, [
+			return assertEqualTypes([...info_f.types.values()], [
 				new TYPE.Function(TYPE.Tuple.fromTypes([TYPE.INT])),
 				new TYPE.Function(new TYPE.Tuple(), TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>([
 					[Validator.keyId('b'), TYPE.NAT],
@@ -631,6 +632,12 @@ test.suite('AstNodeVisitorTypeCheck#visit', () => {
 			}`, {typeCheck: false});
 			VISITOR.visit(stmts[0]); // assert does not throw
 			return assert.throws(() => VISITOR.visit(stmts[1]), TypeErrorAmbiguousOverload);
+		});
+		test.test('hoists function type-checking.', () => {
+			assertEqualTypes((setupScript(`{
+				f.();
+				func f(): int => 42;
+			}`, {build: false}).stmts[0] as AST.STMT.StatementExpression).expr!.type, TYPE.INT);
 		});
 	});
 

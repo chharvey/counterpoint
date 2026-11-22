@@ -78,7 +78,6 @@ export class ValueVisitorCodegen extends ValueVisitor<binaryen.ExpressionRef /* 
 			CORE_LIB_NAMES.includes(val.target.source as CoreLibName)
 		) {
 			switch (val.target.source) {
-				case CoreLibName.CLASS:     { return this.cg.vm.Class.CLASS; }
 				case CoreLibName.NULL:      { return this.cg.vm.Class.NULL; }
 				case CoreLibName.BOOLEAN:   { return this.cg.vm.Class.BOOLEAN; }
 				case CoreLibName.SYMBOL:    { return this.cg.vm.Class.SYMBOL; }
@@ -99,6 +98,7 @@ export class ValueVisitorCodegen extends ValueVisitor<binaryen.ExpressionRef /* 
 				case CoreLibName.FAIL:      { return this.cg.vm.Class.FAIL; }
 				case CoreLibName.OK:        { return this.cg.vm.Class.OK; }
 				case CoreLibName.FUNCTION:  { return this.cg.vm.Class.FUNCTION; }
+				case CoreLibName.CLASS:     { return this.cg.vm.Class.CLASS; }
 				default: {
 					return this.cg.codegenClass(this.cg.vm.Class.CLASS); // returns a new class who is an instance of `Class`
 				}

@@ -187,27 +187,34 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type | null> {
 		if (base_type.isBottomType) {
 			return TYPE.NOTHING;
 		}
-		if (expr.kind === Operator.DOT_MAYBE) {
-			if (base_type instanceof TYPE.Maybe) {
-				const entry: EntryType = get_entry_info(base_type.typearg, expr);
+		switch (expr.kind) {
+			case Operator.DOT: {
+				const entry: EntryType = get_entry_info(base_type, expr);
 				expr.isEntryOptional = entry.optional;
-				return new TYPE.Maybe(entry.optional ? new TYPE.Maybe(entry.type) : entry.type);
-			} else if (!(expr.accessor instanceof EXPR.Expression)) { // TODO: remove expression access
-				throw new TypeErrorInvalidOperation(expr);
+				return entry.optional ? new TYPE.Maybe(entry.type) : entry.type;
 			}
-		}
-		if (expr.kind === Operator.DOT_RESULT) {
-			if (base_type instanceof TYPE.Result) {
-				const entry: EntryType = get_entry_info(base_type.typeargSuccess, expr);
-				expr.isEntryOptional = entry.optional;
-				return new TYPE.Result(entry.optional ? new TYPE.Maybe(entry.type) : entry.type, base_type.typeargFailure);
-			} else {
-				throw new TypeErrorInvalidOperation(expr);
+			case Operator.DOT_MAYBE: {
+				if (base_type instanceof TYPE.Maybe) {
+					const entry: EntryType = get_entry_info(base_type.typearg, expr);
+					expr.isEntryOptional = entry.optional;
+					return new TYPE.Maybe(entry.optional ? new TYPE.Maybe(entry.type) : entry.type);
+				} else if (expr.accessor instanceof EXPR.Expression) { // TODO: remove expression access
+					const entry: EntryType = get_entry_info(base_type, expr);
+					expr.isEntryOptional = entry.optional;
+					return entry.optional ? new TYPE.Maybe(entry.type) : entry.type;
+				} else {
+					throw new TypeErrorInvalidOperation(expr);
+				}
 			}
-		} else {
-			const entry: EntryType = get_entry_info(base_type, expr);
-			expr.isEntryOptional = entry.optional;
-			return entry.optional ? new TYPE.Maybe(entry.type) : entry.type;
+			case Operator.DOT_RESULT: {
+				if (base_type instanceof TYPE.Result) {
+					const entry: EntryType = get_entry_info(base_type.typeargSuccess, expr);
+					expr.isEntryOptional = entry.optional;
+					return new TYPE.Result(entry.optional ? new TYPE.Maybe(entry.type) : entry.type, base_type.typeargFailure);
+				} else {
+					throw new TypeErrorInvalidOperation(expr);
+				}
+			}
 		}
 	}
 
@@ -215,7 +222,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type | null> {
 	public override visitCall(expr: EXPR.Call): TYPE.Type | null {
 		const symbol: SymbolSchema | undefined = expr.base instanceof EXPR.Variable ? expr.validator.getSymbol(expr.base.id) : undefined;
 		const base_types: readonly TYPE.Type[] = (
-			symbol instanceof SymbolSchemaFunc  ? symbol.types :
+			symbol instanceof SymbolSchemaFunc  ? [...symbol.types.values()] :
 			symbol instanceof SymbolSchemaClass ? symbol.classSignature.overloads ? (() => {
 				const generic_args: GenericArgs = this.#typeVisitorTypevalue.checkGenericArgs(expr, symbol.classSignature.genericParams);
 				let return_type: TYPE.Type = symbol.classSignature.returnType(generic_args);

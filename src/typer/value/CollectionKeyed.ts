@@ -59,12 +59,12 @@ export abstract class CollectionKeyed<T extends Value = Value> extends Collectio
 
 	/** @final */
 	public has(key: bigint): boolean {
-		return !!this.#properties.get(key);
+		return this.#properties.has(key);
 	}
 
 	/** @final */
 	public get(key: bigint): T | Null {
-		return this.#properties.get(key) ?? NULL;
+		return this.has(key) ? this.#properties.get(key)! : NULL;
 	}
 
 	public set(key: bigint, value: T): void {
