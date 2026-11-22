@@ -9,7 +9,9 @@ import {
 } from '../../../typer/index.ts';
 import {CoreLibName} from '../../../parser/index.ts';
 import {
+	type SymbolSchema,
 	SymbolSchemaVar,
+	SymbolSchemaFunc,
 	type SymbolSchemaClass,
 } from '../../index.ts';
 import {Operator} from '../../Operator.ts';
@@ -53,7 +55,10 @@ export class ExprVisitorBuild extends EXPR.ExprVisitor<OP.Value> {
 
 	@memoizePerNode
 	public override visitVariable(expr: EXPR.Variable): OP.Value {
-		const symbol = expr.validator.getSymbol(expr.id) as SymbolSchemaVar | SymbolSchemaClass;
+		const symbol = expr.validator.getSymbol(expr.id) as SymbolSchemaVar | SymbolSchemaFunc | SymbolSchemaClass;
+		if (symbol instanceof SymbolSchemaFunc) {
+			return new OP.Trap(); // not used in `this.visitCall`
+		}
 		return new OP.Get(symbol, symbol instanceof SymbolSchemaVar ? symbol.irType : TYPE.CLASS);
 	}
 
@@ -203,8 +208,12 @@ export class ExprVisitorBuild extends EXPR.ExprVisitor<OP.Value> {
 				);
 			}
 		}
+
+		const symbol: SymbolSchema | undefined = expr.base instanceof EXPR.Variable ? expr.validator.getSymbol(expr.base.id) : undefined;
 		return new OP.Call(
-			this.visit(expr.base).asTac(this.builder),
+			symbol instanceof SymbolSchemaFunc
+				? new OP.Get(this.builder.funcs.get(symbol.id)!.get(expr.overloadMatch!)!)
+				: this.visit(expr.base).asTac(this.builder),
 			expr.exprargsPosit.map((arg) => this.visit(arg).asTac(this.builder)),
 			new Map(expr.exprargsNamed.map(({key, val}) => [key.id, this.visit(val).asTac(this.builder)])),
 			expr.type ?? TYPE.ANYTHING, // FIXME: function call expression may be void; allow OP.Value to take void type

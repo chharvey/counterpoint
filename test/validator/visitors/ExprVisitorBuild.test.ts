@@ -1177,24 +1177,47 @@ test.suite('ExprVisitorBuild#visit', () => {
 			});
 		});
 
-		test.test('custom function calls.', {todo: true}, () => {
+		test.test('custom function calls.', () => {
 			assert.strictEqual(setupScript(`{
 				func inc(x: int): int => x + 1;
 				inc.(42);
 			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
-					(GOTO "block-2")
-				"block-1":
-					(DECL <int> x)
-					(DECL <int> $0 (INT.ADD (GET x) (INT.CONST 1)))
-					(RETURN (GET $0) nil)
-					(GOTO "caller")
-				"unreachable-3":
+					(DECL <Function> $0 (FUNCTION inc {${xjs.String.dedent`
+						"block-0":
+							(DECL <int> x)
+							(DECL <int> $0 (INT.ADD (GET x) (INT.CONST 1)))
+							(RETURN (GET $0) nil)
+							(ENDPROGRAM)
+					`}}))
+					(DROP (CALL (GET $0) (INT.CONST 42)))
 					(ENDPROGRAM)
-				"block-2":
-					(SET x (INT.CONST 42))
-					(GOTO "block-1")
-					(DROP)
+			`.trim());
+		});
+		test.test('selects the correct overload.', () => {
+			assert.strictEqual(setupScript(`{
+				func inc(x: int): int => x + 1;
+				func inc(x: float): float => x + 1.0;
+				inc.(4.2);
+				inc.(402);
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
+				"block-0":
+					(DECL <Function> $0 (FUNCTION inc {${xjs.String.dedent`
+						"block-0":
+							(DECL <int> x)
+							(DECL <int> $0 (INT.ADD (GET x) (INT.CONST 1)))
+							(RETURN (GET $0) nil)
+							(ENDPROGRAM)
+					`}}))
+					(DECL <Function> $1 (FUNCTION inc {${xjs.String.dedent`
+						"block-0":
+							(DECL <float> x)
+							(DECL <float> $0 (FLOAT.ADD (GET x) (FLOAT.CONST 1.0)))
+							(RETURN (GET $0) nil)
+							(ENDPROGRAM)
+					`}}))
+					(DROP (CALL (GET $1) (FLOAT.CONST 4.2)))
+					(DROP (CALL (GET $0) (INT.CONST 402)))
 					(ENDPROGRAM)
 			`.trim());
 		});
