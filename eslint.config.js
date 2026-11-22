@@ -92,7 +92,6 @@ export default [
 			}],
 			'@stylistic/member-delimiter-style': ['error', {
 				overrides: {
-					interface:   {singleline: {requireLast: true}},
 					typeLiteral: {
 						multiline:  {delimiter: 'comma'},
 						singleline: {delimiter: 'comma'},
