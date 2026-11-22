@@ -505,7 +505,7 @@ test.suite('ValueVisitorCodegen#visit', () => {
 		return xjs.Array.forEachAggregated(['a', 'b'], (keysrc) => {
 			const keyid: bigint = Validator.keyId(keysrc);
 			return assertEqualBins(
-				VISITOR.visit(new OP.RecordHas(record, {keyid, keysrc})),
+				VISITOR.visit(new OP.RecordHas(record, keyid)),
 				Value.boolFromI32(Record.hasKey(
 					Value.asRecord(VISITOR.visit(record)),
 					wasm.i64.const(keyid),

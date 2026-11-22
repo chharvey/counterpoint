@@ -3,6 +3,7 @@ import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../../core/index.ts';
+import type {TYPE} from '../../../typer/index.ts';
 import type {SyntaxNodeType} from '../../utils-private.ts';
 import type * as AST_TYPE from '../type/index.ts';
 import type {PropertyType} from '../PropertyType.ts';
@@ -17,6 +18,13 @@ export class Call extends Expression {
 		assert_instanceof(expression, Call);
 		return expression;
 	}
+
+
+	/**
+	 * Sets the overload match once found.
+	 * Used in the Builder to statically dispatch the correct overload.
+	 */
+	public overloadMatch?: TYPE.Function;
 
 
 	public constructor(

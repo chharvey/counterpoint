@@ -114,7 +114,7 @@ test.suite('AstNodeVisitorRefCheck#visit', () => {
 				\\($a?: int = b, $b: int): int => a + b;
 				\\(alpha= a?: int = b, bravo= b: int): int => a + b;
 			}`, {refCheck: false});
-			xjs.Array.forEachAggregated(stmts, (stmt) => assert.throws(() => VISITOR.visit(stmt), ReferenceErrorUndeclared));
+			return xjs.Array.forEachAggregated(stmts, (stmt) => assert.throws(() => VISITOR.visit(stmt), ReferenceErrorUndeclared));
 		});
 		test.test('parameters do not shadow outside scope.', () => {
 			setupScript(`{
@@ -632,12 +632,11 @@ test.suite('AstNodeVisitorRefCheck#visit', () => {
 				func inc1(x: int): int => x + 1;
 				val inc2: \\(int) => int = \\(x: int): int => x + 2;
 				inc2;
+				(inc1).(42); % parsed exactly like \`inc1.(42)\`
 				(inc1 || inc2).(42);
 			}`, {refCheck: false});
-			visitors.refCheck.visit(stmts[0]);
-			visitors.refCheck.visit(stmts[1]);
-			visitors.refCheck.visit(stmts[2]);
-			return assert.throws(() => visitors.refCheck.visit((stmts[3] as AST.STMT.StatementExpression).expr!), ReferenceErrorKind);
+			xjs.Array.forEachAggregated(stmts.slice(0, 4), (stmt) => visitors.refCheck.visit(stmt));
+			return assert.throws(() => visitors.refCheck.visit((stmts[4] as AST.STMT.StatementExpression).expr!), ReferenceErrorKind);
 		});
 		test.test('throws if named args have duplicate keys.', () => {
 			const {stmts, visitors: {refCheck: VISITOR}} = setupScript(`{

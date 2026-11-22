@@ -145,7 +145,7 @@ export class ValueVisitorCodegen extends ValueVisitor<binaryen.ExpressionRef /* 
 
 	@memoizePerCode
 	public override visitRecordNew(val: RecordNew): binaryen.ExpressionRef /* (ref $Value) */ {
-		return this.cg.vm.Value.fromRecord(this.cg.codegenRecord(new Map<bigint, binaryen.ExpressionRef>([...val.props].map(([id, {value}]) => [
+		return this.cg.vm.Value.fromRecord(this.cg.codegenRecord(new Map<bigint, binaryen.ExpressionRef>([...val.props].map(([id, value]) => [
 			id,
 			this.cg.newProperty(id, this.visit(value)),
 		]))));
@@ -153,7 +153,7 @@ export class ValueVisitorCodegen extends ValueVisitor<binaryen.ExpressionRef /* 
 
 	@memoizePerCode
 	public override visitDictNew(val: DictNew): binaryen.ExpressionRef /* (ref $Value) */ {
-		return this.cg.vm.Value.fromDict(this.cg.codegenDict(new Map<bigint, binaryen.ExpressionRef>([...val.props].map(([{id}, value]) => [
+		return this.cg.vm.Value.fromDict(this.cg.codegenDict(new Map<bigint, binaryen.ExpressionRef>([...val.props].map(([id, value]) => [
 			id,
 			this.cg.newProperty(id, this.visit(value)),
 		]))));
@@ -207,7 +207,7 @@ export class ValueVisitorCodegen extends ValueVisitor<binaryen.ExpressionRef /* 
 	public override visitRecordHas(val: RecordHas): binaryen.ExpressionRef /* (ref $Value) */ {
 		return this.cg.vm.Value.boolFromI32(this.cg.vm.Record.hasKey(
 			this.cg.vm.Value.asRecord(this.visit(val.record)),
-			this.wasm.i64.const(val.accessor.keyid),
+			this.wasm.i64.const(val.accessor),
 		));
 	}
 
@@ -224,7 +224,7 @@ export class ValueVisitorCodegen extends ValueVisitor<binaryen.ExpressionRef /* 
 	public override visitRecordGet(val: RecordGet): binaryen.ExpressionRef /* (ref $Value) */ {
 		return this.cg.vm.Record.get(
 			this.cg.vm.Value.asRecord(this.visit(val.record)),
-			this.wasm.i64.const(val.accessor.keyid),
+			this.wasm.i64.const(val.accessor),
 		);
 	}
 

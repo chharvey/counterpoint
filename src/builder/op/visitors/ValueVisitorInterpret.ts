@@ -106,14 +106,14 @@ export class ValueVisitorInterpret extends ValueVisitor<VALUE.Value> {
 	}
 
 	public override visitRecordNew(val: RecordNew): VALUE.Value {
-		return new VALUE.Record(new Map<bigint, VALUE.Value>([...val.props].map(([id, {value}]) => [
+		return new VALUE.Record(new Map<bigint, VALUE.Value>([...val.props].map(([id, value]) => [
 			id,
 			this.visit(value),
 		])));
 	}
 
 	public override visitDictNew(val: DictNew): VALUE.Value {
-		return new VALUE.Dict(new Map<bigint, VALUE.Value>([...val.props].map(([{id}, value]) => [
+		return new VALUE.Dict(new Map<bigint, VALUE.Value>([...val.props].map(([id, value]) => [
 			id,
 			this.visit(value),
 		])));
@@ -170,7 +170,7 @@ export class ValueVisitorInterpret extends ValueVisitor<VALUE.Value> {
 	public override visitRecordHas(val: RecordHas): VALUE.Value {
 		const base: VALUE.Value = this.visit(val.record);
 		assert_instanceof(base, VALUE.Record);
-		return VALUE.Boolean.fromBoolean(base.has(val.accessor.keyid));
+		return VALUE.Boolean.fromBoolean(base.has(val.accessor));
 	}
 
 	public override visitTupleGet(val: TupleGet): VALUE.Value {
@@ -182,7 +182,7 @@ export class ValueVisitorInterpret extends ValueVisitor<VALUE.Value> {
 	public override visitRecordGet(val: RecordGet): VALUE.Value {
 		const base: VALUE.Value = this.visit(val.record);
 		assert_instanceof(base, VALUE.Record);
-		return base.get(val.accessor.keyid);
+		return base.get(val.accessor);
 	}
 
 	public override visitCollectionDynamicGet(val: CollectionDynamicGet): VALUE.Value {

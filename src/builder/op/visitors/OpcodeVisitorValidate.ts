@@ -80,7 +80,7 @@ export class OpcodeVisitorValidate extends OpcodeVisitor<void> {
 	@runOncePerCode
 	public override visitRecordNew(val: RecordNew): void {
 		assert_instanceof(val.type, TYPE.Record);
-		return xjs.Map.forEachAggregated(val.props, ({value}) => this.visit(value));
+		return xjs.Map.forEachAggregated(val.props, (value) => this.visit(value));
 	}
 
 	@runOncePerCode
@@ -173,7 +173,7 @@ export class OpcodeVisitorValidate extends OpcodeVisitor<void> {
 
 	@runOncePerCode
 	public override visitCall(val: Call): void {
-		return xjs.Array.forEachAggregated([val.callable, ...val.args], (value) => this.visit(value));
+		return xjs.Array.forEachAggregated([val.callable, ...val.argsPosit, ...val.argsNamed.values()], (value) => this.visit(value));
 	}
 
 	@runOncePerCode

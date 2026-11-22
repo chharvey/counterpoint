@@ -11,6 +11,7 @@ import {
 	OP,
 } from '../../../src/index.ts';
 import {
+	CTOR_CALLS,
 	typeUnit,
 	setupScript,
 } from '../../utils.ts';
@@ -803,178 +804,8 @@ test.suite('ExprVisitorBuild#visit', () => {
 
 
 	test.suite('Call', () => {
-		const BOOL_CONS = [
-			'Boolean.(null)',
-			'Boolean.(false)',
-			'Boolean.(true)',
-			'Boolean.(@hello)',
-			'Boolean.(-0)',
-			'Boolean.(-42)',
-			'Boolean.(+0)',
-			'Boolean.(+42)',
-			'Boolean.(0.0)',
-			'Boolean.(4.2)',
-			'Boolean.("hello")',
-		] as const;
-		const INT_CONS = [
-			'Integer.(-42)',
-			'Integer.(+42)',
-			'Integer.(4.2)',
-		] as const;
-		const NAT_CONS = [
-			'Natural.(-42)',
-			'Natural.(+42)',
-			'Natural.(4.2)',
-		] as const;
-		const FLOAT_CONS = [
-			'Float.(-42)',
-			'Float.(+42)',
-			'Float.(4.2)',
-		] as const;
-		const STRING_CONS = [
-			'String.(null)',
-			'String.(true)',
-			'String.(-42)',
-			'String.(+42)',
-			'String.(4.2)',
-			'String.("hello")',
-			'String.(())',
-			'String.((a= 1))',
-			'String.([])',
-			'String.([a= 1])',
-			'String.({})',
-			'String.({"a" -> 1})',
-		] as const;
-		const LIST_CONS = [
-			'List.<int>()',
-			'List.<int>(())',
-			'List.<int>(List.<int>())',
-			'List.<int>([])',
-			'List.<int>(Set.<int>())',
-			'List.<int>({})',
-			'List.<int>((1, 2, 3))',
-			'List.<int>(List.<int>((1, 2, 3)))',
-			'List.<int>([1, 2, 3])',
-			'List.<int>(Set.<int>((1, 2, 3)))',
-			'List.<int>({1, 2, 3})',
-		] as const;
-		const DICT_CONS = [
-			'Dict.<int>()',
-			'Dict.<int>(())',
-			// 'Dict.<int>((=))', // empty record is impossible
-			'Dict.<int>(List.<(sym, int)>())',
-			'Dict.<int>([])',
-			'Dict.<int>(Dict.<int>())',
-			// 'Dict.<int>([=])', // empty dict literal is impossible
-			'Dict.<int>(Set.<(sym, int)>())',
-			'Dict.<int>({})',
-			'Dict.<int>(Map.<sym, int>())',
-			// 'Dict.<int>({->})', // empty map literal is impossible
-			`Dict.<int>((
-				(@a, 1),
-				(@b, 2),
-				(@c, 3),
-			))`,
-			'Dict.<int>((a= 1, b= 2, c= 3))',
-			`Dict.<int>(List.<(sym, int)>((
-				(@a, 1),
-				(@b, 2),
-				(@c, 3),
-			)))`,
-			`Dict.<int>([
-				(@a, 1),
-				(@b, 2),
-				(@c, 3),
-			])`,
-			'Dict.<int>(Dict.<int>((a= 1, b= 2, c= 3)))',
-			'Dict.<int>([a= 1, b= 2, c= 3])',
-			`Dict.<int>(Set.<(sym, int)>((
-				(@a, 1),
-				(@b, 2),
-				(@c, 3),
-			)))`,
-			`Dict.<int>({
-				(@a, 1),
-				(@b, 2),
-				(@c, 3),
-			})`,
-			`Dict.<int>(Map.<sym, int>((
-				(@a, 1),
-				(@b, 2),
-				(@c, 3),
-			)))`,
-			`Dict.<int>({
-				@a -> 1,
-				@b -> 2,
-				@c -> 3,
-			})`,
-		] as const;
-		const SET_CONS = [
-			'Set.<int>()',
-			'Set.<int>(())',
-			'Set.<int>(List.<int>())',
-			'Set.<int>([])',
-			'Set.<int>(Set.<int>())',
-			'Set.<int>({})',
-			'Set.<int>((1, 2, 3))',
-			'Set.<int>(List.<int>((1, 2, 3)))',
-			'Set.<int>([1, 2, 3])',
-			'Set.<int>(Set.<int>((1, 2, 3)))',
-			'Set.<int>({1, 2, 3})',
-		] as const;
-		const MAP_CONS = [
-			'Map.<int, float>()',
-			'Map.<int, float>(())',
-			'Map.<int, float>(List.<(int, float)>())',
-			'Map.<int, float>([])',
-			'Map.<int, float>(Set.<(int, float)>())',
-			'Map.<int, float>({})',
-			'Map.<int, float>(Map.<int, float>())',
-			// 'Map.<int, float>({->})', // empty map literal is impossible
-			`Map.<int, float>((
-				(1, 0.1),
-				(2, 0.2),
-				(3, 0.4),
-			))`,
-			`Map.<int, float>(List.<(int, float)>((
-				(1, 0.1),
-				(2, 0.2),
-				(3, 0.4),
-			)))`,
-			`Map.<int, float>([
-				(1, 0.1),
-				(2, 0.2),
-				(3, 0.4),
-			])`,
-			`Map.<int, float>(Set.<(int, float)>((
-				(1, 0.1),
-				(2, 0.2),
-				(3, 0.4),
-			)))`,
-			`Map.<int, float>({
-				(1, 0.1),
-				(2, 0.2),
-				(3, 0.4),
-			})`,
-			`Map.<int, float>(Map.<int, float>((
-				(1, 0.1),
-				(2, 0.2),
-				(3, 0.4),
-			)))`,
-			`Map.<int, float>({
-				1 -> 0.1,
-				2 -> 0.2,
-				3 -> 0.4,
-			})`,
-		] as const;
-		const EXCEPTION_CONS = [
-			'Exception.("message")',
-			'Exception.("message", Exception.("cause"))',
-		] as const;
-		test.test('`Boolean.(‹…›)`', () => {
-			assert.strictEqual(setupScript(`{
-				${BOOL_CONS.map((src) => `${src};`).join('\n')}
-			}`, {codegen: false}).builder.print(), xjs.String.dedent`
+		new Map<string, string>([
+			['Boolean', xjs.String.dedent`
 				"block-0":
 					(DROP (BOOL.FROM (NULL.CONST null)))
 					(DROP (BOOL.FROM (BOOL.CONST false)))
@@ -988,45 +819,29 @@ test.suite('ExprVisitorBuild#visit', () => {
 					(DROP (BOOL.FROM (FLOAT.CONST 4.2)))
 					(DROP (BOOL.FROM (STR.CONST "hello")))
 					(ENDPROGRAM)
-			`.trim());
-		});
-		test.test('`Integer.(‹…›)`', () => {
-			assert.strictEqual(setupScript(`{
-				${INT_CONS.map((src) => `${src};`).join('\n')}
-			}`, {codegen: false}).builder.print(), xjs.String.dedent`
+			`],
+			['Integer', xjs.String.dedent`
 				"block-0":
 					(DROP (INT.FROM (INT.CONST -42)))
 					(DROP (INT.FROM (NAT.CONST +42)))
 					(DROP (INT.FROM (FLOAT.CONST 4.2)))
 					(ENDPROGRAM)
-			`.trim());
-		});
-		test.test('`Natural.(‹…›)`', () => {
-			assert.strictEqual(setupScript(`{
-				${NAT_CONS.map((src) => `${src};`).join('\n')}
-			}`, {codegen: false}).builder.print(), xjs.String.dedent`
+			`],
+			['Natural', xjs.String.dedent`
 				"block-0":
 					(DROP (NAT.FROM (INT.CONST -42)))
 					(DROP (NAT.FROM (NAT.CONST +42)))
 					(DROP (NAT.FROM (FLOAT.CONST 4.2)))
 					(ENDPROGRAM)
-			`.trim());
-		});
-		test.test('`Float.(‹…›)`', () => {
-			assert.strictEqual(setupScript(`{
-				${FLOAT_CONS.map((src) => `${src};`).join('\n')}
-			}`, {codegen: false}).builder.print(), xjs.String.dedent`
+			`],
+			['Float', xjs.String.dedent`
 				"block-0":
 					(DROP (FLOAT.FROM (INT.CONST -42)))
 					(DROP (FLOAT.FROM (NAT.CONST +42)))
 					(DROP (FLOAT.FROM (FLOAT.CONST 4.2)))
 					(ENDPROGRAM)
-			`.trim());
-		});
-		test.test('`String.(‹…›)`', () => {
-			assert.strictEqual(setupScript(`{
-				${STRING_CONS.map((src) => `${src};`).join('\n')}
-			}`, {codegen: false}).builder.print(), xjs.String.dedent`
+			`],
+			['String', xjs.String.dedent`
 				"block-0":
 					(DROP (STR.FROM (NULL.CONST null)))
 					(DROP (STR.FROM (BOOL.CONST true)))
@@ -1047,12 +862,8 @@ test.suite('ExprVisitorBuild#visit', () => {
 					(DECL <Map> $5 (MAP.NEW (STR.CONST "a")->(INT.CONST 1)))
 					(DROP (STR.FROM (GET $5)))
 					(ENDPROGRAM)
-			`.trim());
-		});
-		test.test('`List.(‹…›)`', () => {
-			assert.strictEqual(setupScript(`{
-				${LIST_CONS.map((src) => `${src};`).join('\n')}
-			}`, {codegen: false}).builder.print(), xjs.String.dedent`
+			`],
+			['List', xjs.String.dedent`
 				"block-0":
 					(DROP (LIST.NEW))
 					(DECL <List> $0 (LIST.NEW))
@@ -1100,12 +911,8 @@ test.suite('ExprVisitorBuild#visit', () => {
 					(LIST.COPY (GET $20) (GET $21))
 					(DROP (GET $20))
 					(ENDPROGRAM)
-			`.trim());
-		});
-		test.test('`Dict.(‹…›)`', () => {
-			assert.strictEqual(setupScript(`{
-				${DICT_CONS.map((src) => `${src};`).join('\n')}
-			}`, {codegen: false}).builder.print(), xjs.String.dedent`
+			`],
+			['Dict', xjs.String.dedent`
 				"block-0":
 					(DROP (DICT.NEW))
 					(DECL <Dict> $0 (DICT.NEW))
@@ -1203,12 +1010,8 @@ test.suite('ExprVisitorBuild#visit', () => {
 					(DICT.COPY (GET $54) (GET $55))
 					(DROP (GET $54))
 					(ENDPROGRAM)
-			`.trim());
-		});
-		test.test('`Set.(‹…›)`', () => {
-			assert.strictEqual(setupScript(`{
-				${SET_CONS.map((src) => `${src};`).join('\n')}
-			}`, {codegen: false}).builder.print(), xjs.String.dedent`
+			`],
+			['Set', xjs.String.dedent`
 				"block-0":
 					(DROP (SET.NEW))
 					(DECL <Set> $0 (SET.NEW))
@@ -1256,12 +1059,8 @@ test.suite('ExprVisitorBuild#visit', () => {
 					(SET.COPY (GET $20) (GET $21))
 					(DROP (GET $20))
 					(ENDPROGRAM)
-			`.trim());
-		});
-		test.test('`Map.(‹…›)`', () => {
-			assert.strictEqual(setupScript(`{
-				${MAP_CONS.map((src) => `${src};`).join('\n')}
-			}`, {codegen: false}).builder.print(), xjs.String.dedent`
+			`],
+			['Map', xjs.String.dedent`
 				"block-0":
 					(DROP (MAP.NEW))
 					(DECL <Map> $0 (MAP.NEW))
@@ -1341,53 +1140,118 @@ test.suite('ExprVisitorBuild#visit', () => {
 					(MAP.COPY (GET $45) (GET $46))
 					(DROP (GET $45))
 					(ENDPROGRAM)
-			`.trim());
-		});
-		test.test('`Exception.(‹…›)`', () => {
-			assert.strictEqual(setupScript(`{
-				${EXCEPTION_CONS.map((src) => `${src};`).join('\n')}
-			}`, {codegen: false}).builder.print(), xjs.String.dedent`
+			`],
+			['Exception', xjs.String.dedent`
 				"block-0":
 					(DROP (EXCP.NEW (STR.CONST "message")))
 					(DECL <Exception> $0 (EXCP.NEW (STR.CONST "cause")))
 					(DROP (EXCP.NEW (STR.CONST "message") (GET $0)))
 					(ENDPROGRAM)
-			`.trim());
-		});
-		test.test('`None.()`', () => {
-			assert.strictEqual(setupScript(`{
-				None.<int>();
-			}`, {codegen: false}).builder.print(), xjs.String.dedent`
+			`],
+			['None', xjs.String.dedent`
 				"block-0":
 					(DROP (MAYBE.NEW))
 					(ENDPROGRAM)
-			`.trim());
-		});
-		test.test('`Some.(‹…›)`', () => {
-			assert.strictEqual(setupScript(`{
-				Some.<int>(42);
-			}`, {codegen: false}).builder.print(), xjs.String.dedent`
+			`],
+			['Some', xjs.String.dedent`
 				"block-0":
 					(DROP (MAYBE.NEW (INT.CONST 42)))
 					(ENDPROGRAM)
-			`.trim());
-		});
-		test.test('`Fail.()`', () => {
-			assert.strictEqual(setupScript(`{
-				Fail.<int>(Exception.("message"));
-			}`, {codegen: false}).builder.print(), xjs.String.dedent`
+			`],
+			['Fail', xjs.String.dedent`
 				"block-0":
 					(DECL <Exception> $0 (EXCP.NEW (STR.CONST "message")))
 					(DROP (RESULT.NEW nil (GET $0)))
 					(ENDPROGRAM)
-			`.trim());
-		});
-		test.test('`Ok.(‹…›)`', () => {
-			assert.strictEqual(setupScript(`{
-				Ok.<int>(42);
-			}`, {codegen: false}).builder.print(), xjs.String.dedent`
+			`],
+			['Ok', xjs.String.dedent`
 				"block-0":
 					(DROP (RESULT.NEW (INT.CONST 42) nil))
+					(ENDPROGRAM)
+			`],
+		]).forEach((expected, name) => {
+			test.test(`\`${name}\` constructor.`, () => {
+				assert.strictEqual(setupScript(`{
+					${CTOR_CALLS.filter((src) => src.startsWith(name)).map((src) => `${src};`).join('\n')}
+				}`, {codegen: false}).builder.print(), expected.trim());
+			});
+		});
+
+		test.test('custom function calls.', () => {
+			assert.strictEqual(setupScript(`{
+				func inc(x: int): int => x + 1;
+				inc.(42);
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
+				"block-0":
+					(DECL <Function> $0 (FUNCTION inc {${xjs.String.dedent`
+						"block-0":
+							(DECL <int> x)
+							(DECL <int> $0 (INT.ADD (GET x) (INT.CONST 1)))
+							(RETURN (GET $0) nil)
+							(ENDPROGRAM)
+					`}}))
+					(DROP (CALL (GET $0) (INT.CONST 42)))
+					(ENDPROGRAM)
+			`.trim());
+		});
+		test.test('selects the correct overload.', () => {
+			assert.strictEqual(setupScript(`{
+				func inc(x: int): int => x + 1;
+				func inc(x: float): float => x + 1.0;
+				inc.(4.2);
+				inc.(402);
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
+				"block-0":
+					(DECL <Function> $0 (FUNCTION inc {${xjs.String.dedent`
+						"block-0":
+							(DECL <int> x)
+							(DECL <int> $0 (INT.ADD (GET x) (INT.CONST 1)))
+							(RETURN (GET $0) nil)
+							(ENDPROGRAM)
+					`}}))
+					(DECL <Function> $1 (FUNCTION inc {${xjs.String.dedent`
+						"block-0":
+							(DECL <float> x)
+							(DECL <float> $0 (FLOAT.ADD (GET x) (FLOAT.CONST 1.0)))
+							(RETURN (GET $0) nil)
+							(ENDPROGRAM)
+					`}}))
+					(DROP (CALL (GET $1) (FLOAT.CONST 4.2)))
+					(DROP (CALL (GET $0) (INT.CONST 402)))
+					(ENDPROGRAM)
+			`.trim());
+		});
+		test.test('compound base.', () => {
+			assert.strictEqual(setupScript(`{
+				val inc1: \\(int) => int = \\(x: int): int => x + 1;
+				val inc2: \\(int) => int = \\(x: int): int => x + 2;
+				(inc1 || inc2).(42);
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
+				"block-0":
+					(DECL <Function> inc1 (FUNCTION {${xjs.String.dedent`
+						"block-0":
+							(DECL <int> x)
+							(DECL <int> $0 (INT.ADD (GET x) (INT.CONST 1)))
+							(RETURN (GET $0) nil)
+							(ENDPROGRAM)
+					`}}))
+					(DECL <Function> inc2 (FUNCTION {${xjs.String.dedent`
+						"block-0":
+							(DECL <int> x)
+							(DECL <int> $0 (INT.ADD (GET x) (INT.CONST 2)))
+							(RETURN (GET $0) nil)
+							(ENDPROGRAM)
+					`}}))
+					(DECL <Function> $0)
+					(GOTO.IF (BOOL.FROM (GET inc1)) "block-1" "block-2")
+				"block-1":
+					(SET $0 (GET inc1))
+					(GOTO "block-3")
+				"block-2":
+					(SET $0 (GET inc2))
+					(GOTO "block-3")
+				"block-3":
+					(DROP (CALL (GET $0) (INT.CONST 42)))
 					(ENDPROGRAM)
 			`.trim());
 		});

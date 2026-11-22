@@ -1,4 +1,5 @@
 import type {TYPE} from '../../typer/index.ts';
+import {Validator} from '../../validator/index.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
 import type {ValueTac} from './ValueTac.ts';
@@ -9,7 +10,7 @@ import type {ValueTac} from './ValueTac.ts';
 export class RecordGet extends Value {
 	public constructor(
 		public readonly record:   ValueTac,
-		public readonly accessor: {readonly keyid: bigint, readonly keysrc?: string},
+		public readonly accessor: bigint,
 		entry_type: TYPE.Type,
 	) {
 		super(OpCode.RECORD_GET, entry_type);
@@ -17,8 +18,7 @@ export class RecordGet extends Value {
 
 	public override toString(): string {
 		return super.toString(
-			// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing --- keysrc may be empty string
-			`@${this.accessor.keysrc || `\\x${this.accessor.keyid.toString(16)}`}`, // static accessor before collection
+			`@${Validator.unhashIdentifierId(this.accessor)}`, // static accessor before collection
 			this.record,
 		);
 	}

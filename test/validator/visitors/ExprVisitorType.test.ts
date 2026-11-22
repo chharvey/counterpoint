@@ -20,6 +20,7 @@ import {
 	TypeErrorAmbiguousOverload,
 } from '../../../src/index.ts';
 import {
+	CTOR_CALLS,
 	extract_tokens,
 	extract_lines,
 	repeat,
@@ -866,280 +867,31 @@ test.suite('ExprVisitorType#visit', () => {
 
 
 	test.suite('Call', () => {
-		const EVALUATE = [
-			'Boolean.(42)',
-			'Integer.(42)',
-			'Natural.(42)',
-			'Float.(42)',
-			'String.(42)',
-			'List.<int>((1, 2, 3))',
-			'Dict.<int>((a= 1, b= 2, c= 3))',
-			'Set.<int>((1, 2, 3))',
-			`Map.<int, float>((
-				(1, 0.1),
-				(2, 0.2),
-				(3, 0.4),
-			))`,
-			'Exception.("message")',
-			'None.<int>()',
-			'Some.<int>(42)',
-			'Fail.<int>(Exception.("message"))',
-			'Ok.<int>(42)',
-			'Fail.<int, Exception>(Exception.("message"))',
-			'Ok.<int, Exception>(42)',
-		] as const;
-		const BOOL_CONS = [
-			'Boolean.(null)',
-			'Boolean.(false)',
-			'Boolean.(true)',
-			'Boolean.(@hello)',
-			'Boolean.(-0)',
-			'Boolean.(-42)',
-			'Boolean.(+0)',
-			'Boolean.(+42)',
-			'Boolean.(0.0)',
-			'Boolean.(4.2)',
-			'Boolean.("hello")',
-		] as const;
-		const INT_CONS = [
-			'Integer.(-42)',
-			'Integer.(+42)',
-			'Integer.(4.2)',
-		] as const;
-		const NAT_CONS = [
-			'Natural.(-42)',
-			'Natural.(+42)',
-			'Natural.(4.2)',
-		] as const;
-		const FLOAT_CONS = [
-			'Float.(-42)',
-			'Float.(+42)',
-			'Float.(4.2)',
-		] as const;
-		const STRING_CONS = [
-			'String.(null)',
-			'String.(true)',
-			'String.(-42)',
-			'String.(+42)',
-			'String.(4.2)',
-			'String.("hello")',
-			'String.(())',
-			'String.((a= 1))',
-			'String.([])',
-			'String.([a= 1])',
-			'String.({})',
-			'String.({"a" -> 1})',
-		] as const;
-		const LIST_CONS = [
-			'List.<int>()',
-			'List.<int>(())',
-			'List.<int>(List.<int>())',
-			'List.<int>([])',
-			'List.<int>(Set.<int>())',
-			'List.<int>({})',
-			'List.<int>((1, 2, 3))',
-			'List.<int>(List.<int>((1, 2, 3)))',
-			'List.<int>([1, 2, 3])',
-			'List.<int>(Set.<int>((1, 2, 3)))',
-			'List.<int>({1, 2, 3})',
-		] as const;
-		const DICT_CONS = [
-			'Dict.<int>()',
-			'Dict.<int>(())',
-			// 'Dict.<int>((=))', // empty record is impossible
-			'Dict.<int>(List.<(sym, int)>())',
-			'Dict.<int>([])',
-			'Dict.<int>(Dict.<int>())',
-			// 'Dict.<int>([=])', // empty dict literal is impossible
-			'Dict.<int>(Set.<(sym, int)>())',
-			'Dict.<int>({})',
-			'Dict.<int>(Map.<sym, int>())',
-			// 'Dict.<int>({->})', // empty map literal is impossible
-			`Dict.<int>((
-				(@a, 1),
-				(@b, 2),
-				(@c, 3),
-			))`,
-			'Dict.<int>((a= 1, b= 2, c= 3))',
-			`Dict.<int>(List.<(sym, int)>((
-				(@a, 1),
-				(@b, 2),
-				(@c, 3),
-			)))`,
-			`Dict.<int>([
-				(@a, 1),
-				(@b, 2),
-				(@c, 3),
-			])`,
-			'Dict.<int>(Dict.<int>((a= 1, b= 2, c= 3)))',
-			'Dict.<int>([a= 1, b= 2, c= 3])',
-			`Dict.<int>(Set.<(sym, int)>((
-				(@a, 1),
-				(@b, 2),
-				(@c, 3),
-			)))`,
-			`Dict.<int>({
-				(@a, 1),
-				(@b, 2),
-				(@c, 3),
-			})`,
-			`Dict.<int>(Map.<sym, int>((
-				(@a, 1),
-				(@b, 2),
-				(@c, 3),
-			)))`,
-			`Dict.<int>({
-				@a -> 1,
-				@b -> 2,
-				@c -> 3,
-			})`,
-		] as const;
-		const SET_CONS = [
-			'Set.<int>()',
-			'Set.<int>(())',
-			'Set.<int>(List.<int>())',
-			'Set.<int>([])',
-			'Set.<int>(Set.<int>())',
-			'Set.<int>({})',
-			'Set.<int>((1, 2, 3))',
-			'Set.<int>(List.<int>((1, 2, 3)))',
-			'Set.<int>([1, 2, 3])',
-			'Set.<int>(Set.<int>((1, 2, 3)))',
-			'Set.<int>({1, 2, 3})',
-		] as const;
-		const MAP_CONS = [
-			'Map.<int, float>()',
-			'Map.<int, float>(())',
-			'Map.<int, float>(List.<(int, float)>())',
-			'Map.<int, float>([])',
-			'Map.<int, float>(Set.<(int, float)>())',
-			'Map.<int, float>({})',
-			'Map.<int, float>(Map.<int, float>())',
-			// 'Map.<int, float>({->})', // empty map literal is impossible
-			`Map.<int, float>((
-				(1, 0.1),
-				(2, 0.2),
-				(3, 0.4),
-			))`,
-			`Map.<int, float>(List.<(int, float)>((
-				(1, 0.1),
-				(2, 0.2),
-				(3, 0.4),
-			)))`,
-			`Map.<int, float>([
-				(1, 0.1),
-				(2, 0.2),
-				(3, 0.4),
-			])`,
-			`Map.<int, float>(Set.<(int, float)>((
-				(1, 0.1),
-				(2, 0.2),
-				(3, 0.4),
-			)))`,
-			`Map.<int, float>({
-				(1, 0.1),
-				(2, 0.2),
-				(3, 0.4),
-			})`,
-			`Map.<int, float>(Map.<int, float>((
-				(1, 0.1),
-				(2, 0.2),
-				(3, 0.4),
-			)))`,
-			`Map.<int, float>({
-				1 -> 0.1,
-				2 -> 0.2,
-				3 -> 0.4,
-			})`,
-		] as const;
-		const EXCEPTION_CONS = [
-			'Exception.("message")',
-			'Exception.("message", Exception.("cause"))',
-		] as const;
+		new Map<string, TYPE.Type>([
+			['Boolean',   TYPE.BOOL],
+			['Integer',   TYPE.INT],
+			['Natural',   TYPE.NAT],
+			['Float',     TYPE.FLOAT],
+			['String',    TYPE.STR],
+			['List',      new TYPE.List(TYPE.INT, true)],
+			['Dict',      new TYPE.Dict(TYPE.INT, true)],
+			['Set',       new TYPE.Set(TYPE.INT, true)],
+			['Map',       new TYPE.Map(TYPE.INT, TYPE.FLOAT, true)],
+			['Exception', TYPE.EXCP],
+			['None',      new TYPE.None(TYPE.INT)],
+			['Some',      new TYPE.Some(TYPE.INT)],
+			['Fail',      new TYPE.Fail(TYPE.INT)],
+			['Ok',        new TYPE.Ok(TYPE.INT)],
+		]).forEach((expected, name) => {
+			test.test(`\`${name}\` constructor.`, () => {
+				const srcs: readonly string[] = CTOR_CALLS.filter((src) => src.startsWith(name));
+				return assertEqualTypes(
+					srcs.map((src) => VISITOR.visit(AST.EXPR.Call.fromSource(src))),
+					repeat(expected, srcs.length),
+				);
+			});
+		});
 
-		test.test('evaluates Callable Class Names.', () => {
-			assertEqualTypes(
-				EVALUATE.map((src) => VISITOR.visit(AST.EXPR.Call.fromSource(src))),
-				[
-					TYPE.BOOL,
-					TYPE.INT,
-					TYPE.NAT,
-					TYPE.FLOAT,
-					TYPE.STR,
-					new TYPE.List(TYPE.INT, true),
-					new TYPE.Dict(TYPE.INT, true),
-					new TYPE.Set(TYPE.INT, true),
-					new TYPE.Map(TYPE.INT, TYPE.FLOAT, true),
-					TYPE.EXCP,
-					new TYPE.None(TYPE.INT),
-					new TYPE.Some(TYPE.INT),
-					new TYPE.Fail(TYPE.INT),
-					new TYPE.Ok(TYPE.INT),
-					new TYPE.Fail(TYPE.INT),
-					new TYPE.Ok(TYPE.INT),
-				],
-			);
-		});
-		test.test('`Boolean.(‹…›)`', () => {
-			assertEqualTypes(
-				BOOL_CONS.map((src) => VISITOR.visit(AST.EXPR.Call.fromSource(src))),
-				repeat(TYPE.BOOL, BOOL_CONS.length),
-			);
-		});
-		test.test('`Integer.(‹…›)`', () => {
-			assertEqualTypes(
-				INT_CONS.map((src) => VISITOR.visit(AST.EXPR.Call.fromSource(src))),
-				repeat(TYPE.INT, INT_CONS.length),
-			);
-		});
-		test.test('`Natural.(‹…›)`', () => {
-			assertEqualTypes(
-				NAT_CONS.map((src) => VISITOR.visit(AST.EXPR.Call.fromSource(src))),
-				repeat(TYPE.NAT, NAT_CONS.length),
-			);
-		});
-		test.test('`Float.(‹…›)`', () => {
-			assertEqualTypes(
-				FLOAT_CONS.map((src) => VISITOR.visit(AST.EXPR.Call.fromSource(src))),
-				repeat(TYPE.FLOAT, FLOAT_CONS.length),
-			);
-		});
-		test.test('`String.(‹…›)`', () => {
-			assertEqualTypes(
-				STRING_CONS.map((src) => VISITOR.visit(AST.EXPR.Call.fromSource(src))),
-				repeat(TYPE.STR, STRING_CONS.length),
-			);
-		});
-		test.test('`List.(‹…›)`', () => {
-			assertEqualTypes(
-				LIST_CONS.map((src) => VISITOR.visit(AST.EXPR.Call.fromSource(src))),
-				repeat(new TYPE.List(TYPE.INT, true), LIST_CONS.length),
-			);
-		});
-		test.test('`Dict.(‹…›)`', () => {
-			assertEqualTypes(
-				DICT_CONS.map((src) => VISITOR.visit(AST.EXPR.Call.fromSource(src))),
-				repeat(new TYPE.Dict(TYPE.INT, true), DICT_CONS.length),
-			);
-		});
-		test.test('`Set.(‹…›)`', () => {
-			assertEqualTypes(
-				SET_CONS.map((src) => VISITOR.visit(AST.EXPR.Call.fromSource(src))),
-				repeat(new TYPE.Set(TYPE.INT, true), SET_CONS.length),
-			);
-		});
-		test.test('`Map.(‹…›)`', () => {
-			assertEqualTypes(
-				MAP_CONS.map((src) => VISITOR.visit(AST.EXPR.Call.fromSource(src))),
-				repeat(new TYPE.Map(TYPE.INT, TYPE.FLOAT, true), MAP_CONS.length),
-			);
-		});
-		test.test('`Exception.(‹…›)`', () => {
-			assertEqualTypes(
-				EXCEPTION_CONS.map((src) => VISITOR.visit(AST.EXPR.Call.fromSource(src))),
-				repeat(TYPE.EXCP, EXCEPTION_CONS.length),
-			);
-		});
 		test.test('bypasses invariance for generic arguments.', () => {
 			extract_lines`
 				List.<mut {int}>((   {42},))
@@ -1149,13 +901,13 @@ test.suite('ExprVisitorType#visit', () => {
 				Map.<mut {int}, float>((({42}, 4.2),))
 			`.map((src) => VISITOR.visit(AST.EXPR.Call.fromSource(src)));
 		});
-		test.test('evaluates custom functions.', () => {
+		test.test('custom function calls.', () => {
 			setupScript(`{
 				func inc(x: int): int => x + 1;
 				inc.(42);
 			}`, {build: false});
 		});
-		test.test('allows compound base.', () => {
+		test.test('compound base.', () => {
 			setupScript(`{
 				val inc1: \\(int) => int = \\(x: int): int => x + 1;
 				val inc2: \\(int) => int = \\(x: int): int => x + 2;

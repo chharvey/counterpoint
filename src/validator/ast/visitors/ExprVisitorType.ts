@@ -269,6 +269,7 @@ export class ExprVisitorType extends EXPR.ExprVisitor<TYPE.Type | null> {
 		if (successes.length) {
 			const maximally_specific: readonly [TYPE.Function, TYPE.Type | null][] = successes.filter(([ovl1]) => successes.every(([ovl2]) => ovl1 === ovl2 || ovl1.isMoreSpecificThan(ovl2)));
 			if (maximally_specific.length === 1) {
+				expr.overloadMatch = maximally_specific[0][0];
 				return maximally_specific[0][1];
 			} else {
 				throw new TypeErrorAmbiguousOverload(expr);

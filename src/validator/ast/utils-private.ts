@@ -13,7 +13,6 @@ import {
 	VALUE,
 	TYPE,
 } from '../../typer/index.ts';
-import type {CoreLibName} from '../../parser/index.ts';
 import {
 	Operator,
 	Validator,
@@ -40,26 +39,6 @@ export function only_errors_of_type<E extends Error = Error>(err: Error, types: 
 		err instanceof AggregateError && err.errors.every((suberr) => only_errors_of_type<E>(suberr, types))
 	);
 }
-
-
-
-/** Callable classes that have value parameters. */
-export type CallableClassName = (
-	| CoreLibName.BOOLEAN
-	| CoreLibName.INTEGER
-	| CoreLibName.NATURAL
-	| CoreLibName.FLOAT
-	| CoreLibName.STRING
-	| CoreLibName.LIST
-	| CoreLibName.DICT
-	| CoreLibName.SET
-	| CoreLibName.MAP
-	| CoreLibName.EXCEPTION
-	| CoreLibName.NONE
-	| CoreLibName.SOME
-	| CoreLibName.FAIL
-	| CoreLibName.OK
-);
 
 
 
