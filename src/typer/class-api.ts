@@ -61,6 +61,17 @@ type ConstructorOverload = {
 
 
 /**
+ * Schema for defining a function’s signatures (more than one if it has overloads).
+ *
+ * An array of pairs, each pair representing an overload:
+ * @property genericParams generic parameters for the function overload
+ * @property funcType      a native function returning a function type based on the given generic arguments
+ */
+type FuncSignature = {
+	readonly genericParams: GenericFuncParams,
+	readonly funcType:      (generic_args: GenericArgs) => TYPE.Function,
+};
+/**
  * Schema for defining a class’s constructor signatures.
  * @property genericParams generic parameters for the class
  * @property overloads     a list of class constructor overload signatures
@@ -93,6 +104,61 @@ const VARIANCE = {
 
 
 
+/**
+ * API for all core lib functions.
+ * ```cpl
+ * claim 'List#get'[T](List[T], int): Maybe[T];
+ * claim 'List#set'[T](mut List[T], int, T): void;
+ *
+ * claim 'Dict#get'[T](Dict[T], sym): Maybe[T];
+ * claim 'Dict#set'[T](mut Dict[T], sym, T): void;
+ *
+ * claim 'Set#has'[T, T1? widens T = anything](Set[T], T1): bool;
+ * claim 'Set#put'[T](mut Set[T], T): void;
+ * claim 'Set#delete'[T, T1? widens T = anything](mut Set[T], T1): void;
+ *
+ * claim 'Map#get'[K, V, K1? widens K = anything](Map[K, V], K1): Maybe[V];
+ * claim 'Map#set'[K, V](mut Map[K, V], K, V): void;
+ * ```
+ */
+export const FUNC_API = new Map<string, FuncSignature>([
+	['\'List#get\'', {
+		genericParams: {positional: [{}]},
+		funcType:      ({positional: [t]}) => new TYPE.Function(TYPE.Tuple.fromTypes([new TYPE.List(t), TYPE.INT]), undefined, new TYPE.Maybe(t)),
+	}],
+	['\'List#set\'', {
+		genericParams: {positional: [{}]},
+		funcType:      ({positional: [t]}) => new TYPE.Function(TYPE.Tuple.fromTypes([new TYPE.List(t, true), TYPE.INT, t])),
+	}],
+	['\'Dict#get\'', {
+		genericParams: {positional: [{}]},
+		funcType:      ({positional: [t]}) => new TYPE.Function(TYPE.Tuple.fromTypes([new TYPE.Dict(t), TYPE.SYM]), undefined, new TYPE.Maybe(t)),
+	}],
+	['\'Dict#set\'', {
+		genericParams: {positional: [{}]},
+		funcType:      ({positional: [t]}) => new TYPE.Function(TYPE.Tuple.fromTypes([new TYPE.Dict(t, true), TYPE.SYM, t])),
+	}],
+	['\'Set#has\'', {
+		genericParams: {positional: [{}, {constraint: ['widens', ({positional: [t]}) => t], default: () => TYPE.ANYTHING}]},
+		funcType:      ({positional: [t, t1]}) => new TYPE.Function(TYPE.Tuple.fromTypes([new TYPE.Set(t), t1]), undefined, TYPE.BOOL),
+	}],
+	['\'Set#put\'', {
+		genericParams: {positional: [{}]},
+		funcType:      ({positional: [t]}) => new TYPE.Function(TYPE.Tuple.fromTypes([new TYPE.Set(t, true), t])),
+	}],
+	['\'Set#delete\'', {
+		genericParams: {positional: [{}, {constraint: ['widens', ({positional: [t]}) => t], default: () => TYPE.ANYTHING}]},
+		funcType:      ({positional: [t, t1]}) => new TYPE.Function(TYPE.Tuple.fromTypes([new TYPE.Set(t, true), t1])),
+	}],
+	['\'Map#get\'', {
+		genericParams: {positional: [{}, {}, {constraint: ['widens', ({positional: [k]}) => k], default: () => TYPE.ANYTHING}]},
+		funcType:      ({positional: [k, v, k1]}) => new TYPE.Function(TYPE.Tuple.fromTypes([new TYPE.Map(k, v), k1]), undefined, new TYPE.Maybe(v)),
+	}],
+	['\'Map#set\'', {
+		genericParams: {positional: [{}, {}]},
+		funcType:      ({positional: [k, v]}) => new TYPE.Function(TYPE.Tuple.fromTypes([new TYPE.Map(k, v, true), k, v])),
+	}],
+]);
 /**
  * API for all core lib classes.
  */

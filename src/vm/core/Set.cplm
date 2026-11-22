@@ -33,4 +33,16 @@ public class open Set[out(in) T] extends Object {
 		};
 		panic Exception("Value cannot be converted to a Set.");
 	}
+
+	public has[T1? widens T = anything](elem: T1): bool {
+		panic Exception("TODO: not yet supported");
+	}
+
+	public mut put(elem: T): void {
+		panic Exception("TODO: not yet supported");
+	}
+
+	public mut delete[T1? widens T = anything](elem: T1): void {
+		panic Exception("TODO: not yet supported");
+	}
 }

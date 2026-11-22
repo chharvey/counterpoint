@@ -50,4 +50,11 @@ public class open Dict[out(in) T] extends Object {
 		panic Exception("Value cannot be converted to a Dict.");
 	}
 
+	public get(key: sym): Maybe[T] {
+		panic Exception("TODO: not yet supported");
+	}
+
+	public mut set(key: sym, value: T): void {
+		panic Exception("TODO: not yet supported");
+	}
 }

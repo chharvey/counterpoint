@@ -38,4 +38,12 @@ public class open Map[out(in) K, out(in) V] extends Object {
 		};
 		panic Exception("Value cannot be converted to a Map.");
 	}
+
+	public get[K1? widens K = anything](key: K1): Maybe[V] {
+		panic Exception("TODO: not yet supported");
+	}
+
+	public mut set(key: K, value: V): void {
+		panic Exception("TODO: not yet supported");
+	}
 }

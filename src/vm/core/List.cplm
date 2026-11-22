@@ -36,4 +36,12 @@ public class open List[out(in) T] extends Object {
 		};
 		panic Exception("Value cannot be converted to a List.");
 	}
+
+	public get(index: int): Maybe[T] {
+		panic Exception("TODO: not yet supported");
+	}
+
+	public mut set(index: int, item: T): void {
+		panic Exception("TODO: not yet supported");
+	}
 }
