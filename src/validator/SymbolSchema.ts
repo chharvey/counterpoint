@@ -3,6 +3,7 @@ import {
 	type ClassSignature,
 } from '../typer/index.ts';
 import type {Serializable} from '../parser/index.ts';
+import type * as AST from './ast/index.ts';
 
 
 
@@ -93,7 +94,7 @@ export class SymbolSchemaFunc extends SymbolSchema {
 	public override readonly persists = true;
 
 	/** The declared function types (one per overload). */
-	public readonly types: TYPE.Function[] = [];
+	public readonly types = new Map<AST.STMT.DeclarationFunction, TYPE.Function>();
 
 
 	public constructor(id: bigint, node: Serializable) {

@@ -9,12 +9,13 @@ export class Return extends Instruction {
 	public constructor(
 		/** Whether this return completes normally or abruptly (a panic). */
 		public readonly isReturn: boolean,
-		public readonly value:    ValueTac,
+		public readonly value?:   ValueTac,
 	) {
 		super(OpCode.RETURN);
 	}
 
 	public override toString(): string {
-		return super.toString(...(this.isReturn ? [this.value, 'nil'] : ['nil', this.value]));
+		const return_str: string = this.value?.toString() ?? 'nop';
+		return super.toString(...(this.isReturn ? [return_str, 'nil'] : ['nil', return_str]));
 	}
 }

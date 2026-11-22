@@ -108,6 +108,14 @@ test.suite('AstNodeVisitorRefCheck#visit', () => {
 			}`, {refCheck: false});
 			return assert.throws(() => VISITOR.visit((stmts[0] as AST.STMT.StatementExpression).expr as AST.EXPR.Function), AssignmentErrorDuplicateDeclaration);
 		});
+		test.test('default values may not reference each other.', () => {
+			const {stmts, visitors: {refCheck: VISITOR}} = setupScript(`{
+				\\(a: int, b?: int = a): int => a + b;
+				\\($a?: int = b, $b: int): int => a + b;
+				\\(alpha= a?: int = b, bravo= b: int): int => a + b;
+			}`, {refCheck: false});
+			xjs.Array.forEachAggregated(stmts, (stmt) => assert.throws(() => VISITOR.visit(stmt), ReferenceErrorUndeclared));
+		});
 		test.test('parameters do not shadow outside scope.', () => {
 			setupScript(`{
 				val x: int = 42;
@@ -163,6 +171,33 @@ test.suite('AstNodeVisitorRefCheck#visit', () => {
 				VISITOR.visit(blocks[0]); // assert does not throw
 				assert.throws(() => VISITOR.visit(blocks[1]), AssignmentErrorDuplicateDeclaration);
 				return assert.throws(() => VISITOR.visit(blocks[2]), AssignmentErrorDuplicateDeclaration);
+			});
+			test.test('disallows function declaration of existing symbols.', () => {
+				const errmsg = /Only function names should be hoisted/;
+				const {stmts, visitors: {refCheck: VISITOR}} = setupScript(`{
+					func f(): void { return; }
+					func f(a: int): void { return; }
+					type T = \\(int) => void;
+					func T(a: int): void { return; }
+					val x = \\(): void { return; };
+					func x(a: int): void { return; }
+				}`, {refCheck: false});
+				VISITOR.visit(stmts[0]);
+				VISITOR.visit(stmts[1]); // allows overloads
+				VISITOR.visit(stmts[2]);
+				assert.throws(() => VISITOR.visit(stmts[3]), errmsg);
+				VISITOR.visit(stmts[4]);
+				return assert.throws(() => VISITOR.visit(stmts[5]), errmsg);
+			});
+			test.test('allows function declaration backreferences.', () => {
+				setupScript(`{
+					f.();
+					func f(): void { return; };
+				}`, {typeCheck: false});
+				setupScript(`{
+					func f(): void { g.(); return; };
+					func g(): void { f.(); return; };
+				}`, {typeCheck: false});
 			});
 		});
 		test.suite('function blocks.', () => {
@@ -823,23 +858,6 @@ test.suite('AstNodeVisitorRefCheck#visit', () => {
 				func _(a: int): void { return; };
 			}`, {typeCheck: false}); // assert does not throw
 		});
-		test.test('hoists function names.', () => {
-			const errmsg = /Only function names should be hoisted/;
-			const {stmts, visitors: {refCheck: VISITOR}} = setupScript(`{
-				func f(): void { return; }
-				func f(a: int): void { return; }
-				type T = \\(int) => void;
-				func T(a: int): void { return; }
-				val x = \\(): void { return; };
-				func x(a: int): void { return; }
-			}`, {refCheck: false});
-			VISITOR.visit(stmts[0]);
-			VISITOR.visit(stmts[1]); // allows overloads
-			VISITOR.visit(stmts[2]);
-			assert.throws(() => VISITOR.visit(stmts[3]), errmsg);
-			VISITOR.visit(stmts[4]);
-			return assert.throws(() => VISITOR.visit(stmts[5]), errmsg);
-		});
 		test.test('allows self-reference, but not self-shadowing.', () => {
 			setupScript(`{
 				func f(): void {
@@ -860,16 +878,6 @@ test.suite('AstNodeVisitorRefCheck#visit', () => {
 					return;
 				};
 			}`, {typeCheck: false}), AssignmentErrorDuplicateDeclaration);
-		});
-		test.test('hoists function name.', () => {
-			setupScript(`{
-				f.();
-				func f(): void { return; };
-			}`, {typeCheck: false});
-			setupScript(`{
-				func f(): void { g.(); return; };
-				func g(): void { f.(); return; };
-			}`, {typeCheck: false});
 		});
 	});
 
@@ -936,6 +944,36 @@ test.suite('AstNodeVisitorRefCheck#visit', () => {
 					delete it;
 				};
 			}`, {typeCheck: false}), AssignmentErrorDeletion);
+		});
+		test.test('throws when non-ref-captured variable is reassigned, even if writable.', () => {
+			const {stmts, visitors: {refCheck: VISITOR}} = setupScript(`{
+				val mut x: int = 42;
+				val mut y: float = 4.2;
+				func f() with (x, ref y): void {
+					set y = 5.2;
+					set x = 10;
+					return;
+				}
+			}`, {refCheck: false});
+			xjs.Array.forEachAggregated(stmts.slice(0, 2), (stmt) => VISITOR.visit(stmt));
+			const fn = stmts[2] as AST.STMT.DeclarationFunction;
+			xjs.Array.forEachAggregated(fn.captures, (capt) => VISITOR.visit(capt));
+			const fn_stmts = fn.block.children;
+			VISITOR.visit(fn_stmts[0]);
+			return assert.throws(() => VISITOR.visit(fn_stmts[1]), AssignmentErrorReassignment);
+		});
+		test.test('throws when ref-captured read-only variable is reassigned.', () => {
+			const {stmts, visitors: {refCheck: VISITOR}} = setupScript(`{
+				val y: float = 4.2;
+				func f() with (ref y): void {
+					set y = 5.2;
+					return;
+				}
+			}`, {refCheck: false});
+			VISITOR.visit(stmts[0]);
+			const fn = stmts[1] as AST.STMT.DeclarationFunction;
+			VISITOR.visit(fn.captures[0]);
+			return assert.throws(() => VISITOR.visit(fn.block.children[0]), AssignmentErrorReassignment);
 		});
 	});
 
