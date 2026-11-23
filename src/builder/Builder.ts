@@ -70,10 +70,7 @@ export class Builder {
 	}
 
 	public newLabel(unreachable: boolean = false): string {
-		return [
-			unreachable ? 'unreachable' : 'block',
-			this.#labelCounter++,
-		].join('-');
+		return `${unreachable ? 'unreachable' : 'block'}-${this.#labelCounter++}`;
 	}
 
 	/**
