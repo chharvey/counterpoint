@@ -293,12 +293,18 @@ Codegen((ID `v0` `v1`)) := (call $op:id `Codegen(v0)` `Codegen(v1)`);
 Codegen((EQ `v0` `v1`)) := (call $op:eq `Codegen(v0)` `Codegen(v1)`);
 Codegen((IS `v0` `v1`)) := (call $op:is `Codegen(v0)` `Codegen(v1)`);
 
-Codegen((FUNCTION `name` `arity` `source`)) := (struct.new $Function
-	(global.get $Class.FUNCTION)
-	(ref.null $Dict)
-	(call $Object.ctr-plus-plus)
-	(i32.const `arity`)
-);
+Codegen((FUNCTION `name` `source` `instructions`)) := [
+	(func $func-`name` (param `Repeat("(ref $Value)", ‹arity›)`) (result (ref null $Value) (ref null $Exception))
+		...`Codegen(instructions)`
+	)
+	return (struct.new $Function
+		(global.get $Class.FUNCTION)
+		(ref.null $Dict)
+		(call $Object.ctr-plus-plus)
+		(i32.const ‹arity›)
+		(ref.func $func-`name`)
+	)
+];
 
 Codegen((DROP `v`)) := (drop `Codegen(v)`);
 
