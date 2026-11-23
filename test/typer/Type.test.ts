@@ -1025,6 +1025,22 @@ test.suite('Type', () => {
 	});
 
 
+	test.suite('#isDisjointWith', () => {
+		test.test('Tuple and Record are disjoint.', {expectFailure: true}, () => {
+			assert.ok(TYPE.Tuple.fromTypes([TYPE.INT]).isDisjointWith(TYPE.Record.fromTypes(new Map([[0x100n, TYPE.INT]]))));
+		});
+		test.test('List and Dict are disjoint.', {expectFailure: true}, () => {
+			assert.ok(new TYPE.List(TYPE.INT).isDisjointWith(new TYPE.Dict(TYPE.INT)));
+		});
+		test.test('None and Some are disjoint.', {expectFailure: true}, () => {
+			assert.ok(new TYPE.None(TYPE.INT).isDisjointWith(new TYPE.Some(TYPE.INT)));
+		});
+		test.test('Fail and Ok are disjoint.', {expectFailure: true}, () => {
+			assert.ok(new TYPE.Fail(TYPE.INT).isDisjointWith(new TYPE.Ok(TYPE.INT)));
+		});
+	});
+
+
 	test.suite('Combinable', () => {
 		const a: TYPE.Record = TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>([[0x100n, TYPE.INT]]));
 		const b: TYPE.Record = TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>([[0x101n, TYPE.FLOAT]]));

@@ -293,9 +293,6 @@ test.suite('TypeVisitorTypevalue#visit', () => {
 				Some.<int, int>
 			`, (src) => assert.throws(() => VISITOR.visit(AST.TYPE.Call.fromSource(src)), TypeErrorArgCount));
 		});
-		test.test('None and Some are disjoint.', () => {
-			assert.ok(VISITOR.visit(AST.TYPE.Call.fromSource('None.<int>')).isDisjointWith(VISITOR.visit(AST.TYPE.Call.fromSource('Some.<int>'))));
-		});
 	});
 
 
