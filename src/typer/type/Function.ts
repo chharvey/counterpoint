@@ -41,14 +41,18 @@ class TypeFunction extends ReferenceType {
 		return this.typeargParamsPosit.minCount + this.typeargParamsNamed.minCount;
 	}
 
+	public get maxArity(): bigint {
+		return this.typeargParamsPosit.maxCount + this.typeargParamsNamed.maxCount;
+	}
+
 
 	public override toString(): string {
-		const posit_params: string = this.typeargParamsPosit.typeargs.length > 1
+		const posit_params: string = this.typeargParamsPosit.maxCount > 1n
 			? this.typeargParamsPosit.toString().slice(1, -1)
-			: this.typeargParamsPosit.typeargs.length
+			: this.typeargParamsPosit.maxCount
 				? this.typeargParamsPosit.toString().slice(1, -2)
 				: '';
-		const named_params: string = this.typeargParamsNamed.typeargs.size
+		const named_params: string = this.typeargParamsNamed.maxCount
 			? this.typeargParamsNamed.toString().slice(1, -1)
 			: '';
 		return `\\(${[posit_params, named_params].filter((p) => !!p).join(', ')}) => ${this.typearg_return ?? 'void'}`;
