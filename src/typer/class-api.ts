@@ -13,27 +13,39 @@ type GenericArgs = {
 
 
 /**
+ * Schema for a single generic parameter of a function or class.
+ * @property constraint - The type, if any, that the parameter is required to narrow or widen. May reference prior params.
+ * @property default    - The default value of the parameter (if and only if it is optional).
+ */
+type GenericFuncParameter = {
+	readonly constraint?: readonly ['narrows' | 'widens', (prior: GenericArgs) => TYPE.Type],
+	readonly default?:    (prior: GenericArgs) => TYPE.Type,
+};
+/**
  * Schema for a single generic parameter of a class.
  * Currently used as a precursor to an `AST.ParameterGeneric` node, until we fully implement generics.
- * @property name             - Is the parameter named? If true, this schema must not have a `positional` property.
  * @property readonlyVariance - The variance when the object is read-only.
  * @property mutableVariance  - The variance when the object is mutable.
  * @property constraint       - The type, if any, that the parameter is required to narrow or widen.
  * @property default          - The default value of the parameter, which is an optional parameter.
  */
-type GenericParameter = {
+type GenericClassParameter = GenericFuncParameter & {
 	readonly readonlyVariance?: 'bivariant' | 'covariant' | 'contravariant' | 'invariant', // defaults to 'invariant'
 	readonly mutableVariance?:  'bivariant' | 'covariant' | 'contravariant' | 'invariant', // defaults to the value of `readonlyVariance` if given, else 'invariant'
-	readonly constraint?:       readonly ['narrows' | 'widens', TYPE.Type],
-	readonly default?:          TYPE.Type,
 };
 
 
 
+/** Schema defining a functions’s generic parameters. */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type GenericFuncParams = {
+	readonly positional?: readonly GenericFuncParameter[],
+	readonly named?:      ReadonlyMap<bigint, GenericFuncParameter>,
+};
 /** Schema defining a class’s generic parameters. */
-type GenericParams = {
-	readonly positional?: readonly GenericParameter[],
-	readonly named?:      ReadonlyMap<bigint, GenericParameter>,
+type GenericClassParams = {
+	readonly positional?: readonly GenericClassParameter[],
+	readonly named?:      ReadonlyMap<bigint, GenericClassParameter>,
 };
 
 
@@ -60,7 +72,7 @@ type ConstructorOverload = {
  * 	(e.g. `List[anything]` is the supertype of all generic `List[‹T›]` types)
  */
 export type ClassSignature = {
-	readonly genericParams?: GenericParams,
+	readonly genericParams?: GenericClassParams,
 	readonly overloads?:     (generic_params: GenericArgs) => readonly ConstructorOverload[],
 	readonly returnType:     (generic_params: GenericArgs) => TYPE.Type,
 	readonly instanceType:   TYPE.Type,
@@ -195,18 +207,18 @@ export const CLASS_API = new Map<CoreLibName, ClassSignature>([
 		instanceType:  new TYPE.Some(TYPE.ANYTHING),
 	}],
 	[CoreLibName.RESULT, {
-		genericParams: {positional: [VARIANCE.out, {...VARIANCE.out, constraint: ['narrows', TYPE.EXCP], default: TYPE.EXCP}]},
+		genericParams: {positional: [VARIANCE.out, {...VARIANCE.out, constraint: ['narrows', () => TYPE.EXCP], default: () => TYPE.EXCP}]},
 		returnType:    ({positional: [t, e]}) => new TYPE.Result(t, e),
 		instanceType:  new TYPE.Result(TYPE.ANYTHING),
 	}],
 	[CoreLibName.FAIL, {
-		genericParams: {positional: [VARIANCE.out, {...VARIANCE.out, constraint: ['narrows', TYPE.EXCP], default: TYPE.EXCP}]},
+		genericParams: {positional: [VARIANCE.out, {...VARIANCE.out, constraint: ['narrows', () => TYPE.EXCP], default: () => TYPE.EXCP}]},
 		overloads:     ({positional: [_, e]}) => [{positional: TYPE.Tuple.fromTypes([e])}],
 		returnType:    ({positional: [t, e]}) => new TYPE.Fail(t, e),
 		instanceType:  new TYPE.Fail(TYPE.ANYTHING),
 	}],
 	[CoreLibName.OK, {
-		genericParams: {positional: [VARIANCE.out, {...VARIANCE.out, constraint: ['narrows', TYPE.EXCP], default: TYPE.EXCP}]},
+		genericParams: {positional: [VARIANCE.out, {...VARIANCE.out, constraint: ['narrows', () => TYPE.EXCP], default: () => TYPE.EXCP}]},
 		overloads:     ({positional: [t]})    => [{positional: TYPE.Tuple.fromTypes([t])}],
 		returnType:    ({positional: [t, e]}) => new TYPE.Ok(t, e),
 		instanceType:  new TYPE.Ok(TYPE.ANYTHING),
