@@ -5,6 +5,7 @@ import * as xjs from 'extrajs';
 import {
 	Validator,
 	AST,
+	assert_instanceof,
 	VALUE,
 	TYPE,
 	CORE_LIB_NAMES,
@@ -1016,15 +1017,17 @@ test.suite('ValueVisitorCodegen#visit', () => {
 
 
 	test.test('OpFunction', () => {
-		const {stmts, cg, visitors, visitors: {codegen: {value: VISITOR}}} = setupScript(`{
+		const {stmts, visitors, visitors: {codegen: {value: VISITOR}}} = setupScript(`{
 			\\(x: int, $y: int, zulu= z: int): void {
 				x * y + z;
 				return;
 			};
-		}`);
+		}`, {codegen: false});
+		const op_fn: OP.Value = visitors.build.expr.visit((stmts[0] as AST.STMT.StatementExpression).expr!);
+		assert_instanceof(op_fn, OP.Function);
 		return assertEqualBins(
-			VISITOR.visit(visitors.build.expr.visit((stmts[0] as AST.STMT.StatementExpression).expr!)),
-			cg.codegenFunction(3n),
+			VISITOR.visit(op_fn),
+			new CodeGenerator().codegenFunction('', 3n, op_fn.builder), // new CodeGenerator resets the count
 		);
 	});
 });

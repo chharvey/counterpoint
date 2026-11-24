@@ -444,8 +444,8 @@ test.suite('InstrVisitorCodegen#visit', () => {
 		stmts.slice(0, 6).forEach((stmt) => visitors.build.node.visit(((stmt as AST.STMT.StatementExpression).expr as AST.EXPR.Function).block.children[0]));
 		visitors.build.node.visit(stmts[6]);
 		builder.instructions.map((instr) => VISITOR.visit(instr));
-		const ref_null_Value:     binaryen.ExpressionRef = wasm.ref.null(heaptype.Value);
-		const ref_null_Exception: binaryen.ExpressionRef = wasm.ref.null(heaptype.Exception);
+		const ref_null_Value:     binaryen.ExpressionRef /* (ref null $Value) */      = wasm.ref.null(heaptype.Value);
+		const ref_null_Exception: binaryen.ExpressionRef /* (ref null $Expression) */ = wasm.ref.null(heaptype.Exception);
 		return assertEqualBins(
 			builder.instructions.filter((instr) => instr instanceof OP.Return).map((instr) => VISITOR.visit(instr)),
 			[
@@ -455,7 +455,10 @@ test.suite('InstrVisitorCodegen#visit', () => {
 				wasm.return(wasm.tuple.make([genConst(cg, 42n),            ref_null_Exception])),
 				wasm.return(wasm.tuple.make([genConst(cg, 4.2),            ref_null_Exception])),
 				wasm.return(wasm.tuple.make([ref_null_Value,               ref_null_Exception])),
-				wasm.return(wasm.tuple.make([ref_null_Value,               wasm.local.get(0, reftype.Exception)])),
+				wasm.return(wasm.tuple.make([ref_null_Value,               wasm.ref.cast(
+					visitors.codegen.value.visit((builder.instructions.at(-1) as OP.Return).value!), // the exact expression is needed from the ‘actual’ side; cannot be mocked with a new `local.get`
+					reftype.Exception,
+				)])),
 			],
 		);
 	});

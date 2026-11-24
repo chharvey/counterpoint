@@ -1,6 +1,9 @@
 import * as binaryen from 'binaryen.ts';
 import {VirtualMachine} from '../vm/index.ts';
-import type {BuilderLocalSymbol} from '../builder/index.ts';
+import type {
+	BuilderLocalSymbol,
+	Builder,
+} from '../builder/index.ts';
 import {
 	Local,
 	Global,
@@ -51,6 +54,9 @@ export class CodeGenerator {
 	 */
 	static readonly #LOAD_FACTOR = 7 / 8;
 
+
+	/** Counter of author-defined functions. */
+	#funcCounter: bigint = 0n;
 
 	/** A set containing data of WASM local variables. */
 	readonly #locals = new Set<Local>();
@@ -477,16 +483,37 @@ export class CodeGenerator {
 
 	/**
 	 * Return a new `$Function`.
-	 * @param arity the number of functional arguments
-	 * @return      `(struct.new $Function <arity>)`
+	 * @param name    the name of the function (use '' for lambdas)
+	 * @param arity   the number of functional arguments
+	 * @param builder the function’s executable code stored in a Builder
+	 * @return        `(struct.new $Function ...)`
 	 */
-	public codegenFunction(arity: bigint): binaryen.ExpressionRef /* (ref $Function) */ {
-		const {vm: {heaptype, Object: VmObject, Class: VmClass}, mod: {wasm}} = this;
+	public codegenFunction(name: string, arity: bigint, builder: Builder): binaryen.ExpressionRef /* (ref $Function) */ {
+		const {vm: {heaptype, reftype, reftypeNull, Object: VmObject, Class: VmClass}, mod: {wasm}} = this;
+		const fn_name: string = `func-${name || this.#funcCounter++}`;
+		const cg = new CodeGenerator(this.vm);
+		const body: binaryen.ExpressionRef /* void */ = builder.codegen(cg); // need to code-gen first before getting all locals below
+		this.mod.functions.add(
+			fn_name,
+			binaryen.createType(new Array(Number(arity)).fill(reftype.Value)),
+			/*
+			 * Every dev-defined function has its return type transformed into `(result (ref null $Value) (ref null $Exception))`,
+			 * regardless of how the source function is defined.
+			 * The first `(ref null $Value)` is the return value (whatever type it may be)
+			 * and the second `(ref null $Exception)` is the panicked value (if it exists).
+			 * Void functions that don’t panic return `(ref.null $Value) (ref.null $Exception)`.
+			 */
+			binaryen.createType([reftypeNull.Value, reftypeNull.Exception]),
+			cg.getAllLocals().map((local) => local.type),
+			body,
+		);
 		return wasm.struct.new([
 			VmClass.FUNCTION,
 			wasm.ref.null(heaptype.Dict),
 			VmObject.ctrPlusPlus(),
 			wasm.i32.const(Number(arity)),
+			// @ts-expect-error --- `binaren.Module.Function#type` needs updating
+			wasm.ref.func(fn_name, new binaryen.Module.Function(this.mod.functions.get(fn_name)).type),
 		], heaptype.Function);
 	}
 
@@ -495,7 +522,7 @@ export class CodeGenerator {
 	 * The main function should contain generated code for a program.
 	 * @param body the body of the main function
 	 */
-	public setupMain(body: binaryen.ExpressionRef): void {
+	public setupMain(body: binaryen.ExpressionRef /* void */): void {
 		const extern_mod_name: string = 'wat';
 		this.vm.globalImportDataMap.forEach((data, export_name) => (
 			this.mod.imports.addGlobal(data.name, extern_mod_name, export_name, data.type, false)

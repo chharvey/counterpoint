@@ -900,11 +900,18 @@ test.suite('AstNodeVisitorRefCheck#visit', () => {
 			});
 			return assert.throws(() => VISITOR.visit(stmts[3]), AssignmentErrorReassignment);
 		});
-		test.test('`set` always throws for type alias reassignment.', () => {
-			assert.throws(() => setupScript(`{
+		test.test('`set` always throws for type alias, function, & class reassignment.', () => {
+			const {stmts, visitors: {refCheck: VISITOR}} = setupScript(`{
 				type T = 42;
+				func foo(): int => 42;
 				set T = 43;
-			}`, {typeCheck: false}), ReferenceErrorKind);
+				set foo = \\(): int => 43;
+				set Object = null;
+			}`, {refCheck: false});
+			stmts.slice(0, 2).forEach((stmt) => VISITOR.visit(stmt));
+			assert.throws(() => VISITOR.visit(stmts[2]), ReferenceErrorKind);
+			assert.throws(() => VISITOR.visit(stmts[3]), ReferenceErrorKind);
+			assert.throws(() => VISITOR.visit(stmts[4]), AssignmentErrorReassignment);
 		});
 		test.test('`set` disallows manual reassignment of the iteration variable.', () => {
 			assert.throws(() => setupScript(`{
@@ -931,11 +938,18 @@ test.suite('AstNodeVisitorRefCheck#visit', () => {
 			});
 			return assert.throws(() => VISITOR.visit(stmts[3]), AssignmentErrorDeletion);
 		});
-		test.test('`delete` always throws for type alias deletion.', () => {
-			assert.throws(() => setupScript(`{
+		test.test('`delete` always throws for type alias, function, & class deletion.', () => {
+			const {stmts, visitors: {refCheck: VISITOR}} = setupScript(`{
 				type T = 42;
+				func foo(): int => 42;
 				delete T;
-			}`, {typeCheck: false}), ReferenceErrorKind);
+				delete foo;
+				delete Object;
+			}`, {refCheck: false});
+			stmts.slice(0, 2).forEach((stmt) => VISITOR.visit(stmt));
+			assert.throws(() => VISITOR.visit(stmts[2]), ReferenceErrorKind);
+			assert.throws(() => VISITOR.visit(stmts[3]), ReferenceErrorKind);
+			assert.throws(() => VISITOR.visit(stmts[4]), AssignmentErrorDeletion);
 		});
 		test.test('`delete` disallows deletion of the iteration variable.', () => {
 			assert.throws(() => setupScript(`{

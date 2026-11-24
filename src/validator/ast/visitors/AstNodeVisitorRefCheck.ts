@@ -178,14 +178,14 @@ export class AstNodeVisitorRefCheck extends AstNodeVisitor<void> {
 	}
 
 	public override visitStmtReassignment(stmt: STMT.StatementReassignment): void {
-		this.defaultVisit(stmt); // runtime asserts the var is in the symbol table and is a SymbolSchemaVar
+		this.defaultVisit(stmt);
 		if (stmt.assignee instanceof EXPR.Variable) {
-			const schema = stmt.validator.getSymbol(stmt.assignee.id) as SymbolSchemaVar;
+			const schema = stmt.validator.getSymbol(stmt.assignee.id) as SymbolSchemaVar | SymbolSchemaFunc | SymbolSchemaClass;
 			if (stmt.assigned) {
-				if (!schema.isWritable) {
+				if (!(schema instanceof SymbolSchemaVar && schema.isWritable)) {
 					throw new AssignmentErrorReassignment(stmt.assignee);
 				}
-			} else if (!schema.isUninitialized) {
+			} else if (!(schema instanceof SymbolSchemaVar && schema.isUninitialized)) {
 				throw new AssignmentErrorDeletion(stmt.assignee);
 			}
 		}

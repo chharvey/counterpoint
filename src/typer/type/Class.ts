@@ -48,7 +48,7 @@ class TypeClass extends ReferenceType {
 		return true;
 	}
 
-	public override mutableOf(): TypeClass {
+	public override mutableOf(): this {
 		return this;
 	}
 }

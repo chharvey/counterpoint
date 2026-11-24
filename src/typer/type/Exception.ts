@@ -39,7 +39,7 @@ export class Exception extends ReferenceType {
 		return true;
 	}
 
-	public override mutableOf(): Exception {
+	public override mutableOf(): this {
 		return this;
 	}
 }

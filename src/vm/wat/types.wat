@@ -225,5 +225,7 @@
 		;; --- own ---
 		;; number of functional parameters
 		(field $arity (mut i32))
+		;; the runnable function
+		(field $func (ref func))
 	)))
 )
