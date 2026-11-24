@@ -1,6 +1,10 @@
 import * as test from 'node:test';
-import type * as binaryen from 'binaryen.ts';
-import {CodeGenerator} from '../../src/index.ts';
+import * as binaryen from 'binaryen.ts';
+import {
+	Builder,
+	OP,
+	CodeGenerator,
+} from '../../src/index.ts';
 import {
 	repeat,
 	assertEqualBins,
@@ -365,13 +369,17 @@ test.suite('CodeGenerator', () => {
 		});
 
 		test.test('#codegenFunction', () => {
-			assertEqualBins(
-				cg.codegenFunction(3n),
+			const builder = new Builder();
+			builder.terminateBlock(new OP.EndProgram());
+			return assertEqualBins(
+				cg.codegenFunction('hello', 3n, builder),
 				wasm.struct.new([
 					cg.vm.Class.FUNCTION,
 					wasm.ref.null(cg.vm.heaptype.Dict),
 					cg.vm.Object.ctrPlusPlus(),
 					wasm.i32.const(3),
+					// @ts-expect-error --- `binaren.Module.Function#type` needs updating
+					wasm.ref.func('func-hello', new binaryen.Module.Function(cg.mod.functions.get('func-hello')).type),
 				], cg.vm.heaptype.Function),
 			);
 		});

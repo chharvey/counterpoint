@@ -286,7 +286,7 @@ export class ValueVisitorInterpret extends ValueVisitor<VALUE.Value> {
 	}
 
 	public override visitFunction(val: OpFunction): VALUE.Value {
-		return new VALUE.Function(val.type, val.source);
+		return new VALUE.Function(val.type, val.source, val.builder);
 	}
 
 	public override defaultVisit(val: Value): VALUE.Value {

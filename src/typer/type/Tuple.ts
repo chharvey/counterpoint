@@ -50,6 +50,11 @@ class TypeTuple extends ValueType {
 		return BigInt(this.typeargs.filter((it) => !it.optional).length);
 	}
 
+	/** The maximum possible number of items in this tuple type. */
+	public get maxCount(): bigint {
+		return BigInt(this.typeargs.length);
+	}
+
 	public override toString(): string {
 		return `(${this.typeargs.map((it) => `${it.optional ? '?: ' : ''}${it.type}`).join(', ')}${this.typeargs.length === 1 ? ',' : ''})`;
 	}

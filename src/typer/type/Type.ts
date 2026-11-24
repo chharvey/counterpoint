@@ -13,10 +13,6 @@ import {
 	Union,
 	Difference,
 	Unit,
-	None,
-	Some,
-	Fail,
-	Ok,
 	NOTHING,
 	ANYTHING,
 	SYM,
@@ -511,10 +507,6 @@ export abstract class Type {
 			Union,
 			Difference,
 			Unit,
-			None,
-			Some,
-			Fail,
-			Ok,
 		].some((klass) => t instanceof klass)) {
 			return t.isDisjointWith(this);
 		}
@@ -523,14 +515,13 @@ export abstract class Type {
 
 	/** @final */
 	protected isDisjointWith_do(t: Type): boolean {
-		const value_types = [
+		if ([
 			SYM,
 			INT,
 			NAT,
 			FLOAT,
 			STR,
-		];
-		if (value_types.includes(this) || value_types.includes(t)) {
+		].some((typ) => [this, t].includes(typ))) {
 			return true;
 		}
 		return false; // assume not disjoint by default

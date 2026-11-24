@@ -1,3 +1,4 @@
+import type {Builder} from '../../index.ts';
 import type {TYPE} from '../index.ts';
 import {Value} from './Value.ts';
 
@@ -11,6 +12,7 @@ class ValueFunction extends Value {
 	public constructor(
 		private readonly functionType: TYPE.Function,
 		private readonly source:       string,
+		private readonly builder:      Builder,
 	) {
 		super();
 	}

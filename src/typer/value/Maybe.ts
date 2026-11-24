@@ -44,7 +44,7 @@ export class None extends Maybe {
 	 * @inheritdoc
 	 * Returns a TYPE.None with the given type argument.
 	 */
-	public override toType(): TYPE.Maybe {
+	public override toType(): TYPE.None {
 		return new TYPE.None(this.type);
 	}
 }
@@ -73,7 +73,7 @@ export class Some<T extends Value = Value> extends Maybe {
 	 * @inheritdoc
 	 * Returns a TYPE.Some whose type argument is the type of this Some’s value.
 	 */
-	public override toType(): TYPE.Maybe {
+	public override toType(): TYPE.Some {
 		return new TYPE.Some(this.value.toType());
 	}
 }

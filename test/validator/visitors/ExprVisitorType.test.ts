@@ -896,16 +896,9 @@ test.suite('ExprVisitorType#visit', () => {
 			const {stmts, visitors} = setupScript(FUNC_CALLS, {typeCheck: false});
 			xjs.Array.forEachAggregated(stmts.slice(0, 4), (stmt) => visitors.typeCheck.visit(stmt));
 			assertEqualTypes(stmts.slice(4).map((stmt) => VISITOR.visit((stmt as AST.STMT.StatementExpression).expr!)), [
-				new TYPE.Some(TYPE.INT),
-				new TYPE.None(TYPE.INT),
-				new TYPE.Some(TYPE.INT),
-				new TYPE.None(TYPE.INT),
-				TYPE.BOOL,
-				TYPE.BOOL,
-				TYPE.BOOL,
-				new TYPE.Some(TYPE.INT),
-				new TYPE.None(TYPE.INT),
-				new TYPE.None(TYPE.INT),
+				...repeat(new TYPE.Maybe(TYPE.INT), 4),
+				...repeat(TYPE.BOOL, 3),
+				...repeat(new TYPE.Maybe(TYPE.INT), 3),
 				...repeat(null, 9),
 				new TYPE.List(TYPE.INT, true),
 				new TYPE.Dict(TYPE.INT, true),

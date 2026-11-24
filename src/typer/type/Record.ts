@@ -51,6 +51,11 @@ class TypeRecord extends ValueType {
 		return BigInt([...this.typeargs.values().filter((val) => !val.optional)].length);
 	}
 
+	/** The maximum possible number of properties in this record type. */
+	public get maxCount(): bigint {
+		return BigInt(this.typeargs.size);
+	}
+
 	public override toString(): string {
 		return `(${[...this.typeargs].map(([key, value]) => `${Validator.unhashIdentifierId(key) || key}${value.optional ? '?:' : ':'} ${value.type}`).join(', ')})`;
 	}
