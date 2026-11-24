@@ -10,7 +10,7 @@ import {
 	type EntryType,
 	TYPE,
 	type GenericArgs,
-	type GenericParams,
+	type GenericFuncParams,
 } from '../../../typer/index.ts';
 import {
 	Validator,
@@ -161,7 +161,7 @@ export class TypeVisitorTypevalue extends AST_TYPE.TypeVisitor<TYPE.Type> {
 	 * @param generic_params the generic parameter signature of the class, interface, or type function
 	 * @return               resolved generic parameter assignments
 	 */
-	public checkGenericArgs(call: AST_TYPE.Call | EXPR.Call, generic_params?: GenericParams): GenericArgs {
+	public checkGenericArgs(call: AST_TYPE.Call | EXPR.Call, generic_params?: GenericFuncParams): GenericArgs {
 		const args_posit: readonly AST_TYPE.Type[]           = call instanceof AST_TYPE.Call ? call.argsPosit : call.typeargsPosit;
 		const args_named: ReadonlyMap<bigint, AST_TYPE.Type> = new Map((call instanceof AST_TYPE.Call
 			? call.argsNamed
@@ -221,24 +221,28 @@ export class TypeVisitorTypevalue extends AST_TYPE.TypeVisitor<TYPE.Type> {
 		}
 
 		/* Argument Typing. Handles optionality and default values. Also checks if each argument matches the constraints given. */
-		const returned_positional: TYPE.Type[] = args_posit.map((argnode) => this.visit(argnode));
+		const resolved_positional: TYPE.Type[] = args_posit.map((argnode) => this.visit(argnode));
+		const resolved_named = new Map<bigint, TYPE.Type>([...args_named].map(([argnode_id, argnode_type]) => [argnode_id, this.visit(argnode_type)]));
+		const resolved_args: GenericArgs = {
+			positional: resolved_positional,
+			named:      resolved_named,
+		};
 		generic_params?.positional?.forEach((param, i) => {
 			const argnode: AST_TYPE.Type | undefined = args_posit.at(i);
 			if (!argnode) {
 				assert.ok(param.default); // we can assert param is optional due to argument counting above
-				returned_positional[i] = param.default;
+				resolved_positional[i] = param.default.call(null, resolved_args);
 			}
 			if (param.constraint) {
-				const arg: TYPE.Type = returned_positional.at(i)!;
-				const [constraint_direction, constraint_type] = param.constraint;
-				if (constraint_direction === 'narrows' && !arg.isSubtypeOf(constraint_type)) {
+				const arg:             TYPE.Type = resolved_positional.at(i)!;
+				const constraint_type: TYPE.Type = param.constraint[1].call(null, resolved_args);
+				if (param.constraint[0] === 'narrows' && !arg.isSubtypeOf(constraint_type)) {
 					throw new TypeErrorNotNarrow(arg, constraint_type, call.line_index, call.col_index);
-				} else if (constraint_direction === 'widens' && !constraint_type.isSubtypeOf(arg)) {
+				} else if (param.constraint[0] === 'widens' && !constraint_type.isSubtypeOf(arg)) {
 					throw new TypeErrorNotNarrow(constraint_type, arg, call.line_index, call.col_index);
 				}
 			}
 		});
-		const returned_named = new Map<bigint, TYPE.Type>([...args_named].map(([argnode_id, argnode_type]) => [argnode_id, this.visit(argnode_type)]));
 		generic_params?.named?.forEach((param, id) => {
 			const argnode: [bigint, AST_TYPE.Type] | undefined = [...args_named].find(([argnode_id]) => argnode_id === id);
 			if (!argnode) {
@@ -246,21 +250,18 @@ export class TypeVisitorTypevalue extends AST_TYPE.TypeVisitor<TYPE.Type> {
 				if (!param.default) {
 					throw new TypeError(`Missing argument for required named parameter \`${Validator.unhashIdentifierId(id)}\`.`); // TODO: new class of CplTypeError
 				}
-				returned_named.set(id, param.default);
+				resolved_named.set(id, param.default.call(null, resolved_args));
 			}
 			if (param.constraint) {
-				const arg: TYPE.Type = returned_named.get(id)!;
-				const [constraint_direction, constraint_type] = param.constraint;
-				if (constraint_direction === 'narrows' && !arg.isSubtypeOf(constraint_type)) {
+				const arg:             TYPE.Type = resolved_named.get(id)!;
+				const constraint_type: TYPE.Type = param.constraint[1].call(null, resolved_args);
+				if (param.constraint[0] === 'narrows' && !arg.isSubtypeOf(constraint_type)) {
 					throw new TypeErrorNotNarrow(arg, constraint_type, call.line_index, call.col_index);
-				} else if (constraint_direction === 'widens' && !constraint_type.isSubtypeOf(arg)) {
+				} else if (param.constraint[0] === 'widens' && !constraint_type.isSubtypeOf(arg)) {
 					throw new TypeErrorNotNarrow(constraint_type, arg, call.line_index, call.col_index);
 				}
 			}
 		});
-		return {
-			positional: returned_positional,
-			named:      returned_named,
-		};
+		return resolved_args;
 	}
 }
