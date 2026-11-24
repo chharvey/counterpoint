@@ -5,7 +5,9 @@ import {
 } from '../../../index.ts';
 import {assert_instanceof} from '../../../lib/index.ts';
 import {
+	VALUE,
 	TYPE,
+	type CoreFuncName,
 } from '../../../typer/index.ts';
 import {CoreLibName} from '../../../parser/index.ts';
 import {
@@ -157,6 +159,45 @@ export class ExprVisitorBuild extends EXPR.ExprVisitor<OP.Value> {
 		 * But until we get functions and classes, statically build the function calls.
 		 */
 		switch (expr.base.source) {
+			case '\'List#get\'':
+			case '\'Dict#get\'':
+			case '\'Set#has\'':
+			case '\'Map#get\'': {
+				return new OP.CollectionDynamicGet(
+					new Map<CoreFuncName, OP.CollectionDynamicName>([
+						['\'List#get\'', OP.TypeName.LIST],
+						['\'Dict#get\'', OP.TypeName.DICT],
+						['\'Set#has\'',  OP.TypeName.SET],
+						['\'Map#get\'',  OP.TypeName.MAP],
+					]).get(expr.base.source)!,
+					this.visit(expr.exprargsPosit[0]).asTac(this.builder),
+					this.visit(expr.exprargsPosit[1]).asTac(this.builder),
+					expr.type!,
+				);
+			}
+			case '\'List#set\'':
+			case '\'Dict#set\'':
+			case '\'Set#put\'':
+			case '\'Set#delete\'':
+			case '\'Map#set\'': {
+				this.builder.pushInstruction(new OP.CollectionDynamicSet(
+					new Map<CoreFuncName, OP.CollectionDynamicName>([
+						['\'List#set\'',   OP.TypeName.LIST],
+						['\'Dict#set\'',   OP.TypeName.DICT],
+						['\'Set#put\'',    OP.TypeName.SET],
+						['\'Set#delete\'', OP.TypeName.SET],
+						['\'Map#set\'',    OP.TypeName.MAP],
+					]).get(expr.base.source)!,
+					this.visit(expr.exprargsPosit[0]).asTac(this.builder),
+					this.visit(expr.exprargsPosit[1]).asTac(this.builder),
+					(
+						expr.base.source === '\'Set#put\''    ? new OP.Const(VALUE.TRUE) :
+						expr.base.source === '\'Set#delete\'' ? new OP.Const(VALUE.FALSE) :
+						this.visit(expr.exprargsPosit[2]).asTac(this.builder)
+					),
+				));
+				return new OP.Const(VALUE.NULL); // TODO: return `new OP.NOOP()`
+			}
 			case CoreLibName.BOOLEAN:
 			case CoreLibName.INTEGER:
 			case CoreLibName.NATURAL:

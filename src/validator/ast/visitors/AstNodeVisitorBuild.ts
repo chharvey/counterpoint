@@ -114,7 +114,7 @@ export class AstNodeVisitorBuild extends AstNodeVisitor<void> {
 
 	@runOncePerNode
 	public override visitStmtExpr(stmt: STMT.StatementExpression): void {
-		if (stmt.expr) {
+		if (stmt.expr) { // TODO: stmt.expr?.type
 			return this.builder.pushInstruction(new OP.Drop(this.#exprVisitorBuild.visit(stmt.expr)));
 		}
 	}

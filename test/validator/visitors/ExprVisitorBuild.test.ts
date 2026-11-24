@@ -11,6 +11,7 @@ import {
 	OP,
 } from '../../../src/index.ts';
 import {
+	FUNC_CALLS,
 	CTOR_CALLS,
 	typeUnit,
 	setupScript,
@@ -1175,6 +1176,48 @@ test.suite('ExprVisitorBuild#visit', () => {
 					${CTOR_CALLS.filter((src) => src.startsWith(name)).map((src) => `${src};`).join('\n')}
 				}`, {codegen: false}).builder.print(), expected.trim());
 			});
+		});
+		test.test('built-in function calls.', () => {
+			assert.strictEqual(setupScript(FUNC_CALLS, {codegen: false}).builder.print(), xjs.String.dedent`
+				"block-0":
+					(DECL <List> list (LIST.NEW (INT.CONST 1000) (INT.CONST 2000) (INT.CONST 3000)))
+					(DECL <Dict> dict (DICT.NEW @a->(INT.CONST 1) @b->(INT.CONST 2) @c->(INT.CONST 3)))
+					(DECL <Set> sett (SET.NEW (INT.CONST 1000) (INT.CONST 2000) (INT.CONST 3000)))
+					(DECL <Map> map (MAP.NEW (STR.CONST "a")->(INT.CONST 1) (STR.CONST "b")->(INT.CONST 2) (STR.CONST "c")->(INT.CONST 3)))
+					(DROP (LIST.GET (GET list) (INT.CONST 0)))
+					(DROP (LIST.GET (GET list) (INT.CONST 3)))
+					(DROP (DICT.GET (GET dict) (SYM.CONST @a)))
+					(DROP (DICT.GET (GET dict) (SYM.CONST @d)))
+					(DROP (SET.GET (GET sett) (INT.CONST 3000)))
+					(DROP (SET.GET (GET sett) (INT.CONST 4000)))
+					(DROP (SET.GET (GET sett) (FLOAT.CONST 4.44)))
+					(DROP (MAP.GET (GET map) (STR.CONST "a")))
+					(DROP (MAP.GET (GET map) (STR.CONST "d")))
+					(DROP (MAP.GET (GET map) (SYM.CONST @a)))
+					(LIST.SET (GET list) (INT.CONST 0) (INT.CONST 4000))
+					(DROP (NULL.CONST null))
+					(LIST.SET (GET list) (INT.CONST 3) (INT.CONST 5000))
+					(DROP (NULL.CONST null))
+					(DICT.SET (GET dict) (SYM.CONST @a) (INT.CONST 4))
+					(DROP (NULL.CONST null))
+					(DICT.SET (GET dict) (SYM.CONST @d) (INT.CONST 5))
+					(DROP (NULL.CONST null))
+					(SET.SET (GET sett) (INT.CONST 4000) (BOOL.CONST true))
+					(DROP (NULL.CONST null))
+					(SET.SET (GET sett) (INT.CONST 1000) (BOOL.CONST false))
+					(DROP (NULL.CONST null))
+					(SET.SET (GET sett) (FLOAT.CONST 4.44) (BOOL.CONST false))
+					(DROP (NULL.CONST null))
+					(MAP.SET (GET map) (STR.CONST "a") (INT.CONST 4))
+					(DROP (NULL.CONST null))
+					(MAP.SET (GET map) (STR.CONST "d") (INT.CONST 5))
+					(DROP (NULL.CONST null))
+					(DROP (GET list))
+					(DROP (GET dict))
+					(DROP (GET sett))
+					(DROP (GET map))
+					(ENDPROGRAM)
+			`.trim());
 		});
 
 		test.test('custom function calls.', () => {

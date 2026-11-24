@@ -316,6 +316,17 @@ Build(SemanticExpressionCall ::= "Some" SemanticType* SemanticExpression__0 Sema
 Build(SemanticExpressionCall ::= "Fail" SemanticType* SemanticExpression__0 SemanticExpression*) := (RESULT.NEW nil `Build(SemanticExpression__0)`);
 Build(SemanticExpressionCall ::= "Ok"   SemanticType* SemanticExpression__0 SemanticExpression*) := (RESULT.NEW `Build(SemanticExpression__0)` nil);
 
+Build(SemanticExpressionCall ::= (SemanticExpression__0 =:= SemanticExpressionVariable ::= "'List#get'") SemanticType* SemanticPropertyType* SemanticExpression__1* SemanticProperty*) := (LIST.GET [`Build(SemanticExpression__1.0)` `Build(SemanticExpression__1.1)`]);
+Build(SemanticExpressionCall ::= (SemanticExpression__0 =:= SemanticExpressionVariable ::= "'Dict#get'") SemanticType* SemanticPropertyType* SemanticExpression__1* SemanticProperty*) := (DICT.GET [`Build(SemanticExpression__1.0)` `Build(SemanticExpression__1.1)`]);
+Build(SemanticExpressionCall ::= (SemanticExpression__0 =:= SemanticExpressionVariable ::= "'Set#has'")  SemanticType* SemanticPropertyType* SemanticExpression__1* SemanticProperty*) := (SET.GET  [`Build(SemanticExpression__1.0)` `Build(SemanticExpression__1.1)`]);
+Build(SemanticExpressionCall ::= (SemanticExpression__0 =:= SemanticExpressionVariable ::= "'Map#get'")  SemanticType* SemanticPropertyType* SemanticExpression__1* SemanticProperty*) := (MAP.GET  [`Build(SemanticExpression__1.0)` `Build(SemanticExpression__1.1)`]);
+
+Build(SemanticExpressionCall ::= (SemanticExpression__0 =:= SemanticExpressionVariable ::= "'List#set'")   SemanticType* SemanticPropertyType* SemanticExpression__1* SemanticProperty*) := (LIST.SET [`Build(SemanticExpression__1.0)` `Build(SemanticExpression__1.1)` `Build(SemanticExpression__1.2)`]);
+Build(SemanticExpressionCall ::= (SemanticExpression__0 =:= SemanticExpressionVariable ::= "'Dict#set'")   SemanticType* SemanticPropertyType* SemanticExpression__1* SemanticProperty*) := (DICT.SET [`Build(SemanticExpression__1.0)` `Build(SemanticExpression__1.1)` `Build(SemanticExpression__1.2)`]);
+Build(SemanticExpressionCall ::= (SemanticExpression__0 =:= SemanticExpressionVariable ::= "'Set#put'")    SemanticType* SemanticPropertyType* SemanticExpression__1* SemanticProperty*) := (SET.SET  [`Build(SemanticExpression__1.0)` `Build(SemanticExpression__1.1)` (BOOL.CONST true)]);
+Build(SemanticExpressionCall ::= (SemanticExpression__0 =:= SemanticExpressionVariable ::= "'Set#delete'") SemanticType* SemanticPropertyType* SemanticExpression__1* SemanticProperty*) := (SET.SET  [`Build(SemanticExpression__1.0)` `Build(SemanticExpression__1.1)` (BOOL.CONST false)]);
+Build(SemanticExpressionCall ::= (SemanticExpression__0 =:= SemanticExpressionVariable ::= "'Map#set'")    SemanticType* SemanticPropertyType* SemanticExpression__1* SemanticProperty*) := (MAP.SET  [`Build(SemanticExpression__1.0)` `Build(SemanticExpression__1.1)` `Build(SemanticExpression__1.2)`]);
+
 Build(SemanticExpressionCall ::= (SemanticExpression__0 =:= SemanticExpressionVariable[id in SemanticDeclarationFunction[id]]) SemanticType* SemanticPropertyType* SemanticExpression__1* SemanticProperty*) :=
 	(CALL [
 		(GET ‹temp_id›)
