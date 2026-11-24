@@ -24,7 +24,7 @@ export function extract_lines(strings: TemplateStringsArray, ...interps: unknown
 }
 
 export function repeat<T>(value: T, times: number): T[] {
-	return Array<T>(times).fill(value);
+	return new Array<T>(times).fill(value);
 }
 
 

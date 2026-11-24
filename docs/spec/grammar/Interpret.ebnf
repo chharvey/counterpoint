@@ -493,7 +493,7 @@ Boolean! Interpret((IS `v0` `v1`)) :=
 		1. *Return:* `false`.
 ;
 
-Function! Interpret((FUNCTION `name` `arity` `source`)) :=
+Function! Interpret((FUNCTION `name` `source` `instructions`)) :=
 	1. *Return:* a new `Function`.
 ;
 

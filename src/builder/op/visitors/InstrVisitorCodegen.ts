@@ -279,7 +279,7 @@ export class InstrVisitorCodegen extends InstrVisitor<binaryen.ExpressionRef /* 
 		const value:           binaryen.ExpressionRef /* (ref null $Value) */ = instr.value ? this.#valueVisitorCodegen.visit(instr.value) : wasm_null_value;
 		return this.wasm.return(this.wasm.tuple.make((instr.isReturn
 			? [value,           this.wasm.ref.null(this.heaptype.Exception)]
-			: [wasm_null_value, value]
+			: [wasm_null_value, this.wasm.ref.cast(value, this.reftype.Exception)]
 		)));
 	}
 
