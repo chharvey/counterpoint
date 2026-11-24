@@ -483,14 +483,16 @@ export class CodeGenerator {
 
 	/**
 	 * Return a new `$Function`.
-	 * @param arity the number of functional arguments
-	 * @return      `(struct.new $Function <arity>)`
+	 * @param name    the name of the function (use '' for lambdas)
+	 * @param arity   the number of functional arguments
+	 * @param builder the function’s executable code stored in a Builder
+	 * @return        `(struct.new $Function ...)`
 	 */
 	public codegenFunction(name: string, arity: bigint, builder: Builder): binaryen.ExpressionRef /* (ref $Function) */ {
 		const {vm: {heaptype, reftype, reftypeNull, Object: VmObject, Class: VmClass}, mod: {wasm}} = this;
 		const fn_name: string = `func-${name || this.#funcCounter++}`;
 		const cg = new CodeGenerator(this.vm);
-		const body: binaryen.ExpressionRef = builder.codegen(cg); // need to code-gen first before getting all locals below
+		const body: binaryen.ExpressionRef /* void */ = builder.codegen(cg); // need to code-gen first before getting all locals below
 		this.mod.functions.add(
 			fn_name,
 			binaryen.createType(new Array(Number(arity)).fill(reftype.Value)),
@@ -520,7 +522,7 @@ export class CodeGenerator {
 	 * The main function should contain generated code for a program.
 	 * @param body the body of the main function
 	 */
-	public setupMain(body: binaryen.ExpressionRef): void {
+	public setupMain(body: binaryen.ExpressionRef /* void */): void {
 		const extern_mod_name: string = 'wat';
 		this.vm.globalImportDataMap.forEach((data, export_name) => (
 			this.mod.imports.addGlobal(data.name, extern_mod_name, export_name, data.type, false)

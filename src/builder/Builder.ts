@@ -138,7 +138,7 @@ export class Builder {
 	}
 
 	@memoizeMethod
-	public codegen(cg: CodeGenerator): binaryen.ExpressionRef {
+	public codegen(cg: CodeGenerator): binaryen.ExpressionRef /* void */ {
 		assert.ok(!this.currentBlock, 'Should not codegen Builder with active block set. Try calling `Builder#terminateBlock` first.');
 		const relooper     = new binaryen.Relooper(cg.mod);
 		const term_visitor = new OP.TermVisitorCodegen(cg, relooper);
