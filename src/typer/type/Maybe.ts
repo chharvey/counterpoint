@@ -6,7 +6,6 @@ import {
 import * as VALUE from '../value/index.ts';
 import {
 	subtypeLaws,
-	disjointLaws,
 	type Type,
 } from './Type.ts';
 import {
@@ -47,17 +46,21 @@ export class Maybe extends ReferenceType {
 	@isObjectType
 	@instanceOf(() => Maybe)
 	public override isSubtypeOf(t: Type): boolean {
-		return this.typearg.isSubtypeOf((t as Maybe).typearg); // Maybe is always covariant
+		return this.constructor === t.constructor && this.typearg.isSubtypeOf((t as Maybe).typearg); // Maybe is always covariant
 	}
 
 	/** @final */
-	public override mutableOf(): Maybe {
+	public override mutableOf(): this {
 		return this;
 	}
 }
 
 
 
+/**
+ * Class for constructing a `None` type.
+ * @final
+ */
 export class None extends Maybe {
 	public override toString(): string {
 		return `None[${this.typearg}]`;
@@ -68,24 +71,24 @@ export class None extends Maybe {
 		return v.toType().isSubtypeOf(this);
 	}
 
+	@strictEqual
+	@memoizeBinOp()
+	@subtypeLaws
+	@isObjectType
+	@instanceOf(() => Maybe)
 	public override isSubtypeOf(t: Type): boolean {
-		// eslint-disable-next-line @typescript-eslint/no-use-before-define
-		return !(t instanceof Some) && super.isSubtypeOf(t);
-	}
-
-	@memoizeBinOp(true)
-	@disjointLaws
-	public override isDisjointWith(t: Type): boolean {
-		// eslint-disable-next-line @typescript-eslint/no-use-before-define
-		if (t instanceof Some) {
-			return true;
-		}
-		return super.isDisjointWith_do(t);
+		return t instanceof None
+			? this.typearg.isSubtypeOf(t.typearg) // None is always covariant
+			: new Maybe(this.typearg).isSubtypeOf(t);
 	}
 }
 
 
 
+/**
+ * Class for constructing a `Some` type.
+ * @final
+ */
 export class Some extends Maybe {
 	public override toString(): string {
 		return `Some[${this.typearg}]`;
@@ -96,16 +99,14 @@ export class Some extends Maybe {
 		return v.toType().isSubtypeOf(this);
 	}
 
+	@strictEqual
+	@memoizeBinOp()
+	@subtypeLaws
+	@isObjectType
+	@instanceOf(() => Maybe)
 	public override isSubtypeOf(t: Type): boolean {
-		return !(t instanceof None) && super.isSubtypeOf(t);
-	}
-
-	@memoizeBinOp(true)
-	@disjointLaws
-	public override isDisjointWith(t: Type): boolean {
-		if (t instanceof None) {
-			return true;
-		}
-		return super.isDisjointWith_do(t);
+		return t instanceof Some
+			? this.typearg.isSubtypeOf(t.typearg) // Some is always covariant
+			: new Maybe(this.typearg).isSubtypeOf(t);
 	}
 }

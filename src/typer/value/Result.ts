@@ -48,7 +48,7 @@ export class Fail extends Result {
 	 * @inheritdoc
 	 * Returns a TYPE.Fail with the given success type argument and whose failure type argument is the type of this Fail’s reason.
 	 */
-	public override toType(): TYPE.Result {
+	public override toType(): TYPE.Fail {
 		return new TYPE.Fail(this.successType, this.reason.toType());
 	}
 }
@@ -80,7 +80,7 @@ export class Ok<T extends Value = Value> extends Result {
 	 * @inheritdoc
 	 * Returns a TYPE.Fail with the given success type argument and whose failure type argument is the type of this Fail’s reason.
 	 */
-	public override toType(): TYPE.Result {
+	public override toType(): TYPE.Ok {
 		return new TYPE.Ok(this.value.toType(), this.failureType);
 	}
 }
