@@ -1,4 +1,5 @@
 Codegen((TRAP)) := (unreachable);
+Codegen((VOID)) := (global.get $Value.VOID);
 
 Codegen((NULL.CONST null))  := (global.get $Value.NULL);
 Codegen((BOOL.CONST false)) := (global.get $Value.FALSE);

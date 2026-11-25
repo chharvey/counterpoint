@@ -34,7 +34,9 @@ test.suite('ValueVisitorInterpret#visit', () => {
 
 
 	test.test('NoValue always throws.', () => {
-		assert.throws(() => new OP.ValueVisitorInterpret(new Interpreter()).visit(new OP.NoValue()), /Trap\./);
+		const VISITOR = new OP.ValueVisitorInterpret(new Interpreter());
+		assert.throws(() => VISITOR.visit(new OP.NoValue()), /Trap/);
+		assert.throws(() => VISITOR.visit(new OP.NoValue(true)), /Expression of type `void` is not a value/);
 	});
 
 

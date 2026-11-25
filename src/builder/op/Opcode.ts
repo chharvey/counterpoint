@@ -42,6 +42,7 @@ import {
  */
 export enum OpCode {
 	TRAP,
+	VOID,
 
 	NULL_CONST,
 	BOOL_CONST,

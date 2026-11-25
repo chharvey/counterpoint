@@ -20,6 +20,7 @@ Every function signature takes the form «‹NAME›(‹static params› [‹dyn
 
 
 TRAP();
+VOID();
 
 NULL.CONST (VALUE.Null)    -> Value;
 BOOL.CONST (VALUE.Boolean) -> Value;

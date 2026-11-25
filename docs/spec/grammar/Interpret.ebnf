@@ -1,6 +1,10 @@
 Interpret((TRAP)) :=
 	1. *Throw:* a new Error.
 ;
+Interpret((VOID)) :=
+	1. *Note:* This point is unreachable, as void expressions should never be interpreted.
+	2. *Throw:* a new Error.
+;
 
 Null Interpret((NULL.CONST `n`)) :=
 	1. *Return:* `n`.
