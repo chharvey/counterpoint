@@ -49,6 +49,9 @@
 		(field $array (mut (ref $MapArray)))
 	))
 
+	;; type signature of any author-defined function in CPL source
+	(type $Signature (func (param $env (ref $List)) (param $params (ref null $List)) (result (ref null $Value) (ref null $Exception))))
+
 
 
 
@@ -224,8 +227,8 @@
 
 		;; --- own ---
 		;; number of functional parameters
-		(field $arity (mut i32))
+		(field $arity i32)
 		;; the runnable function
-		(field $func (ref func))
+		(field $func (ref $Signature))
 	)))
 )

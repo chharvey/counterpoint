@@ -125,7 +125,7 @@ DICT.COPY([Value Value]);
 SET.COPY ([Value Value]);
 MAP.COPY ([Value Value]);
 
-RETURN(["nop" Nil]);
+RETURN(["void" Nil]);
 RETURN([Value Nil]);
 RETURN([Nil Exception]);
 
@@ -629,13 +629,13 @@ Build(SemanticStatementBreak[skip=false] stmt) := [ (GOTO "endwhile") ];
 Build(SemanticStatementBreak[skip=true]  stmt) := [ (GOTO "while") ];
 
 Build(SemanticStatementReturn[panic=false] ::= ()) := [
-	(RETURN "nop" nil)
+	(RETURN "void" nil)
 ];
 Build(SemanticStatementReturn[panic=false] ::= SemanticExpression) := [
 	(RETURN `Build(SemanticExpression)` nil)
 ];
 Build(SemanticStatementReturn[panic=true] ::= SemanticExpression) := [
-	(RETURN nil `Build(SemanticExpression)`)
+	(RETURN nil `Build(SemanticExpression)`:Exception)
 ];
 
 

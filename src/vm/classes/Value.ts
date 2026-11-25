@@ -36,9 +36,14 @@ export class Value implements HasFuncData {
 			['Value#asList',      {name: 'Value.as-list',       param: reftype.Value,      result: reftype.List}],
 			['Value#asDict',      {name: 'Value.as-dict',       param: reftype.Value,      result: reftype.Dict}],
 			['Value#asMap',       {name: 'Value.as-map',        param: reftype.Value,      result: reftype.Map}],
+			['Value#asFunc',      {name: 'Value.as-func',       param: reftype.Value,      result: reftype.Signature}],
 		]);
 	}
 
+	/**
+	 * A value in the VM representing the return of a void function.
+	 * Not an actual Counterpoint value.
+	 */                                    public get VOID():  binaryen.ExpressionRef /* (ref $Value) */ { return this.vm.mod.wasm.global.get('Value.VOID',  this.vm.reftype.Value); }
 	/** The Counterpoint `null`  value. */ public get NULL():  binaryen.ExpressionRef /* (ref $Value) */ { return this.vm.mod.wasm.global.get('Value.NULL',  this.vm.reftype.Value); }
 	/** The Counterpoint `false` value. */ public get FALSE(): binaryen.ExpressionRef /* (ref $Value) */ { return this.vm.mod.wasm.global.get('Value.FALSE', this.vm.reftype.Value); }
 	/** The Counterpoint `true`  value. */ public get TRUE():  binaryen.ExpressionRef /* (ref $Value) */ { return this.vm.mod.wasm.global.get('Value.TRUE',  this.vm.reftype.Value); }
@@ -132,5 +137,10 @@ export class Value implements HasFuncData {
 	/** Returns the value as a Map. */
 	public asMap(value: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Map) */ {
 		return this.vm.mod.wasm.call('Value.as-map', [value], this.vm.reftype.Map);
+	}
+
+	/** Returns the value as a WASM function. */
+	public asFunc(value: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Signature) */ {
+		return this.vm.mod.wasm.call('Value.as-func', [value], this.vm.reftype.Signature);
 	}
 }
