@@ -296,6 +296,7 @@ export class AstNodeVisitorBuild extends AstNodeVisitor<void> {
 			this.builder.funcs.set(symbol.id, new Map());
 		}
 		this.builder.funcs.get(symbol.id)!.set(ovl_type, temp);
+		this.builder.setSymbolStatus(temp, BuilderSymbolStatus.SET);
 		return [temp, func_builder];
 	}
 }
