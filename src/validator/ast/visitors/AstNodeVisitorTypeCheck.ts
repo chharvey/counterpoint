@@ -146,7 +146,7 @@ export class AstNodeVisitorTypeCheck extends AstNodeVisitor<void> {
 				EXPR.Constant,
 				EXPR.Tuple,
 				EXPR.Record,
-			].some((klass) => stmt.assigned instanceof klass)) ? this.#writableInferredType(stmt.assigned!)! : // constants/tuples/records will never be void
+			].some((klass) => stmt.assigned instanceof klass)) ? this.#writableInferredType(stmt.assigned!) :
 			stmt.assigned instanceof EXPR.Template ? TYPE.STR :
 			this.#exprVisitorType.throwIfVoid(stmt.assigned!)
 		);
@@ -304,8 +304,7 @@ export class AstNodeVisitorTypeCheck extends AstNodeVisitor<void> {
 		);
 	}
 
-	#writableInferredType(expression: EXPR.Expression): TYPE.Type | null {
-		const err = new CplTypeError('Expression of type `void` is not a value.'); // TODO: new class of CplTypeError
+	#writableInferredType(expression: EXPR.Expression): TYPE.Type {
 		switch (true) {
 			case expression instanceof EXPR.Constant: {
 				const value: VALUE.Primitive = expression.interpreterValue;
@@ -321,13 +320,13 @@ export class AstNodeVisitorTypeCheck extends AstNodeVisitor<void> {
 				);
 			}
 			case expression instanceof EXPR.Tuple: {
-				return TYPE.Tuple.fromTypes(expression.children.map((expr) => this.#writableInferredType(expr) ?? assert.fail(err)));
+				return TYPE.Tuple.fromTypes(expression.children.map((expr) => this.#writableInferredType(expr)));
 			}
 			case expression instanceof EXPR.Record: {
-				return TYPE.Record.fromTypes(new Map(expression.children.map((prop) => [prop.key.id, this.#writableInferredType(prop.val) ?? assert.fail(err)])));
+				return TYPE.Record.fromTypes(new Map(expression.children.map((prop) => [prop.key.id, this.#writableInferredType(prop.val)])));
 			}
 			case expression instanceof EXPR.Call: { // TODO: distinguish between constructor calls and function calls
-				return this.#exprVisitorType.visit(expression);
+				return this.#exprVisitorType.visit(expression)!; // a void function call visit would have thrown by now
 			}
 			default: {
 				assert.fail(`${expression.source} should be an instance of ${EXPR.Constant.name}, ${EXPR.Tuple.name}, ${EXPR.Record.name}, or ${EXPR.Call.name}.`);
