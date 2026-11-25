@@ -25,7 +25,7 @@ import {
  * @param array an empty array in which to insert the entry
  * @see https://en.wikipedia.org/wiki/Linear_probing
  */
-function insert_entry(array: Array<binaryen.ExpressionRef | undefined>, index: number, entry: binaryen.ExpressionRef): void {
+function insert_entry(array: Array<binaryen.ExpressionRef /* (ref $Property) */ | undefined>, index: number, entry: binaryen.ExpressionRef /* (ref $Property) */): void {
 	if (index < 0 || array.length <= index) {
 		throw new RangeError('Given index must not be out of array bounds.');
 	}
@@ -295,9 +295,9 @@ export class CodeGenerator {
 	 * @return      `(array.new_fixed $Record <...props>)`
 	 */
 	public codegenRecord(props: ReadonlyMap<bigint, binaryen.ExpressionRef /* (ref $Property) */> = new Map()): binaryen.ExpressionRef /* (ref $Record) */ {
-		const entries = new Array<binaryen.ExpressionRef | undefined>(props.size);
+		const entries = new Array<binaryen.ExpressionRef /* (ref $Property) */ | undefined>(props.size);
 		props.forEach((code, id) => insert_entry(entries, Number(id) % entries.length, code));
-		return this.mod.wasm.array.new_fixed(this.vm.heaptype.Record, entries as binaryen.ExpressionRef[]);
+		return this.mod.wasm.array.new_fixed(this.vm.heaptype.Record, entries as (binaryen.ExpressionRef /* (ref $Property) */)[]);
 	}
 
 	/**
@@ -316,7 +316,7 @@ export class CodeGenerator {
 			while (items.length > capacity * CodeGenerator.#LOAD_FACTOR) {
 				capacity *= 2;
 			}
-			const entries: binaryen.ExpressionRef[] = Array.from(
+			const entries: (binaryen.ExpressionRef /* (ref null $Value) */)[] = Array.from(
 				new Array(capacity),
 				(_, i) => items[i] ?? wasm.ref.null(heaptype.Value),
 			);
@@ -345,7 +345,7 @@ export class CodeGenerator {
 			while (props.size > capacity * CodeGenerator.#LOAD_FACTOR) {
 				capacity *= 2;
 			}
-			const entries = new Array<binaryen.ExpressionRef | undefined>(capacity).fill(undefined);
+			const entries = new Array<binaryen.ExpressionRef /* (ref $Property) */ | undefined>(capacity).fill(undefined);
 			props.forEach((code, id) => insert_entry(entries, Number(id) % entries.length, code));
 			array = wasm.array.new_fixed(
 				heaptype.DictArray,
