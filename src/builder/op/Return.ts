@@ -15,7 +15,7 @@ export class Return extends Instruction {
 	}
 
 	public override toString(): string {
-		const return_str: string = this.value?.toString() ?? 'nop';
+		const return_str: string = this.value?.toString() ?? 'void';
 		return super.toString(...(this.isReturn ? [return_str, 'nil'] : ['nil', return_str]));
 	}
 }

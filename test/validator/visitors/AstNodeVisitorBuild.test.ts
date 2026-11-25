@@ -107,7 +107,7 @@ test.suite('AstNodeVisitorBuild#visit', () => {
 						"block-0":
 							(DECL <int> $0 (INT.ADD (INT.CONST 1) (INT.CONST 2)))
 							(DROP (ID (GET $0) (INT.CONST 3)))
-							(RETURN nop nil)
+							(RETURN void nil)
 							(ENDPROGRAM)
 					`}}))
 					(ENDPROGRAM)
@@ -146,7 +146,7 @@ test.suite('AstNodeVisitorBuild#visit', () => {
 						"block-0":
 							(DROP (INT.ADD (GET x) (INT.CONST 10)))
 							(SET y (FLOAT.CONST 5.2))
-							(RETURN nop nil)
+							(RETURN void nil)
 							(ENDPROGRAM)
 					`}}))
 					(ENDPROGRAM)
@@ -171,7 +171,7 @@ test.suite('AstNodeVisitorBuild#visit', () => {
 							(DROP (GET foo))
 							(DROP (GET bar))
 							(DROP (GET qux))
-							(RETURN nop nil)
+							(RETURN void nil)
 							(DROP (INT.CONST 42))
 							(ENDPROGRAM)
 					`}}))

@@ -28,6 +28,7 @@ type TypeKey = (
 	| 'List'
 	| 'Dict'
 	| 'Map'
+	| 'Signature'
 	| 'Value'
 	| 'Data'
 	| 'Object'
@@ -50,7 +51,7 @@ type TypeKey = (
 type HeaptypeRegistry = Readonly<Record<TypeKey, binaryen.HeapType>>;
 type ReftypeRegistry  = Readonly<Record<TypeKey, binaryen.Type>>;
 
-type ReftypeNullRegistry = Readonly<Record<TypeKey & ('Property' | 'Case' | 'Value' | 'Class' | 'Exception'), binaryen.Type>>;
+type ReftypeNullRegistry = Readonly<Record<TypeKey & ('Property' | 'Case' | 'List' | 'Value' | 'Class' | 'Exception'), binaryen.Type>>;
 
 
 
@@ -114,6 +115,7 @@ const TYPES: {
 	const i_list:          number = tb.getSize(); tb.grow(1);
 	const i_dict:          number = tb.getSize(); tb.grow(1);
 	const i_map:           number = tb.getSize(); tb.grow(1);
+	const i_signature:     number = tb.getSize(); tb.grow(1);
 	const i_value:         number = tb.getSize(); tb.grow(1);
 	const i_data:          number = tb.getSize(); tb.grow(1);
 	const i_object:        number = tb.getSize(); tb.grow(1);
@@ -207,6 +209,19 @@ const TYPES: {
 		/* $size */  make_struct_field(binaryen.Type.i32, true),
 		/* $array */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_map_array), false), true),
 	]);
+
+	/* (type $Signature ...) */
+	tb.setSignatureType(
+		i_signature,
+		binaryen.createType([
+			tb.getTempRefType(tb.getTempHeapType(i_list), false),
+			tb.getTempRefType(tb.getTempHeapType(i_list), true),
+		]),
+		binaryen.createType([
+			tb.getTempRefType(tb.getTempHeapType(i_value),     true),
+			tb.getTempRefType(tb.getTempHeapType(i_exception), true),
+		]),
+	);
 
 	/** The fields of the `$Value` struct type. */
 	const fields_value = [
@@ -320,7 +335,8 @@ const TYPES: {
 	/* (type $Function ...) */
 	tb.setStructType(i_function, [
 		...fields_object,
-		/* $arity */ make_struct_field(binaryen.Type.i32, true),
+		/* $arity */ make_struct_field(binaryen.Type.i32),
+		/* $func */  make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_signature), false)),
 	]);
 	tb.setSubType(i_function, tb.getTempHeapType(i_object));
 
@@ -340,6 +356,7 @@ const TYPES: {
 			List:         heaptypes[i_list],
 			Dict:         heaptypes[i_dict],
 			Map:          heaptypes[i_map],
+			Signature:    heaptypes[i_signature],
 			Value:        heaptypes[i_value],
 			Data:         heaptypes[i_data],
 			Object:       heaptypes[i_object],
@@ -369,6 +386,7 @@ const TYPES: {
 			List:         binaryen.getTypeFromHeapType(heaptypes[i_list],          false),
 			Dict:         binaryen.getTypeFromHeapType(heaptypes[i_dict],          false),
 			Map:          binaryen.getTypeFromHeapType(heaptypes[i_map],           false),
+			Signature:    binaryen.getTypeFromHeapType(heaptypes[i_signature],     false),
 			Value:        binaryen.getTypeFromHeapType(heaptypes[i_value],         false),
 			Data:         binaryen.getTypeFromHeapType(heaptypes[i_data],          false),
 			Object:       binaryen.getTypeFromHeapType(heaptypes[i_object],        false),
@@ -389,6 +407,7 @@ const TYPES: {
 		reftypeNullRegistry: {
 			Property:  binaryen.getTypeFromHeapType(heaptypes[i_property],  true), // only used as the fields of `$DictArray`
 			Case:      binaryen.getTypeFromHeapType(heaptypes[i_case],      true), // only used as the fields of `$MapArray`
+			List:      binaryen.getTypeFromHeapType(heaptypes[i_list],      true), // only used as the fields of `$Signature`
 			Value:     binaryen.getTypeFromHeapType(heaptypes[i_value],     true), // only used as the fields of `$ListArray` and `$Maybe`
 			Class:     binaryen.getTypeFromHeapType(heaptypes[i_class],     true), // only used as the fields of `$Class`
 			Exception: binaryen.getTypeFromHeapType(heaptypes[i_exception], true), // only used as the fields of `$Exception` and `$Result`
