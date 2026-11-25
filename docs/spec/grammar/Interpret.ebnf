@@ -1,6 +1,10 @@
 Interpret((TRAP)) :=
 	1. *Throw:* a new Error.
 ;
+Interpret((VOID)) :=
+	1. *Note:* This point is unreachable, as void expressions should never be interpreted.
+	2. *Throw:* a new Error.
+;
 
 Null Interpret((NULL.CONST `n`)) :=
 	1. *Return:* `n`.
@@ -498,7 +502,10 @@ Function! Interpret((FUNCTION `name` `source` `instructions`)) :=
 ;
 
 Nil! Interpret((DROP `v`)) :=
-	1. *Perform:* `Interpret(v)`.
+	1. *If* `v` is (VOID):
+		1. *Return.*
+	2. *Else:*
+		1. *Return:* `Interpret(v)`.
 ;
 
 Nil! Interpret((DECL `id` `type` `v`)) :=

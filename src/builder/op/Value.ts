@@ -5,7 +5,7 @@ import type {
 } from '../Builder.ts';
 import {
 	type ValueTac,
-	Trap,
+	NoValue,
 	Const,
 	Get,
 	Template,
@@ -37,7 +37,7 @@ import {
 
 export abstract class ValueVisitor<T> {
 	/* eslint-disable @stylistic/space-before-function-paren */
-	public visitTrap                 (val: Trap):                 T { return this.defaultVisit(val); }
+	public visitNoValue              (val: NoValue):              T { return this.defaultVisit(val); }
 	public visitConst                (val: Const):                T { return this.defaultVisit(val); }
 	public visitGet                  (val: Get):                  T { return this.defaultVisit(val); }
 	public visitTemplate             (val: Template):             T { return this.defaultVisit(val); }
@@ -65,7 +65,7 @@ export abstract class ValueVisitor<T> {
 	/** @final */
 	public visit(val: Value): T {
 		switch (val.constructor) {
-			case Trap:                 { return this.visitTrap                 (val as Trap); }
+			case NoValue:              { return this.visitNoValue              (val as NoValue); }
 			case Const:                { return this.visitConst                (val as Const); }
 			case Get:                  { return this.visitGet                  (val as Get); }
 			case Template:             { return this.visitTemplate             (val as Template); }

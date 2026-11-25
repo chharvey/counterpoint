@@ -8,6 +8,7 @@ import {
 	OpcodeVisitor,
 	type Opcode,
 } from '../Opcode.ts';
+import {NoValue} from '../NoValue.ts';
 import type {Drop} from '../Drop.ts';
 import type {Decl} from '../Decl.ts';
 import type {Set as OpSet} from '../Set.ts';
@@ -32,6 +33,9 @@ export class OpcodeVisitorInterpret extends OpcodeVisitor<void> {
 
 
 	public override visitDrop(instr: Drop): void {
+		if (instr.value instanceof NoValue) {
+			return;
+		}
 		return this.interp.pushDrop(this.#valueVisitorInterpret.visit(instr.value));
 	}
 

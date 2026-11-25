@@ -5,7 +5,7 @@ export * from './Opcode.ts';
 export * from './Value.ts';
 
 export * from './ValueTac.ts';
-export * from './Trap.ts';
+export * from './NoValue.ts';
 export * from './Const.ts';
 export * from './Get.ts';
 

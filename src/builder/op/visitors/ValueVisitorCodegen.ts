@@ -17,7 +17,7 @@ import {
 	ValueVisitor,
 	type Value,
 } from '../Value.ts';
-import type {Trap} from '../Trap.ts';
+import type {NoValue} from '../NoValue.ts';
 import type {Const} from '../Const.ts';
 import type {Get} from '../Get.ts';
 import type {Template} from '../Template.ts';
@@ -62,8 +62,8 @@ export class ValueVisitorCodegen extends ValueVisitor<binaryen.ExpressionRef /* 
 
 
 	@noopMethod(memoizePerCode)
-	public override visitTrap(_val: Trap): binaryen.ExpressionRef /* (ref $Value) */ {
-		return this.cg.mod.wasm.unreachable();
+	public override visitNoValue(val: NoValue): binaryen.ExpressionRef /* (ref $Value) */ {
+		return val.isVoid ? this.cg.vm.Value.VOID : this.cg.mod.wasm.unreachable();
 	}
 
 	@memoizePerCode

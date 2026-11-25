@@ -33,8 +33,10 @@ test.suite('ValueVisitorInterpret#visit', () => {
 	const VALUE_FLOAT_N0 = new VALUE.Float(-0.0);
 
 
-	test.test('Trap always throws.', () => {
-		assert.throws(() => new OP.ValueVisitorInterpret(new Interpreter()).visit(new OP.Trap()), /Trap\./);
+	test.test('NoValue always throws.', () => {
+		const VISITOR = new OP.ValueVisitorInterpret(new Interpreter());
+		assert.throws(() => VISITOR.visit(new OP.NoValue()), /Trap/);
+		assert.throws(() => VISITOR.visit(new OP.NoValue(true)), /Expression of type `void` is not a value/);
 	});
 
 

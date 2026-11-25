@@ -18,7 +18,7 @@ import {Operator} from '../../Operator.ts';
 import {Index} from '../Index-.ts';
 import {Key} from '../Key.ts';
 import * as EXPR from '../expression/index.ts';
-import type * as STMT from '../statement/index.ts';
+import * as STMT from '../statement/index.ts';
 import {
 	bothInts,
 	bothNats,
@@ -57,7 +57,7 @@ export class ExprVisitorBuild extends EXPR.ExprVisitor<OP.Value> {
 	public override visitVariable(expr: EXPR.Variable): OP.Value {
 		const symbol = expr.validator.getSymbol(expr.id) as SymbolSchemaVar | SymbolSchemaFunc | SymbolSchemaClass;
 		if (symbol instanceof SymbolSchemaFunc) {
-			return new OP.Trap(); // not used in `this.visitCall`
+			return new OP.NoValue(); // not used in `this.visitCall`
 		}
 		return new OP.Get(symbol, symbol instanceof SymbolSchemaVar ? symbol.irType : TYPE.CLASS);
 	}
@@ -105,7 +105,13 @@ export class ExprVisitorBuild extends EXPR.ExprVisitor<OP.Value> {
 	public override visitExprBlock(expr: EXPR.ExpressionBlock): OP.Value {
 		this.#nodeVisitorBuild ??= new AstNodeVisitorBuild(this.builder);
 		expr.block.children.slice(0, -1).forEach((stmt) => this.#nodeVisitorBuild!.visit(stmt));
-		return this.visit((expr.block.children.at(-1) as STMT.StatementExpression).expr!);
+		const last_stmt: STMT.Statement = expr.block.children.at(-1)!;
+		if (last_stmt instanceof STMT.StatementExpression && last_stmt.expr) {
+			return this.visit(last_stmt.expr);
+		} else {
+			this.#nodeVisitorBuild.visit(last_stmt);
+			return new OP.NoValue(true);
+		}
 	}
 
 	@memoizePerNode
@@ -250,7 +256,7 @@ export class ExprVisitorBuild extends EXPR.ExprVisitor<OP.Value> {
 					expr.type!.union(v0.type), // allow invalid type-casting; in that case condition will be false anyway
 					is_instance,
 					() => v0,
-					() => new OP.Trap(),
+					() => new OP.NoValue(),
 				);
 			}
 			case Operator.CAST_MAYBE: {
@@ -392,7 +398,7 @@ export class ExprVisitorBuild extends EXPR.ExprVisitor<OP.Value> {
 	}
 
 	public override defaultVisit(_expr: EXPR.Expression): OP.Value {
-		return new OP.Trap();
+		return new OP.NoValue();
 	}
 
 	#buildUnwrappedGet(access: EXPR.Access, base_val: OP.ValueTac, return_type: TYPE.Type): OP.Value {

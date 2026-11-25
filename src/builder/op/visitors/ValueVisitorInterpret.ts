@@ -18,7 +18,7 @@ import {
 	ValueVisitor,
 	type Value,
 } from '../Value.ts';
-import type {Trap} from '../Trap.ts';
+import type {NoValue} from '../NoValue.ts';
 import type {Const} from '../Const.ts';
 import type {Get} from '../Get.ts';
 import type {Template} from '../Template.ts';
@@ -49,8 +49,16 @@ export class ValueVisitorInterpret extends ValueVisitor<VALUE.Value> {
 	}
 
 
-	public override visitTrap(_val: Trap): VALUE.Value {
-		throw new ErrorCode('Trap.');
+	public override visitNoValue(val: NoValue): VALUE.Value {
+		/*
+		 * If value is void, assert a failure — we shouldn’t have reached this point.
+		 * If value is trap, throw an actual error — it was by design.
+		 */
+		if (val.isVoid) {
+			assert.fail(new ErrorCode('Expression of type `void` is not a value.')); // TODO: new class of ErrorCode
+		} else {
+			throw new ErrorCode('Trap.');
+		}
 	}
 
 	public override visitConst(val: Const): VALUE.Value {
