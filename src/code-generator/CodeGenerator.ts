@@ -28,7 +28,7 @@ import {
  * @param array an empty array in which to insert the entry
  * @see https://en.wikipedia.org/wiki/Linear_probing
  */
-function insert_entry(array: Array<binaryen.ExpressionRef | undefined>, index: number, entry: binaryen.ExpressionRef): void {
+function insert_entry(array: Array<binaryen.ExpressionRef /* (ref $Property) */ | undefined>, index: number, entry: binaryen.ExpressionRef /* (ref $Property) */): void {
 	if (index < 0 || array.length <= index) {
 		throw new RangeError('Given index must not be out of array bounds.');
 	}
@@ -301,9 +301,9 @@ export class CodeGenerator {
 	 * @return      `(array.new_fixed $Record <...props>)`
 	 */
 	public codegenRecord(props: ReadonlyMap<bigint, binaryen.ExpressionRef /* (ref $Property) */> = new Map()): binaryen.ExpressionRef /* (ref $Record) */ {
-		const entries = new Array<binaryen.ExpressionRef | undefined>(props.size);
+		const entries = new Array<binaryen.ExpressionRef /* (ref $Property) */ | undefined>(props.size);
 		props.forEach((code, id) => insert_entry(entries, Number(id) % entries.length, code));
-		return this.mod.wasm.array.new_fixed(this.vm.heaptype.Record, entries as binaryen.ExpressionRef[]);
+		return this.mod.wasm.array.new_fixed(this.vm.heaptype.Record, entries as (binaryen.ExpressionRef /* (ref $Property) */)[]);
 	}
 
 	/**
@@ -315,16 +315,22 @@ export class CodeGenerator {
 	public codegenList(items: readonly (binaryen.ExpressionRef /* (ref $Value) */)[] = []): binaryen.ExpressionRef /* (ref $List) */ {
 		const {vm: {heaptype}, mod: {wasm}} = this;
 		let capacity: number = 8;
-		while (items.length > capacity * CodeGenerator.#LOAD_FACTOR) {
-			capacity *= 2;
+		let array: binaryen.ExpressionRef/* (ref $ListArray) */;
+		if (!items.length) {
+			array = wasm.array.new_default(heaptype.ListArray, wasm.i32.const(capacity));
+		} else {
+			while (items.length > capacity * CodeGenerator.#LOAD_FACTOR) {
+				capacity *= 2;
+			}
+			const entries: (binaryen.ExpressionRef /* (ref null $Value) */)[] = Array.from(
+				new Array(capacity),
+				(_, i) => items[i] ?? wasm.ref.null(heaptype.Value),
+			);
+			array = wasm.array.new_fixed(heaptype.ListArray, entries);
 		}
-		const entries: binaryen.ExpressionRef[] = Array.from(
-			new Array(capacity),
-			(_, i) => items[i] ?? wasm.ref.null(heaptype.Value),
-		);
 		return wasm.struct.new([
 			wasm.i32.const(items.length),
-			wasm.array.new_fixed(heaptype.ListArray, entries),
+			array,
 		], heaptype.List);
 	}
 
@@ -338,17 +344,23 @@ export class CodeGenerator {
 	public codegenDict(props: ReadonlyMap<bigint, binaryen.ExpressionRef /* (ref $Property) */> = new Map()): binaryen.ExpressionRef /* (ref $Dict) */ {
 		const {vm: {heaptype}, mod: {wasm}} = this;
 		let capacity: number = 8;
-		while (props.size > capacity * CodeGenerator.#LOAD_FACTOR) {
-			capacity *= 2;
-		}
-		const entries = new Array<binaryen.ExpressionRef | undefined>(capacity).fill(undefined);
-		props.forEach((code, id) => insert_entry(entries, Number(id) % entries.length, code));
-		return wasm.struct.new([
-			wasm.i32.const(props.size),
-			wasm.array.new_fixed(
+		let array: binaryen.ExpressionRef/* (ref $DictArray) */;
+		if (!props.size) {
+			array = wasm.array.new_default(heaptype.DictArray, wasm.i32.const(capacity));
+		} else {
+			while (props.size > capacity * CodeGenerator.#LOAD_FACTOR) {
+				capacity *= 2;
+			}
+			const entries = new Array<binaryen.ExpressionRef /* (ref $Property) */ | undefined>(capacity).fill(undefined);
+			props.forEach((code, id) => insert_entry(entries, Number(id) % entries.length, code));
+			array = wasm.array.new_fixed(
 				heaptype.DictArray,
 				entries.map((entry) => entry ?? wasm.ref.null(heaptype.Property)),
-			),
+			);
+		}
+		return wasm.struct.new([
+			wasm.i32.const(props.size),
+			array,
 		], heaptype.Dict);
 	}
 

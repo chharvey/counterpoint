@@ -92,7 +92,6 @@ export default [
 			}],
 			'@stylistic/member-delimiter-style': ['error', {
 				overrides: {
-					interface:   {singleline: {requireLast: true}},
 					typeLiteral: {
 						multiline:  {delimiter: 'comma'},
 						singleline: {delimiter: 'comma'},
@@ -188,6 +187,7 @@ export default [
 			'@typescript-eslint/no-explicit-any':       ['error', {fixToUnknown: true}], // quickfix `any` to `unknown`
 			'@typescript-eslint/no-unused-expressions': 'off',                           // getter access and logical operations may have side-effects
 			'@typescript-eslint/no-unused-vars':        ['error', {                      // override default options
+				args:                           'all',
 				argsIgnorePattern:              '^_',
 				destructuredArrayIgnorePattern: '^_',
 				ignoreRestSiblings:             true,

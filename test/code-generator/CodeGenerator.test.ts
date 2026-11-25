@@ -129,10 +129,7 @@ test.suite('CodeGenerator', () => {
 				cg.codegenList(),
 				wasm.struct.new([
 					wasm.i32.const(0),
-					wasm.array.new_fixed(
-						cg.vm.heaptype.ListArray,
-						repeat(wasm.ref.null(cg.vm.heaptype.Value), 8),
-					),
+					wasm.array.new_default(cg.vm.heaptype.ListArray, wasm.i32.const(8)),
 				], cg.vm.heaptype.List),
 			);
 		});
@@ -162,10 +159,7 @@ test.suite('CodeGenerator', () => {
 				cg.codegenDict(),
 				wasm.struct.new([
 					wasm.i32.const(0),
-					wasm.array.new_fixed(
-						cg.vm.heaptype.DictArray,
-						repeat(wasm.ref.null(cg.vm.heaptype.Property), 8),
-					),
+					wasm.array.new_default(cg.vm.heaptype.DictArray, wasm.i32.const(8)),
 				], cg.vm.heaptype.Dict),
 			);
 		});
