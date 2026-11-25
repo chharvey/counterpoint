@@ -228,7 +228,26 @@ Codegen((MAP.GET `obj` `accessor`)) := (call $Map.get
 	`Codegen(accessor)`
 );
 
-// Codegen((CALL `callable` `args`));
+Codegen((CALL `callable` `args`)) := (block (result (ref $Value))
+	(local.set $v-returned (local.set $v-panicked (call_ref
+		(struct.new $List
+			(i32.const 0)
+			(array.new_default $ListArray (i32.const 8))
+		)
+		(struct.new $List
+			(i32.const `args.count`)
+			(array.new_fixed $ListArray `CapacityNeeded(args.count)`
+				`args.pad(CapacityNeeded(args.count), "(ref.null $Value)").map(Codegen)`
+			)
+		)
+		(call $Value.as-func `Codegen(callable)`)
+	)))
+	(if (result (ref $Value))
+		(ref.is_null (local.get $v-panicked))
+		(then (ref.as_non_null (local.get $v-returned)))
+		(else (return (local.get $v-returned) (local.get $v-panicked)))
+	)
+);
 
 Codegen((BOOL.FROM  `v`)) := (call $op:not (call $op:not `Codegen(v)`));
 Codegen((INT.FROM   `v`)) := (call $op:to-int   `Codegen(v)`);

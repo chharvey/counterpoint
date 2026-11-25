@@ -696,6 +696,78 @@ test.suite('ValueVisitorCodegen#visit', () => {
 	});
 
 
+	test.test('Call', () => {
+		const {builder, cg, wasm, visitors, visitors: {codegen: {value: VISITOR}}} = setupScript(`{
+			func dub(x: int): int => x * 2;
+			func crash(): nothing {
+				panic Exception.("err");
+			}
+			func noop(): void {
+				return;
+			}
+			dub.(42) + crash.();
+			noop.();
+		}`, {codegen: true});
+		const {reftype, reftypeNull, Value} = cg.vm;
+
+		const fn0_return_v_get: binaryen.ExpressionRef /* (ref null $Value) (ref null $Exception) */ = wasm.local.get(3, binaryen.createType([reftypeNull.Value, reftypeNull.Exception]));
+		const v0_returned_get:  binaryen.ExpressionRef /* (ref null $Value) */                       = wasm.tuple.extract(fn0_return_v_get, 0);
+		const v0_panicked_get:  binaryen.ExpressionRef /* (ref null $Value) */                       = wasm.tuple.extract(fn0_return_v_get, 1);
+
+		const fn1_return_v_get: binaryen.ExpressionRef /* (ref null $Value) (ref null $Exception) */ = wasm.local.get(5, binaryen.createType([reftypeNull.Value, reftypeNull.Exception]));
+		const v1_returned_get:  binaryen.ExpressionRef /* (ref null $Value) */                       = wasm.tuple.extract(fn1_return_v_get, 0);
+		const v1_panicked_get:  binaryen.ExpressionRef /* (ref null $Value) */                       = wasm.tuple.extract(fn1_return_v_get, 1);
+
+		const fn2_return_v_get: binaryen.ExpressionRef /* (ref null $Value) (ref null $Exception) */ = wasm.local.get(7, binaryen.createType([reftypeNull.Value, reftypeNull.Exception]));
+		const v2_returned_get:  binaryen.ExpressionRef /* (ref null $Value) */                       = wasm.tuple.extract(fn2_return_v_get, 0);
+		const v2_panicked_get:  binaryen.ExpressionRef /* (ref null $Value) */                       = wasm.tuple.extract(fn2_return_v_get, 1);
+
+		// the exact expression is needed from the ‘actual’ side; cannot be mocked with a new `local.get`
+		const dub_call_base:   binaryen.ExpressionRef /* (ref $Function) */ = VISITOR.visit(((builder.instructions[3] as OP.Decl).value as OP.Call).callable);
+		const crash_call_base: binaryen.ExpressionRef /* (ref $Function) */ = VISITOR.visit(((builder.instructions[4] as OP.Decl).value as OP.Call).callable);
+		const noop_call_base:  binaryen.ExpressionRef /* (ref $Function) */ = VISITOR.visit(((builder.instructions[6] as OP.Decl).value as OP.Call).callable);
+
+		assertEqualBins([...builder.instructions.slice(3, 5), builder.instructions[6]].map((instr) => visitors.codegen.instr.visit(instr)), [
+			wasm.local.set(4, wasm.block(null, [
+				wasm.local.set(3, wasm.call_ref(
+					Value.asFunc(dub_call_base),
+					[cg.codegenList(), cg.codegenList([genConst(cg, 42n)])],
+					binaryen.createType([reftypeNull.Value, reftypeNull.Exception]),
+				)),
+				wasm.if(
+					wasm.ref.is_null(v0_panicked_get),
+					wasm.ref.as_non_null(v0_returned_get),
+					wasm.return(fn0_return_v_get),
+				),
+			], reftype.Value)),
+			wasm.local.set(6, wasm.block(null, [
+				wasm.local.set(5, wasm.call_ref(
+					Value.asFunc(crash_call_base),
+					[cg.codegenList(), cg.codegenList()],
+					binaryen.createType([reftypeNull.Value, reftypeNull.Exception]),
+				)),
+				wasm.if(
+					wasm.ref.is_null(v1_panicked_get),
+					wasm.ref.as_non_null(v1_returned_get),
+					wasm.return(fn1_return_v_get),
+				),
+			], reftype.Value)),
+			wasm.drop(wasm.block(null, [
+				wasm.local.set(7, wasm.call_ref(
+					Value.asFunc(noop_call_base),
+					[cg.codegenList(), cg.codegenList()],
+					binaryen.createType([reftypeNull.Value, reftypeNull.Exception]),
+				)),
+				wasm.if(
+					wasm.ref.is_null(v2_panicked_get),
+					wasm.ref.as_non_null(v2_returned_get),
+					wasm.return(fn2_return_v_get),
+				),
+			], reftype.Value)),
+		]);
+	});
+
+
 	test.suite('Unop', () => {
 		test.test('Returns custom WASM functions.', () => {
 			const {stmts, cg, visitors, visitors: {codegen: {value: VISITOR}}} = setupScript(`{

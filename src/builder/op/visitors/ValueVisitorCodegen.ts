@@ -1,5 +1,5 @@
 import * as assert from 'node:assert';
-import type * as binaryen from 'binaryen.ts';
+import * as binaryen from 'binaryen.ts';
 import type {
 	CodeGenerator,
 	Local,
@@ -281,8 +281,28 @@ export class ValueVisitorCodegen extends ValueVisitor<binaryen.ExpressionRef /* 
 
 	@memoizePerCode
 	public override visitCall(val: Call): binaryen.ExpressionRef /* (ref $Value) */ {
-		val;
-		throw new Error('`ValueVisitorCodegen#visitCall` is not yet supported.');
+		const {vm: {reftype, reftypeNull, Value: VmValue}, mod: {wasm}} = this.cg;
+
+		const result: Local = this.cg.newLocal(wasm.call_ref(
+			VmValue.asFunc(this.visit(val.callable)),
+			[
+				this.cg.codegenList(),
+				this.cg.codegenList([
+					...val.argsPosit.map((arg) => this.visit(arg)),
+					...[...val.argsNamed].map(([_, arg]) => this.visit(arg)), // FIXME: sort these by parameter order
+				]),
+			],
+			binaryen.createType([reftypeNull.Value, reftypeNull.Exception]),
+		));
+
+		return wasm.block(null, [
+			result.set(),
+			wasm.if(
+				wasm.ref.is_null(wasm.tuple.extract(result.get(), 1)),
+				wasm.ref.as_non_null(wasm.tuple.extract(result.get(), 0)),
+				wasm.return(result.get()),
+			),
+		], reftype.Value);
 	}
 
 	@memoizePerCode
