@@ -18,7 +18,7 @@ import {Operator} from '../../Operator.ts';
 import {Index} from '../Index-.ts';
 import {Key} from '../Key.ts';
 import * as EXPR from '../expression/index.ts';
-import type * as STMT from '../statement/index.ts';
+import * as STMT from '../statement/index.ts';
 import {
 	bothInts,
 	bothNats,
@@ -105,7 +105,13 @@ export class ExprVisitorBuild extends EXPR.ExprVisitor<OP.Value> {
 	public override visitExprBlock(expr: EXPR.ExpressionBlock): OP.Value {
 		this.#nodeVisitorBuild ??= new AstNodeVisitorBuild(this.builder);
 		expr.block.children.slice(0, -1).forEach((stmt) => this.#nodeVisitorBuild!.visit(stmt));
-		return this.visit((expr.block.children.at(-1) as STMT.StatementExpression).expr!);
+		const last_stmt: STMT.Statement = expr.block.children.at(-1)!;
+		if (last_stmt instanceof STMT.StatementExpression && last_stmt.expr) {
+			return this.visit(last_stmt.expr);
+		} else {
+			this.#nodeVisitorBuild.visit(last_stmt);
+			return new OP.NoValue(true);
+		}
 	}
 
 	@memoizePerNode

@@ -212,42 +212,73 @@ test.suite('ExprVisitorBuild#visit', () => {
 	});
 
 
-	test.test('ExpressionBlock returns the last expression-statement’s expression.', () => {
-		assert.strictEqual(setupScript(`{
-			val mut x: int = 42;
-			val mut y: int = {
-				set x = x + 2;
-				x / 2;
-			};
-			set y = {
-				y;
-				set y = y + x;
-				y * 2;
-			} + y;
-		}`, {codegen: false}).builder.print(), xjs.String.dedent`
-			"block-0":
-				(DECL <int> x (INT.CONST 42))
-				(SET x (INT.ADD (GET x) (INT.CONST 2)))
-				(DECL <int> y (INT.DIV (GET x) (INT.CONST 2)))
-				(DROP (GET y))
-				(SET y (INT.ADD (GET y) (GET x)))
-				(DECL <int> $0 (INT.MUL (GET y) (INT.CONST 2)))
-				(SET y (INT.ADD (GET $0) (GET y)))
-				(ENDPROGRAM)
-		`.trim());
-		return assert.strictEqual(setupScript(`{
-			val mut x: int = 42;
-			val mut y: int = 69;
-			x + { x; x * y; };
-		}`, {codegen: false}).builder.print(), xjs.String.dedent`
-			"block-0":
-				(DECL <int> x (INT.CONST 42))
-				(DECL <int> y (INT.CONST 69))
-				(DROP (GET x))
-				(DECL <int> $0 (INT.MUL (GET x) (GET y)))
-				(DROP (INT.ADD (GET x) (GET $0)))
-				(ENDPROGRAM)
-		`.trim());
+	test.suite('ExpressionBlock', () => {
+		test.test('returns the last expression-statement’s expression, if it exists.', () => {
+			assert.strictEqual(setupScript(`{
+				val mut x: int = 42;
+				val mut y: int = {
+					set x = x + 2;
+					x / 2;
+				};
+				set y = {
+					y;
+					set y = y + x;
+					y * 2;
+				} + y;
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
+				"block-0":
+					(DECL <int> x (INT.CONST 42))
+					(SET x (INT.ADD (GET x) (INT.CONST 2)))
+					(DECL <int> y (INT.DIV (GET x) (INT.CONST 2)))
+					(DROP (GET y))
+					(SET y (INT.ADD (GET y) (GET x)))
+					(DECL <int> $0 (INT.MUL (GET y) (INT.CONST 2)))
+					(SET y (INT.ADD (GET $0) (GET y)))
+					(ENDPROGRAM)
+			`.trim());
+			return assert.strictEqual(setupScript(`{
+				val mut x: int = 42;
+				val mut y: int = 69;
+				x + { x; x * y; };
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
+				"block-0":
+					(DECL <int> x (INT.CONST 42))
+					(DECL <int> y (INT.CONST 69))
+					(DROP (GET x))
+					(DECL <int> $0 (INT.MUL (GET x) (GET y)))
+					(DROP (INT.ADD (GET x) (GET $0)))
+					(ENDPROGRAM)
+			`.trim());
+		});
+		test.test('returns (VOID) if the last statement is an empty expression-statement.', () => {
+			assert.strictEqual(setupScript(`{
+				val mut x: int = 42;
+				{
+					set x = x + 2;
+					;
+				};
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
+				"block-0":
+					(DECL <int> x (INT.CONST 42))
+					(SET x (INT.ADD (GET x) (INT.CONST 2)))
+					(DROP (VOID))
+					(ENDPROGRAM)
+			`.trim());
+		});
+		test.test('returns (VOID) if the last statement is not an expression-statement.', () => {
+			assert.strictEqual(setupScript(`{
+				val mut x: int = 42;
+				{
+					set x = x + 2;
+				};
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
+				"block-0":
+					(DECL <int> x (INT.CONST 42))
+					(SET x (INT.ADD (GET x) (INT.CONST 2)))
+					(DROP (VOID))
+					(ENDPROGRAM)
+			`.trim());
+		});
 	});
 
 
