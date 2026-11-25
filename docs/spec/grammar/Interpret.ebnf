@@ -502,7 +502,10 @@ Function! Interpret((FUNCTION `name` `source` `instructions`)) :=
 ;
 
 Nil! Interpret((DROP `v`)) :=
-	1. *Perform:* `Interpret(v)`.
+	1. *If* `v` is (VOID):
+		1. *Return.*
+	2. *Else:*
+		1. *Return:* `Interpret(v)`.
 ;
 
 Nil! Interpret((DECL `id` `type` `v`)) :=
