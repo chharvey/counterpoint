@@ -88,7 +88,7 @@ export class ValueVisitorInterpret extends ValueVisitor<VALUE.Value> {
 			}
 			return new VALUE.Class(val.target.classSignature.instanceType, native_class);
 		} else {
-			return this.interp.getLocalValueOrThrow(val.target);
+			return this.interp.getSymbolValueOrThrow(val.target);
 		}
 	}
 

@@ -6,7 +6,7 @@ import {
 } from '../../../lib/index.ts';
 import {TYPE} from '../../../typer/index.ts';
 import {SymbolSchemaVar} from '../../../validator/index.ts';
-import type {Builder} from '../../Builder.ts';
+import {BuilderSymbolStatus, type Builder} from '../../Builder.ts';
 import {TypeName} from '../utils-public.ts';
 import {
 	OpCode,
@@ -57,7 +57,7 @@ export class OpcodeVisitorValidate extends OpcodeVisitor<void> {
 
 	@runOncePerCode
 	public override visitGet(val: Get): void {
-		if (this.builder.getLocalStatus(val.target) !== 'set') {
+		if (this.builder.getSymbolStatus(val.target) !== BuilderSymbolStatus.SET) {
 			throw new ReferenceError(`Invalid IR: Symbol \`${val.targetName}\` must be set before getting.`);
 		}
 	}
@@ -259,19 +259,19 @@ export class OpcodeVisitorValidate extends OpcodeVisitor<void> {
 
 	@runOncePerCode
 	public override visitDecl(instr: Decl): void {
-		// Use 'declared' only for declared, unset temps. Enforces setting before getting.
-		// Uninitialized variables and parameters can use 'set' becuase they always have a `Maybe` value.
-		this.builder.setLocalStatus(instr.target, instr.target instanceof SymbolSchemaVar || instr.value ? 'set' : 'declared');
+		// Use `DECLARED` only for declared, unset temps. Enforces setting before getting.
+		// Uninitialized variables and parameters can use `SET` becuase they always have a `Maybe` value.
+		this.builder.setSymbolStatus(instr.target, instr.target instanceof SymbolSchemaVar || instr.value ? BuilderSymbolStatus.SET : BuilderSymbolStatus.DECLARED);
 		instr.value && this.visit(instr.value);
 		return instr.value && assert.ok(instr.value.type.isSubtypeOf(instr.targetType), `${instr.value.type} must be a subtype of ${instr.targetType}.`);
 	}
 
 	@runOncePerCode
 	public override visitSet(instr: OpSet): void {
-		if (this.builder.getLocalStatus(instr.target) === undefined) {
+		if (this.builder.getSymbolStatus(instr.target) === undefined) {
 			throw new ReferenceError(`Invalid IR: Symbol \`${instr.targetName}\` must be declared before setting.`);
 		}
-		this.builder.setLocalStatus(instr.target, 'set');
+		this.builder.setSymbolStatus(instr.target, BuilderSymbolStatus.SET);
 		this.visit(instr.value);
 		return assert.ok(instr.value.type.isSubtypeOf(instr.targetType), `${instr.value.type} must be a subtype of ${instr.targetType}.`);
 	}

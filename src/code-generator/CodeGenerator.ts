@@ -3,7 +3,7 @@ import * as binaryen from 'binaryen.ts';
 import {VirtualMachine} from '../vm/index.ts';
 import {SymbolSchema} from '../validator/index.ts';
 import type {
-	BuilderLocalSymbol,
+	BuilderSymbol,
 	Builder,
 } from '../builder/index.ts';
 import {
@@ -98,7 +98,7 @@ export class CodeGenerator {
 	 * @param type   the type of the value; if not supplied, the Local will compute its type using `binaryen.getExpressionType`
 	 * @return       Was the operation performed?
 	 */
-	public setLocal(schema: BuilderLocalSymbol, value: binaryen.ExpressionRef, typ?: binaryen.Type): boolean {
+	public setLocal(schema: BuilderSymbol, value: binaryen.ExpressionRef, typ?: binaryen.Type): boolean {
 		let did: boolean = false;
 		if (!this.getLocal(schema)) {
 			this.#locals.add(new Local(this.mod.wasm, this.#locals.size, value, typ, schema));
@@ -112,12 +112,12 @@ export class CodeGenerator {
 	 * @param  schema the compiler’s internal data for a declared variable or a Builder temporary
 	 * @return        the local or `undefined`
 	 */
-	public getLocal(schema: BuilderLocalSymbol): Local | undefined {
+	public getLocal(schema: BuilderSymbol): Local | undefined {
 		return [...this.#locals].find((local) => local.schema === schema);
 	}
 
 	/** Utility function that returns {@link CodeGenerator#getLocal} if it exists, otherwise throws a native ReferenceError. */
-	public getLocalOrThrow(schema: BuilderLocalSymbol): Local {
+	public getLocalOrThrow(schema: BuilderSymbol): Local {
 		return this.getLocal(schema) ?? assert.fail(new ReferenceError(`Expected WASM local \`${schema instanceof SymbolSchema ? schema.source : schema.name}\` to be registered in code-generator.`));
 	}
 
@@ -129,7 +129,7 @@ export class CodeGenerator {
 	 * @param type   the type of the value; if not supplied, the Local will compute its type using `binaryen.getExpressionType`
 	 * @return       the local variable set (or retrieved)
 	 */
-	public teeLocal(schema: BuilderLocalSymbol, value: binaryen.ExpressionRef, type?: binaryen.Type): Local {
+	public teeLocal(schema: BuilderSymbol, value: binaryen.ExpressionRef, type?: binaryen.Type): Local {
 		this.setLocal(schema, value, type);
 		return this.getLocal(schema)!;
 	}

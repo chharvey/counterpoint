@@ -1,6 +1,6 @@
 import * as assert from 'node:assert';
 import * as binaryen from 'binaryen.ts';
-import type {BuilderLocalSymbol} from '../builder/index.ts';
+import type {BuilderSymbol} from '../builder/index.ts';
 
 
 
@@ -24,7 +24,7 @@ export class Local {
 		private readonly index: number,
 		init: binaryen.ExpressionRef,
 		public readonly type:    binaryen.Type = binaryen.getExpressionType(init),
-		public readonly schema?: BuilderLocalSymbol,
+		public readonly schema?: BuilderSymbol,
 	) {
 		this.#value = init;
 	}

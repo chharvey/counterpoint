@@ -29,7 +29,11 @@ export type Temp = {
 
 
 
-export type BuilderLocalSymbol = SymbolSchemaVar | SymbolSchemaClass | Temp;
+export type BuilderSymbol = SymbolSchemaVar | SymbolSchemaClass | Temp;
+export enum BuilderSymbolStatus {
+	DECLARED,
+	SET,
+}
 
 
 
@@ -43,7 +47,7 @@ export class Builder {
 	#labelCounter: bigint = 0n;
 
 	/** A map containing local variable/temp statuses. */
-	readonly #locals = new Map<BuilderLocalSymbol, 'declared' | 'set'>();
+	readonly #symbols = new Map<BuilderSymbol, BuilderSymbolStatus>();
 
 	/**
 	 * Declared function overloads, stored in Temps.
@@ -92,12 +96,12 @@ export class Builder {
 		return temp;
 	}
 
-	public getLocalStatus(local: BuilderLocalSymbol): 'declared' | 'set' | undefined {
-		return this.#locals.get(local);
+	public getSymbolStatus(schema: BuilderSymbol): BuilderSymbolStatus | undefined {
+		return this.#symbols.get(schema);
 	}
 
-	public setLocalStatus(local: BuilderLocalSymbol, status: 'declared' | 'set'): void {
-		this.#locals.set(local, status);
+	public setSymbolStatus(schema: BuilderSymbol, status: BuilderSymbolStatus): void {
+		this.#symbols.set(schema, status);
 	}
 
 	public initiateBlock(label: string): void {
