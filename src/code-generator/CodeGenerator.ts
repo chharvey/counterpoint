@@ -1,5 +1,7 @@
+import * as assert from 'node:assert';
 import * as binaryen from 'binaryen.ts';
 import {VirtualMachine} from '../vm/index.ts';
+import {SymbolSchema} from '../validator/index.ts';
 import type {
 	BuilderLocalSymbol,
 	Builder,
@@ -114,6 +116,11 @@ export class CodeGenerator {
 		return [...this.#locals].find((local) => local.schema === schema);
 	}
 
+	/** Utility function that returns {@link CodeGenerator#getLocal} if it exists, otherwise throws a native ReferenceError. */
+	public getLocalOrThrow(schema: BuilderLocalSymbol): Local {
+		return this.getLocal(schema) ?? assert.fail(new ReferenceError(`Expected WASM local \`${schema instanceof SymbolSchema ? schema.source : schema.name}\` to be registered in code-generator.`));
+	}
+
 	/**
 	 * Set and then return a local variable.
 	 * If a variable with that schema has already been added, this CodeGenerator’s state is not changed.
@@ -159,6 +166,11 @@ export class CodeGenerator {
 	 */
 	private getGlobal(name: string): Global | undefined {
 		return [...this.#globals].find((global) => global.name === name);
+	}
+
+	/** Utility function that returns {@link CodeGenerator#getGlobal} if it exists, otherwise throws a native ReferenceError. */
+	private getGlobalOrThrow(name: string): Global {
+		return this.getGlobal(name) ?? assert.fail(new ReferenceError(`Expected WASM global \`${name}\` to be registered in code-generator.`));
 	}
 
 	/**

@@ -1,4 +1,3 @@
-import * as assert from 'node:assert';
 import type * as binaryen from 'binaryen.ts';
 import type {
 	CodeGenerator,
@@ -104,7 +103,7 @@ export class ValueVisitorCodegen extends ValueVisitor<binaryen.ExpressionRef /* 
 				}
 			}
 		}
-		return this.cg.getLocal(val.target)?.get() ?? assert.fail(new ReferenceError(`Local variable \`${val.targetName}\` must be set first!`));
+		return this.cg.getLocalOrThrow(val.target).get();
 	}
 
 	@memoizePerCode

@@ -56,7 +56,7 @@ export class InstrVisitorCodegen extends InstrVisitor<binaryen.ExpressionRef /* 
 
 	@memoizePerCode
 	public override visitSet(instr: OpSet): binaryen.ExpressionRef /* void */ {
-		return this.cg.getLocal(instr.target)?.set(this.#valueVisitorCodegen.visit(instr.value)) ?? assert.fail(new ReferenceError(`Local variable \`${instr.targetName}\` must be set first!`));
+		return this.cg.getLocalOrThrow(instr.target).set(this.#valueVisitorCodegen.visit(instr.value));
 	}
 
 	@memoizePerCode

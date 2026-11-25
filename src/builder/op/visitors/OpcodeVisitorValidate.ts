@@ -58,7 +58,7 @@ export class OpcodeVisitorValidate extends OpcodeVisitor<void> {
 	@runOncePerCode
 	public override visitGet(val: Get): void {
 		if (this.builder.getLocalStatus(val.target) !== 'set') {
-			throw new ReferenceError(`Local variable \`${val.targetName}\` must be set before getting!`);
+			throw new ReferenceError(`Invalid IR: Symbol \`${val.targetName}\` must be set before getting.`);
 		}
 	}
 
@@ -269,7 +269,7 @@ export class OpcodeVisitorValidate extends OpcodeVisitor<void> {
 	@runOncePerCode
 	public override visitSet(instr: OpSet): void {
 		if (this.builder.getLocalStatus(instr.target) === undefined) {
-			throw new ReferenceError(`Local variable \`${instr.targetName}\` must be declared before setting!`);
+			throw new ReferenceError(`Invalid IR: Symbol \`${instr.targetName}\` must be declared before setting.`);
 		}
 		this.builder.setLocalStatus(instr.target, 'set');
 		this.visit(instr.value);

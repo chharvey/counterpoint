@@ -88,7 +88,7 @@ export class ValueVisitorInterpret extends ValueVisitor<VALUE.Value> {
 			}
 			return new VALUE.Class(val.target.classSignature.instanceType, native_class);
 		} else {
-			return this.interp.getLocalValue(val.target) ?? assert.fail(new ReferenceError(`Local variable \`${val.targetName}\` must be set first!`));
+			return this.interp.getLocalValueOrThrow(val.target);
 		}
 	}
 

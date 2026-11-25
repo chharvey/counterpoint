@@ -1,4 +1,6 @@
+import * as assert from 'node:assert';
 import type {VALUE} from '../typer/index.ts';
+import {SymbolSchema} from '../validator/index.ts';
 import type {BuilderLocalSymbol} from './Builder.ts';
 import type {CfgNode} from './CfgNode.ts';
 
@@ -28,6 +30,10 @@ export class Interpreter {
 
 	public getLocalValue(local: BuilderLocalSymbol): VALUE.Value | undefined {
 		return this.#symbolTable.get(local);
+	}
+
+	public getLocalValueOrThrow(local: BuilderLocalSymbol): VALUE.Value {
+		return this.getLocalValue(local) ?? assert.fail(new ReferenceError(`Expected symbol \`${local instanceof SymbolSchema ? local.source : local.name}\` to be registered in interpreter.`));
 	}
 
 	public registerBlock(block: CfgNode): void {
