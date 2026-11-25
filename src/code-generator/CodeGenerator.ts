@@ -309,16 +309,22 @@ export class CodeGenerator {
 	public codegenList(items: readonly (binaryen.ExpressionRef /* (ref $Value) */)[] = []): binaryen.ExpressionRef /* (ref $List) */ {
 		const {vm: {heaptype}, mod: {wasm}} = this;
 		let capacity: number = 8;
-		while (items.length > capacity * CodeGenerator.#LOAD_FACTOR) {
-			capacity *= 2;
+		let array: binaryen.ExpressionRef/* (ref $ListArray) */;
+		if (!items.length) {
+			array = wasm.array.new_default(heaptype.ListArray, wasm.i32.const(capacity));
+		} else {
+			while (items.length > capacity * CodeGenerator.#LOAD_FACTOR) {
+				capacity *= 2;
+			}
+			const entries: binaryen.ExpressionRef[] = Array.from(
+				new Array(capacity),
+				(_, i) => items[i] ?? wasm.ref.null(heaptype.Value),
+			);
+			array = wasm.array.new_fixed(heaptype.ListArray, entries);
 		}
-		const entries: binaryen.ExpressionRef[] = Array.from(
-			new Array(capacity),
-			(_, i) => items[i] ?? wasm.ref.null(heaptype.Value),
-		);
 		return wasm.struct.new([
 			wasm.i32.const(items.length),
-			wasm.array.new_fixed(heaptype.ListArray, entries),
+			array,
 		], heaptype.List);
 	}
 
@@ -332,17 +338,23 @@ export class CodeGenerator {
 	public codegenDict(props: ReadonlyMap<bigint, binaryen.ExpressionRef /* (ref $Property) */> = new Map()): binaryen.ExpressionRef /* (ref $Dict) */ {
 		const {vm: {heaptype}, mod: {wasm}} = this;
 		let capacity: number = 8;
-		while (props.size > capacity * CodeGenerator.#LOAD_FACTOR) {
-			capacity *= 2;
-		}
-		const entries = new Array<binaryen.ExpressionRef | undefined>(capacity).fill(undefined);
-		props.forEach((code, id) => insert_entry(entries, Number(id) % entries.length, code));
-		return wasm.struct.new([
-			wasm.i32.const(props.size),
-			wasm.array.new_fixed(
+		let array: binaryen.ExpressionRef/* (ref $DictArray) */;
+		if (!props.size) {
+			array = wasm.array.new_default(heaptype.DictArray, wasm.i32.const(capacity));
+		} else {
+			while (props.size > capacity * CodeGenerator.#LOAD_FACTOR) {
+				capacity *= 2;
+			}
+			const entries = new Array<binaryen.ExpressionRef | undefined>(capacity).fill(undefined);
+			props.forEach((code, id) => insert_entry(entries, Number(id) % entries.length, code));
+			array = wasm.array.new_fixed(
 				heaptype.DictArray,
 				entries.map((entry) => entry ?? wasm.ref.null(heaptype.Property)),
-			),
+			);
+		}
+		return wasm.struct.new([
+			wasm.i32.const(props.size),
+			array,
 		], heaptype.Dict);
 	}
 
