@@ -294,7 +294,7 @@ Codegen((EQ `v0` `v1`)) := (call $op:eq `Codegen(v0)` `Codegen(v1)`);
 Codegen((IS `v0` `v1`)) := (call $op:is `Codegen(v0)` `Codegen(v1)`);
 
 Codegen((FUNCTION `name` `source` `instructions`)) := [
-	(func $func-`name` (param `Repeat("(ref $Value)", ‹arity›)`) (result (ref null $Value) (ref null $Exception))
+	(func $func-`name` (param (ref $List) (ref null $List)) (result (ref null $Value) (ref null $Exception))
 		...`Codegen(instructions)`
 	)
 	return (struct.new $Function

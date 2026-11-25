@@ -36,6 +36,7 @@ export class Value implements HasFuncData {
 			['Value#asList',      {name: 'Value.as-list',       param: reftype.Value,      result: reftype.List}],
 			['Value#asDict',      {name: 'Value.as-dict',       param: reftype.Value,      result: reftype.Dict}],
 			['Value#asMap',       {name: 'Value.as-map',        param: reftype.Value,      result: reftype.Map}],
+			['Value#asFunc',      {name: 'Value.as-func',       param: reftype.Value,      result: reftype.Signature}],
 		]);
 	}
 
@@ -136,5 +137,10 @@ export class Value implements HasFuncData {
 	/** Returns the value as a Map. */
 	public asMap(value: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Map) */ {
 		return this.vm.mod.wasm.call('Value.as-map', [value], this.vm.reftype.Map);
+	}
+
+	/** Returns the value as a WASM function. */
+	public asFunc(value: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Signature) */ {
+		return this.vm.mod.wasm.call('Value.as-func', [value], this.vm.reftype.Signature);
 	}
 }

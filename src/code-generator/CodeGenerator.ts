@@ -495,14 +495,7 @@ export class CodeGenerator {
 		const body: binaryen.ExpressionRef /* void */ = builder.codegen(cg); // need to code-gen first before getting all locals below
 		this.mod.functions.add(
 			fn_name,
-			binaryen.createType(new Array(Number(arity)).fill(reftype.Value)),
-			/*
-			 * Every dev-defined function has its return type transformed into `(result (ref null $Value) (ref null $Exception))`,
-			 * regardless of how the source function is defined.
-			 * The first `(ref null $Value)` is the return value (whatever type it may be)
-			 * and the second `(ref null $Exception)` is the panicked value (if it exists).
-			 * Void functions that don’t panic return `(ref.null $Value) (ref.null $Exception)`.
-			 */
+			binaryen.createType([reftype.List, reftypeNull.List]),
 			binaryen.createType([reftypeNull.Value, reftypeNull.Exception]),
 			cg.getAllLocals().map((local) => local.type),
 			body,
