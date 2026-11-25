@@ -18,7 +18,7 @@ import {
 	ValueVisitor,
 	type Value,
 } from '../Value.ts';
-import type {NoValue} from '../Trap.ts';
+import type {NoValue} from '../NoValue.ts';
 import type {Const} from '../Const.ts';
 import type {Get} from '../Get.ts';
 import type {Template} from '../Template.ts';
