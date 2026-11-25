@@ -57,7 +57,7 @@ export class ExprVisitorBuild extends EXPR.ExprVisitor<OP.Value> {
 	public override visitVariable(expr: EXPR.Variable): OP.Value {
 		const symbol = expr.validator.getSymbol(expr.id) as SymbolSchemaVar | SymbolSchemaFunc | SymbolSchemaClass;
 		if (symbol instanceof SymbolSchemaFunc) {
-			return new OP.Trap(); // not used in `this.visitCall`
+			return new OP.NoValue(); // not used in `this.visitCall`
 		}
 		return new OP.Get(symbol, symbol instanceof SymbolSchemaVar ? symbol.irType : TYPE.CLASS);
 	}
@@ -250,7 +250,7 @@ export class ExprVisitorBuild extends EXPR.ExprVisitor<OP.Value> {
 					expr.type!.union(v0.type), // allow invalid type-casting; in that case condition will be false anyway
 					is_instance,
 					() => v0,
-					() => new OP.Trap(),
+					() => new OP.NoValue(),
 				);
 			}
 			case Operator.CAST_MAYBE: {
@@ -392,7 +392,7 @@ export class ExprVisitorBuild extends EXPR.ExprVisitor<OP.Value> {
 	}
 
 	public override defaultVisit(_expr: EXPR.Expression): OP.Value {
-		return new OP.Trap();
+		return new OP.NoValue();
 	}
 
 	#buildUnwrappedGet(access: EXPR.Access, base_val: OP.ValueTac, return_type: TYPE.Type): OP.Value {

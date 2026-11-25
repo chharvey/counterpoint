@@ -1,6 +1,6 @@
 import {
 	Value,
-	Trap,
+	NoValue,
 	Const,
 	Get,
 	Template,
@@ -155,7 +155,7 @@ export enum OpCode {
 
 export abstract class OpcodeVisitor<T> {
 	/* eslint-disable @stylistic/space-before-function-paren */
-	public visitTrap                 (val: Trap):                 T { return this.defaultVisit(val); }
+	public visitNoValue              (val: NoValue):              T { return this.defaultVisit(val); }
 	public visitConst                (val: Const):                T { return this.defaultVisit(val); }
 	public visitGet                  (val: Get):                  T { return this.defaultVisit(val); }
 	public visitTemplate             (val: Template):             T { return this.defaultVisit(val); }
@@ -197,7 +197,7 @@ export abstract class OpcodeVisitor<T> {
 	/** @final */
 	public visit(op: Opcode): T {
 		switch (op.constructor) {
-			case Trap:                 { return this.visitTrap                 (op as Trap); }
+			case NoValue:              { return this.visitNoValue              (op as NoValue); }
 			case Const:                { return this.visitConst                (op as Const); }
 			case Get:                  { return this.visitGet                  (op as Get); }
 			case Template:             { return this.visitTemplate             (op as Template); }

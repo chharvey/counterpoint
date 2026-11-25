@@ -22,9 +22,9 @@ import {
 
 
 test.suite('ValueVisitorCodegen#visit', () => {
-	test.test('Trap returns (unreachable).', () => {
+	test.test('NoValue returns (unreachable).', () => {
 		const cg = new CodeGenerator();
-		return assertEqualBins(new OP.ValueVisitorCodegen(cg).visit(new OP.Trap()), cg.mod.wasm.unreachable());
+		return assertEqualBins(new OP.ValueVisitorCodegen(cg).visit(new OP.NoValue()), cg.mod.wasm.unreachable());
 	});
 
 

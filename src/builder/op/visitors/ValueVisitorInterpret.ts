@@ -18,7 +18,7 @@ import {
 	ValueVisitor,
 	type Value,
 } from '../Value.ts';
-import type {Trap} from '../Trap.ts';
+import type {NoValue} from '../Trap.ts';
 import type {Const} from '../Const.ts';
 import type {Get} from '../Get.ts';
 import type {Template} from '../Template.ts';
@@ -49,7 +49,7 @@ export class ValueVisitorInterpret extends ValueVisitor<VALUE.Value> {
 	}
 
 
-	public override visitTrap(_val: Trap): VALUE.Value {
+	public override visitNoValue(_val: NoValue): VALUE.Value {
 		throw new ErrorCode('Trap.');
 	}
 

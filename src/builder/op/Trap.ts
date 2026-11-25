@@ -5,7 +5,7 @@ import {ValueTac} from './ValueTac.ts';
 
 
 /** Immediately halt the runtime program. */
-export class Trap extends ValueTac {
+export class NoValue extends ValueTac {
 	public constructor() {
 		super(OpCode.TRAP, TYPE.NOTHING);
 	}

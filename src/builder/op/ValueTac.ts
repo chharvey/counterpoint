@@ -9,7 +9,7 @@ import type {OpCode} from './Opcode.ts';
  * See {@link Value.asTac} for details.
  *
  * Known subclasses:
- * - Trap
+ * - NoValue
  * - Const
  * - Get
  */

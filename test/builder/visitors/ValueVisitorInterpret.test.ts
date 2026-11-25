@@ -33,8 +33,8 @@ test.suite('ValueVisitorInterpret#visit', () => {
 	const VALUE_FLOAT_N0 = new VALUE.Float(-0.0);
 
 
-	test.test('Trap always throws.', () => {
-		assert.throws(() => new OP.ValueVisitorInterpret(new Interpreter()).visit(new OP.Trap()), /Trap\./);
+	test.test('NoValue always throws.', () => {
+		assert.throws(() => new OP.ValueVisitorInterpret(new Interpreter()).visit(new OP.NoValue()), /Trap\./);
 	});
 
 
