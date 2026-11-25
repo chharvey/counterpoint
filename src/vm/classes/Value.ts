@@ -39,6 +39,10 @@ export class Value implements HasFuncData {
 		]);
 	}
 
+	/**
+	 * A value in the VM representing the return of a void function.
+	 * Not an actual Counterpoint value.
+	 */                                    public get VOID():  binaryen.ExpressionRef /* (ref $Value) */ { return this.vm.mod.wasm.global.get('Value.VOID',  this.vm.reftype.Value); }
 	/** The Counterpoint `null`  value. */ public get NULL():  binaryen.ExpressionRef /* (ref $Value) */ { return this.vm.mod.wasm.global.get('Value.NULL',  this.vm.reftype.Value); }
 	/** The Counterpoint `false` value. */ public get FALSE(): binaryen.ExpressionRef /* (ref $Value) */ { return this.vm.mod.wasm.global.get('Value.FALSE', this.vm.reftype.Value); }
 	/** The Counterpoint `true`  value. */ public get TRUE():  binaryen.ExpressionRef /* (ref $Value) */ { return this.vm.mod.wasm.global.get('Value.TRUE',  this.vm.reftype.Value); }

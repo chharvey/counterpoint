@@ -1,3 +1,4 @@
+(global $Value.VOID (export "Value#VOID") (ref $Value) (struct.new_default $Value))
 (global $Value.NULL (export "Value#NULL") (ref $Cpl-Primitive) (struct.new $Cpl-Primitive
 	(global.get $Class.NULL)
 	(ref.null $Dict)
