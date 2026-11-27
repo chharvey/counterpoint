@@ -416,20 +416,6 @@ export class CodeGenerator {
 	}
 
 	/**
-	 * Return a new `$Object`, given its constructor class.
-	 * @param class_ the constructor of the `$Object` object
-	 * @return       `(struct.new $Object <class_> <empty-dict>)`
-	 */
-	public codegenObject(class_: binaryen.ExpressionRef /* (ref $Class) */): binaryen.ExpressionRef /* (ref $Object) */ {
-		const {vm: {heaptype, Object: VmObject}, mod: {wasm}} = this;
-		return wasm.struct.new([
-			class_,
-			wasm.ref.null(heaptype.Dict),
-			VmObject.ctrPlusPlus(),
-		], heaptype.Object);
-	}
-
-	/**
 	 * Return a new `$Exception` from a given message and optional cause.
 	 * @param message the error message
 	 * @param value   the optional cause; if not given, `(ref.null $Exception)` is used

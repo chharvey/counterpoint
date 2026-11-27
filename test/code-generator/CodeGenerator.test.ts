@@ -247,20 +247,6 @@ test.suite('CodeGenerator', () => {
 			);
 		});
 
-		test.test('#codegenObject', () => {
-			/** A new Object instance — its `$class` field points to the class named `Object`. */
-			const new_object: binaryen.ExpressionRef /* (ref $Object) */ = cg.codegenObject(cg.vm.Class.OBJECT);
-
-			return assertEqualBins(
-				new_object,
-				wasm.struct.new([
-					cg.vm.Class.OBJECT,
-					wasm.ref.null(cg.vm.heaptype.Dict),
-					cg.vm.Object.ctrPlusPlus(),
-				], cg.vm.heaptype.Object),
-			);
-		});
-
 		test.test('#codegenException', () => {
 			const message:   binaryen.ExpressionRef /* (ref $Cpl-String) */ = wasm.ref.cast(genConst(cg, 'message'), cg.vm.reftype.CplString);
 			const expected1: binaryen.ExpressionRef /* (ref $Exception) */  = wasm.struct.new([

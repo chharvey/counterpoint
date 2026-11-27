@@ -172,7 +172,11 @@ export class ValueVisitorCodegen extends ValueVisitor<binaryen.ExpressionRef /* 
 				this.wasm.ref.null(this.heaptype.Dict),
 				this.cg.vm.Object.ctrPlusPlus(),
 			], this.heaptype.Class) : this.cg.vm.Class.CLASS
-			: this.cg.codegenObject(class_!);
+			: this.wasm.struct.new([
+				class_!,
+				this.wasm.ref.null(this.heaptype.Dict),
+				this.cg.vm.Object.ctrPlusPlus(),
+			], this.heaptype.Object);
 	}
 
 	@memoizePerCode

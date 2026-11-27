@@ -431,7 +431,11 @@ test.suite('ValueVisitorCodegen#visit', () => {
 		].map((opcode) => VISITOR.visit(opcode)), [
 			VmClass.CLASS,
 			expected1,
-			cg.codegenObject(wasm.ref.cast(expected1, reftype.Class)),
+			wasm.struct.new([
+				wasm.ref.cast(expected1, reftype.Class),
+				wasm.ref.null(heaptype.Dict),
+				VmObject.ctrPlusPlus(),
+			], heaptype.Object),
 		]);
 	});
 
