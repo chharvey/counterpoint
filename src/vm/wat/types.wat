@@ -30,6 +30,9 @@
 	(type $DictArray (array (mut (ref null $Property))))
 	(type $MapArray  (array (mut (ref null $Case))))
 
+	;; type signature of any author-defined function in CPL source
+	(type $Signature (func (param $env (ref $Tuple)) (param $params (ref null $Tuple)) (result (ref null $Value) (ref null $Exception))))
+
 	(type $List (struct
 		;; number of items currently in the array (for total capacity, get its `(array.len)`); mutable to allow array mutation
 		(field $size (mut i32))
@@ -48,9 +51,6 @@
 		;; the array of Map cases; mutable to allow reallocation
 		(field $array (mut (ref $MapArray)))
 	))
-
-	;; type signature of any author-defined function in CPL source
-	(type $Signature (func (param $env (ref $List)) (param $params (ref null $List)) (result (ref null $Value) (ref null $Exception))))
 
 
 

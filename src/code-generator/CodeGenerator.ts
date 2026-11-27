@@ -491,7 +491,7 @@ export class CodeGenerator {
 		const body: binaryen.ExpressionRef /* void */ = builder.codegen(cg); // need to code-gen first before getting all locals below
 		this.mod.functions.add(
 			fn_name,
-			binaryen.createType([reftype.List, reftypeNull.List]),
+			binaryen.createType([reftype.Tuple, reftypeNull.Tuple]),
 			binaryen.createType([reftypeNull.Value, reftypeNull.Exception]),
 			cg.getAllLocals().map((local) => local.type),
 			body,
