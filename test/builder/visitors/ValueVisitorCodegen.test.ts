@@ -442,7 +442,7 @@ test.suite('ValueVisitorCodegen#visit', () => {
 
 	test.test('ExcpNew', () => {
 		const cg = new CodeGenerator();
-		const {mod: {wasm}, vm: {reftype}} = cg;
+		const {vm: {reftype}, mod: {wasm}} = cg;
 		const VISITOR = new OP.ValueVisitorCodegen(cg);
 		const actual = new OP.ExcpNew(new OP.Const(new VALUE.String('hello')));
 		const expected: binaryen.ExpressionRef /* (ref $Exception) */ = cg.codegenException(wasm.ref.cast(genConst(cg, 'hello'), reftype.CplString));
@@ -474,7 +474,7 @@ test.suite('ValueVisitorCodegen#visit', () => {
 
 	test.test('ResultNew', () => {
 		const cg = new CodeGenerator();
-		const {mod: {wasm}, vm: {reftype}} = cg;
+		const {vm: {reftype}, mod: {wasm}} = cg;
 		const VISITOR = new OP.ValueVisitorCodegen(cg);
 		const excp = new OP.ExcpNew(new OP.Const(new VALUE.String('message')));
 		const value = new OP.Const(new VALUE.Integer(42n));
