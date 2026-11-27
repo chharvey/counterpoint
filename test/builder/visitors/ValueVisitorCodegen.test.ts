@@ -408,7 +408,7 @@ test.suite('ValueVisitorCodegen#visit', () => {
 
 	test.test('ObjectNew', () => {
 		const cg = new CodeGenerator();
-		const {mod: {wasm}, vm: {reftype}} = cg;
+		const {vm: {heaptype, reftype, Object: VmObject, Class: VmClass}, mod: {wasm}} = cg;
 		const VISITOR = new OP.ValueVisitorCodegen(cg);
 
 		/** The class named `Class` — it has a null `class_` field. */
@@ -418,15 +418,18 @@ test.suite('ValueVisitorCodegen#visit', () => {
 		/** A new Object instance — its `class_` field points to the class named `Object`. */
 		const new_object = new OP.ObjectNew(false, the_object_class);
 
-		const expected0: binaryen.ExpressionRef /* (ref $Class) */ = cg.codegenClass();
-		const expected1: binaryen.ExpressionRef /* (ref $Class) */ = cg.codegenClass(wasm.ref.cast(expected0, reftype.Class));
+		const expected1: binaryen.ExpressionRef /* (ref $Class) */ = wasm.struct.new([
+			wasm.ref.cast(VmClass.CLASS, reftype.Class),
+			wasm.ref.null(heaptype.Dict),
+			VmObject.ctrPlusPlus(),
+		], heaptype.Class);
 
 		return assertEqualBins([
 			the_class_class,
 			the_object_class,
 			new_object,
 		].map((opcode) => VISITOR.visit(opcode)), [
-			expected0,
+			VmClass.CLASS,
 			expected1,
 			cg.codegenObject(wasm.ref.cast(expected1, reftype.Class)),
 		]);

@@ -127,11 +127,7 @@ Codegen((OBJECT.NEW `true` `class`)) := (struct.new $Class
 	(ref.null $Dict)
 	(call $Object.ctr-plus-plus)
 );
-Codegen((OBJECT.NEW `true`)) := (struct.new $Class
-	(ref.null $Class)
-	(ref.null $Dict)
-	(call $Object.ctr-plus-plus)
-);
+Codegen((OBJECT.NEW `true`)) := (global.get $Class.CLASS);
 
 Codegen((EXCP.NEW `message`)) := (struct.new $Exception
 	(global.get $Class.EXCEPTION)
