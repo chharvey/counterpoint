@@ -355,7 +355,7 @@ export class ValueVisitorCodegen extends ValueVisitor<binaryen.ExpressionRef /* 
 
 	@memoizePerCode
 	public override visitFunction(val: OpFunction): binaryen.ExpressionRef /* (ref $Value) */ {
-		return this.cg.codegenFunction(val.tempName, val.type.maxArity, val.builder);
+		return this.cg.vm.Value.fromClosure(this.cg.codegenClosure(val.tempName, val.type.maxArity, val.builder));
 	}
 
 	public override defaultVisit(val: Value): binaryen.ExpressionRef /* (ref $Value) */ {

@@ -416,6 +416,33 @@ export class CodeGenerator {
 	}
 
 	/**
+	 * Return a new `$Closure`.
+	 * @param name    the name of the function (use '' for lambdas)
+	 * @param arity   the number of functional parameters
+	 * @param builder the function’s executable code stored in a Builder
+	 * @return        `(struct.new $Closure ...)`
+	 */
+	public codegenClosure(name: string, arity: bigint, builder: Builder): binaryen.ExpressionRef /* (ref $Closure) */ {
+		const {vm: {heaptype, reftype, reftypeNull}, mod: {wasm}} = this;
+		const fn_name: string = `func-${name || this.#funcCounter++}`;
+		const cg = new CodeGenerator(this.vm);
+		const body: binaryen.ExpressionRef /* void */ = builder.codegen(cg); // need to code-gen first before getting all locals below
+		this.mod.functions.add(
+			fn_name,
+			binaryen.createType([reftype.Tuple, reftypeNull.Tuple]),
+			binaryen.createType([reftypeNull.Value, reftypeNull.Exception]),
+			cg.getAllLocals().map((local) => local.type),
+			body,
+		);
+		return wasm.struct.new([
+			wasm.i32.const(Number(arity)),
+			this.codegenTuple(),
+			// @ts-expect-error --- `binaren.Module.Function#type` needs updating
+			wasm.ref.func(fn_name, new binaryen.Module.Function(this.mod.functions.get(fn_name)).type),
+		], heaptype.Closure);
+	}
+
+	/**
 	 * Return a new `$Exception` from a given message and optional cause.
 	 * @param message the error message
 	 * @param value   the optional cause; if not given, `(ref.null $Exception)` is used
@@ -475,35 +502,6 @@ export class CodeGenerator {
 			wasm.ref.null(heaptype.Value),
 			argument,
 		], heaptype.Result);
-	}
-
-	/**
-	 * Return a new `$Function`.
-	 * @param name    the name of the function (use '' for lambdas)
-	 * @param arity   the number of functional arguments
-	 * @param builder the function’s executable code stored in a Builder
-	 * @return        `(struct.new $Function ...)`
-	 */
-	public codegenFunction(name: string, arity: bigint, builder: Builder): binaryen.ExpressionRef /* (ref $Function) */ {
-		const {vm: {heaptype, reftype, reftypeNull, Object: VmObject, Class: VmClass}, mod: {wasm}} = this;
-		const fn_name: string = `func-${name || this.#funcCounter++}`;
-		const cg = new CodeGenerator(this.vm);
-		const body: binaryen.ExpressionRef /* void */ = builder.codegen(cg); // need to code-gen first before getting all locals below
-		this.mod.functions.add(
-			fn_name,
-			binaryen.createType([reftype.Tuple, reftypeNull.Tuple]),
-			binaryen.createType([reftypeNull.Value, reftypeNull.Exception]),
-			cg.getAllLocals().map((local) => local.type),
-			body,
-		);
-		return wasm.struct.new([
-			VmClass.FUNCTION,
-			wasm.ref.null(heaptype.Dict),
-			VmObject.ctrPlusPlus(),
-			wasm.i32.const(Number(arity)),
-			// @ts-expect-error --- `binaren.Module.Function#type` needs updating
-			wasm.ref.func(fn_name, new binaryen.Module.Function(this.mod.functions.get(fn_name)).type),
-		], heaptype.Function);
 	}
 
 	/**

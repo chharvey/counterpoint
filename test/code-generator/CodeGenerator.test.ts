@@ -247,6 +247,20 @@ test.suite('CodeGenerator', () => {
 			);
 		});
 
+		test.test('#codegenClosure', () => {
+			const builder = new Builder();
+			builder.terminateBlock(new OP.EndProgram());
+			return assertEqualBins(
+				cg.codegenClosure('hello', 3n, builder),
+				wasm.struct.new([
+					wasm.i32.const(3),
+					cg.codegenTuple(),
+					// @ts-expect-error --- `binaren.Module.Function#type` needs updating
+					wasm.ref.func('func-hello', new binaryen.Module.Function(cg.mod.functions.get('func-hello')).type),
+				], cg.vm.heaptype.Closure),
+			);
+		});
+
 		test.test('#codegenException', () => {
 			const message:   binaryen.ExpressionRef /* (ref $Cpl-String) */ = wasm.ref.cast(genConst(cg, 'message'), cg.vm.reftype.CplString);
 			const expected1: binaryen.ExpressionRef /* (ref $Exception) */  = wasm.struct.new([
@@ -315,22 +329,6 @@ test.suite('CodeGenerator', () => {
 					value,
 					wasm.ref.null(cg.vm.heaptype.Exception),
 				], cg.vm.heaptype.Result),
-			);
-		});
-
-		test.test('#codegenFunction', () => {
-			const builder = new Builder();
-			builder.terminateBlock(new OP.EndProgram());
-			return assertEqualBins(
-				cg.codegenFunction('hello', 3n, builder),
-				wasm.struct.new([
-					cg.vm.Class.FUNCTION,
-					wasm.ref.null(cg.vm.heaptype.Dict),
-					cg.vm.Object.ctrPlusPlus(),
-					wasm.i32.const(3),
-					// @ts-expect-error --- `binaren.Module.Function#type` needs updating
-					wasm.ref.func('func-hello', new binaryen.Module.Function(cg.mod.functions.get('func-hello')).type),
-				], cg.vm.heaptype.Function),
 			);
 		});
 
