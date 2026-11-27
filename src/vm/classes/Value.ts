@@ -20,15 +20,15 @@ export class Value implements HasFuncData {
 		return new Map<string, FuncImportData>([
 			['Value#boolToI32',   {name: 'Value.bool-to-i32',   param: reftype.Value,      result: binaryen.Type.i32}],
 			['Value#boolFromI32', {name: 'Value.bool-from-i32', param: binaryen.Type.i32,  result: reftype.Value}],
-			['Value#fromInt',     {name: 'Value.from-int',      param: binaryen.Type.v128, result: reftype.Value}],
-			['Value#fromNat',     {name: 'Value.from-nat',      param: binaryen.Type.v128, result: reftype.Value}],
-			['Value#fromFloat',   {name: 'Value.from-float',    param: binaryen.Type.v128, result: reftype.Value}],
-			['Value#fromString',  {name: 'Value.from-string',   param: reftype.String,     result: reftype.Value}],
-			['Value#fromTuple',   {name: 'Value.from-tuple',    param: reftype.Tuple,      result: reftype.Value}],
-			['Value#fromRecord',  {name: 'Value.from-record',   param: reftype.Record,     result: reftype.Value}],
-			['Value#fromList',    {name: 'Value.from-list',     param: reftype.List,       result: reftype.Value}],
-			['Value#fromDict',    {name: 'Value.from-dict',     param: reftype.Dict,       result: reftype.Value}],
-			['Value#fromMap',     {name: 'Value.from-map',      param: reftype.Map,        result: reftype.Value}],
+			['Value#fromInt',     {name: 'Value.from-int',      param: binaryen.Type.v128, result: reftype.CplPrimitive}],
+			['Value#fromNat',     {name: 'Value.from-nat',      param: binaryen.Type.v128, result: reftype.CplPrimitive}],
+			['Value#fromFloat',   {name: 'Value.from-float',    param: binaryen.Type.v128, result: reftype.CplPrimitive}],
+			['Value#fromString',  {name: 'Value.from-string',   param: reftype.String,     result: reftype.CplString}],
+			['Value#fromTuple',   {name: 'Value.from-tuple',    param: reftype.Tuple,      result: reftype.CplTuple}],
+			['Value#fromRecord',  {name: 'Value.from-record',   param: reftype.Record,     result: reftype.CplRecord}],
+			['Value#fromList',    {name: 'Value.from-list',     param: reftype.List,       result: reftype.CplList}],
+			['Value#fromDict',    {name: 'Value.from-dict',     param: reftype.Dict,       result: reftype.CplDict}],
+			['Value#fromMap',     {name: 'Value.from-map',      param: reftype.Map,        result: reftype.CplMap}],
 			['Value#asPrimitive', {name: 'Value.as-primitive',  param: reftype.Value,      result: binaryen.Type.v128}],
 			['Value#asString',    {name: 'Value.as-string',     param: reftype.Value,      result: reftype.String}],
 			['Value#asTuple',     {name: 'Value.as-tuple',      param: reftype.Value,      result: reftype.Tuple}],
@@ -60,48 +60,48 @@ export class Value implements HasFuncData {
 	}
 
 	/** Creates a new value holding the given v128 as an Integer. */
-	public fromInt(vect: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* (ref $Value) */ {
-		return this.vm.mod.wasm.call('Value.from-int', [vect], this.vm.reftype.Value);
+	public fromInt(vect: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* (ref $Cpl-Primitive) */ {
+		return this.vm.mod.wasm.call('Value.from-int', [vect], this.vm.reftype.CplPrimitive);
 	}
 
 	/** Creates a new value holding the given v128 as a Natural. */
-	public fromNat(vect: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* (ref $Value) */ {
-		return this.vm.mod.wasm.call('Value.from-nat', [vect], this.vm.reftype.Value);
+	public fromNat(vect: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* (ref $Cpl-Primitive) */ {
+		return this.vm.mod.wasm.call('Value.from-nat', [vect], this.vm.reftype.CplPrimitive);
 	}
 
 	/** Creates a new value holding the given v128 as a Float. */
-	public fromFloat(vect: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* (ref $Value) */ {
-		return this.vm.mod.wasm.call('Value.from-float', [vect], this.vm.reftype.Value);
+	public fromFloat(vect: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* (ref $Cpl-Primitive) */ {
+		return this.vm.mod.wasm.call('Value.from-float', [vect], this.vm.reftype.CplPrimitive);
 	}
 
 	/** Creates a new value holding the given String. */
-	public fromString(list: binaryen.ExpressionRef /* (ref $String) */): binaryen.ExpressionRef /* (ref $Value) */ {
-		return this.vm.mod.wasm.call('Value.from-string', [list], this.vm.reftype.Value);
+	public fromString(str: binaryen.ExpressionRef /* (ref $String) */): binaryen.ExpressionRef /* (ref $Cpl-String) */ {
+		return this.vm.mod.wasm.call('Value.from-string', [str], this.vm.reftype.CplString);
 	}
 
 	/** Creates a new value holding the given Tuple. */
-	public fromTuple(list: binaryen.ExpressionRef /* (ref $Tuple) */): binaryen.ExpressionRef /* (ref $Value) */ {
-		return this.vm.mod.wasm.call('Value.from-tuple', [list], this.vm.reftype.Value);
+	public fromTuple(tup: binaryen.ExpressionRef /* (ref $Tuple) */): binaryen.ExpressionRef /* (ref $Cpl-Tuple) */ {
+		return this.vm.mod.wasm.call('Value.from-tuple', [tup], this.vm.reftype.CplTuple);
 	}
 
 	/** Creates a new value holding the given Record. */
-	public fromRecord(list: binaryen.ExpressionRef /* (ref $Record) */): binaryen.ExpressionRef /* (ref $Value) */ {
-		return this.vm.mod.wasm.call('Value.from-record', [list], this.vm.reftype.Value);
+	public fromRecord(rec: binaryen.ExpressionRef /* (ref $Record) */): binaryen.ExpressionRef /* (ref $Cpl-Record) */ {
+		return this.vm.mod.wasm.call('Value.from-record', [rec], this.vm.reftype.CplRecord);
 	}
 
 	/** Creates a new value holding the given List. */
-	public fromList(list: binaryen.ExpressionRef /* (ref $List) */): binaryen.ExpressionRef /* (ref $Value) */ {
-		return this.vm.mod.wasm.call('Value.from-list', [list], this.vm.reftype.Value);
+	public fromList(list: binaryen.ExpressionRef /* (ref $List) */): binaryen.ExpressionRef /* (ref $Cpl-List) */ {
+		return this.vm.mod.wasm.call('Value.from-list', [list], this.vm.reftype.CplList);
 	}
 
 	/** Creates a new value holding the given Dict. */
-	public fromDict(list: binaryen.ExpressionRef /* (ref $Dict) */): binaryen.ExpressionRef /* (ref $Value) */ {
-		return this.vm.mod.wasm.call('Value.from-dict', [list], this.vm.reftype.Value);
+	public fromDict(dict: binaryen.ExpressionRef /* (ref $Dict) */): binaryen.ExpressionRef /* (ref $Cpl-Dict) */ {
+		return this.vm.mod.wasm.call('Value.from-dict', [dict], this.vm.reftype.CplDict);
 	}
 
 	/** Creates a new value holding the given Map. */
-	public fromMap(list: binaryen.ExpressionRef /* (ref $Map) */): binaryen.ExpressionRef /* (ref $Value) */ {
-		return this.vm.mod.wasm.call('Value.from-map', [list], this.vm.reftype.Value);
+	public fromMap(map: binaryen.ExpressionRef /* (ref $Map) */): binaryen.ExpressionRef /* (ref $Cpl-Map) */ {
+		return this.vm.mod.wasm.call('Value.from-map', [map], this.vm.reftype.CplMap);
 	}
 
 	/** Casts the value to a v128. */
