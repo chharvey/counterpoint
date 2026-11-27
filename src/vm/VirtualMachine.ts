@@ -45,7 +45,6 @@ type TypeKey = (
 	| 'Exception'
 	| 'Maybe'
 	| 'Result'
-	| 'Function'
 );
 
 
@@ -134,7 +133,6 @@ const TYPES: {
 	const i_exception:     number = tb.getSize(); tb.grow(1);
 	const i_maybe:         number = tb.getSize(); tb.grow(1);
 	const i_result:        number = tb.getSize(); tb.grow(1);
-	const i_function:      number = tb.getSize(); tb.grow(1);
 
 	/* (type $Property ...) */
 	tb.setStructType(i_property, [
@@ -350,14 +348,6 @@ const TYPES: {
 	]);
 	tb.setSubType(i_result, tb.getTempHeapType(i_object));
 
-	/* (type $Function ...) */
-	tb.setStructType(i_function, [
-		...fields_object,
-		/* $arity */ make_struct_field(binaryen.Type.i32),
-		/* $func */  make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_signature), false)),
-	]);
-	tb.setSubType(i_function, tb.getTempHeapType(i_object));
-
 	tb.createRecGroup(0, tb.getSize());
 	const heaptypes: readonly binaryen.HeapType[] = tb.buildAndDispose();
 
@@ -391,7 +381,6 @@ const TYPES: {
 			Exception:    heaptypes[i_exception],
 			Maybe:        heaptypes[i_maybe],
 			Result:       heaptypes[i_result],
-			Function:     heaptypes[i_function],
 		},
 
 		reftypeRegistry: {
@@ -423,7 +412,6 @@ const TYPES: {
 			Exception:    binaryen.getTypeFromHeapType(heaptypes[i_exception],     false),
 			Maybe:        binaryen.getTypeFromHeapType(heaptypes[i_maybe],         false),
 			Result:       binaryen.getTypeFromHeapType(heaptypes[i_result],        false),
-			Function:     binaryen.getTypeFromHeapType(heaptypes[i_function],      false),
 		},
 
 		reftypeNullRegistry: {

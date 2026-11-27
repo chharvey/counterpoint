@@ -38,7 +38,6 @@ export class Value implements HasFuncData {
 			['Value#asDict',      {name: 'Value.as-dict',       param: reftype.Value,      result: reftype.Dict}],
 			['Value#asMap',       {name: 'Value.as-map',        param: reftype.Value,      result: reftype.Map}],
 			['Value#asClosure',   {name: 'Value.as-closure',    param: reftype.Value,      result: reftype.Closure}],
-			['Value#asFunc',      {name: 'Value.as-func',       param: reftype.Value,      result: reftype.Signature}],
 		]);
 	}
 
@@ -149,10 +148,5 @@ export class Value implements HasFuncData {
 	/** Returns the value as a Closure. */
 	public asClosure(value: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Closure) */ {
 		return this.vm.mod.wasm.call('Value.as-closure', [value], this.vm.reftype.Closure);
-	}
-
-	/** Returns the value as a WASM function. */
-	public asFunc(value: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Signature) */ {
-		return this.vm.mod.wasm.call('Value.as-func', [value], this.vm.reftype.Signature);
 	}
 }

@@ -237,17 +237,4 @@
 		;; the failure reason
 		(field $reason (ref null $Exception))
 	)))
-	;; precursor to the Counterpoint `Function` class
-	(type $Function (sub final $Object (struct
-		;; --- inherited ---
-		(field $class (ref null $Class))
-		(field $fields (ref null $Dict))
-		(field $id i64)
-
-		;; --- own ---
-		;; number of functional parameters
-		(field $arity i32)
-		;; the runnable function
-		(field $func (ref $Signature))
-	)))
 )
