@@ -29,6 +29,7 @@ export class Value implements HasFuncData {
 			['Value#fromList',    {name: 'Value.from-list',     param: reftype.List,       result: reftype.CplList}],
 			['Value#fromDict',    {name: 'Value.from-dict',     param: reftype.Dict,       result: reftype.CplDict}],
 			['Value#fromMap',     {name: 'Value.from-map',      param: reftype.Map,        result: reftype.CplMap}],
+			['Value#fromClosure', {name: 'Value.from-closure',  param: reftype.Closure,    result: reftype.CplFunction}],
 			['Value#asPrimitive', {name: 'Value.as-primitive',  param: reftype.Value,      result: binaryen.Type.v128}],
 			['Value#asString',    {name: 'Value.as-string',     param: reftype.Value,      result: reftype.String}],
 			['Value#asTuple',     {name: 'Value.as-tuple',      param: reftype.Value,      result: reftype.Tuple}],
@@ -36,6 +37,7 @@ export class Value implements HasFuncData {
 			['Value#asList',      {name: 'Value.as-list',       param: reftype.Value,      result: reftype.List}],
 			['Value#asDict',      {name: 'Value.as-dict',       param: reftype.Value,      result: reftype.Dict}],
 			['Value#asMap',       {name: 'Value.as-map',        param: reftype.Value,      result: reftype.Map}],
+			['Value#asClosure',   {name: 'Value.as-closure',    param: reftype.Value,      result: reftype.Closure}],
 			['Value#asFunc',      {name: 'Value.as-func',       param: reftype.Value,      result: reftype.Signature}],
 		]);
 	}
@@ -104,6 +106,11 @@ export class Value implements HasFuncData {
 		return this.vm.mod.wasm.call('Value.from-map', [map], this.vm.reftype.CplMap);
 	}
 
+	/** Creates a new value holding the given Closure. */
+	public fromClosure(closure: binaryen.ExpressionRef /* (ref $Closure) */): binaryen.ExpressionRef /* (ref $Cpl-Function) */ {
+		return this.vm.mod.wasm.call('Value.from-closure', [closure], this.vm.reftype.CplFunction);
+	}
+
 	/** Casts the value to a v128. */
 	public asPrimitive(value: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* v128 */ {
 		return this.vm.mod.wasm.call('Value.as-primitive', [value], binaryen.Type.v128);
@@ -137,6 +144,11 @@ export class Value implements HasFuncData {
 	/** Returns the value as a Map. */
 	public asMap(value: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Map) */ {
 		return this.vm.mod.wasm.call('Value.as-map', [value], this.vm.reftype.Map);
+	}
+
+	/** Returns the value as a Closure. */
+	public asClosure(value: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Closure) */ {
+		return this.vm.mod.wasm.call('Value.as-closure', [value], this.vm.reftype.Closure);
 	}
 
 	/** Returns the value as a WASM function. */

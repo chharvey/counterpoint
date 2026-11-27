@@ -51,6 +51,14 @@
 		;; the array of Map cases; mutable to allow reallocation
 		(field $array (mut (ref $MapArray)))
 	))
+	(type $Closure (struct
+		;; number of functional parameters
+		(field $arity i32)
+		;; captured variables
+		(field $upvalues (ref $Tuple))
+		;; the runnable function
+		(field $func (ref $Signature))
+	))
 
 
 
@@ -173,6 +181,17 @@
 		;; --- own ---
 		;; the stored value
 		(field $map (ref $Map))
+	)))
+	;; ;; precursor to the Counterpoint `Function` class
+	(type $Cpl-Function (sub final $Object (struct
+		;; --- inherited ---
+		(field $class (ref null $Class))
+		(field $fields (ref null $Dict))
+		(field $id i64)
+
+		;; --- own ---
+		;; the stored value
+		(field $closure (ref $Closure))
 	)))
 
 	;; #### Quasi-Classes

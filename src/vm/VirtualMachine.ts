@@ -29,6 +29,7 @@ type TypeKey = (
 	| 'List'
 	| 'Dict'
 	| 'Map'
+	| 'Closure'
 	| 'Value'
 	| 'Data'
 	| 'Object'
@@ -40,6 +41,7 @@ type TypeKey = (
 	| 'CplList'
 	| 'CplDict'
 	| 'CplMap'
+	| 'CplFunction'
 	| 'Exception'
 	| 'Maybe'
 	| 'Result'
@@ -116,6 +118,7 @@ const TYPES: {
 	const i_list:          number = tb.getSize(); tb.grow(1);
 	const i_dict:          number = tb.getSize(); tb.grow(1);
 	const i_map:           number = tb.getSize(); tb.grow(1);
+	const i_closure:       number = tb.getSize(); tb.grow(1);
 	const i_value:         number = tb.getSize(); tb.grow(1);
 	const i_data:          number = tb.getSize(); tb.grow(1);
 	const i_object:        number = tb.getSize(); tb.grow(1);
@@ -127,6 +130,7 @@ const TYPES: {
 	const i_cpl_list:      number = tb.getSize(); tb.grow(1);
 	const i_cpl_dict:      number = tb.getSize(); tb.grow(1);
 	const i_cpl_map:       number = tb.getSize(); tb.grow(1);
+	const i_cpl_function:  number = tb.getSize(); tb.grow(1);
 	const i_exception:     number = tb.getSize(); tb.grow(1);
 	const i_maybe:         number = tb.getSize(); tb.grow(1);
 	const i_result:        number = tb.getSize(); tb.grow(1);
@@ -223,6 +227,13 @@ const TYPES: {
 		/* $array */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_map_array), false), true),
 	]);
 
+	/* (type $Closure ...) */
+	tb.setStructType(i_closure, [
+		/* $arity */    make_struct_field(binaryen.Type.i32),
+		/* $upvalues */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_tuple),     false)),
+		/* $func */     make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_signature), false)),
+	]);
+
 	/** The fields of the `$Value` struct type. */
 	const fields_value = [
 		/* $class */  make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_class), true)),
@@ -309,6 +320,13 @@ const TYPES: {
 	]);
 	tb.setSubType(i_cpl_map, tb.getTempHeapType(i_object));
 
+	/* (type $Cpl-Function ...) */
+	tb.setStructType(i_cpl_function, [
+		...fields_object,
+		/* $closure */ make_struct_field(tb.getTempRefType(tb.getTempHeapType(i_closure), false)),
+	]);
+	tb.setSubType(i_cpl_function, tb.getTempHeapType(i_object));
+
 	/* (type $Exception ...) */
 	tb.setStructType(i_exception, [
 		...fields_object,
@@ -357,6 +375,7 @@ const TYPES: {
 			List:         heaptypes[i_list],
 			Dict:         heaptypes[i_dict],
 			Map:          heaptypes[i_map],
+			Closure:      heaptypes[i_closure],
 			Value:        heaptypes[i_value],
 			Data:         heaptypes[i_data],
 			Object:       heaptypes[i_object],
@@ -368,6 +387,7 @@ const TYPES: {
 			CplList:      heaptypes[i_cpl_list],
 			CplDict:      heaptypes[i_cpl_dict],
 			CplMap:       heaptypes[i_cpl_map],
+			CplFunction:  heaptypes[i_cpl_function],
 			Exception:    heaptypes[i_exception],
 			Maybe:        heaptypes[i_maybe],
 			Result:       heaptypes[i_result],
@@ -387,6 +407,7 @@ const TYPES: {
 			List:         binaryen.getTypeFromHeapType(heaptypes[i_list],          false),
 			Dict:         binaryen.getTypeFromHeapType(heaptypes[i_dict],          false),
 			Map:          binaryen.getTypeFromHeapType(heaptypes[i_map],           false),
+			Closure:      binaryen.getTypeFromHeapType(heaptypes[i_closure],       false),
 			Value:        binaryen.getTypeFromHeapType(heaptypes[i_value],         false),
 			Data:         binaryen.getTypeFromHeapType(heaptypes[i_data],          false),
 			Object:       binaryen.getTypeFromHeapType(heaptypes[i_object],        false),
@@ -398,6 +419,7 @@ const TYPES: {
 			CplList:      binaryen.getTypeFromHeapType(heaptypes[i_cpl_list],      false),
 			CplDict:      binaryen.getTypeFromHeapType(heaptypes[i_cpl_dict],      false),
 			CplMap:       binaryen.getTypeFromHeapType(heaptypes[i_cpl_map],       false),
+			CplFunction:  binaryen.getTypeFromHeapType(heaptypes[i_cpl_function],  false),
 			Exception:    binaryen.getTypeFromHeapType(heaptypes[i_exception],     false),
 			Maybe:        binaryen.getTypeFromHeapType(heaptypes[i_maybe],         false),
 			Result:       binaryen.getTypeFromHeapType(heaptypes[i_result],        false),
