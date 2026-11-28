@@ -351,7 +351,7 @@ export class Validator {
 
 
 	/** A symbol table, which keeps tracks of variables. */
-	private readonly symbol_table = new Map<bigint, SymbolSchema>();
+	readonly #symbolTable = new Map<bigint, SymbolSchema>();
 
 	/**
 	 * Construct a new Validator object.
@@ -375,32 +375,12 @@ export class Validator {
 	}
 
 	/**
-	 * Add a symbol representing a value variable or type variable to this Validator’s symbol table.
-	 * @param symbol the object encoding data of the symbol
-	 * @returns this
-	 */
-	public addSymbol(symbol: SymbolSchema): this {
-		this.symbol_table.set(symbol.id, symbol);
-		return this;
-	}
-
-	/**
-	 * Remove a symbol from this Validator’s symbol table.
-	 * @param id the id of the symbol to remove
-	 * @returns this
-	 */
-	public removeSymbol(id: bigint): this {
-		this.symbol_table.delete(id);
-		return this;
-	}
-
-	/**
 	 * Check whether this Validator’s symbol table has the symbol.
 	 * @param id the symbol id to check
 	 * @returns Does the symbol table have a symbol with the given id?
 	 */
 	public hasSymbol(id: bigint): boolean {
-		return this.symbol_table.has(id) || (this.parent?.hasSymbol(id) ?? false);
+		return this.#symbolTable.has(id) || (this.parent?.hasSymbol(id) ?? false);
 	}
 
 	/**
@@ -409,7 +389,7 @@ export class Validator {
 	 * @returns the symbol information of `id`, or `undefined` if there is no corresponding entry
 	 */
 	public getSymbol(id: bigint): SymbolSchema | undefined {
-		return this.symbol_table.get(id) ?? this.parent?.getSymbol(id);
+		return this.#symbolTable.get(id) ?? this.parent?.getSymbol(id);
 	}
 
 	/**
@@ -422,11 +402,29 @@ export class Validator {
 	}
 
 	/**
+	 * Add a symbol representing a value variable or type variable to this Validator’s symbol table.
+	 * @param symbol the object encoding data of the symbol
+	 * @returns this
+	 */
+	public addSymbol(symbol: SymbolSchema): void {
+		this.#symbolTable.set(symbol.id, symbol);
+	}
+
+	/**
+	 * Remove a symbol from this Validator’s symbol table.
+	 * @param id the id of the symbol to remove
+	 * @returns this
+	 */
+	private removeSymbol(id: bigint): void {
+		this.#symbolTable.delete(id);
+	}
+
+	/**
 	 * Return a copy of this Validator’s symbols.
 	 * @return the symbols in a new map
 	 */
 	public getAllSymbols(): Map<bigint, SymbolSchema> {
-		return new Map([...(this.parent?.symbol_table ?? []), ...this.symbol_table]);
+		return new Map([...(this.parent ? this.parent.#symbolTable : []), ...this.#symbolTable]);
 	}
 
 	/**
@@ -434,7 +432,7 @@ export class Validator {
 	 * @returns this
 	 */
 	public clearSymbols(): this {
-		this.symbol_table.clear();
+		this.#symbolTable.clear();
 		return this;
 	}
 }
