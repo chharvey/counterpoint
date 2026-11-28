@@ -297,10 +297,7 @@ export class AstNodeVisitorBuild extends AstNodeVisitor<void> {
 			decl.source.replaceAll(/\s+/g, ' '),
 			func_builder,
 		));
-		if (!this.builder.funcs.has(symbol.id)) {
-			this.builder.funcs.set(symbol.id, new WeakMap());
-		}
-		this.builder.funcs.get(symbol.id)!.set(ovl_type, temp);
+		this.builder.setFunc(symbol.id, ovl_type, temp);
 		this.builder.pushInstruction(new OP.Decl(temp));
 		this.builder.setSymbolStatus(temp, BuilderSymbolStatus.SET);
 		return [temp, func_builder];

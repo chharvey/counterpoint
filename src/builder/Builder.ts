@@ -54,7 +54,7 @@ export class Builder {
 	 * Function overload declarations all share the same id, so SymbolSchemaFunc cannot be used.
 	 * Every function declaration visited has its own Temp.
 	 */
-	public readonly funcs = new Map<bigint, WeakMap<TYPE.Function, Temp>>();
+	readonly #funcs = new Map<bigint, WeakMap<TYPE.Function, Temp>>();
 
 	private currentBlock?: CfgNode = new CfgNode(this.newLabel());
 
@@ -102,6 +102,32 @@ export class Builder {
 
 	public setSymbolStatus(schema: BuilderSymbol, status: BuilderSymbolStatus): void {
 		this.#symbols.set(schema, status);
+	}
+
+	private hasFunc(id: bigint): boolean {
+		return this.#funcs.has(id);
+	}
+
+	private getFunc(id: bigint, ovl_type: TYPE.Function): Temp | undefined {
+		return this.#funcs.get(id)?.get(ovl_type);
+	}
+
+	public setFunc(id: bigint, ovl_type: TYPE.Function, temp: Temp): void {
+		if (!this.hasFunc(id)) {
+			this.#funcs.set(id, new WeakMap());
+		}
+		this.#funcs.get(id)!.set(ovl_type, temp);
+	}
+
+	private removeFunc(id: bigint, ovl_type?: TYPE.Function): void {
+		if (this.hasFunc(id) && ovl_type) {
+			this.#funcs.get(id)!.delete(ovl_type);
+		}
+		this.#funcs.delete(id);
+	}
+
+	private getAllFuncs(): Map<bigint, WeakMap<TYPE.Function, Temp>> {
+		return new Map([...this.#funcs]);
 	}
 
 	public initiateBlock(label: string): void {
