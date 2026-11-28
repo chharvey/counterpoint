@@ -287,15 +287,17 @@ export class ValueVisitorCodegen extends ValueVisitor<binaryen.ExpressionRef /* 
 
 	@memoizePerCode
 	public override visitCall(val: Call): binaryen.ExpressionRef /* (ref $Value) */ {
-		const {vm: {reftype, Closure, Value: VmValue}, mod: {wasm}} = this.cg;
+		const {vm: {heaptype, reftype, Closure, Value: VmValue}, mod: {wasm}} = this.cg;
+
+		const args: (binaryen.ExpressionRef /* (ref $Value) */)[] = [
+			...val.argsPosit.map((arg) => this.visit(arg)),
+			...[...val.argsNamed].map(([_, arg]) => this.visit(arg)), // FIXME: sort these by parameter order
+		];
 
 		const result: Local = this.cg.newLocal(Closure.call(
 			VmValue.asClosure(this.visit(val.callable)),
 			this.cg.codegenTuple(),
-			this.cg.codegenTuple([
-				...val.argsPosit.map((arg) => this.visit(arg)),
-				...[...val.argsNamed].map(([_, arg]) => this.visit(arg)), // FIXME: sort these by parameter order
-			]),
+			args.length ? this.cg.codegenTuple(args) : wasm.ref.null(heaptype.Tuple),
 		));
 
 		return wasm.block(null, [

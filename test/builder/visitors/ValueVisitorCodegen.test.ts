@@ -715,7 +715,9 @@ test.suite('ValueVisitorCodegen#visit', () => {
 			dub.(42) + crash.();
 			noop.();
 		}`, {codegen: true});
-		const {reftype, reftypeNull, Closure, Value} = cg.vm;
+		const {heaptype, reftype, reftypeNull, Closure, Value} = cg.vm;
+
+		const null_tuple = wasm.ref.null(heaptype.Tuple);
 
 		const fn0_return_v_get: binaryen.ExpressionRef /* (ref null $Value) (ref null $Exception) */ = wasm.local.get(3, binaryen.createType([reftypeNull.Value, reftypeNull.Exception]));
 		const v0_returned_get:  binaryen.ExpressionRef /* (ref null $Value) */                       = wasm.tuple.extract(fn0_return_v_get, 0);
@@ -751,7 +753,7 @@ test.suite('ValueVisitorCodegen#visit', () => {
 				wasm.local.set(5, Closure.call(
 					Value.asClosure(crash_call_base),
 					cg.codegenTuple(),
-					cg.codegenTuple(),
+					null_tuple,
 				)),
 				wasm.if(
 					wasm.ref.is_null(v1_panicked_get),
@@ -763,7 +765,7 @@ test.suite('ValueVisitorCodegen#visit', () => {
 				wasm.local.set(7, Closure.call(
 					Value.asClosure(noop_call_base),
 					cg.codegenTuple(),
-					cg.codegenTuple(),
+					null_tuple,
 				)),
 				wasm.if(
 					wasm.ref.is_null(v2_panicked_get),
