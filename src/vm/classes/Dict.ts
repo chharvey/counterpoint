@@ -8,7 +8,7 @@ import type {
 
 
 
-/** Precursor to the Counterpoint `Dict` class. */
+/** Namespace for fields and methods of `$Dict`. */
 export class Dict implements HasFuncData {
 	public constructor(private readonly vm: VirtualMachine) {}
 

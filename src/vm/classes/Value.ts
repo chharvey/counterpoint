@@ -8,7 +8,7 @@ import type {
 
 
 
-/** WASM representation of a Counterpoint value. */
+/** Namespace for fields and methods of `$Value`. */
 export class Value implements HasFuncData {
 	public constructor(private readonly vm: VirtualMachine) {}
 

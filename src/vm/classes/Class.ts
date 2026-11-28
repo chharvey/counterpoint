@@ -8,7 +8,7 @@ import type {
 
 
 
-/** WASM representation of a Counterpoint class. */
+/** Namespace for fields and methods of `$Class`. */
 class VmClass implements HasFuncData {
 	public constructor(private readonly vm: VirtualMachine) {}
 

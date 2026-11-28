@@ -8,6 +8,7 @@ import type {
 
 
 
+/** Namespace for fields and methods of `$Record`. */
 class VmRecord implements HasFuncData {
 	public constructor(private readonly vm: VirtualMachine) {}
 
