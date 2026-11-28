@@ -42,23 +42,22 @@ function stringify_type_name(typename: TypeName): string | undefined {
 
 /** Declare a variable/local without initializing it. */
 export class Decl extends Instruction {
-	public readonly targetType: TYPE.Type;
+	private readonly targetName: string;
+	public  readonly targetType: TYPE.Type;
 
-	public constructor(target: SymbolSchemaVar, typ: TYPE.Type, value?: Value);
-	public constructor(target: Temp);
-	public constructor(
-		public readonly target: SymbolSchemaVar | Temp,
-		typ?:   TYPE.Type,
-	) {
+	public constructor(public readonly target: SymbolSchemaVar | Temp) {
 		super(OpCode.DECL);
-		this.targetType = this.target instanceof SymbolSchemaVar ? typ! : this.target.type;
+		if (this.target instanceof SymbolSchemaVar) {
+			this.targetName = this.target.source;
+			this.targetType = this.target.irType;
+		} else {
+			this.targetName = this.target.name;
+			this.targetType = this.target.type;
+		}
 	}
 
 	public override toString(): string {
-		return super.toString(
-			`<${stringify_type_name(ast_type_name(this.targetType))}>`,
-			this.target instanceof SymbolSchemaVar ? this.target.source : this.target.name,
-		);
+		return super.toString(`<${stringify_type_name(ast_type_name(this.targetType))}>`, this.targetName);
 	}
 
 	/* eslint-disable */

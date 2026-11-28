@@ -55,7 +55,7 @@ export class AstNodeVisitorBuild extends AstNodeVisitor<void> {
 		if (node.identifier) {
 			const symbol = (node.parent as Functionlike).block.validator.getSymbol(node.id!) as SymbolSchemaVar;
 			symbol.irType = symbol.isUninitialized ? new TYPE.Maybe(symbol.type) : symbol.type;
-			this.builder.pushInstruction(new OP.Decl(symbol, symbol.irType));
+			this.builder.pushInstruction(new OP.Decl(symbol));
 			return this.builder.setSymbolStatus(symbol, BuilderSymbolStatus.SET);
 		}
 	}
@@ -93,8 +93,8 @@ export class AstNodeVisitorBuild extends AstNodeVisitor<void> {
 		const value:  OP.Value                    = stmt.assigned ? this.#exprVisitorBuild.visit(stmt.assigned) : new OP.MaybeNew(symbol!.type);
 		if (stmt.assignee) {
 			symbol!.irType = value.type;
-			this.builder.pushInstruction(new OP.Decl(symbol!, symbol!.irType));
-			return this.builder.pushInstruction(new OP.Set(symbol!, symbol!.irType, value));
+			this.builder.pushInstruction(new OP.Decl(symbol!));
+			return this.builder.pushInstruction(new OP.Set(symbol!, value));
 		} else {
 			return this.builder.pushInstruction(new OP.Drop(value));
 		}
@@ -141,7 +141,7 @@ export class AstNodeVisitorBuild extends AstNodeVisitor<void> {
 				value = new OP.MaybeNew(symbol.type);
 			}
 			symbol.irType = value.type;
-			return this.builder.pushInstruction(new OP.Set(symbol, symbol.irType, value));
+			return this.builder.pushInstruction(new OP.Set(symbol, value));
 		} else if (stmt.assigned) {
 			assert_instanceof(stmt.assignee.accessor, EXPR.Expression);
 			const base_value:    OP.ValueTac = this.#exprVisitorBuild.visit(stmt.assignee.base).asTac(this.builder);
@@ -241,15 +241,13 @@ export class AstNodeVisitorBuild extends AstNodeVisitor<void> {
 		if (stmt.assignee) {
 			const symbol = stmt.block.validator.getSymbol(stmt.id!) as SymbolSchemaVar;
 			symbol.irType = iterable.type.typearg;
-			this.builder.pushInstruction(new OP.Decl(
-				symbol,
-				symbol.irType,
-			));
-			this.builder.pushInstruction(new OP.Set(
-				symbol,
-				symbol.irType,
-				new OP.CollectionDynamicGet(OP.TypeName.LIST, iterable, get_index, iterable.type.typearg),
-			));
+			this.builder.pushInstruction(new OP.Decl(symbol));
+			this.builder.pushInstruction(new OP.Set(symbol, new OP.CollectionDynamicGet(
+				OP.TypeName.LIST,
+				iterable,
+				get_index,
+				iterable.type.typearg,
+			)));
 		}
 		this.visit(stmt.block);
 		this.builder.pushInstruction(new OP.Set(index, new OP.Binop(OP.OpCode.NAT_ADD, get_index, new OP.Const(VALUE.NAT_1), index.type)));
