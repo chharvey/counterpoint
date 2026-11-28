@@ -1,5 +1,7 @@
+import * as assert from 'node:assert';
 import type {VALUE} from '../typer/index.ts';
-import type {BuilderLocalSymbol} from './Builder.ts';
+import {SymbolSchema} from '../validator/index.ts';
+import type {BuilderSymbol} from './Builder.ts';
 import type {CfgNode} from './CfgNode.ts';
 
 
@@ -9,7 +11,7 @@ export class Interpreter {
 	 * A map of local variable/temp values.
 	 * If the variable is declared but uninitialized/deleted, its value is an empty `Maybe` object (a `None`).
 	 */
-	readonly #symbolTable = new Map<BuilderLocalSymbol, VALUE.Value>();
+	readonly #symbolTable = new Map<BuilderSymbol, VALUE.Value>();
 
 	readonly #blocks = new Map<string, CfgNode>();
 
@@ -22,12 +24,16 @@ export class Interpreter {
 	}
 
 
-	public setLocalValue(local: BuilderLocalSymbol, value: VALUE.Value): void {
-		this.#symbolTable.set(local, value);
+	public setSymbolValue(schema: BuilderSymbol, value: VALUE.Value): void {
+		this.#symbolTable.set(schema, value);
 	}
 
-	public getLocalValue(local: BuilderLocalSymbol): VALUE.Value | undefined {
-		return this.#symbolTable.get(local);
+	public getSymbolValue(schema: BuilderSymbol): VALUE.Value | undefined {
+		return this.#symbolTable.get(schema);
+	}
+
+	public getSymbolValueOrThrow(schema: BuilderSymbol): VALUE.Value {
+		return this.getSymbolValue(schema) ?? assert.fail(new ReferenceError(`Expected symbol \`${schema instanceof SymbolSchema ? schema.source : schema.name}\` to be registered in interpreter.`));
 	}
 
 	public registerBlock(block: CfgNode): void {

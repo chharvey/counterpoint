@@ -8,7 +8,7 @@ import type {
 
 
 
-/** An entry in a Map. */
+/** Namespace for fields and methods of `$Case`. */
 export class Case implements HasFuncData {
 	public constructor(private readonly vm: VirtualMachine) {}
 

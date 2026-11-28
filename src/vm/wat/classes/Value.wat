@@ -105,6 +105,17 @@
 		(local.get 0)
 	)
 )
+(func $Value.from-closure (export "Value#fromClosure") (param (ref $Closure)) (result (ref $Cpl-Function))
+	(struct.new $Cpl-Function
+		(global.get $Class.FUNCTION)
+		(ref.null $Dict)
+		(call $Object.ctr-plus-plus)
+		(local.get 0)
+	)
+)
+
+
+
 
 
 
@@ -118,11 +129,11 @@
 
 
 
-(func $Value.as-primitive (export "Value#asPrimitive") (param (ref $Value)) (result v128)             (struct.get $Cpl-Primitive $bits   (ref.cast (ref $Cpl-Primitive) (local.get 0))))
-(func $Value.as-string    (export "Value#asString")    (param (ref $Value)) (result (ref $String))    (struct.get $Cpl-String    $string (ref.cast (ref $Cpl-String)    (local.get 0))))
-(func $Value.as-tuple     (export "Value#asTuple")     (param (ref $Value)) (result (ref $Tuple))     (struct.get $Cpl-Tuple     $tuple  (ref.cast (ref $Cpl-Tuple)     (local.get 0))))
-(func $Value.as-record    (export "Value#asRecord")    (param (ref $Value)) (result (ref $Record))    (struct.get $Cpl-Record    $record (ref.cast (ref $Cpl-Record)    (local.get 0))))
-(func $Value.as-list      (export "Value#asList")      (param (ref $Value)) (result (ref $List))      (struct.get $Cpl-List      $list   (ref.cast (ref $Cpl-List)      (local.get 0))))
-(func $Value.as-dict      (export "Value#asDict")      (param (ref $Value)) (result (ref $Dict))      (struct.get $Cpl-Dict      $dict   (ref.cast (ref $Cpl-Dict)      (local.get 0))))
-(func $Value.as-map       (export "Value#asMap")       (param (ref $Value)) (result (ref $Map))       (struct.get $Cpl-Map       $map    (ref.cast (ref $Cpl-Map)       (local.get 0))))
-(func $Value.as-func      (export "Value#asFunc")      (param (ref $Value)) (result (ref $Signature)) (struct.get $Function      $func   (ref.cast (ref $Function)      (local.get 0))))
+(func $Value.as-primitive (export "Value#asPrimitive") (param (ref $Value)) (result v128)           (struct.get $Cpl-Primitive $bits    (ref.cast (ref $Cpl-Primitive) (local.get 0))))
+(func $Value.as-string    (export "Value#asString")    (param (ref $Value)) (result (ref $String))  (struct.get $Cpl-String    $string  (ref.cast (ref $Cpl-String)    (local.get 0))))
+(func $Value.as-tuple     (export "Value#asTuple")     (param (ref $Value)) (result (ref $Tuple))   (struct.get $Cpl-Tuple     $tuple   (ref.cast (ref $Cpl-Tuple)     (local.get 0))))
+(func $Value.as-record    (export "Value#asRecord")    (param (ref $Value)) (result (ref $Record))  (struct.get $Cpl-Record    $record  (ref.cast (ref $Cpl-Record)    (local.get 0))))
+(func $Value.as-list      (export "Value#asList")      (param (ref $Value)) (result (ref $List))    (struct.get $Cpl-List      $list    (ref.cast (ref $Cpl-List)      (local.get 0))))
+(func $Value.as-dict      (export "Value#asDict")      (param (ref $Value)) (result (ref $Dict))    (struct.get $Cpl-Dict      $dict    (ref.cast (ref $Cpl-Dict)      (local.get 0))))
+(func $Value.as-map       (export "Value#asMap")       (param (ref $Value)) (result (ref $Map))     (struct.get $Cpl-Map       $map     (ref.cast (ref $Cpl-Map)       (local.get 0))))
+(func $Value.as-closure   (export "Value#asClosure")   (param (ref $Value)) (result (ref $Closure)) (struct.get $Cpl-Function  $closure (ref.cast (ref $Cpl-Function)  (local.get 0))))

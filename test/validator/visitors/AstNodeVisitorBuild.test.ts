@@ -7,7 +7,7 @@ import {setupScript} from '../../utils.ts';
 
 test.suite('AstNodeVisitorBuild#visit', () => {
 	test.suite('Block', () => {
-		test.test('hoists function declaration.', {expectFailure: true}, () => {
+		test.test('hoists function declaration.', () => {
 			setupScript(`{
 				f.();
 				func f(): void { return; };

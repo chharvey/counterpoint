@@ -42,14 +42,14 @@ export class OpcodeVisitorInterpret extends OpcodeVisitor<void> {
 	public override visitDecl(instr: Decl): void {
 		if (instr.target instanceof SymbolSchemaVar) {
 			// @ts-expect-error --- FIXME: function params do not have an initial value
-			this.interp.setLocalValue(instr.target, instr.value && this.#valueVisitorInterpret.visit(instr.value));
+			this.interp.setSymbolValue(instr.target, instr.value && this.#valueVisitorInterpret.visit(instr.value));
 		} else if (instr.target.value) {
-			this.interp.setLocalValue(instr.target, this.#valueVisitorInterpret.visit(instr.target.value));
+			this.interp.setSymbolValue(instr.target, this.#valueVisitorInterpret.visit(instr.target.value));
 		}
 	}
 
 	public override visitSet(instr: OpSet): void {
-		this.interp.setLocalValue(instr.target, this.#valueVisitorInterpret.visit(instr.value));
+		this.interp.setSymbolValue(instr.target, this.#valueVisitorInterpret.visit(instr.value));
 	}
 
 	public override visitCollectionDynamicSet(instr: CollectionDynamicSet): void {

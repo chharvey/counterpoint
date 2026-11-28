@@ -8,7 +8,7 @@ import type {
 
 
 
-/** Precursor to the Counterpoint `List` class. */
+/** Namespace for fields and methods of `$List`. */
 export class List implements HasFuncData {
 	public constructor(private readonly vm: VirtualMachine) {}
 

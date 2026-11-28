@@ -56,7 +56,7 @@ export class InstrVisitorCodegen extends InstrVisitor<binaryen.ExpressionRef /* 
 
 	@memoizePerCode
 	public override visitSet(instr: OpSet): binaryen.ExpressionRef /* void */ {
-		return this.cg.getLocal(instr.target)?.set(this.#valueVisitorCodegen.visit(instr.value)) ?? assert.fail(new ReferenceError(`Local variable \`${instr.targetName}\` must be set first!`));
+		return this.cg.getLocalOrThrow(instr.target).set(this.#valueVisitorCodegen.visit(instr.value));
 	}
 
 	@memoizePerCode
@@ -113,7 +113,7 @@ export class InstrVisitorCodegen extends InstrVisitor<binaryen.ExpressionRef /* 
 
 	@memoizePerCode
 	public override visitCollectionDynamicCopy(instr: CollectionDynamicCopy): binaryen.ExpressionRef /* void */ {
-		const {Value: VmValue, List, Dict, Map: VmMap} = this.cg.vm;
+		const {Value, List, Dict, Map: VmMap} = this.cg.vm;
 
 		const code_dest: binaryen.ExpressionRef = this.#valueVisitorCodegen.visit(instr.destination);
 		const code_src:  binaryen.ExpressionRef = this.#valueVisitorCodegen.visit(instr.source);
@@ -124,24 +124,24 @@ export class InstrVisitorCodegen extends InstrVisitor<binaryen.ExpressionRef /* 
 					// List.<T>((t, t, t));
 					case TYPE.Tuple: {
 						return List.copyFromTuple(
-							VmValue.asList(code_dest),
-							VmValue.asTuple(code_src),
+							Value.asList(code_dest),
+							Value.asTuple(code_src),
 						);
 					}
 					// List.<T>([t, t, t]);
 					// List.<T>(List.<T>((t, t, t)));
 					case TYPE.List: {
 						return List.copyFromList(
-							VmValue.asList(code_dest),
-							VmValue.asList(code_src),
+							Value.asList(code_dest),
+							Value.asList(code_src),
 						);
 					}
 					// List.<T>({t, t, t});
 					// List.<T>(Set.<T>((t, t, t)));
 					case TYPE.Set: {
 						return List.fillFromSet(
-							VmValue.asList(code_dest),
-							VmValue.asMap(code_src),
+							Value.asList(code_dest),
+							Value.asMap(code_src),
 						);
 					}
 					default: {
@@ -154,47 +154,47 @@ export class InstrVisitorCodegen extends InstrVisitor<binaryen.ExpressionRef /* 
 					// Dict.<T>(( (@a, t), (@b, t), (@c, t) ));
 					case TYPE.Tuple: {
 						return Dict.fillFromTuple(
-							VmValue.asDict(code_dest),
-							VmValue.asTuple(code_src),
+							Value.asDict(code_dest),
+							Value.asTuple(code_src),
 						);
 					}
 					// Dict.<T>((a= t, b= t, c= t));
 					case TYPE.Record: {
 						return Dict.copyFromRecord(
-							VmValue.asDict(code_dest),
-							VmValue.asRecord(code_src),
+							Value.asDict(code_dest),
+							Value.asRecord(code_src),
 						);
 					}
 					// Dict.<T>([ (@a, t), (@b, t), (@c, t) ]);
 					// Dict.<T>(List.<(sym, T)>(( (@a, t), (@b, t), (@c, t) )));
 					case TYPE.List: {
 						return Dict.fillFromList(
-							VmValue.asDict(code_dest),
-							VmValue.asList(code_src),
+							Value.asDict(code_dest),
+							Value.asList(code_src),
 						);
 					}
 					// Dict.<T>([a= t, b= t, c= t]);
 					// Dict.<T>(Dict.<T>( (a= t, b= t, c= t) ));
 					case TYPE.Dict: {
 						return Dict.copyFromDict(
-							VmValue.asDict(code_dest),
-							VmValue.asDict(code_src),
+							Value.asDict(code_dest),
+							Value.asDict(code_src),
 						);
 					}
 					// Dict.<T>({ (@a, t), (@b, t), (@c, t) });
 					// Dict.<T>(Set.<(sym, T)>(( (@a, t), (@b, t), (@c, t) )));
 					case TYPE.Set: {
 						return Dict.fillFromSet(
-							VmValue.asDict(code_dest),
-							VmValue.asMap(code_src),
+							Value.asDict(code_dest),
+							Value.asMap(code_src),
 						);
 					}
 					// Dict.<T>({@a -> t, @b -> t, @c -> t});
 					// Dict.<T>(Map.<sym, T>(( (@a, t), (@b, t), (@c, t) )));
 					case TYPE.Map: {
 						return Dict.fillFromMap(
-							VmValue.asDict(code_dest),
-							VmValue.asMap(code_src),
+							Value.asDict(code_dest),
+							Value.asMap(code_src),
 						);
 					}
 					default: {
@@ -207,24 +207,24 @@ export class InstrVisitorCodegen extends InstrVisitor<binaryen.ExpressionRef /* 
 					// Set.<T>((t, t, t));
 					case TYPE.Tuple: {
 						return VmMap.fillSetFromTuple(
-							VmValue.asMap(code_dest),
-							VmValue.asTuple(code_src),
+							Value.asMap(code_dest),
+							Value.asTuple(code_src),
 						);
 					}
 					// Set.<T>([t, t, t]);
 					// Set.<T>(List.<T>((t, t, t)));
 					case TYPE.List: {
 						return VmMap.fillSetFromList(
-							VmValue.asMap(code_dest),
-							VmValue.asList(code_src),
+							Value.asMap(code_dest),
+							Value.asList(code_src),
 						);
 					}
 					// Set.<T>({t, t, t});
 					// Set.<T>(Set.<T>((t, t, t)));
 					case TYPE.Set: {
 						return VmMap.copyFromMap(
-							VmValue.asMap(code_dest),
-							VmValue.asMap(code_src),
+							Value.asMap(code_dest),
+							Value.asMap(code_src),
 						);
 					}
 					default: {
@@ -237,32 +237,32 @@ export class InstrVisitorCodegen extends InstrVisitor<binaryen.ExpressionRef /* 
 					// Map.<K, V>(( (k, v), (k, v), (k, v) ));
 					case TYPE.Tuple: {
 						return VmMap.fillFromTuple(
-							VmValue.asMap(code_dest),
-							VmValue.asTuple(code_src),
+							Value.asMap(code_dest),
+							Value.asTuple(code_src),
 						);
 					}
 					// Map.<K, V>([ (k, v), (k, v), (k, v) ]);
 					// Map.<K, V>(List.<(K, V)>(( (k, v), (k, v), (k, v) )));
 					case TYPE.List: {
 						return VmMap.fillFromList(
-							VmValue.asMap(code_dest),
-							VmValue.asList(code_src),
+							Value.asMap(code_dest),
+							Value.asList(code_src),
 						);
 					}
 					// Map.<K, V>({ (k, v), (k, v), (k, v) });
 					// Map.<K, V>(Set.<(K, V)>(( (k, v), (k, v), (k, v) )));
 					case TYPE.Set: {
 						return VmMap.fillFromSet(
-							VmValue.asMap(code_dest),
-							VmValue.asMap(code_src),
+							Value.asMap(code_dest),
+							Value.asMap(code_src),
 						);
 					}
 					// Map.<K, V>({k -> v, k -> v, k -> v});
 					// Map.<K, V>(Map.<K, V>(( (k, v), (k, v), (k, v) )));
 					case TYPE.Map: {
 						return VmMap.copyFromMap(
-							VmValue.asMap(code_dest),
-							VmValue.asMap(code_src),
+							Value.asMap(code_dest),
+							Value.asMap(code_src),
 						);
 					}
 					default: {

@@ -1,7 +1,9 @@
+import * as assert from 'node:assert';
 import * as binaryen from 'binaryen.ts';
 import {VirtualMachine} from '../vm/index.ts';
+import {SymbolSchema} from '../validator/index.ts';
 import type {
-	BuilderLocalSymbol,
+	BuilderSymbol,
 	Builder,
 } from '../builder/index.ts';
 import {
@@ -28,7 +30,7 @@ import {
  * @param array an empty array in which to insert the entry
  * @see https://en.wikipedia.org/wiki/Linear_probing
  */
-function insert_entry(array: Array<binaryen.ExpressionRef | undefined>, index: number, entry: binaryen.ExpressionRef): void {
+function insert_entry(array: Array<binaryen.ExpressionRef /* (ref $Property) */ | undefined>, index: number, entry: binaryen.ExpressionRef /* (ref $Property) */): void {
 	if (index < 0 || array.length <= index) {
 		throw new RangeError('Given index must not be out of array bounds.');
 	}
@@ -96,7 +98,7 @@ export class CodeGenerator {
 	 * @param type   the type of the value; if not supplied, the Local will compute its type using `binaryen.getExpressionType`
 	 * @return       Was the operation performed?
 	 */
-	public setLocal(schema: BuilderLocalSymbol, value: binaryen.ExpressionRef, typ?: binaryen.Type): boolean {
+	public setLocal(schema: BuilderSymbol, value: binaryen.ExpressionRef, typ?: binaryen.Type): boolean {
 		let did: boolean = false;
 		if (!this.getLocal(schema)) {
 			this.#locals.add(new Local(this.mod.wasm, this.#locals.size, value, typ, schema));
@@ -110,8 +112,13 @@ export class CodeGenerator {
 	 * @param  schema the compiler’s internal data for a declared variable or a Builder temporary
 	 * @return        the local or `undefined`
 	 */
-	public getLocal(schema: BuilderLocalSymbol): Local | undefined {
+	public getLocal(schema: BuilderSymbol): Local | undefined {
 		return [...this.#locals].find((local) => local.schema === schema);
+	}
+
+	/** Utility function that returns {@link CodeGenerator#getLocal} if it exists, otherwise throws a native ReferenceError. */
+	public getLocalOrThrow(schema: BuilderSymbol): Local {
+		return this.getLocal(schema) ?? assert.fail(new ReferenceError(`Expected WASM local \`${schema instanceof SymbolSchema ? schema.source : schema.name}\` to be registered in code-generator.`));
 	}
 
 	/**
@@ -122,7 +129,7 @@ export class CodeGenerator {
 	 * @param type   the type of the value; if not supplied, the Local will compute its type using `binaryen.getExpressionType`
 	 * @return       the local variable set (or retrieved)
 	 */
-	public teeLocal(schema: BuilderLocalSymbol, value: binaryen.ExpressionRef, type?: binaryen.Type): Local {
+	public teeLocal(schema: BuilderSymbol, value: binaryen.ExpressionRef, type?: binaryen.Type): Local {
 		this.setLocal(schema, value, type);
 		return this.getLocal(schema)!;
 	}
@@ -159,6 +166,11 @@ export class CodeGenerator {
 	 */
 	private getGlobal(name: string): Global | undefined {
 		return [...this.#globals].find((global) => global.name === name);
+	}
+
+	/** Utility function that returns {@link CodeGenerator#getGlobal} if it exists, otherwise throws a native ReferenceError. */
+	private getGlobalOrThrow(name: string): Global {
+		return this.getGlobal(name) ?? assert.fail(new ReferenceError(`Expected WASM global \`${name}\` to be registered in code-generator.`));
 	}
 
 	/**
@@ -301,9 +313,9 @@ export class CodeGenerator {
 	 * @return      `(array.new_fixed $Record <...props>)`
 	 */
 	public codegenRecord(props: ReadonlyMap<bigint, binaryen.ExpressionRef /* (ref $Property) */> = new Map()): binaryen.ExpressionRef /* (ref $Record) */ {
-		const entries = new Array<binaryen.ExpressionRef | undefined>(props.size);
+		const entries = new Array<binaryen.ExpressionRef /* (ref $Property) */ | undefined>(props.size);
 		props.forEach((code, id) => insert_entry(entries, Number(id) % entries.length, code));
-		return this.mod.wasm.array.new_fixed(this.vm.heaptype.Record, entries as binaryen.ExpressionRef[]);
+		return this.mod.wasm.array.new_fixed(this.vm.heaptype.Record, entries as (binaryen.ExpressionRef /* (ref $Property) */)[]);
 	}
 
 	/**
@@ -315,16 +327,22 @@ export class CodeGenerator {
 	public codegenList(items: readonly (binaryen.ExpressionRef /* (ref $Value) */)[] = []): binaryen.ExpressionRef /* (ref $List) */ {
 		const {vm: {heaptype}, mod: {wasm}} = this;
 		let capacity: number = 8;
-		while (items.length > capacity * CodeGenerator.#LOAD_FACTOR) {
-			capacity *= 2;
+		let array: binaryen.ExpressionRef/* (ref $ListArray) */;
+		if (!items.length) {
+			array = wasm.array.new_default(heaptype.ListArray, wasm.i32.const(capacity));
+		} else {
+			while (items.length > capacity * CodeGenerator.#LOAD_FACTOR) {
+				capacity *= 2;
+			}
+			const entries: (binaryen.ExpressionRef /* (ref null $Value) */)[] = Array.from(
+				new Array(capacity),
+				(_, i) => items[i] ?? wasm.ref.null(heaptype.Value),
+			);
+			array = wasm.array.new_fixed(heaptype.ListArray, entries);
 		}
-		const entries: binaryen.ExpressionRef[] = Array.from(
-			new Array(capacity),
-			(_, i) => items[i] ?? wasm.ref.null(heaptype.Value),
-		);
 		return wasm.struct.new([
 			wasm.i32.const(items.length),
-			wasm.array.new_fixed(heaptype.ListArray, entries),
+			array,
 		], heaptype.List);
 	}
 
@@ -338,17 +356,23 @@ export class CodeGenerator {
 	public codegenDict(props: ReadonlyMap<bigint, binaryen.ExpressionRef /* (ref $Property) */> = new Map()): binaryen.ExpressionRef /* (ref $Dict) */ {
 		const {vm: {heaptype}, mod: {wasm}} = this;
 		let capacity: number = 8;
-		while (props.size > capacity * CodeGenerator.#LOAD_FACTOR) {
-			capacity *= 2;
-		}
-		const entries = new Array<binaryen.ExpressionRef | undefined>(capacity).fill(undefined);
-		props.forEach((code, id) => insert_entry(entries, Number(id) % entries.length, code));
-		return wasm.struct.new([
-			wasm.i32.const(props.size),
-			wasm.array.new_fixed(
+		let array: binaryen.ExpressionRef/* (ref $DictArray) */;
+		if (!props.size) {
+			array = wasm.array.new_default(heaptype.DictArray, wasm.i32.const(capacity));
+		} else {
+			while (props.size > capacity * CodeGenerator.#LOAD_FACTOR) {
+				capacity *= 2;
+			}
+			const entries = new Array<binaryen.ExpressionRef /* (ref $Property) */ | undefined>(capacity).fill(undefined);
+			props.forEach((code, id) => insert_entry(entries, Number(id) % entries.length, code));
+			array = wasm.array.new_fixed(
 				heaptype.DictArray,
 				entries.map((entry) => entry ?? wasm.ref.null(heaptype.Property)),
-			),
+			);
+		}
+		return wasm.struct.new([
+			wasm.i32.const(props.size),
+			array,
 		], heaptype.Dict);
 	}
 
@@ -392,31 +416,30 @@ export class CodeGenerator {
 	}
 
 	/**
-	 * Return a new `$Object`, given its constructor class.
-	 * @param class_ the constructor of the `$Object` object
-	 * @return       `(struct.new $Object <class_> <empty-dict>)`
+	 * Return a new `$Closure`.
+	 * @param name    the name of the function (use '' for lambdas)
+	 * @param arity   the number of functional parameters
+	 * @param builder the function’s executable code stored in a Builder
+	 * @return        `(struct.new $Closure ...)`
 	 */
-	public codegenObject(class_: binaryen.ExpressionRef /* (ref $Class) */): binaryen.ExpressionRef /* (ref $Object) */ {
-		const {vm: {heaptype, Object: VmObject}, mod: {wasm}} = this;
+	public codegenClosure(name: string, arity: bigint, builder: Builder): binaryen.ExpressionRef /* (ref $Closure) */ {
+		const {vm: {heaptype, reftype, reftypeNull}, mod: {wasm}} = this;
+		const fn_name: string = `func-${name || this.#funcCounter++}`;
+		const cg = new CodeGenerator(this.vm);
+		const body: binaryen.ExpressionRef /* void */ = builder.codegen(cg); // need to code-gen first before getting all locals below
+		this.mod.functions.add(
+			fn_name,
+			binaryen.createType([reftype.Tuple, reftypeNull.Tuple]),
+			binaryen.createType([reftypeNull.Value, reftypeNull.Exception]),
+			cg.getAllLocals().map((local) => local.type),
+			body,
+		);
 		return wasm.struct.new([
-			class_,
-			wasm.ref.null(heaptype.Dict),
-			VmObject.ctrPlusPlus(),
-		], heaptype.Object);
-	}
-
-	/**
-	 * Return a new `$Class`.
-	 * @param class_ optional constructor of the `$Class` object (default `(ref.null $Class)`); should always be an extension of the `Class` class
-	 * @return       `(struct.new $Class <class_?> <empty-dict>)`
-	 */
-	public codegenClass(class_?: binaryen.ExpressionRef /* (ref $Class) */): binaryen.ExpressionRef /* (ref $Class) */ {
-		const {vm: {heaptype, Object: VmObject}, mod: {wasm}} = this;
-		return wasm.struct.new([
-			class_ ?? wasm.ref.null(heaptype.Class),
-			wasm.ref.null(heaptype.Dict),
-			VmObject.ctrPlusPlus(),
-		], heaptype.Class);
+			wasm.i32.const(Number(arity)),
+			this.codegenTuple(),
+			// @ts-expect-error --- `binaren.Module.Function#type` needs updating
+			wasm.ref.func(fn_name, new binaryen.Module.Function(this.mod.functions.get(fn_name)).type),
+		], heaptype.Closure);
 	}
 
 	/**
@@ -479,35 +502,6 @@ export class CodeGenerator {
 			wasm.ref.null(heaptype.Value),
 			argument,
 		], heaptype.Result);
-	}
-
-	/**
-	 * Return a new `$Function`.
-	 * @param name    the name of the function (use '' for lambdas)
-	 * @param arity   the number of functional arguments
-	 * @param builder the function’s executable code stored in a Builder
-	 * @return        `(struct.new $Function ...)`
-	 */
-	public codegenFunction(name: string, arity: bigint, builder: Builder): binaryen.ExpressionRef /* (ref $Function) */ {
-		const {vm: {heaptype, reftype, reftypeNull, Object: VmObject, Class: VmClass}, mod: {wasm}} = this;
-		const fn_name: string = `func-${name || this.#funcCounter++}`;
-		const cg = new CodeGenerator(this.vm);
-		const body: binaryen.ExpressionRef /* void */ = builder.codegen(cg); // need to code-gen first before getting all locals below
-		this.mod.functions.add(
-			fn_name,
-			binaryen.createType([reftype.List, reftypeNull.List]),
-			binaryen.createType([reftypeNull.Value, reftypeNull.Exception]),
-			cg.getAllLocals().map((local) => local.type),
-			body,
-		);
-		return wasm.struct.new([
-			VmClass.FUNCTION,
-			wasm.ref.null(heaptype.Dict),
-			VmObject.ctrPlusPlus(),
-			wasm.i32.const(Number(arity)),
-			// @ts-expect-error --- `binaren.Module.Function#type` needs updating
-			wasm.ref.func(fn_name, new binaryen.Module.Function(this.mod.functions.get(fn_name)).type),
-		], heaptype.Function);
 	}
 
 	/**

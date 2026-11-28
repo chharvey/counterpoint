@@ -1,4 +1,3 @@
-import * as assert from 'node:assert';
 import * as binaryen from 'binaryen.ts';
 import type {
 	CodeGenerator,
@@ -77,7 +76,7 @@ export class ValueVisitorCodegen extends ValueVisitor<binaryen.ExpressionRef /* 
 			val.target instanceof SymbolSchemaClass &&
 			CORE_LIB_NAMES.includes(val.target.source as CoreLibName)
 		) {
-			switch (val.target.source) {
+			switch (val.target.source as CoreLibName) {
 				case CoreLibName.NULL:      { return this.cg.vm.Class.NULL; }
 				case CoreLibName.BOOLEAN:   { return this.cg.vm.Class.BOOLEAN; }
 				case CoreLibName.SYMBOL:    { return this.cg.vm.Class.SYMBOL; }
@@ -99,12 +98,9 @@ export class ValueVisitorCodegen extends ValueVisitor<binaryen.ExpressionRef /* 
 				case CoreLibName.OK:        { return this.cg.vm.Class.OK; }
 				case CoreLibName.FUNCTION:  { return this.cg.vm.Class.FUNCTION; }
 				case CoreLibName.CLASS:     { return this.cg.vm.Class.CLASS; }
-				default: {
-					return this.cg.codegenClass(this.cg.vm.Class.CLASS); // returns a new class who is an instance of `Class`
-				}
 			}
 		}
-		return this.cg.getLocal(val.target)?.get() ?? assert.fail(new ReferenceError(`Local variable \`${val.targetName}\` must be set first!`));
+		return this.cg.getLocalOrThrow(val.target).get();
 	}
 
 	@memoizePerCode
@@ -170,7 +166,17 @@ export class ValueVisitorCodegen extends ValueVisitor<binaryen.ExpressionRef /* 
 	@memoizePerCode
 	public override visitObjectNew(val: ObjectNew): binaryen.ExpressionRef /* (ref $Value) */ {
 		const class_: binaryen.ExpressionRef /* (ref $Class) */ | undefined = val.class_ && this.wasm.ref.cast(this.visit(val.class_), this.reftype.Class);
-		return val.isClass ? this.cg.codegenClass(class_) : this.cg.codegenObject(class_!);
+		return val.isClass
+			? class_ ? this.wasm.struct.new([
+				class_,
+				this.wasm.ref.null(this.heaptype.Dict),
+				this.cg.vm.Object.ctrPlusPlus(),
+			], this.heaptype.Class) : this.cg.vm.Class.CLASS
+			: this.wasm.struct.new([
+				class_!,
+				this.wasm.ref.null(this.heaptype.Dict),
+				this.cg.vm.Object.ctrPlusPlus(),
+			], this.heaptype.Object);
 	}
 
 	@memoizePerCode
@@ -369,7 +375,7 @@ export class ValueVisitorCodegen extends ValueVisitor<binaryen.ExpressionRef /* 
 
 	@memoizePerCode
 	public override visitFunction(val: OpFunction): binaryen.ExpressionRef /* (ref $Value) */ {
-		return this.cg.codegenFunction(val.tempName, val.type.maxArity, val.builder);
+		return this.cg.vm.Value.fromClosure(this.cg.codegenClosure(val.tempName, val.type.maxArity, val.builder));
 	}
 
 	public override defaultVisit(val: Value): binaryen.ExpressionRef /* (ref $Value) */ {

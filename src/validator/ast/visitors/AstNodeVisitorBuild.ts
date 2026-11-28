@@ -2,6 +2,7 @@ import * as assert from 'node:assert';
 import * as xjs from 'extrajs';
 import {
 	type Temp,
+	BuilderSymbolStatus,
 	Builder,
 	OP,
 } from '../../../index.ts';
@@ -60,7 +61,7 @@ export class AstNodeVisitorBuild extends AstNodeVisitor<void> {
 
 	@runOncePerNode
 	public override visitCapture(node: Capture): void {
-		return this.builder.setLocalStatus((node.parent as Functionlike).block.validator.getSymbol(node.variable.id) as SymbolSchemaVar, 'set');
+		return this.builder.setSymbolStatus((node.parent as Functionlike).block.validator.getSymbol(node.variable.id) as SymbolSchemaVar, BuilderSymbolStatus.SET);
 	}
 
 	@runOncePerNode
@@ -78,7 +79,7 @@ export class AstNodeVisitorBuild extends AstNodeVisitor<void> {
 		node.validator.getAllSymbols().values().filter((schema): schema is SymbolSchemaClass => (
 			schema instanceof SymbolSchemaClass &&
 			CORE_LIB_NAMES.includes(schema.source as CoreLibName)
-		)).forEach((schema) => this.builder.setLocalStatus(schema, 'set'));
+		)).forEach((schema) => this.builder.setSymbolStatus(schema, BuilderSymbolStatus.SET));
 
 		node.block && this.visit(node.block);
 		this.builder.terminateBlock(new OP.EndProgram());
@@ -295,6 +296,7 @@ export class AstNodeVisitorBuild extends AstNodeVisitor<void> {
 			this.builder.funcs.set(symbol.id, new WeakMap());
 		}
 		this.builder.funcs.get(symbol.id)!.set(ovl_type, temp);
+		this.builder.setSymbolStatus(temp, BuilderSymbolStatus.SET);
 		return [temp, func_builder];
 	}
 }

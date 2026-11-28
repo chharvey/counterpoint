@@ -1,7 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-
-
-
 /**
  * The type for instance method decorators.
  * @typeparam This    the `this` ‘parameter’ of the instance method
@@ -70,11 +67,11 @@ export type SetterDecorator<
  * By explicitly applying `@noopMethod(decorator)` to the method, it tells programmers,
  * “Normally we would use `@decorator` here, but for a specific reason we decided to leave it off.”
  *
- * @typeparam ProtoThis the method’s `this` type
- * @typeparam Params    the method’s parameter types
- * @typeparam Return    the method’s return type
- * @param _decorator a decorator to cancel
- * @return           a new decorator that voids the argument
+ * @typeparam ProtoThis  the method’s `this` type
+ * @typeparam Params     the method’s parameter types
+ * @typeparam Return     the method’s return type
+ * @param     _decorator a decorator to cancel
+ * @returns              a new decorator that voids the argument
  */
 export function noopMethod<ProtoThis extends object, Params extends unknown[], Return>(_decorator: MethodDecorator<ProtoThis, (this: ProtoThis, ...args: Params) => Return>): typeof _decorator {
 	return (_method, _context) => undefined;
@@ -84,10 +81,10 @@ export function noopMethod<ProtoThis extends object, Params extends unknown[], R
 
 /**
  * Cancels a getter decorator. Similar to {@link noopMethod} but for getters.
- * @typeparam ProtoThis   the getter’s `this` type
- * @typeparam Return      the getter’s return type
- * @param _decorator a decorator to cancel
- * @return           a new decorator that voids the argument
+ * @typeparam ProtoThis  the getter’s `this` type
+ * @typeparam Return     the getter’s return type
+ * @param     _decorator a decorator to cancel
+ * @returns              a new decorator that voids the argument
  */
 export function noopGetter<ProtoThis extends object, Return>(_decorator: GetterDecorator<ProtoThis, Return>): typeof _decorator {
 	return (_getter, _context) => undefined;
@@ -97,13 +94,13 @@ export function noopGetter<ProtoThis extends object, Return>(_decorator: GetterD
 
 /**
  * Cancels a getter decorator. Similar to {@link noopMethod} but for setters.
- * @typeparam ProtoThis   the setter’s `this` type
- * @typeparam Param       the setter’s parameter type
- * @param _decorator a decorator to cancel
- * @return           a new decorator that voids the argument
+ * @typeparam ProtoThis  the setter’s `this` type
+ * @typeparam Param      the setter’s parameter type
+ * @param     _decorator a decorator to cancel
+ * @returns              a new decorator that voids the argument
  */
 export function noopSetter<ProtoThis extends object, Param>(_decorator: SetterDecorator<ProtoThis, Param>): typeof _decorator {
-	return (_getter, _context) => undefined;
+	return (_setter, _context) => undefined;
 }
 
 
@@ -114,9 +111,9 @@ export function noopSetter<ProtoThis extends object, Param>(_decorator: SetterDe
  * If it does, return that value.
  * If it doen’t, compute the value, store it in the database, and then return it.
  * @implements MethodDecorator<ProtoThis, (this: ProtoThis, ...args: Params) => Return>
- * @typeparam ProtoThis   the method’s `this` type
- * @typeparam Params      the method’s parameter types
- * @typeparam Return      the method’s return type
+ * @typeparam ProtoThis the method’s `this` type
+ * @typeparam Params    the method’s parameter types
+ * @typeparam Return    the method’s return type
  */
 export function memoizeMethod<ProtoThis extends object, Params extends unknown[], Return>(
 	method:   (this: ProtoThis, ...args: Params) => Return,
@@ -135,8 +132,8 @@ export function memoizeMethod<ProtoThis extends object, Params extends unknown[]
 /**
  * Like {@link memoizeMethod} but for getters.
  * @implements GetterDecorator<ProtoThis, Return>
- * @typeparam ProtoThis   the getter’s `this` type
- * @typeparam Return      the getter’s return type
+ * @typeparam ProtoThis the getter’s `this` type
+ * @typeparam Return    the getter’s return type
  */
 export function memoizeGetter<ProtoThis extends object, Return>(
 	getter:   (this: ProtoThis) => Return,
@@ -157,8 +154,8 @@ export function memoizeGetter<ProtoThis extends object, Return>(
  * The first time the method is called, it should execute; any time after that, it should not.
  * Should only be used on methods that return `void`; for non-void methods, use {@link memoizeMethod}.
  * @implements MethodDecorator<ProtoThis, (this: ProtoThis, ...args: Params) => void>
- * @typeparam ProtoThis   the method’s `this` type
- * @typeparam Params      the method’s parameter types
+ * @typeparam ProtoThis the method’s `this` type
+ * @typeparam Params    the method’s parameter types
  */
 export function runOnceMethod<ProtoThis extends object, Params extends unknown[]>(
 	method:   (this: ProtoThis, ...args: Params) => void,
@@ -178,8 +175,8 @@ export function runOnceMethod<ProtoThis extends object, Params extends unknown[]
 /**
  * Like {@link runOnceMethod} but for setters.
  * @implements SetterDecorator<ProtoThis, Param>
- * @typeparam ProtoThis   the setter’s `this` type
- * @typeparam Param       the setter’s parameter type
+ * @typeparam ProtoThis the setter’s `this` type
+ * @typeparam Param     the setter’s parameter type
  */
 export function runOnceSetter<ProtoThis extends object, Param>(
 	setter:   (this: ProtoThis, value: Param) => void,

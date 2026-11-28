@@ -5,7 +5,7 @@ import {
 } from '../../validator/index.ts';
 import type {
 	Temp,
-	BuilderLocalSymbol,
+	BuilderSymbol,
 } from '../Builder.ts';
 import {OpCode} from './Opcode.ts';
 import {ValueTac} from './ValueTac.ts';
@@ -19,7 +19,7 @@ export class Get extends ValueTac {
 
 	public constructor(target: SymbolSchemaVar | SymbolSchemaClass, typ: TYPE.Type);
 	public constructor(target: Temp);
-	public constructor(public readonly target: BuilderLocalSymbol, typ?: TYPE.Type) {
+	public constructor(public readonly target: BuilderSymbol, typ?: TYPE.Type) {
 		super(OpCode.GET, target instanceof SymbolSchemaVar || target instanceof SymbolSchemaClass ? typ! : target.type);
 		this.targetName = this.target instanceof SymbolSchemaVar || this.target instanceof SymbolSchemaClass ? this.target.source : this.target.name;
 	}
