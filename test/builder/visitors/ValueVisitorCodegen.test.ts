@@ -715,7 +715,7 @@ test.suite('ValueVisitorCodegen#visit', () => {
 			dub.(42) + crash.();
 			noop.();
 		}`, {codegen: true});
-		const {reftype, reftypeNull, Value} = cg.vm;
+		const {reftype, reftypeNull, Closure, Value} = cg.vm;
 
 		const fn0_return_v_get: binaryen.ExpressionRef /* (ref null $Value) (ref null $Exception) */ = wasm.local.get(3, binaryen.createType([reftypeNull.Value, reftypeNull.Exception]));
 		const v0_returned_get:  binaryen.ExpressionRef /* (ref null $Value) */                       = wasm.tuple.extract(fn0_return_v_get, 0);
@@ -736,10 +736,10 @@ test.suite('ValueVisitorCodegen#visit', () => {
 
 		assertEqualBins([...builder.instructions.slice(3, 5), builder.instructions[6]].map((instr) => visitors.codegen.instr.visit(instr)), [
 			wasm.local.set(4, wasm.block(null, [
-				wasm.local.set(3, wasm.call_ref(
-					Value.asFunc(dub_call_base),
-					[cg.codegenList(), cg.codegenList([genConst(cg, 42n)])],
-					binaryen.createType([reftypeNull.Value, reftypeNull.Exception]),
+				wasm.local.set(3, Closure.call(
+					Value.asClosure(dub_call_base),
+					cg.codegenTuple(),
+					cg.codegenTuple([genConst(cg, 42n)]),
 				)),
 				wasm.if(
 					wasm.ref.is_null(v0_panicked_get),
@@ -748,10 +748,10 @@ test.suite('ValueVisitorCodegen#visit', () => {
 				),
 			], reftype.Value)),
 			wasm.local.set(6, wasm.block(null, [
-				wasm.local.set(5, wasm.call_ref(
-					Value.asFunc(crash_call_base),
-					[cg.codegenList(), cg.codegenList()],
-					binaryen.createType([reftypeNull.Value, reftypeNull.Exception]),
+				wasm.local.set(5, Closure.call(
+					Value.asClosure(crash_call_base),
+					cg.codegenTuple(),
+					cg.codegenTuple(),
 				)),
 				wasm.if(
 					wasm.ref.is_null(v1_panicked_get),
@@ -760,10 +760,10 @@ test.suite('ValueVisitorCodegen#visit', () => {
 				),
 			], reftype.Value)),
 			wasm.drop(wasm.block(null, [
-				wasm.local.set(7, wasm.call_ref(
-					Value.asFunc(noop_call_base),
-					[cg.codegenList(), cg.codegenList()],
-					binaryen.createType([reftypeNull.Value, reftypeNull.Exception]),
+				wasm.local.set(7, Closure.call(
+					Value.asClosure(noop_call_base),
+					cg.codegenTuple(),
+					cg.codegenTuple(),
 				)),
 				wasm.if(
 					wasm.ref.is_null(v2_panicked_get),

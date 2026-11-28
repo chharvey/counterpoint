@@ -149,9 +149,4 @@ export class Value implements HasFuncData {
 	public asClosure(value: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Closure) */ {
 		return this.vm.mod.wasm.call('Value.as-closure', [value], this.vm.reftype.Closure);
 	}
-
-	/** Returns the value as a WASM function. */
-	public asFunc(value: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Signature) */ {
-		return this.vm.mod.wasm.struct.get(2 /* $Closure.$func */, this.asClosure(value), this.vm.reftype.Signature);
-	}
 }

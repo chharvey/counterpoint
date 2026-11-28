@@ -10,6 +10,7 @@ import {Record as VmRecord} from './classes/Record.ts';
 import {List} from './classes/List.ts';
 import {Dict} from './classes/Dict.ts';
 import {Map as VmMap} from './classes/Map.ts';
+import {Closure} from './classes/Closure.ts';
 import {Value} from './classes/Value.ts';
 import {Object as VmObject} from './classes/Object.ts';
 import {Class as VmClass} from './classes/Class.ts';
@@ -452,6 +453,7 @@ export class VirtualMachine {
 	public readonly List     = new List(this);
 	public readonly Dict     = new Dict(this);
 	public readonly Map      = new VmMap(this);
+	public readonly Closure  = new Closure(this);
 	public readonly Value    = new Value(this);
 	public readonly Object   = new VmObject(this);
 	public readonly Class    = new VmClass(this);

@@ -56,7 +56,7 @@
 		(field $arity i32)
 		;; captured variables
 		(field $upvalues (ref $Tuple))
-		;; the runnable function
+		;; the callable function
 		(field $func (ref $Signature))
 	))
 

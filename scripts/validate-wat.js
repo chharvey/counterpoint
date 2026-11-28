@@ -24,6 +24,7 @@ const inputs = Promise.all([
 	'classes/List.wat',
 	'classes/Dict.wat',
 	'classes/Map.wat',
+	'classes/Closure.wat',
 	'classes/Value.wat',
 	'classes/Object.wat',
 	'classes/Class.wat',
