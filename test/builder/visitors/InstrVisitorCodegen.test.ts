@@ -440,7 +440,7 @@ test.suite('InstrVisitorCodegen#visit', () => {
 			\\(): void { return; };
 			panic Exception.("hello");
 		}`, {build: false});
-		const {heaptype, reftype, Value: VmValue} = cg.vm;
+		const {heaptype, reftype, Value} = cg.vm;
 		stmts.slice(0, 6).forEach((stmt) => visitors.build.node.visit(((stmt as AST.STMT.StatementExpression).expr as AST.EXPR.Function).block.children[0]));
 		visitors.build.node.visit(stmts[6]);
 		builder.instructions.map((instr) => VISITOR.visit(instr));
@@ -454,7 +454,7 @@ test.suite('InstrVisitorCodegen#visit', () => {
 				wasm.return(wasm.tuple.make([genConst(cg, 'hello', 'sym'), ref_null_Exception])),
 				wasm.return(wasm.tuple.make([genConst(cg, 42n),            ref_null_Exception])),
 				wasm.return(wasm.tuple.make([genConst(cg, 4.2),            ref_null_Exception])),
-				wasm.return(wasm.tuple.make([VmValue.VOID,                 ref_null_Exception])),
+				wasm.return(wasm.tuple.make([Value.VOID,                   ref_null_Exception])),
 				wasm.return(wasm.tuple.make([ref_null_Value,               wasm.ref.cast(
 					visitors.codegen.value.visit((builder.instructions.at(-1) as OP.Return).value!), // the exact expression is needed from the ‘actual’ side; cannot be mocked with a new `local.get`
 					reftype.Exception,
