@@ -26,7 +26,7 @@ import type {CollectionLinearNew} from '../CollectionLinearNew.ts';
 import type {RecordNew} from '../RecordNew.ts';
 import type {DictNew} from '../DictNew.ts';
 import type {MapNew} from '../MapNew.ts';
-import type {FuncNew} from '../Function.ts';
+import type {FuncNew} from '../FuncNew.ts';
 import type {ObjectNew} from '../ObjectNew.ts';
 import type {ExcpNew} from '../ExcpNew.ts';
 import type {MaybeNew} from '../MaybeNew.ts';
