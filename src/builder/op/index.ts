@@ -14,6 +14,7 @@ export * from './CollectionLinearNew.ts';
 export * from './RecordNew.ts';
 export * from './DictNew.ts';
 export * from './MapNew.ts';
+export * from './Function.ts';
 export * from './ObjectNew.ts';
 export * from './ExcpNew.ts';
 export * from './MaybeNew.ts';
@@ -26,7 +27,6 @@ export * from './CollectionDynamicGet.ts';
 export * from './Call.ts';
 export * from './Unop.ts';
 export * from './Binop.ts';
-export * from './Function.ts';
 
 export * from './Instruction.ts';
 export * from './Drop.ts';

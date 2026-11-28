@@ -13,6 +13,7 @@ import {
 	RecordNew,
 	DictNew,
 	MapNew,
+	Function as OpFunction,
 	ObjectNew,
 	ExcpNew,
 	MaybeNew,
@@ -25,7 +26,6 @@ import {
 	Call,
 	Unop,
 	Binop,
-	Function as OpFunction,
 	Decl,
 } from './index.ts';
 import {
@@ -45,6 +45,7 @@ export abstract class ValueVisitor<T> {
 	public visitRecordNew            (val: RecordNew):            T { return this.defaultVisit(val); }
 	public visitDictNew              (val: DictNew):              T { return this.defaultVisit(val); }
 	public visitMapNew               (val: MapNew):               T { return this.defaultVisit(val); }
+	public visitFunction             (val: OpFunction):           T { return this.defaultVisit(val); }
 	public visitObjectNew            (val: ObjectNew):            T { return this.defaultVisit(val); }
 	public visitExcpNew              (val: ExcpNew):              T { return this.defaultVisit(val); }
 	public visitMaybeNew             (val: MaybeNew):             T { return this.defaultVisit(val); }
@@ -57,7 +58,6 @@ export abstract class ValueVisitor<T> {
 	public visitCall                 (val: Call):                 T { return this.defaultVisit(val); }
 	public visitUnop                 (val: Unop):                 T { return this.defaultVisit(val); }
 	public visitBinop                (val: Binop):                T { return this.defaultVisit(val); }
-	public visitFunction             (val: OpFunction):           T { return this.defaultVisit(val); }
 	/* eslint-enable @stylistic/space-before-function-paren */
 
 	public abstract defaultVisit(val: Value): T;
@@ -73,6 +73,7 @@ export abstract class ValueVisitor<T> {
 			case RecordNew:            { return this.visitRecordNew            (val as RecordNew); }
 			case DictNew:              { return this.visitDictNew              (val as DictNew); }
 			case MapNew:               { return this.visitMapNew               (val as MapNew); }
+			case OpFunction:           { return this.visitFunction             (val as OpFunction); }
 			case ObjectNew:            { return this.visitObjectNew            (val as ObjectNew); }
 			case ExcpNew:              { return this.visitExcpNew              (val as ExcpNew); }
 			case MaybeNew:             { return this.visitMaybeNew             (val as MaybeNew); } // eslint-disable-line @typescript-eslint/no-unnecessary-type-assertion
@@ -85,7 +86,6 @@ export abstract class ValueVisitor<T> {
 			case Call:                 { return this.visitCall                 (val as Call); }
 			case Unop:                 { return this.visitUnop                 (val as Unop); }
 			case Binop:                { return this.visitBinop                (val as Binop); }
-			case OpFunction:           { return this.visitFunction             (val as OpFunction); }
 
 			default: { return this.defaultVisit(val); }
 		}
@@ -102,6 +102,7 @@ export abstract class ValueVisitor<T> {
  * - RecordNew
  * - DictNew
  * - MapNew
+ * - OpFunction
  * - ObjectNew
  * - ExcpNew
  * - MaybeNew
@@ -115,7 +116,6 @@ export abstract class ValueVisitor<T> {
  * - Unop
  * - Binop
  * - Phi
- * - OpFunction
  */
 export abstract class Value extends Opcode {
 	/**

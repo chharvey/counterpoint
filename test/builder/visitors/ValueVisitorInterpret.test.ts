@@ -186,6 +186,24 @@ test.suite('ValueVisitorInterpret#visit', () => {
 	});
 
 
+	test.test('OpFunction', () => {
+		const {stmts, builder} = setupScript(`{
+			\\(x: int): void {
+				x;
+				return;
+			};
+		}`, {codegen: false});
+		const typ: TYPE.Type = (stmts[0] as AST.STMT.StatementExpression).expr!.type;
+		const fn:  OP.Value  = (builder.instructions[0] as OP.Drop).value;
+		assert_instanceof(typ, TYPE.Function);
+		assert_instanceof(fn,  OP.Function);
+		return assert.deepStrictEqual(
+			new OP.ValueVisitorInterpret(new Interpreter()).visit(fn),
+			new VALUE.Function(typ, '\\(x: int): void { x; return; }', fn.builder),
+		);
+	});
+
+
 	test.test('ObjectNew', () => {
 		const builder      = new Builder();
 		const interp       = new Interpreter();
@@ -1112,23 +1130,5 @@ test.suite('ValueVisitorInterpret#visit', () => {
 				});
 			});
 		});
-	});
-
-
-	test.test('OpFunction', () => {
-		const {stmts, builder} = setupScript(`{
-			\\(x: int): void {
-				x;
-				return;
-			};
-		}`, {codegen: false});
-		const typ: TYPE.Type = (stmts[0] as AST.STMT.StatementExpression).expr!.type;
-		const fn:  OP.Value  = (builder.instructions[0] as OP.Drop).value;
-		assert_instanceof(typ, TYPE.Function);
-		assert_instanceof(fn,  OP.Function);
-		return assert.deepStrictEqual(
-			new OP.ValueVisitorInterpret(new Interpreter()).visit(fn),
-			new VALUE.Function(typ, '\\(x: int): void { x; return; }', fn.builder),
-		);
 	});
 });

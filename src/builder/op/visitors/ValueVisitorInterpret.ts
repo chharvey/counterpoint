@@ -26,6 +26,7 @@ import type {CollectionLinearNew} from '../CollectionLinearNew.ts';
 import type {RecordNew} from '../RecordNew.ts';
 import type {DictNew} from '../DictNew.ts';
 import type {MapNew} from '../MapNew.ts';
+import type {Function as OpFunction} from '../Function.ts';
 import type {ObjectNew} from '../ObjectNew.ts';
 import type {ExcpNew} from '../ExcpNew.ts';
 import type {MaybeNew} from '../MaybeNew.ts';
@@ -38,7 +39,6 @@ import type {CollectionDynamicGet} from '../CollectionDynamicGet.ts';
 import type {Call} from '../Call.ts';
 import type {Unop} from '../Unop.ts';
 import type {Binop} from '../Binop.ts';
-import type {Function as OpFunction} from '../Function.ts';
 
 
 
@@ -124,6 +124,10 @@ export class ValueVisitorInterpret extends ValueVisitor<VALUE.Value> {
 			this.visit(ant),
 			this.visit(con),
 		])));
+	}
+
+	public override visitFunction(val: OpFunction): VALUE.Value {
+		return new VALUE.Function(val.type, val.source, val.builder);
 	}
 
 	public override visitObjectNew(val: ObjectNew): VALUE.Value {
@@ -283,10 +287,6 @@ export class ValueVisitorInterpret extends ValueVisitor<VALUE.Value> {
 				return VALUE.Boolean.fromBoolean(operand0 instanceof operand1.nativeClass);
 			}
 		}
-	}
-
-	public override visitFunction(val: OpFunction): VALUE.Value {
-		return new VALUE.Function(val.type, val.source, val.builder);
 	}
 
 	public override defaultVisit(val: Value): VALUE.Value {

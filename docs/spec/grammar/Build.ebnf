@@ -33,17 +33,18 @@ GET(SymbolSchemaVar|native-string) -> Value;
 
 STR.TEMPLATE([Value*]) -> String;
 
-TUPLE.NEW([Value*])                       -> Tuple;
-RECORD.NEW(Vector<native-bigint, Value>*) -> Record;
-LIST.NEW([Value*])                        -> List;
-DICT.NEW(Vector<VALUE.Symbol, Value>*)    -> Dict;
-SET.NEW([Value*])                         -> Set;
-MAP.NEW(Vector<Value, Value>*)            -> Map;
-OBJECT.NEW(boolean [Class?])              -> Object;
-EXCP.NEW([Value Value?])                  -> Exception;
-MAYBE.NEW([Value?])                       -> Maybe;
-RESULT.NEW([Value Nil])                   -> Result;
-RESULT.NEW([Nil Exception])               -> Result;
+TUPLE.NEW([Value*])                                  -> Tuple;
+RECORD.NEW(Vector<native-bigint, Value>*)            -> Record;
+LIST.NEW([Value*])                                   -> List;
+DICT.NEW(Vector<VALUE.Symbol, Value>*)               -> Dict;
+SET.NEW([Value*])                                    -> Set;
+MAP.NEW(Vector<Value, Value>*)                       -> Map;
+FUNCTION(native-string native-string ‹instructions›) -> Function;
+OBJECT.NEW(boolean [Class?])                         -> Object;
+EXCP.NEW([Value Value?])                             -> Exception;
+MAYBE.NEW([Value?])                                  -> Maybe;
+RESULT.NEW([Value Nil])                              -> Result;
+RESULT.NEW([Nil Exception])                          -> Result;
 
 TUPLE.HAS (native-bigint [Value]) -> Boolean;
 RECORD.HAS(native-bigint [Value]) -> Boolean;
@@ -107,8 +108,6 @@ GE([Number Number]) -> Boolean;
 ID([Value Value]) -> Boolean;
 EQ([Value Value]) -> Boolean;
 IS([Value Class]) -> Boolean;
-
-FUNCTION(native-string native-string ‹instructions›);
 
 DROP([Value]);
 

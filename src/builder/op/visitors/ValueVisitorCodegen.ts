@@ -24,6 +24,7 @@ import type {CollectionLinearNew} from '../CollectionLinearNew.ts';
 import type {RecordNew} from '../RecordNew.ts';
 import type {DictNew} from '../DictNew.ts';
 import type {MapNew} from '../MapNew.ts';
+import type {Function as OpFunction} from '../Function.ts';
 import type {ObjectNew} from '../ObjectNew.ts';
 import type {ExcpNew} from '../ExcpNew.ts';
 import type {MaybeNew} from '../MaybeNew.ts';
@@ -36,7 +37,6 @@ import type {CollectionDynamicGet} from '../CollectionDynamicGet.ts';
 import type {Call} from '../Call.ts';
 import type {Unop} from '../Unop.ts';
 import type {Binop} from '../Binop.ts';
-import type {Function as OpFunction} from '../Function.ts';
 import {memoizePerCode} from './decorators.ts';
 
 
@@ -161,6 +161,11 @@ export class ValueVisitorCodegen extends ValueVisitor<binaryen.ExpressionRef /* 
 			this.visit(ant),
 			this.visit(con),
 		]))));
+	}
+
+	@memoizePerCode
+	public override visitFunction(val: OpFunction): binaryen.ExpressionRef /* (ref $Value) */ {
+		return this.cg.vm.Value.fromClosure(this.cg.codegenClosure(val.tempName, val.type.maxArity, val.builder));
 	}
 
 	@memoizePerCode
@@ -351,11 +356,6 @@ export class ValueVisitorCodegen extends ValueVisitor<binaryen.ExpressionRef /* 
 			case OpCode.EQ: { return op.eq(code0, code1); }
 			case OpCode.IS: { return op.is(code0, code1); }
 		}
-	}
-
-	@memoizePerCode
-	public override visitFunction(val: OpFunction): binaryen.ExpressionRef /* (ref $Value) */ {
-		return this.cg.vm.Value.fromClosure(this.cg.codegenClosure(val.tempName, val.type.maxArity, val.builder));
 	}
 
 	public override defaultVisit(val: Value): binaryen.ExpressionRef /* (ref $Value) */ {
