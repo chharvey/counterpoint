@@ -109,7 +109,7 @@ export class AstNodeVisitorBuild extends AstNodeVisitor<void> {
 			func_builder.terminateBlock(new OP.EndProgram());
 			func_builder.validate();
 
-			return this.builder.pushInstruction(new OP.Decl(temp));
+			return this.builder.pushInstruction(new OP.Set(temp, temp.value!));
 		}
 	}
 
@@ -296,6 +296,9 @@ export class AstNodeVisitorBuild extends AstNodeVisitor<void> {
 			this.builder.funcs.set(symbol.id, new Map());
 		}
 		this.builder.funcs.get(symbol.id)!.set(ovl_type, temp);
+		const declared_temp = {...temp};
+		delete declared_temp.value;
+		this.builder.pushInstruction(new OP.Decl(declared_temp));
 		this.builder.setSymbolStatus(temp, BuilderSymbolStatus.SET);
 		return [temp, func_builder];
 	}
