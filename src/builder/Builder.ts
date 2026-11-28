@@ -54,7 +54,7 @@ export class Builder {
 	 * Function overload declarations all share the same id, so SymbolSchemaFunc cannot be used.
 	 * Every function declaration visited has its own Temp.
 	 */
-	public readonly funcs = new Map<bigint, Map<TYPE.Function, Temp>>();
+	public readonly funcs = new Map<bigint, WeakMap<TYPE.Function, Temp>>();
 
 	private currentBlock?: CfgNode = new CfgNode(this.newLabel());
 

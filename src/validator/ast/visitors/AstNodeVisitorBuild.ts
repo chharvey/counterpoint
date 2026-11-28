@@ -298,7 +298,7 @@ export class AstNodeVisitorBuild extends AstNodeVisitor<void> {
 			func_builder,
 		));
 		if (!this.builder.funcs.has(symbol.id)) {
-			this.builder.funcs.set(symbol.id, new Map());
+			this.builder.funcs.set(symbol.id, new WeakMap());
 		}
 		this.builder.funcs.get(symbol.id)!.set(ovl_type, temp);
 		this.builder.pushInstruction(new OP.Decl(temp));
