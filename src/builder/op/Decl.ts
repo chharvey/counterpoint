@@ -9,7 +9,6 @@ import {
 } from './utils-public.ts';
 import {OpCode} from './Opcode.ts';
 import {Instruction} from './Instruction.ts';
-import type {Value} from './Value.ts';
 
 
 
@@ -44,31 +43,21 @@ function stringify_type_name(typename: TypeName): string | undefined {
 /** Declare a variable/local without initializing it. */
 export class Decl extends Instruction {
 	public readonly targetType: TYPE.Type;
-	public readonly value?:     Value;
 
 	public constructor(target: SymbolSchemaVar, typ: TYPE.Type, value?: Value);
 	public constructor(target: Temp);
 	public constructor(
 		public readonly target: SymbolSchemaVar | Temp,
 		typ?:   TYPE.Type,
-		value?: Value,
 	) {
 		super(OpCode.DECL);
 		this.targetType = this.target instanceof SymbolSchemaVar ? typ! : this.target.type;
-		if (this.target instanceof SymbolSchemaVar) {
-			if (value) {
-				this.value = value;
-			}
-		} else if (this.target.value) {
-			this.value = this.target.value;
-		}
 	}
 
 	public override toString(): string {
 		return super.toString(
 			`<${stringify_type_name(ast_type_name(this.targetType))}>`,
 			this.target instanceof SymbolSchemaVar ? this.target.source : this.target.name,
-			this.value ?? '',
 		);
 	}
 

@@ -55,7 +55,8 @@ export class AstNodeVisitorBuild extends AstNodeVisitor<void> {
 		if (node.identifier) {
 			const symbol = (node.parent as Functionlike).block.validator.getSymbol(node.id!) as SymbolSchemaVar;
 			symbol.irType = symbol.isUninitialized ? new TYPE.Maybe(symbol.type) : symbol.type;
-			return this.builder.pushInstruction(new OP.Decl(symbol, symbol.irType));
+			this.builder.pushInstruction(new OP.Decl(symbol, symbol.irType));
+			return this.builder.setSymbolStatus(symbol, BuilderSymbolStatus.SET);
 		}
 	}
 
@@ -92,7 +93,8 @@ export class AstNodeVisitorBuild extends AstNodeVisitor<void> {
 		const value:  OP.Value                    = stmt.assigned ? this.#exprVisitorBuild.visit(stmt.assigned) : new OP.MaybeNew(symbol!.type);
 		if (stmt.assignee) {
 			symbol!.irType = value.type;
-			return this.builder.pushInstruction(new OP.Decl(symbol!, symbol!.irType, value));
+			this.builder.pushInstruction(new OP.Decl(symbol!, symbol!.irType));
+			return this.builder.pushInstruction(new OP.Set(symbol!, symbol!.irType, value));
 		} else {
 			return this.builder.pushInstruction(new OP.Drop(value));
 		}
@@ -215,7 +217,7 @@ export class AstNodeVisitorBuild extends AstNodeVisitor<void> {
 	@runOncePerNode
 	public override visitStmtIteration(stmt: STMT.StatementIteration): void {
 		const iterable: OP.ValueTac = this.#exprVisitorBuild.visit(stmt.iterable).asTac(this.builder);
-		const index:    Temp        = this.builder.newTemp(new OP.Const(VALUE.NAT_0));
+		const index:    Temp        = this.builder.newTemp(TYPE.NAT);
 		const get_index             = new OP.Get(index);
 		assert_instanceof(iterable.type, TYPE.List);
 
@@ -224,6 +226,7 @@ export class AstNodeVisitorBuild extends AstNodeVisitor<void> {
 		stmt.labelEndwhile = this.builder.newLabel();
 
 		this.builder.pushInstruction(new OP.Decl(index));
+		this.builder.pushInstruction(new OP.Set(index, new OP.Const(VALUE.NAT_0)));
 		this.builder.terminateBlock(new OP.Goto(stmt.labels.while!));
 
 		this.builder.initiateBlock(stmt.labels.while!);
@@ -239,6 +242,10 @@ export class AstNodeVisitorBuild extends AstNodeVisitor<void> {
 			const symbol = stmt.block.validator.getSymbol(stmt.id!) as SymbolSchemaVar;
 			symbol.irType = iterable.type.typearg;
 			this.builder.pushInstruction(new OP.Decl(
+				symbol,
+				symbol.irType,
+			));
+			this.builder.pushInstruction(new OP.Set(
 				symbol,
 				symbol.irType,
 				new OP.CollectionDynamicGet(OP.TypeName.LIST, iterable, get_index, iterable.type.typearg),
@@ -296,9 +303,7 @@ export class AstNodeVisitorBuild extends AstNodeVisitor<void> {
 			this.builder.funcs.set(symbol.id, new Map());
 		}
 		this.builder.funcs.get(symbol.id)!.set(ovl_type, temp);
-		const declared_temp = {...temp};
-		delete declared_temp.value;
-		this.builder.pushInstruction(new OP.Decl(declared_temp));
+		this.builder.pushInstruction(new OP.Decl(temp));
 		this.builder.setSymbolStatus(temp, BuilderSymbolStatus.SET);
 		return [temp, func_builder];
 	}

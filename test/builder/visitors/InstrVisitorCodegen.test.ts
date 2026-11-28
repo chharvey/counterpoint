@@ -1,11 +1,9 @@
 import * as test from 'node:test';
 import type * as binaryen from 'binaryen.ts';
+import * as xjs from 'extrajs';
 import {
 	type AST,
-	TYPE,
-	Builder,
 	OP,
-	CodeGenerator,
 } from '../../../src/index.ts';
 import {
 	assertEqualBins,
@@ -54,14 +52,21 @@ test.suite('InstrVisitorCodegen#visit', () => {
 			set f = "hello";
 			delete f;
 		}`, {codegen: false});
+		const value_default: binaryen.ExpressionRef /* (ref $Value) */ = wasm.struct.new_default(cg.vm.heaptype.Value);
 		return assertEqualBins(
 			builder.instructions.map((instr) => VISITOR.visit(instr)),
 			[
+				wasm.local.set(0, value_default),
 				wasm.local.set(0, genConst(cg)),
+				wasm.local.set(1, value_default),
 				wasm.local.set(1, genConst(cg, false)),
+				wasm.local.set(2, value_default),
 				wasm.local.set(2, genConst(cg, 'hello', 'sym')),
+				wasm.local.set(3, value_default),
 				wasm.local.set(3, genConst(cg, 42n)),
+				wasm.local.set(4, value_default),
 				wasm.local.set(4, genConst(cg, 4.2)),
+				wasm.local.set(5, value_default),
 				wasm.local.set(5, cg.codegenMaybe()),
 
 				wasm.local.set(0, genConst(cg)),
@@ -72,17 +77,6 @@ test.suite('InstrVisitorCodegen#visit', () => {
 				wasm.local.set(5, cg.codegenMaybe(genConst(cg, 'hello'))),
 				wasm.local.set(5, cg.codegenMaybe()),
 			],
-		);
-	});
-
-
-	test.test('uninitialized Decl returns (local.set) with (struct.new_default).', () => {
-		// there exists no syntax for empty Decls, so constructing it manually
-		const cg = new CodeGenerator();
-		const VISITOR = new OP.InstrVisitorCodegen(cg);
-		assertEqualBins(
-			VISITOR.visit(new OP.Decl(new Builder().newTemp(TYPE.INT))),
-			cg.mod.wasm.local.set(0, cg.mod.wasm.struct.new_default(cg.vm.heaptype.Value)),
 		);
 	});
 
@@ -98,7 +92,7 @@ test.suite('InstrVisitorCodegen#visit', () => {
 				set list.[2] = 47;
 			}`);
 			const {reftype, Vect, Value, List} = cg.vm;
-			return assertEqualBins(builder.instructions.slice(4).map((instr) => VISITOR.visit(instr)), [
+			return assertEqualBins(builder.instructions.slice(8).map((instr) => VISITOR.visit(instr)), [
 				List.set(
 					Value.asList(wasm.local.get(2, reftype.Value)),
 					wasm.i32.wrap_i64(Vect.asInt(Value.asPrimitive(wasm.local.get(3, reftype.Value)))),
@@ -126,7 +120,7 @@ test.suite('InstrVisitorCodegen#visit', () => {
 				set dict.[@c] = 47;
 			}`);
 			const {reftype, Vect, Value, Dict} = cg.vm;
-			return assertEqualBins(builder.instructions.slice(3).map((instr) => VISITOR.visit(instr)), [
+			return assertEqualBins(builder.instructions.slice(6).map((instr) => VISITOR.visit(instr)), [
 				Dict.set(
 					Value.asDict(wasm.local.get(2, reftype.Value)),
 					Vect.asNat(Value.asPrimitive(genConst(cg, 'b', 'sym'))),
@@ -151,16 +145,16 @@ test.suite('InstrVisitorCodegen#visit', () => {
 				set 'set'.[3.3] = true;
 			}`, {codegen: false});
 			const {reftype, Vect, Value, Map: VmMap} = cg.vm;
-			const base:           binaryen.ExpressionRef = wasm.local.get(1, reftype.Value); // index 0 = nonempty map setup (implementation of Set)
-			const base_get_0:     binaryen.ExpressionRef = wasm.local.get(2, reftype.Map);
-			const accessor_get_0: binaryen.ExpressionRef = wasm.local.get(3, reftype.Value);
-			const base_get_1:     binaryen.ExpressionRef = wasm.local.get(4, reftype.Map);
-			const accessor_get_1: binaryen.ExpressionRef = wasm.local.get(5, reftype.Value);
+			const base:           binaryen.ExpressionRef = wasm.local.get(0, reftype.Value);
+			const base_get_0:     binaryen.ExpressionRef = wasm.local.get(1, reftype.Map);
+			const accessor_get_0: binaryen.ExpressionRef = wasm.local.get(2, reftype.Value);
+			const base_get_1:     binaryen.ExpressionRef = wasm.local.get(3, reftype.Map);
+			const accessor_get_1: binaryen.ExpressionRef = wasm.local.get(4, reftype.Value);
 			VISITOR.visit(builder.instructions[0]);
-			return assertEqualBins(builder.instructions.slice(1).map((instr) => VISITOR.visit(instr)), [
+			return assertEqualBins(builder.instructions.slice(2).map((instr) => VISITOR.visit(instr)), [
 				wasm.block(null, [
-					wasm.local.set(2, Value.asMap(base)),
-					wasm.local.set(3, genConst(cg, 4.2)),
+					wasm.local.set(1, Value.asMap(base)),
+					wasm.local.set(2, genConst(cg, 4.2)),
 					wasm.if(
 						Vect.isConst(Value.asPrimitive(genConst(cg, false)), true),
 						VmMap.set(base_get_0, accessor_get_0, genConst(cg)),
@@ -168,8 +162,8 @@ test.suite('InstrVisitorCodegen#visit', () => {
 					),
 				]),
 				wasm.block(null, [
-					wasm.local.set(4, Value.asMap(base)),
-					wasm.local.set(5, genConst(cg, 3.3)),
+					wasm.local.set(3, Value.asMap(base)),
+					wasm.local.set(4, genConst(cg, 3.3)),
 					wasm.if(
 						Vect.isConst(Value.asPrimitive(genConst(cg, true)), true),
 						VmMap.set(base_get_1, accessor_get_1, genConst(cg)),
@@ -185,8 +179,8 @@ test.suite('InstrVisitorCodegen#visit', () => {
 				set map.[3.3] = 21;
 			}`);
 			const {reftype, Value, Map: VmMap} = cg.vm;
-			const base: binaryen.ExpressionRef = wasm.local.get(1, reftype.Value); // index 0 = nonempty map setup
-			return assertEqualBins(builder.instructions.slice(1).map((instr) => VISITOR.visit(instr)), [
+			const base: binaryen.ExpressionRef = wasm.local.get(0, reftype.Value);
+			return assertEqualBins(builder.instructions.slice(2).map((instr) => VISITOR.visit(instr)), [
 				VmMap.set(Value.asMap(base), genConst(cg, 4.2), genConst(cg, 21n)),
 				VmMap.set(Value.asMap(base), genConst(cg, 3.3), genConst(cg, 21n)),
 			]);
@@ -201,9 +195,9 @@ test.suite('InstrVisitorCodegen#visit', () => {
 					List.<int>((2, 3, 5));
 				}`, {codegen: false});
 				const {reftype, Value, List} = cg.vm;
-				builder.instructions.slice(0, 2).forEach((instr) => VISITOR.visit(instr));
+				xjs.Array.forEachAggregated(builder.instructions.slice(0, 4), (instr) => VISITOR.visit(instr));
 				return assertEqualBins(
-					VISITOR.visit(builder.instructions[2]),
+					VISITOR.visit(builder.instructions[4]),
 					List.copyFromTuple(
 						Value.asList (wasm.local.get(0, reftype.Value)),
 						Value.asTuple(wasm.local.get(1, reftype.Value)),
@@ -215,9 +209,9 @@ test.suite('InstrVisitorCodegen#visit', () => {
 					List.<int>([2, 3, 5]);
 				}`, {codegen: false});
 				const {reftype, Value, List} = cg.vm;
-				builder.instructions.slice(0, 2).forEach((instr) => VISITOR.visit(instr));
+				xjs.Array.forEachAggregated(builder.instructions.slice(0, 4), (instr) => VISITOR.visit(instr));
 				return assertEqualBins(
-					VISITOR.visit(builder.instructions[2]),
+					VISITOR.visit(builder.instructions[4]),
 					List.copyFromList(
 						Value.asList(wasm.local.get(0, reftype.Value)),
 						Value.asList(wasm.local.get(1, reftype.Value)),
@@ -229,12 +223,12 @@ test.suite('InstrVisitorCodegen#visit', () => {
 					List.<int>({2, 3, 5});
 				}`, {codegen: false});
 				const {reftype, Value, List} = cg.vm;
-				builder.instructions.slice(0, 2).forEach((instr) => VISITOR.visit(instr));
+				xjs.Array.forEachAggregated(builder.instructions.slice(0, 4), (instr) => VISITOR.visit(instr));
 				return assertEqualBins(
-					VISITOR.visit(builder.instructions[2]),
+					VISITOR.visit(builder.instructions[4]),
 					List.fillFromSet(
 						Value.asList(wasm.local.get(0, reftype.Value)),
-						Value.asMap (wasm.local.get(2, reftype.Value)), // index 1 = nonempty map setup (implementation of Set)
+						Value.asMap (wasm.local.get(1, reftype.Value)),
 					),
 				);
 			});
@@ -245,9 +239,9 @@ test.suite('InstrVisitorCodegen#visit', () => {
 					Dict.<int>(( (@a, 2), (@b, 3), (@c, 5) ));
 				}`, {codegen: false});
 				const {reftype, Value, Dict} = cg.vm;
-				builder.instructions.slice(0, 5).forEach((instr) => VISITOR.visit(instr));
+				xjs.Array.forEachAggregated(builder.instructions.slice(0, 10), (instr) => VISITOR.visit(instr));
 				return assertEqualBins(
-					VISITOR.visit(builder.instructions[5]),
+					VISITOR.visit(builder.instructions[10]),
 					Dict.fillFromTuple(
 						Value.asDict (wasm.local.get(0, reftype.Value)),
 						Value.asTuple(wasm.local.get(4, reftype.Value)),
@@ -259,9 +253,9 @@ test.suite('InstrVisitorCodegen#visit', () => {
 					Dict.<int>((a= 2, b= 3, c= 5));
 				}`, {codegen: false});
 				const {reftype, Value, Dict} = cg.vm;
-				builder.instructions.slice(0, 2).forEach((instr) => VISITOR.visit(instr));
+				xjs.Array.forEachAggregated(builder.instructions.slice(0, 4), (instr) => VISITOR.visit(instr));
 				return assertEqualBins(
-					VISITOR.visit(builder.instructions[2]),
+					VISITOR.visit(builder.instructions[4]),
 					Dict.copyFromRecord(
 						Value.asDict  (wasm.local.get(0, reftype.Value)),
 						Value.asRecord(wasm.local.get(1, reftype.Value)),
@@ -273,9 +267,9 @@ test.suite('InstrVisitorCodegen#visit', () => {
 					Dict.<int>([ (@a, 2), (@b, 3), (@c, 5) ]);
 				}`, {codegen: false});
 				const {reftype, Value, Dict} = cg.vm;
-				builder.instructions.slice(0, 5).forEach((instr) => VISITOR.visit(instr));
+				xjs.Array.forEachAggregated(builder.instructions.slice(0, 10), (instr) => VISITOR.visit(instr));
 				return assertEqualBins(
-					VISITOR.visit(builder.instructions[5]),
+					VISITOR.visit(builder.instructions[10]),
 					Dict.fillFromList(
 						Value.asDict(wasm.local.get(0, reftype.Value)),
 						Value.asList(wasm.local.get(4, reftype.Value)),
@@ -287,9 +281,9 @@ test.suite('InstrVisitorCodegen#visit', () => {
 					Dict.<int>([a= 2, b= 3, c= 5]);
 				}`, {codegen: false});
 				const {reftype, Value, Dict} = cg.vm;
-				builder.instructions.slice(0, 2).forEach((instr) => VISITOR.visit(instr));
+				xjs.Array.forEachAggregated(builder.instructions.slice(0, 4), (instr) => VISITOR.visit(instr));
 				return assertEqualBins(
-					VISITOR.visit(builder.instructions[2]),
+					VISITOR.visit(builder.instructions[4]),
 					Dict.copyFromDict(
 						Value.asDict(wasm.local.get(0, reftype.Value)),
 						Value.asDict(wasm.local.get(1, reftype.Value)),
@@ -301,12 +295,12 @@ test.suite('InstrVisitorCodegen#visit', () => {
 					Dict.<int>({ (@a, 2), (@b, 3), (@c, 5) });
 				}`, {codegen: false});
 				const {reftype, Value, Dict} = cg.vm;
-				builder.instructions.slice(0, 5).forEach((instr) => VISITOR.visit(instr));
+				xjs.Array.forEachAggregated(builder.instructions.slice(0, 10), (instr) => VISITOR.visit(instr));
 				return assertEqualBins(
-					VISITOR.visit(builder.instructions[5]),
+					VISITOR.visit(builder.instructions[10]),
 					Dict.fillFromSet(
 						Value.asDict(wasm.local.get(0, reftype.Value)),
-						Value.asMap (wasm.local.get(5, reftype.Value)), // index 4 = nonempty map setup (implementation of Set)
+						Value.asMap (wasm.local.get(4, reftype.Value)),
 					),
 				);
 			});
@@ -315,12 +309,12 @@ test.suite('InstrVisitorCodegen#visit', () => {
 					Dict.<int>({@a -> 2, @b -> 3, @c -> 5});
 				}`, {codegen: false});
 				const {reftype, Value, Dict} = cg.vm;
-				builder.instructions.slice(0, 2).forEach((instr) => VISITOR.visit(instr));
+				xjs.Array.forEachAggregated(builder.instructions.slice(0, 4), (instr) => VISITOR.visit(instr));
 				return assertEqualBins(
-					VISITOR.visit(builder.instructions[2]),
+					VISITOR.visit(builder.instructions[4]),
 					Dict.fillFromMap(
 						Value.asDict(wasm.local.get(0, reftype.Value)),
-						Value.asMap (wasm.local.get(2, reftype.Value)), // index 1 = nonempty map setup
+						Value.asMap (wasm.local.get(1, reftype.Value)),
 					),
 				);
 			});
@@ -331,9 +325,9 @@ test.suite('InstrVisitorCodegen#visit', () => {
 					Set.<int>((2, 3, 5));
 				}`, {codegen: false});
 				const {reftype, Value, Map: VmMap} = cg.vm;
-				builder.instructions.slice(0, 2).forEach((instr) => VISITOR.visit(instr));
+				xjs.Array.forEachAggregated(builder.instructions.slice(0, 4), (instr) => VISITOR.visit(instr));
 				return assertEqualBins(
-					VISITOR.visit(builder.instructions[2]),
+					VISITOR.visit(builder.instructions[4]),
 					VmMap.fillSetFromTuple(
 						Value.asMap  (wasm.local.get(0, reftype.Value)),
 						Value.asTuple(wasm.local.get(1, reftype.Value)),
@@ -345,9 +339,9 @@ test.suite('InstrVisitorCodegen#visit', () => {
 					Set.<int>([2, 3, 5]);
 				}`, {codegen: false});
 				const {reftype, Value, Map: VmMap} = cg.vm;
-				builder.instructions.slice(0, 2).forEach((instr) => VISITOR.visit(instr));
+				xjs.Array.forEachAggregated(builder.instructions.slice(0, 4), (instr) => VISITOR.visit(instr));
 				return assertEqualBins(
-					VISITOR.visit(builder.instructions[2]),
+					VISITOR.visit(builder.instructions[4]),
 					VmMap.fillSetFromList(
 						Value.asMap (wasm.local.get(0, reftype.Value)),
 						Value.asList(wasm.local.get(1, reftype.Value)),
@@ -359,12 +353,12 @@ test.suite('InstrVisitorCodegen#visit', () => {
 					Set.<int>({2, 3, 5});
 				}`, {codegen: false});
 				const {reftype, Value, Map: VmMap} = cg.vm;
-				builder.instructions.slice(0, 2).forEach((instr) => VISITOR.visit(instr));
+				xjs.Array.forEachAggregated(builder.instructions.slice(0, 4), (instr) => VISITOR.visit(instr));
 				return assertEqualBins(
-					VISITOR.visit(builder.instructions[2]),
+					VISITOR.visit(builder.instructions[4]),
 					VmMap.copyFromMap(
 						Value.asMap(wasm.local.get(0, reftype.Value)),
-						Value.asMap(wasm.local.get(2, reftype.Value)),
+						Value.asMap(wasm.local.get(1, reftype.Value)),
 					),
 				);
 			});
@@ -375,9 +369,9 @@ test.suite('InstrVisitorCodegen#visit', () => {
 					Map.<float, int>(( (1.414, 2), (1.732, 3), (2.236, 5) ));
 				}`, {codegen: false});
 				const {reftype, Value, Map: VmMap} = cg.vm;
-				builder.instructions.slice(0, 5).forEach((instr) => VISITOR.visit(instr));
+				xjs.Array.forEachAggregated(builder.instructions.slice(0, 10), (instr) => VISITOR.visit(instr));
 				return assertEqualBins(
-					VISITOR.visit(builder.instructions[5]),
+					VISITOR.visit(builder.instructions[10]),
 					VmMap.fillFromTuple(
 						Value.asMap  (wasm.local.get(0, reftype.Value)),
 						Value.asTuple(wasm.local.get(4, reftype.Value)),
@@ -389,9 +383,9 @@ test.suite('InstrVisitorCodegen#visit', () => {
 					Map.<float, int>([ (1.414, 2), (1.732, 3), (2.236, 5) ]);
 				}`, {codegen: false});
 				const {reftype, Value, Map: VmMap} = cg.vm;
-				builder.instructions.slice(0, 5).forEach((instr) => VISITOR.visit(instr));
+				xjs.Array.forEachAggregated(builder.instructions.slice(0, 10), (instr) => VISITOR.visit(instr));
 				return assertEqualBins(
-					VISITOR.visit(builder.instructions[5]),
+					VISITOR.visit(builder.instructions[10]),
 					VmMap.fillFromList(
 						Value.asMap (wasm.local.get(0, reftype.Value)),
 						Value.asList(wasm.local.get(4, reftype.Value)),
@@ -403,12 +397,12 @@ test.suite('InstrVisitorCodegen#visit', () => {
 					Map.<float, int>({ (1.414, 2), (1.732, 3), (2.236, 5) });
 				}`, {codegen: false});
 				const {reftype, Value, Map: VmMap} = cg.vm;
-				builder.instructions.slice(0, 5).forEach((instr) => VISITOR.visit(instr));
+				xjs.Array.forEachAggregated(builder.instructions.slice(0, 10), (instr) => VISITOR.visit(instr));
 				return assertEqualBins(
-					VISITOR.visit(builder.instructions[5]),
+					VISITOR.visit(builder.instructions[10]),
 					VmMap.fillFromSet(
 						Value.asMap(wasm.local.get(0, reftype.Value)),
-						Value.asMap(wasm.local.get(5, reftype.Value)), // index 4 = nonempty map setup (implementation of Set)
+						Value.asMap(wasm.local.get(4, reftype.Value)),
 					),
 				);
 			});
@@ -417,12 +411,12 @@ test.suite('InstrVisitorCodegen#visit', () => {
 					Map.<float, int>({1.414 -> 2, 1.732 -> 3, 2.236 -> 5});
 				}`, {codegen: false});
 				const {reftype, Value, Map: VmMap} = cg.vm;
-				builder.instructions.slice(0, 2).forEach((instr) => VISITOR.visit(instr));
+				xjs.Array.forEachAggregated(builder.instructions.slice(0, 4), (instr) => VISITOR.visit(instr));
 				return assertEqualBins(
-					VISITOR.visit(builder.instructions[2]),
+					VISITOR.visit(builder.instructions[4]),
 					VmMap.copyFromMap(
 						Value.asMap(wasm.local.get(0, reftype.Value)),
-						Value.asMap(wasm.local.get(2, reftype.Value)),
+						Value.asMap(wasm.local.get(1, reftype.Value)),
 					),
 				);
 			});

@@ -546,7 +546,7 @@ test.suite('ValueVisitorInterpret#visit', () => {
 					const interp       = new Interpreter();
 					const code_visitor = new OP.OpcodeVisitorInterpret(interp);
 					const VISITOR      = new OP.ValueVisitorInterpret(interp);
-					builder.instructions.slice(0, 8).map((instr) => code_visitor.visit(instr)); // instr index 5 is the decl for the Exception argument
+					builder.instructions.filter((instr) => !(instr instanceof OP.Drop)).map((instr) => code_visitor.visit(instr));
 					// there exists no syntax for “is None”/“is Fail”, so constructing it manually
 					return assert_equal_values(stmts.slice(7).map((stmt) => VISITOR.visit(new OP.Unop(
 						operator,
@@ -566,8 +566,8 @@ test.suite('ValueVisitorInterpret#visit', () => {
 					x~?;
 				}`, {codegen: false}).builder.instructions;
 				const code_visitor = new OP.OpcodeVisitorInterpret(new Interpreter());
-				code_visitor.visit(instrs[0]);
-				return assert.throws(() => code_visitor.visit(instrs[1]), /Unwrapped a None value/);
+				xjs.Array.forEachAggregated(instrs.slice(0, 2), (instr) => code_visitor.visit(instr));
+				return assert.throws(() => code_visitor.visit(instrs[2]), /Unwrapped a None value/);
 			});
 			test.test('returns the value when operand is a Some.', () => {
 				assert_equal_values(interpret_extracted_drops(`{
@@ -584,9 +584,8 @@ test.suite('ValueVisitorInterpret#visit', () => {
 					x~!;
 				}`, {codegen: false}).builder.instructions;
 				const code_visitor = new OP.OpcodeVisitorInterpret(new Interpreter());
-				code_visitor.visit(instrs[0]);
-				code_visitor.visit(instrs[1]);
-				return assert.throws(() => code_visitor.visit(instrs[2]), /Unwrapped a Fail value/);
+				xjs.Array.forEachAggregated(instrs.slice(0, 4), (instr) => code_visitor.visit(instr));
+				return assert.throws(() => code_visitor.visit(instrs[4]), /Unwrapped a Fail value/);
 			});
 			test.test('returns the value when operand is an Ok.', () => {
 				assert_equal_values(interpret_extracted_drops(`{
@@ -609,9 +608,9 @@ test.suite('ValueVisitorInterpret#visit', () => {
 					new OP.ResultNew(true, TYPE.INT, TYPE.EXCP, new OP.Const(VALUE.INT_1)).asTac(builder),
 					TYPE.EXCP,
 				)));
-				assert.strictEqual(builder.instructions.length, 2);
-				code_visitor.visit(builder.instructions[0]);
-				return assert.throws(() => code_visitor.visit(builder.instructions[1]), /Extracted from an Ok value/);
+				assert.strictEqual(builder.instructions.length, 3);
+				xjs.Array.forEachAggregated(builder.instructions.slice(0, 2), (instr) => code_visitor.visit(instr));
+				return assert.throws(() => code_visitor.visit(builder.instructions[2]), /Extracted from an Ok value/);
 			});
 			test.test('returns the reason when operand is a Fail.', () => {
 				const builder      = new Builder();

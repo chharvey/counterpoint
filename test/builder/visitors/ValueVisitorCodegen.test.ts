@@ -549,7 +549,7 @@ test.suite('ValueVisitorCodegen#visit', () => {
 			tup.1;
 		}`);
 		const {reftype, Value} = cg.vm;
-		return assertEqualBins(builder.instructions.slice(3).map((instr) => visitors.codegen.instr.visit(instr)), [
+		return assertEqualBins(builder.instructions.slice(6).map((instr) => visitors.codegen.instr.visit(instr)), [
 			wasm.drop(wasm.array.get(
 				Value.asTuple(wasm.local.get(2, reftype.Value)),
 				wasm.i32.const(2),
@@ -579,7 +579,7 @@ test.suite('ValueVisitorCodegen#visit', () => {
 			rec.b;
 		}`);
 		const {reftype, Value, Record} = cg.vm;
-		return assertEqualBins(builder.instructions.slice(3).map((instr) => visitors.codegen.instr.visit(instr)), [
+		return assertEqualBins(builder.instructions.slice(6).map((instr) => visitors.codegen.instr.visit(instr)), [
 			wasm.drop(Record.get(
 				Value.asRecord(wasm.local.get(2, reftype.Value)),
 				wasm.i64.const(Validator.keyId('c')),
@@ -609,7 +609,7 @@ test.suite('ValueVisitorCodegen#visit', () => {
 			}`);
 			const {reftype, Vect, Value, List} = cg.vm;
 			const list_cast: binaryen.ExpressionRef = Value.asList(wasm.local.get(1, reftype.Value));
-			return assertEqualBins(builder.instructions.slice(4).map((instr) => visitors.codegen.instr.visit(instr)), [
+			return assertEqualBins(builder.instructions.slice(8).map((instr) => visitors.codegen.instr.visit(instr)), [
 				wasm.drop(List.get(
 					Value.asList(wasm.local.get(2, reftype.Value)),
 					wasm.i32.wrap(Vect.asInt(Value.asPrimitive(wasm.local.get(3, reftype.Value)))),
@@ -639,7 +639,7 @@ test.suite('ValueVisitorCodegen#visit', () => {
 			}`);
 			const {reftype, Vect, Value, Dict} = cg.vm;
 			const dict_cast: binaryen.ExpressionRef = Value.asDict(wasm.local.get(1, reftype.Value));
-			return assertEqualBins(builder.instructions.slice(3).map((instr) => visitors.codegen.instr.visit(instr)), [
+			return assertEqualBins(builder.instructions.slice(6).map((instr) => visitors.codegen.instr.visit(instr)), [
 				wasm.drop(Dict.get(
 					Value.asDict(wasm.local.get(2, reftype.Value)),
 					Vect.asNat(Value.asPrimitive(genConst(cg, 'b', 'sym'))),
@@ -661,10 +661,10 @@ test.suite('ValueVisitorCodegen#visit', () => {
 				'set'.[3.3];
 			}`);
 			const {reftype, reftypeNull, Value, Case, Map: VmMap} = cg.vm;
-			const base:         binaryen.ExpressionRef = wasm.local.get(1, reftype.Value); // index 0 = nonempty map setup (implementation of Set)
+			const base:         binaryen.ExpressionRef = wasm.local.get(0, reftype.Value);
 			const nullish_case_0: binaryen.ExpressionRef = wasm.local.get(2, reftypeNull.Case);
 			const nullish_case_1: binaryen.ExpressionRef = wasm.local.get(3, reftypeNull.Case);
-			return assertEqualBins(builder.instructions.slice(1).map((instr) => visitors.codegen.instr.visit(instr)), [
+			return assertEqualBins(builder.instructions.slice(2).map((instr) => visitors.codegen.instr.visit(instr)), [
 				wasm.drop(wasm.block(null, [
 					wasm.local.set(2, wasm.tuple.extract(VmMap.find(
 						Value.asMap(base),
@@ -702,8 +702,8 @@ test.suite('ValueVisitorCodegen#visit', () => {
 				map.[3.3];
 			}`);
 			const {reftype, Value, Map: VmMap} = cg.vm;
-			const map_cast: binaryen.ExpressionRef = Value.asMap(wasm.local.get(1, reftype.Value)); // index 0 = nonempty map setup
-			return assertEqualBins(builder.instructions.slice(1).map((instr) => visitors.codegen.instr.visit(instr)), [
+			const map_cast: binaryen.ExpressionRef = Value.asMap(wasm.local.get(0, reftype.Value));
+			return assertEqualBins(builder.instructions.slice(2).map((instr) => visitors.codegen.instr.visit(instr)), [
 				wasm.drop(VmMap.get(
 					map_cast,
 					genConst(cg, 4.2),
@@ -899,10 +899,7 @@ test.suite('ValueVisitorCodegen#visit', () => {
 				y~?;
 			}`);
 			const {reftype, op} = cg.vm;
-			return assertEqualBins(builder.instructions.map((instr) => visitors.codegen.instr.visit(instr)), [
-				wasm.local.set(0, cg.codegenMaybe()),
-				wasm.local.set(1, cg.codegenMaybe()),
-				wasm.local.set(1, cg.codegenMaybe(genConst(cg, 42n))),
+			return assertEqualBins(builder.instructions.slice(5).map((instr) => visitors.codegen.instr.visit(instr)), [
 				wasm.drop(op.unwrapMaybe(wasm.local.get(0, reftype.Value))),
 				wasm.drop(op.unwrapMaybe(wasm.local.get(1, reftype.Value))),
 			]);
@@ -917,14 +914,10 @@ test.suite('ValueVisitorCodegen#visit', () => {
 				z~!;
 			}`);
 			const {reftype, op} = cg.vm;
-			const excp: binaryen.ExpressionRef /* (ref $Exception) */ = cg.codegenException(wasm.ref.cast(genConst(cg, '42'), reftype.CplString));
-			return assertEqualBins(builder.instructions.map((instr) => visitors.codegen.instr.visit(instr)), [
-				wasm.local.set(0, excp),
-				wasm.local.set(1, cg.codegenResult(false, wasm.ref.cast(wasm.local.get(0, binaryen.getExpressionType(excp)), reftype.Exception))), // HACK: issue with struct literals having “exact” types prevents passing `reftype.Exception` to `local.get()`
-				wasm.local.set(2, cg.codegenResult(true, genConst(cg, 42n, 'nat'))),
-				wasm.local.set(3, cg.codegenResult(true, genConst(cg, 4.2))),
-				...[1, 2, 3].map((i) => wasm.drop(op.unwrapResult(wasm.local.get(i, reftype.Value)))),
-			]);
+			return assertEqualBins(
+				builder.instructions.slice(8).map((instr) => visitors.codegen.instr.visit(instr)),
+				[1, 2, 3].map((i) => wasm.drop(op.unwrapResult(wasm.local.get(i, reftype.Value)))),
+			);
 		});
 		test.test('RESULT.EXTRACT', () => {
 			const {stmts, cg, wasm, visitors, visitors: {codegen: {value: VISITOR}}} = setupScript(`{
@@ -937,9 +930,9 @@ test.suite('ValueVisitorCodegen#visit', () => {
 			}`);
 			const {reftype, op} = cg.vm;
 			// there exists no syntax for Result extract, so constructing it manually
-			return assertEqualBins([3, 4, 5].map((i) => VISITOR.visit(new OP.Unop(
+			return assertEqualBins(stmts.slice(3).map((stmt) => VISITOR.visit(new OP.Unop(
 				OP.OpCode.RESULT_EXTRACT,
-				visitors.build.expr.visit((stmts[i] as AST.STMT.StatementExpression).expr!) as OP.Get,
+				visitors.build.expr.visit((stmt as AST.STMT.StatementExpression).expr!) as OP.Get,
 				TYPE.EXCP,
 			))), [1, 2, 3].map((i) => op.extractResult(wasm.local.get(i, reftype.Value))));
 		});

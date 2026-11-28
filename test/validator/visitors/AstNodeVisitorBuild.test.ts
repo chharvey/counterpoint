@@ -15,7 +15,8 @@ test.suite('AstNodeVisitorBuild#visit', () => {
 			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
 					(DECL <Function> $0)
-					(DECL <float> e (FLOAT.CONST 2.718))
+					(DECL <float> e)
+					(SET e (FLOAT.CONST 2.718))
 					(DROP (GET e))
 					(SET $0 (FUNC.NEW f {${xjs.String.dedent`
 						"block-0":
@@ -60,7 +61,7 @@ test.suite('AstNodeVisitorBuild#visit', () => {
 			set assignee_e = 43;
 			set assignee_e = 44;
 			set assignee_e = -42;
-		}`, {codegen: false}).builder.instructions.length, 12);
+		}`, {codegen: false}).builder.instructions.length, 16);
 	});
 
 
@@ -96,12 +97,17 @@ test.suite('AstNodeVisitorBuild#visit', () => {
 		return assert.strictEqual(builder.print(), xjs.String.dedent`
 			"block-0":
 				(DROP (INT.CONST 42))
-				(DECL <int> assignee_a (INT.CONST 42))
-				(DECL <Maybe> assignee_b (MAYBE.NEW))
-				(DECL <int> assignee_c (INT.CONST 42))
+				(DECL <int> assignee_a)
+				(SET assignee_a (INT.CONST 42))
+				(DECL <Maybe> assignee_b)
+				(SET assignee_b (MAYBE.NEW))
+				(DECL <int> assignee_c)
+				(SET assignee_c (INT.CONST 42))
 				(DROP (GET assignee_c))
-				(DECL <int> assignee_d (GET assignee_c))
-				(DECL <int> assignee_e (GET assignee_c))
+				(DECL <int> assignee_d)
+				(SET assignee_d (GET assignee_c))
+				(DECL <int> assignee_e)
+				(SET assignee_e (GET assignee_c))
 				(ENDPROGRAM)
 		`.trim());
 	});
@@ -134,7 +140,8 @@ test.suite('AstNodeVisitorBuild#visit', () => {
 					(DECL <Function> $0)
 					(SET $0 (FUNC.NEW f {${xjs.String.dedent`
 						"block-0":
-							(DECL <int> $0 (INT.ADD (INT.CONST 1) (INT.CONST 2)))
+							(DECL <int> $0)
+							(SET $0 (INT.ADD (INT.CONST 1) (INT.CONST 2)))
 							(DROP (ID (GET $0) (INT.CONST 3)))
 							(RETURN void nil)
 							(ENDPROGRAM)
@@ -151,8 +158,10 @@ test.suite('AstNodeVisitorBuild#visit', () => {
 					(DECL <Function> $0)
 					(SET $0 (FUNC.NEW f {${xjs.String.dedent`
 						"block-0":
-							(DECL <int> $0 (INT.ADD (INT.CONST 1) (INT.CONST 2)))
-							(DECL <bool> $1 (ID (GET $0) (INT.CONST 3)))
+							(DECL <int> $0)
+							(SET $0 (INT.ADD (INT.CONST 1) (INT.CONST 2)))
+							(DECL <bool> $1)
+							(SET $1 (ID (GET $0) (INT.CONST 3)))
 							(RETURN (GET $1) nil)
 							(ENDPROGRAM)
 					`}}))
@@ -171,8 +180,10 @@ test.suite('AstNodeVisitorBuild#visit', () => {
 			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
 					(DECL <Function> $0)
-					(DECL <int> x (INT.CONST 42))
-					(DECL <float> y (FLOAT.CONST 4.2))
+					(DECL <int> x)
+					(SET x (INT.CONST 42))
+					(DECL <float> y)
+					(SET y (FLOAT.CONST 4.2))
 					(SET $0 (FUNC.NEW f {${xjs.String.dedent`
 						"block-0":
 							(DROP (INT.ADD (GET x) (INT.CONST 10)))
@@ -263,13 +274,16 @@ test.suite('AstNodeVisitorBuild#visit', () => {
 							(GOTO.IF (LT (INT.CONST 42) (INT.CONST 43)) "block-1" "block-2")
 						"block-1":
 							(DROP (INT.CONST 44))
-							(DECL <Exception> $0 (EXCP.NEW (STR.CONST "hello")))
+							(DECL <Exception> $0)
+							(SET $0 (EXCP.NEW (STR.CONST "hello")))
 							(RETURN nil (GET $0))
 							(GOTO "block-3")
 						"block-2":
 							(DROP (INT.CONST 45))
-							(DECL <Exception> $1 (EXCP.NEW (STR.CONST "world")))
-							(DECL <Exception> $2 (EXCP.NEW (STR.CONST "hello") (GET $1)))
+							(DECL <Exception> $1)
+							(SET $1 (EXCP.NEW (STR.CONST "world")))
+							(DECL <Exception> $2)
+							(SET $2 (EXCP.NEW (STR.CONST "hello") (GET $1)))
 							(RETURN nil (GET $2))
 							(GOTO "block-3")
 						"block-3":
@@ -290,14 +304,16 @@ test.suite('AstNodeVisitorBuild#visit', () => {
 					(SET $0 (FUNC.NEW inc {${xjs.String.dedent`
 						"block-0":
 							(DECL <int> x)
-							(DECL <int> $0 (INT.ADD (GET x) (INT.CONST 1)))
+							(DECL <int> $0)
+							(SET $0 (INT.ADD (GET x) (INT.CONST 1)))
 							(RETURN (GET $0) nil)
 							(ENDPROGRAM)
 					`}}))
 					(SET $1 (FUNC.NEW inc {${xjs.String.dedent`
 						"block-0":
 							(DECL <float> x)
-							(DECL <float> $0 (FLOAT.ADD (GET x) (FLOAT.CONST 1.0)))
+							(DECL <float> $0)
+							(SET $0 (FLOAT.ADD (GET x) (FLOAT.CONST 1.0)))
 							(RETURN (GET $0) nil)
 							(ENDPROGRAM)
 					`}}))
@@ -394,15 +410,24 @@ test.suite('AstNodeVisitorBuild#visit', () => {
 				set my_map.[accessor] = 84;
 			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
-					(DECL <List> my_list (LIST.NEW (INT.CONST 41) (INT.CONST 42)))
-					(DECL <Dict> my_dict (DICT.NEW @a->(INT.CONST 41) @b->(INT.CONST 42)))
-					(DECL <int> $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
-					(DECL <int> $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
-					(DECL <int> $2 (INT.EXP (INT.CONST 43) (INT.CONST 3)))
-					(DECL <Set> my_set (SET.NEW (GET $0) (GET $1) (GET $2)))
-					(DECL <Map> my_map (MAP.NEW (INT.CONST 21)->(INT.CONST 41) (INT.CONST 22)->(INT.CONST 42) (INT.CONST 23)->(INT.CONST 43)))
-					(DECL <int> accessor (INT.CONST 22))
-					(DECL <int> $3 (INT.ADD (INT.CONST 0) (INT.CONST 1)))
+					(DECL <List> my_list)
+					(SET my_list (LIST.NEW (INT.CONST 41) (INT.CONST 42)))
+					(DECL <Dict> my_dict)
+					(SET my_dict (DICT.NEW @a->(INT.CONST 41) @b->(INT.CONST 42)))
+					(DECL <int> $0)
+					(SET $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
+					(DECL <int> $1)
+					(SET $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
+					(DECL <int> $2)
+					(SET $2 (INT.EXP (INT.CONST 43) (INT.CONST 3)))
+					(DECL <Set> my_set)
+					(SET my_set (SET.NEW (GET $0) (GET $1) (GET $2)))
+					(DECL <Map> my_map)
+					(SET my_map (MAP.NEW (INT.CONST 21)->(INT.CONST 41) (INT.CONST 22)->(INT.CONST 42) (INT.CONST 23)->(INT.CONST 43)))
+					(DECL <int> accessor)
+					(SET accessor (INT.CONST 22))
+					(DECL <int> $3)
+					(SET $3 (INT.ADD (INT.CONST 0) (INT.CONST 1)))
 					(LIST.SET (GET my_list) (GET $3) (INT.CONST 84))
 					(DICT.SET (GET my_dict) (SYM.CONST @b) (INT.CONST 84))
 					(SET.SET (GET my_set) (GET accessor) (BOOL.CONST true))
@@ -427,12 +452,14 @@ test.suite('AstNodeVisitorBuild#visit', () => {
 				"block-0":
 					(GOTO.IF (BOOL.CONST true) "block-1" "block-2")
 				"block-1":
-					(DECL <int> $0 (INT.MUL (INT.CONST 2) (INT.CONST 1)))
+					(DECL <int> $0)
+					(SET $0 (INT.MUL (INT.CONST 2) (INT.CONST 1)))
 					(DROP (INT.ADD (GET $0) (INT.CONST 0)))
 					(DROP (FLOAT.CONST 2.2))
 					(GOTO "block-3")
 				"block-2":
-					(DECL <int> $1 (INT.ADD (INT.CONST 1) (INT.CONST 1)))
+					(DECL <int> $1)
+					(SET $1 (INT.ADD (INT.CONST 1) (INT.CONST 1)))
 					(DROP (INT.DIV (INT.CONST 6) (GET $1)))
 					(DROP (FLOAT.CONST 3.3))
 					(GOTO "block-3")
@@ -450,7 +477,8 @@ test.suite('AstNodeVisitorBuild#visit', () => {
 				"block-0":
 					(GOTO.IF (BOOL.CONST false) "block-1" "block-2")
 				"block-1":
-					(DECL <int> $0 (INT.MUL (INT.CONST 2) (INT.CONST 1)))
+					(DECL <int> $0)
+					(SET $0 (INT.MUL (INT.CONST 2) (INT.CONST 1)))
 					(DROP (INT.ADD (GET $0) (INT.CONST 0)))
 					(DROP (FLOAT.CONST 2.2))
 					(GOTO "block-2")
@@ -468,7 +496,8 @@ test.suite('AstNodeVisitorBuild#visit', () => {
 				"block-0":
 					(GOTO.IF (NOT (BOOL.CONST false)) "block-1" "block-2")
 				"block-1":
-					(DECL <int> $0 (INT.MUL (INT.CONST 2) (INT.CONST 1)))
+					(DECL <int> $0)
+					(SET $0 (INT.MUL (INT.CONST 2) (INT.CONST 1)))
 					(DROP (INT.ADD (GET $0) (INT.CONST 0)))
 					(DROP (FLOAT.CONST 2.2))
 					(GOTO "block-2")
@@ -490,18 +519,24 @@ test.suite('AstNodeVisitorBuild#visit', () => {
 				x;
 			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
-					(DECL <bool> unknown_cond (BOOL.CONST false))
-					(DECL <int> x (INT.CONST 42))
+					(DECL <bool> unknown_cond)
+					(SET unknown_cond (BOOL.CONST false))
+					(DECL <int> x)
+					(SET x (INT.CONST 42))
 					(GOTO.IF (GET unknown_cond) "block-1" "block-2")
 				"block-1":
-					(DECL <int> $0 (INT.ADD (INT.CONST 1) (INT.CONST 1)))
+					(DECL <int> $0)
+					(SET $0 (INT.ADD (INT.CONST 1) (INT.CONST 1)))
 					(SET x (INT.MUL (GET x) (GET $0)))
-					(DECL <float> y (FLOAT.CONST 2.2))
+					(DECL <float> y)
+					(SET y (FLOAT.CONST 2.2))
 					(GOTO "block-3")
 				"block-2":
-					(DECL <int> $1 (INT.DIV (INT.CONST 6) (INT.CONST 2)))
+					(DECL <int> $1)
+					(SET $1 (INT.DIV (INT.CONST 6) (INT.CONST 2)))
 					(SET x (INT.SUB (GET x) (GET $1)))
-					(DECL <float> y (FLOAT.CONST 3.3))
+					(DECL <float> y)
+					(SET y (FLOAT.CONST 3.3))
 					(GOTO "block-3")
 				"block-3":
 					(DROP (GET x))
@@ -521,7 +556,8 @@ test.suite('AstNodeVisitorBuild#visit', () => {
 				};
 			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
-					(DECL <Maybe> cond (MAYBE.NEW))
+					(DECL <Maybe> cond)
+					(SET cond (MAYBE.NEW))
 					(SET cond (MAYBE.NEW (BOOL.CONST true)))
 					(GOTO.IF (EQ (GET cond) (BOOL.CONST true)) "block-1" "block-2")
 				"block-1":
@@ -554,7 +590,8 @@ test.suite('AstNodeVisitorBuild#visit', () => {
 				};
 			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
-					(DECL <bool> cond (BOOL.CONST false))
+					(DECL <bool> cond)
+					(SET cond (BOOL.CONST false))
 					(GOTO "block-1")
 				"block-1":
 					(GOTO.IF (GET cond) "block-2" "block-3")
@@ -574,7 +611,8 @@ test.suite('AstNodeVisitorBuild#visit', () => {
 				};
 			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
-					(DECL <bool> cond (BOOL.CONST false))
+					(DECL <bool> cond)
+					(SET cond (BOOL.CONST false))
 					(GOTO "block-1")
 				"block-1":
 					(GOTO.IF (NOT (GET cond)) "block-2" "block-3")
@@ -597,7 +635,8 @@ test.suite('AstNodeVisitorBuild#visit', () => {
 				} until cond;
 			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
-					(DECL <bool> cond (BOOL.CONST false))
+					(DECL <bool> cond)
+					(SET cond (BOOL.CONST false))
 					(GOTO "block-1")
 				"block-1":
 					(DROP (INT.CONST 42))
@@ -625,23 +664,30 @@ test.suite('AstNodeVisitorBuild#visit', () => {
 			};
 		}`, {codegen: false}).builder.print(), xjs.String.dedent`
 			"block-0":
-				(DECL <List> $0 (LIST.NEW (INT.CONST 10) (INT.CONST 20) (INT.CONST 30)))
-				(DECL <nat> $1 (NAT.CONST +0))
+				(DECL <List> $0)
+				(SET $0 (LIST.NEW (INT.CONST 10) (INT.CONST 20) (INT.CONST 30)))
+				(DECL <nat> $1)
+				(SET $1 (NAT.CONST +0))
 				(GOTO "block-1")
 			"block-1":
-				(DECL <nat> $2 (LIST.COUNT (GET $0)))
+				(DECL <nat> $2)
+				(SET $2 (LIST.COUNT (GET $0)))
 				(GOTO.IF (LT (GET $1) (GET $2)) "block-2" "block-3")
 			"block-2":
-				(DECL <int> item (LIST.GET (GET $0) (GET $1)))
+				(DECL <int> item)
+				(SET item (LIST.GET (GET $0) (GET $1)))
 				(DROP (INT.ADD (GET item) (INT.CONST 5)))
 				(SET $1 (NAT.ADD (GET $1) (NAT.CONST +1)))
 				(GOTO "block-1")
 			"block-3":
-				(DECL <List> $3 (LIST.NEW (FLOAT.CONST 4.4) (FLOAT.CONST 5.5) (FLOAT.CONST 6.6)))
-				(DECL <nat> $4 (NAT.CONST +0))
+				(DECL <List> $3)
+				(SET $3 (LIST.NEW (FLOAT.CONST 4.4) (FLOAT.CONST 5.5) (FLOAT.CONST 6.6)))
+				(DECL <nat> $4)
+				(SET $4 (NAT.CONST +0))
 				(GOTO "block-4")
 			"block-4":
-				(DECL <nat> $5 (LIST.COUNT (GET $3)))
+				(DECL <nat> $5)
+				(SET $5 (LIST.COUNT (GET $3)))
 				(GOTO.IF (LT (GET $4) (GET $5)) "block-5" "block-6")
 			"block-5":
 				(DROP (NULL.CONST null))
@@ -685,14 +731,18 @@ test.suite('AstNodeVisitorBuild#visit', () => {
 					(DROP (INT.CONST 43))
 					(GOTO "block-1")
 				"block-3":
-					(DECL <List> $0 (LIST.NEW (STR.CONST "alpha") (STR.CONST "beta") (STR.CONST "gamma")))
-					(DECL <nat> $1 (NAT.CONST +0))
+					(DECL <List> $0)
+					(SET $0 (LIST.NEW (STR.CONST "alpha") (STR.CONST "beta") (STR.CONST "gamma")))
+					(DECL <nat> $1)
+					(SET $1 (NAT.CONST +0))
 					(GOTO "block-6")
 				"block-6":
-					(DECL <nat> $2 (LIST.COUNT (GET $0)))
+					(DECL <nat> $2)
+					(SET $2 (LIST.COUNT (GET $0)))
 					(GOTO.IF (LT (GET $1) (GET $2)) "block-7" "block-8")
 				"block-7":
-					(DECL <str> word (LIST.GET (GET $0) (GET $1)))
+					(DECL <str> word)
+					(SET word (LIST.GET (GET $0) (GET $1)))
 					(DROP (INT.CONST 10))
 					(GOTO "block-6")
 				"unreachable-9":

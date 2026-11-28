@@ -27,6 +27,7 @@ import {
 	Unop,
 	Binop,
 	Decl,
+	Set as OpSet,
 } from './index.ts';
 import {
 	type OpCode,
@@ -157,6 +158,7 @@ export abstract class Value extends Opcode {
 	public asTac(builder: Builder): ValueTac {
 		const temp: Temp = builder.newTemp(this);
 		builder.pushInstruction(new Decl(temp));
+		builder.pushInstruction(new OpSet(temp, this));
 		return new Get(temp);
 	}
 }

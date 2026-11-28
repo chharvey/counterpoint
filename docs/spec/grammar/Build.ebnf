@@ -111,8 +111,8 @@ IS([Value Class]) -> Boolean;
 
 DROP([Value]);
 
-DECL(SymbolSchemaVar|native-string Type [Value?]);
-SET (SymbolSchemaVar|native-string      [Value]);
+DECL(SymbolSchemaVar|native-string Type);
+SET (SymbolSchemaVar|native-string [Value]);
 
 LIST.SET([Value Value Value]);
 DICT.SET([Value Value Value]);
@@ -200,7 +200,8 @@ Build(SemanticExpressionAccess[kind=NORMAL] ::= SemanticExpression SemanticIndex
 	3. *Let* `returned` be "(TUPLE.GET `SemanticIndex.index` [`base_value`])".
 	4. *If* `SemanticExpressionAccess.isEntryOptional` is `true`:
 		1. *Return:* [
-			(DECL ‹type› $base `base_value`)
+			(DECL ‹type› $base)
+			(SET $base `base_value`)
 			(DECL <Maybe> $returned)
 			(GOTO.IF (TUPLE.HAS `SemanticIndex.index` (GET $base)) "then" "else")
 			"then":
@@ -223,7 +224,8 @@ Build(SemanticExpressionAccess[kind=NORMAL] ::= SemanticExpression SemanticKey) 
 	4. *Let* `returned` be "(RECORD.GET `SemanticKey.id` [`Build(SemanticExpression)`])".
 	5. *If* `entry_info.optional` is `true`:
 		1. *Return:* [
-			(DECL ‹type› $base `base_value`)
+			(DECL ‹type› $base)
+			(SET $base `base_value`)
 			(DECL <Maybe> $returned)
 			(GOTO.IF (RECORD.HAS `SemanticKey.id` (GET $base)) "then" "else")
 			"then":
@@ -245,7 +247,8 @@ Build(SemanticExpressionAccess[kind=NORMAL] ::= SemanticExpression__0[type: TYPE
 Build(SemanticExpressionAccess[kind=NORMAL] ::= SemanticExpression__0[type: TYPE.Map]  SemanticExpression__1) := (MAP.GET  [`Build(SemanticExpression__0)` `Build(SemanticExpression__1)`]);
 
 Build(SemanticExpressionAccess[kind=MAYBE] ::= SemanticExpression__0 (SemanticIndex | SemanticKey | SemanticExpression__1)) := [
-	(DECL ‹type› $base `Build(SemanticExpression__0)`)
+	(DECL ‹type› $base)
+	(SET $base `Build(SemanticExpression__0)`)
 	(DECL <Maybe> $returned)
 	(GOTO.IF (NONE.IS (GET $base)) "then" "else")
 	"then":
@@ -258,7 +261,8 @@ Build(SemanticExpressionAccess[kind=MAYBE] ::= SemanticExpression__0 (SemanticIn
 	return (GET $returned).
 ];
 Build(SemanticExpressionAccess[kind=RESULT] ::= SemanticExpression__0 (SemanticIndex | SemanticKey | SemanticExpression__1)) := [
-	(DECL ‹type› $base `Build(SemanticExpression__0)`)
+	(DECL ‹type› $base)
+	(SET $base `Build(SemanticExpression__0)`)
 	(DECL <Maybe> $returned)
 	(GOTO.IF (FAIL.IS (GET $base)) "then" "else")
 	"then":
@@ -283,26 +287,34 @@ Build(SemanticExpressionCall:has(SemanticExpressionVariable ::= "Set")  call) :=
 Build(SemanticExpressionCall:has(SemanticExpressionVariable ::= "Map")  call) := (MAP.NEW);
 Build(SemanticExpressionCall:has(SemanticExpressionVariable ::= "None") call) := (MAYBE.NEW);
 Build(SemanticExpressionCall:has(SemanticExpressionVariable ::= "List"):has(SemanticExpression*) call) := [
-	(DECL <List> $destination (LIST.NEW))
-	(DECL ‹type› $arg `Build(call.SemanticExpression*.0)`)
+	(DECL <List> $destination)
+	(SET $destination (LIST.NEW))
+	(DECL ‹type› $arg)
+	(SET $arg `Build(call.SemanticExpression*.0)`)
 	(LIST.COPY (GET $destination) (GET $arg))
 	return (GET $destination).
 ];
 Build(SemanticExpressionCall:has(SemanticExpressionVariable ::= "Dict"):has(SemanticExpression) call) := [
-	(DECL <Dict> $destination (DICT.NEW))
-	(DECL ‹type› $arg `Build(call.SemanticExpression*.0)`)
+	(DECL <Dict> $destination)
+	(SET $destination (DICT.NEW))
+	(DECL ‹type› $arg)
+	(SET $arg `Build(call.SemanticExpression*.0)`)
 	(DICT.COPY (GET $destination) (GET $arg))
 	return (GET $destination).
 ];
 Build(SemanticExpressionCall:has(SemanticExpressionVariable ::= "Set"):has(SemanticExpression*) call) := [
-	(DECL <Set> $destination (SET.NEW))
-	(DECL ‹type› $arg `Build(call.SemanticExpression*.0)`)
+	(DECL <Set> $destination)
+	(SET $destination (SET.NEW))
+	(DECL ‹type› $arg)
+	(SET $arg `Build(call.SemanticExpression*.0)`)
 	(SET.COPY (GET $destination) (GET $arg))
 	return (GET $destination).
 ];
 Build(SemanticExpressionCall:has(SemanticExpressionVariable ::= "Map"):has(SemanticExpression*) call) := [
-	(DECL <Map> $destination (MAP.NEW))
-	(DECL ‹type› $arg `Build(call.SemanticExpression*.0)`)
+	(DECL <Map> $destination)
+	(SET $destination (MAP.NEW))
+	(DECL ‹type› $arg)
+	(SET $arg `Build(call.SemanticExpression*.0)`)
 	(MAP.COPY (GET $destination) (GET $arg))
 	return (GET $destination).
 ];
@@ -327,7 +339,8 @@ Build(SemanticExpressionOperation[operator=NEG]       ::= SemanticExpression[typ
 Build(SemanticExpressionOperation[operator=IS] ::= SemanticExpression "Null")
 	:= (ID `Build(SemanticExpression)` (NULL.CONST null));
 Build(SemanticExpressionOperation[operator=IS] ::= SemanticExpression "Boolean") := [
-	(DECL <bool> $left (ID `Build(SemanticExpression)` (BOOL.CONST false)))
+	(DECL <bool> $left)
+	(SET $left (ID `Build(SemanticExpression)` (BOOL.CONST false)))
 	(DECL <bool> $returned)
 	(GOTO.IF (GET $left) "then" "else")
 	"then":
@@ -395,7 +408,8 @@ Build(SemanticExpressionOperation[operator=ID] op) := (ID  [`Build(op.0)` `Build
 Build(SemanticExpressionOperation[operator=EQ] op) := (EQ  [`Build(op.0)` `Build(op.1)`]);
 
 Build(SemanticExpressionOperation[operator=AND] op) := [
-	(DECL ‹type› $left `Build(op.0)`)
+	(DECL ‹type› $left)
+	(SET $left `Build(op.0)`)
 	(DECL ‹type› $returned)
 	(GOTO.IF (BOOL.FROM (GET $left)) "then" "else")
 	"then":
@@ -409,7 +423,8 @@ Build(SemanticExpressionOperation[operator=AND] op) := [
 ];
 
 Build(SemanticExpressionOperation[operator=OR] op) := [
-	(DECL ‹type› $left `Build(op.0)`)
+	(DECL ‹type› $left)
+	(SET $left `Build(op.0)`)
 	(DECL ‹type› $returned)
 	(GOTO.IF (BOOL.FROM (GET $left)) "then" "else")
 	"then":
@@ -472,7 +487,8 @@ Build(SemanticExpressionFunction ::= SemanticParameterFunction* SemanticCapture*
 Build(SemanticDeclarationType decl) := [];
 
 Build(SemanticDeclarationVariable[id: RealNumber][writable: Boolean] ::= SemanticType? SemanticExpression) := [
-	(DECL ‹type› `GetSymbolSchema(id)` `Build(SemanticExpression)`)
+	(DECL ‹type› `GetSymbolSchema(id)`)
+	(SET `GetSymbolSchema(id)` `Build(SemanticExpression)`)
 ];
 Build(SemanticDeclarationVariable[id=*nil*][writable=false] ::= SemanticType? SemanticExpression) := [
 	(DROP `Build(SemanticExpression)`)
@@ -483,7 +499,8 @@ Build(SemanticDeclarationVariable[id: RealNumber][writable=true] ::= SemanticTyp
 
 Build(SemanticDeclarationFunction[id=*nil*]) := [];
 Build(SemanticDeclarationFunction[id: RealNumber] ::= SemanticParameterFunction* SemanticCapture* SemanticType? SemanticBlock) := [
-	(DECL <Function> `GetSymbolSchema(id)`
+	(DECL <Function> `GetSymbolSchema(id)`)
+	(SET `GetSymbolSchema(id)`
 		(FUNC.NEW ‹temp_name› `SemanticDeclarationFunction.source` `Build(SemanticCapture* SemanticParameterFunction* SemanticBlock)` (ENDPROGRAM))
 	)
 ];
@@ -585,21 +602,26 @@ Build(SemanticStatementLoop[doFirst=true][until=true] ::= SemanticExpression Sem
 ];
 
 Build(SemanticStatementIteration[id: RealNumber] ::= SemanticType SemanticExpression SemanticBlock) := [
-	(DECL <List> $iterable `Build(SemanticExpression)`)
-	(DECL <nat> $index (NAT.CONST +0))
+	(DECL <List> $iterable)
+	(SET $iterable `Build(SemanticExpression)`)
+	(DECL <nat> $index)
+	(SET $index (NAT.CONST +0))
 	(GOTO "while")
 	"while":
 	(GOTO.IF (LT (GET $index) (LIST.COUNT (GET $iterable))) "do" "endwhile")
 	"do":
-	(DECL ‹type› `GetSymbolSchema(id)` (LIST.GET (GET $iterable) (GET $index)))
+	(DECL ‹type› `GetSymbolSchema(id)`)
+	(SET `GetSymbolSchema(id)` (LIST.GET (GET $iterable) (GET $index)))
 	...`Build(SemanticBlock)`
 	(SET $index (NAT.ADD (GET $index) (NAT.CONST +1)))
 	(GOTO "while")
 	"endwhile":
 ];
 Build(SemanticStatementIteration ::= SemanticType SemanticExpression SemanticBlock) := [
-	(DECL <List> $iterable `Build(SemanticExpression)`)
-	(DECL <nat> $index (NAT.CONST +0))
+	(DECL <List> $iterable)
+	(SET $iterable `Build(SemanticExpression)`)
+	(DECL <nat> $index)
+	(SET $index (NAT.CONST +0))
 	(GOTO "while")
 	"while":
 	(GOTO.IF (LT (GET $index) (LIST.COUNT (GET $iterable))) "do" "endwhile")

@@ -51,7 +51,7 @@ export class InstrVisitorCodegen extends InstrVisitor<binaryen.ExpressionRef /* 
 
 	@memoizePerCode
 	public override visitDecl(instr: Decl): binaryen.ExpressionRef /* void */ {
-		return this.cg.teeLocal(instr.target, instr.value ? this.#valueVisitorCodegen.visit(instr.value) : this.wasm.struct.new_default(this.heaptype.Value)).set();
+		return this.cg.teeLocal(instr.target, this.wasm.struct.new_default(this.heaptype.Value), this.reftype.Value).set(); // need non-exact type so it can be reassigned
 	}
 
 	@memoizePerCode

@@ -1,4 +1,5 @@
 import * as test from 'node:test';
+import type * as binaryen from 'binaryen.ts';
 import {
 	assertEqualBins,
 	genConst,
@@ -15,10 +16,13 @@ test.suite('Builder', () => {
 			set x = if cond then 3 else 2;
 			5 * x;
 		}`, {codegen: false});
+		const value_default: binaryen.ExpressionRef /* (ref $Value) */ = wasm.struct.new_default(cg.vm.heaptype.Value);
 		return assertEqualBins(builder.codegen(cg), wasm.block(null, [
 			wasm.block('block$4$break', [
 				wasm.block(null, [
+					wasm.local.set(0, value_default),
 					wasm.local.set(0, genConst(cg, true)),
+					wasm.local.set(1, value_default),
 					wasm.local.set(1, genConst(cg, 1n)),
 					wasm.local.set(2, cg.mod.wasm.struct.new_default(cg.vm.heaptype.Value)),
 				]),
