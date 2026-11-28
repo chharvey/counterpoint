@@ -160,9 +160,7 @@ test.suite('AstNodeVisitorBuild#visit', () => {
 						"block-0":
 							(DECL <int> $0)
 							(SET $0 (INT.ADD (INT.CONST 1) (INT.CONST 2)))
-							(DECL <bool> $1)
-							(SET $1 (ID (GET $0) (INT.CONST 3)))
-							(RETURN (GET $1) nil)
+							(RETURN (ID (GET $0) (INT.CONST 3)) nil)
 							(ENDPROGRAM)
 					`}}))
 					(ENDPROGRAM)
@@ -322,17 +320,13 @@ test.suite('AstNodeVisitorBuild#visit', () => {
 							(GOTO.IF (LT (INT.CONST 42) (INT.CONST 43)) "block-1" "block-2")
 						"block-1":
 							(DROP (INT.CONST 44))
-							(DECL <Exception> $0)
-							(SET $0 (EXCP.NEW (STR.CONST "hello")))
-							(RETURN nil (GET $0))
+							(RETURN nil (EXCP.NEW (STR.CONST "hello")))
 							(GOTO "block-3")
 						"block-2":
 							(DROP (INT.CONST 45))
-							(DECL <Exception> $1)
-							(SET $1 (EXCP.NEW (STR.CONST "world")))
-							(DECL <Exception> $2)
-							(SET $2 (EXCP.NEW (STR.CONST "hello") (GET $1)))
-							(RETURN nil (GET $2))
+							(DECL <Exception> $0)
+							(SET $0 (EXCP.NEW (STR.CONST "world")))
+							(RETURN nil (EXCP.NEW (STR.CONST "hello") (GET $0)))
 							(GOTO "block-3")
 						"block-3":
 							(DROP (INT.CONST 46))
@@ -352,17 +346,13 @@ test.suite('AstNodeVisitorBuild#visit', () => {
 					(SET $0 (FUNC.NEW inc {${xjs.String.dedent`
 						"block-0":
 							(DECL <int> x)
-							(DECL <int> $0)
-							(SET $0 (INT.ADD (GET x) (INT.CONST 1)))
-							(RETURN (GET $0) nil)
+							(RETURN (INT.ADD (GET x) (INT.CONST 1)) nil)
 							(ENDPROGRAM)
 					`}}))
 					(SET $1 (FUNC.NEW inc {${xjs.String.dedent`
 						"block-0":
 							(DECL <float> x)
-							(DECL <float> $0)
-							(SET $0 (FLOAT.ADD (GET x) (FLOAT.CONST 1.0)))
-							(RETURN (GET $0) nil)
+							(RETURN (FLOAT.ADD (GET x) (FLOAT.CONST 1.0)) nil)
 							(ENDPROGRAM)
 					`}}))
 					(ENDPROGRAM)

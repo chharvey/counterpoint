@@ -277,7 +277,7 @@ export class AstNodeVisitorBuild extends AstNodeVisitor<void> {
 	public override visitStmtReturn(stmt: STMT.StatementReturn): void {
 		return this.builder.pushInstruction(new OP.Return(
 			!stmt.panic,
-			stmt.expression ? this.#exprVisitorBuild.visit(stmt.expression).asTac(this.builder) : undefined,
+			stmt.expression ? this.#exprVisitorBuild.visit(stmt.expression) : undefined,
 		));
 	}
 

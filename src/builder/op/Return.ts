@@ -1,5 +1,5 @@
 import {OpCode} from './Opcode.ts';
-import type {ValueTac} from './ValueTac.ts';
+import type {Value} from './Value.ts';
 import {Instruction} from './Instruction.ts';
 
 
@@ -9,7 +9,7 @@ export class Return extends Instruction {
 	public constructor(
 		/** Whether this return completes normally or abruptly (a panic). */
 		public readonly isReturn: boolean,
-		public readonly value?:   ValueTac,
+		public readonly value?:   Value,
 	) {
 		super(OpCode.RETURN);
 	}
