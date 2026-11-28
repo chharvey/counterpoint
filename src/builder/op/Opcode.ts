@@ -8,7 +8,7 @@ import {
 	RecordNew,
 	DictNew,
 	MapNew,
-	Function as OpFunction,
+	FuncNew,
 	ObjectNew,
 	ExcpNew,
 	MaybeNew,
@@ -61,7 +61,7 @@ export enum OpCode {
 	DICT_NEW,
 	SET_NEW,
 	MAP_NEW,
-	FUNCTION,
+	FUNC_NEW,
 	OBJECT_NEW,
 	EXCP_NEW,
 	MAYBE_NEW,
@@ -162,7 +162,7 @@ export abstract class OpcodeVisitor<T> {
 	public visitRecordNew            (val: RecordNew):            T { return this.defaultVisit(val); }
 	public visitDictNew              (val: DictNew):              T { return this.defaultVisit(val); }
 	public visitMapNew               (val: MapNew):               T { return this.defaultVisit(val); }
-	public visitFunction             (val: OpFunction):           T { return this.defaultVisit(val); }
+	public visitFuncNew              (val: FuncNew):              T { return this.defaultVisit(val); }
 	public visitObjectNew            (val: ObjectNew):            T { return this.defaultVisit(val); }
 	public visitExcpNew              (val: ExcpNew):              T { return this.defaultVisit(val); }
 	public visitMaybeNew             (val: MaybeNew):             T { return this.defaultVisit(val); }
@@ -204,7 +204,7 @@ export abstract class OpcodeVisitor<T> {
 			case RecordNew:            { return this.visitRecordNew            (op as RecordNew); }
 			case DictNew:              { return this.visitDictNew              (op as DictNew); }
 			case MapNew:               { return this.visitMapNew               (op as MapNew); }
-			case OpFunction:           { return this.visitFunction             (op as OpFunction); }
+			case FuncNew:              { return this.visitFuncNew              (op as FuncNew); }
 			case ObjectNew:            { return this.visitObjectNew            (op as ObjectNew); }
 			case ExcpNew:              { return this.visitExcpNew              (op as ExcpNew); }
 			case MaybeNew:             { return this.visitMaybeNew             (op as MaybeNew); }

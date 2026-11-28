@@ -289,7 +289,7 @@ Codegen((ID `v0` `v1`)) := (call $op:id `Codegen(v0)` `Codegen(v1)`);
 Codegen((EQ `v0` `v1`)) := (call $op:eq `Codegen(v0)` `Codegen(v1)`);
 Codegen((IS `v0` `v1`)) := (call $op:is `Codegen(v0)` `Codegen(v1)`);
 
-Codegen((FUNCTION `name` `source` `instructions`)) := [
+Codegen((FUNC.NEW `name` `source` `instructions`)) := [
 	(func $func-`name` (param (ref $List) (ref null $List)) (result (ref null $Value) (ref null $Exception))
 		...`Codegen(instructions)`
 	)

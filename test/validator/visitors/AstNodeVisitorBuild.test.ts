@@ -103,7 +103,7 @@ test.suite('AstNodeVisitorBuild#visit', () => {
 				}
 			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
-					(DECL <Function> $0 (FUNCTION f {${xjs.String.dedent`
+					(DECL <Function> $0 (FUNC.NEW f {${xjs.String.dedent`
 						"block-0":
 							(DECL <int> $0 (INT.ADD (INT.CONST 1) (INT.CONST 2)))
 							(DROP (ID (GET $0) (INT.CONST 3)))
@@ -119,7 +119,7 @@ test.suite('AstNodeVisitorBuild#visit', () => {
 					=> 1 + 2 === 3;
 			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
-					(DECL <Function> $0 (FUNCTION f {${xjs.String.dedent`
+					(DECL <Function> $0 (FUNC.NEW f {${xjs.String.dedent`
 						"block-0":
 							(DECL <int> $0 (INT.ADD (INT.CONST 1) (INT.CONST 2)))
 							(DECL <bool> $1 (ID (GET $0) (INT.CONST 3)))
@@ -142,7 +142,7 @@ test.suite('AstNodeVisitorBuild#visit', () => {
 				"block-0":
 					(DECL <int> x (INT.CONST 42))
 					(DECL <float> y (FLOAT.CONST 4.2))
-					(DECL <Function> $0 (FUNCTION f {${xjs.String.dedent`
+					(DECL <Function> $0 (FUNC.NEW f {${xjs.String.dedent`
 						"block-0":
 							(DROP (INT.ADD (GET x) (INT.CONST 10)))
 							(SET y (FLOAT.CONST 5.2))
@@ -163,7 +163,7 @@ test.suite('AstNodeVisitorBuild#visit', () => {
 				}
 			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
-					(DECL <Function> $0 (FUNCTION f {${xjs.String.dedent`
+					(DECL <Function> $0 (FUNC.NEW f {${xjs.String.dedent`
 						"block-0":
 							(DECL <int> foo)
 							(DECL <int> bar)
@@ -192,7 +192,7 @@ test.suite('AstNodeVisitorBuild#visit', () => {
 				}
 			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
-					(DECL <Function> $0 (FUNCTION f {${xjs.String.dedent`
+					(DECL <Function> $0 (FUNC.NEW f {${xjs.String.dedent`
 						"block-0":
 							(GOTO.IF (LT (INT.CONST 42) (INT.CONST 43)) "block-1" "block-2")
 						"block-1":
@@ -224,7 +224,7 @@ test.suite('AstNodeVisitorBuild#visit', () => {
 				}
 			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
-					(DECL <Function> $0 (FUNCTION f {${xjs.String.dedent`
+					(DECL <Function> $0 (FUNC.NEW f {${xjs.String.dedent`
 						"block-0":
 							(GOTO.IF (LT (INT.CONST 42) (INT.CONST 43)) "block-1" "block-2")
 						"block-1":
@@ -251,14 +251,14 @@ test.suite('AstNodeVisitorBuild#visit', () => {
 				func inc(x: float): float => x + 1.0;
 			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
-					(DECL <Function> $0 (FUNCTION inc {${xjs.String.dedent`
+					(DECL <Function> $0 (FUNC.NEW inc {${xjs.String.dedent`
 						"block-0":
 							(DECL <int> x)
 							(DECL <int> $0 (INT.ADD (GET x) (INT.CONST 1)))
 							(RETURN (GET $0) nil)
 							(ENDPROGRAM)
 					`}}))
-					(DECL <Function> $1 (FUNCTION inc {${xjs.String.dedent`
+					(DECL <Function> $1 (FUNC.NEW inc {${xjs.String.dedent`
 						"block-0":
 							(DECL <float> x)
 							(DECL <float> $0 (FLOAT.ADD (GET x) (FLOAT.CONST 1.0)))

@@ -286,7 +286,7 @@ export class AstNodeVisitorBuild extends AstNodeVisitor<void> {
 		const ovl_type: TYPE.Function = symbol.types.get(decl)!;
 
 		const func_builder = new Builder(this.builder);
-		const temp: Temp = this.builder.newTemp(new OP.Function(
+		const temp: Temp = this.builder.newTemp(new OP.FuncNew(
 			ovl_type,
 			symbol.source,
 			decl.source.replaceAll(/\s+/g, ' '),

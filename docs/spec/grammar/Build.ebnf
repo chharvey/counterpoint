@@ -39,7 +39,7 @@ LIST.NEW([Value*])                                   -> List;
 DICT.NEW(Vector<VALUE.Symbol, Value>*)               -> Dict;
 SET.NEW([Value*])                                    -> Set;
 MAP.NEW(Vector<Value, Value>*)                       -> Map;
-FUNCTION(native-string native-string ‹instructions›) -> Function;
+FUNC.NEW(native-string native-string ‹instructions›) -> Function;
 OBJECT.NEW(boolean [Class?])                         -> Object;
 EXCP.NEW([Value Value?])                             -> Exception;
 MAYBE.NEW([Value?])                                  -> Maybe;
@@ -465,7 +465,7 @@ Build(SemanticExpressionSwitch ::= SemanticExpression__0 SemanticExpression__1) 
 ];
 
 Build(SemanticExpressionFunction ::= SemanticParameterFunction* SemanticCapture* SemanticType? SemanticBlock)
-	:= (FUNCTION ‹temp_name› `SemanticExpressionFunction.source` `Build(SemanticCapture* SemanticParameterFunction* SemanticBlock)` (ENDPROGRAM));
+	:= (FUNC.NEW ‹temp_name› `SemanticExpressionFunction.source` `Build(SemanticCapture* SemanticParameterFunction* SemanticBlock)` (ENDPROGRAM));
 
 
 
@@ -484,7 +484,7 @@ Build(SemanticDeclarationVariable[id: RealNumber][writable=true] ::= SemanticTyp
 Build(SemanticDeclarationFunction[id=*nil*]) := [];
 Build(SemanticDeclarationFunction[id: RealNumber] ::= SemanticParameterFunction* SemanticCapture* SemanticType? SemanticBlock) := [
 	(DECL <Function> `GetSymbolSchema(id)`
-		(FUNCTION ‹temp_name› `SemanticDeclarationFunction.source` `Build(SemanticCapture* SemanticParameterFunction* SemanticBlock)` (ENDPROGRAM))
+		(FUNC.NEW ‹temp_name› `SemanticDeclarationFunction.source` `Build(SemanticCapture* SemanticParameterFunction* SemanticBlock)` (ENDPROGRAM))
 	)
 ];
 

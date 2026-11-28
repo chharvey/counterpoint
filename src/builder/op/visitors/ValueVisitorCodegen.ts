@@ -24,7 +24,7 @@ import type {CollectionLinearNew} from '../CollectionLinearNew.ts';
 import type {RecordNew} from '../RecordNew.ts';
 import type {DictNew} from '../DictNew.ts';
 import type {MapNew} from '../MapNew.ts';
-import type {Function as OpFunction} from '../Function.ts';
+import type {FuncNew} from '../Function.ts';
 import type {ObjectNew} from '../ObjectNew.ts';
 import type {ExcpNew} from '../ExcpNew.ts';
 import type {MaybeNew} from '../MaybeNew.ts';
@@ -164,7 +164,7 @@ export class ValueVisitorCodegen extends ValueVisitor<binaryen.ExpressionRef /* 
 	}
 
 	@memoizePerCode
-	public override visitFunction(val: OpFunction): binaryen.ExpressionRef /* (ref $Value) */ {
+	public override visitFuncNew(val: FuncNew): binaryen.ExpressionRef /* (ref $Value) */ {
 		return this.cg.vm.Value.fromClosure(this.cg.codegenClosure(val.tempName, val.type.maxArity, val.builder));
 	}
 

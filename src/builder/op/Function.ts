@@ -5,19 +5,18 @@ import {Value} from './Value.ts';
 
 
 
-/** A Counterpoint function value. */
-class OpFunction extends Value {
+/** Create a Function. */
+export class FuncNew extends Value {
 	public constructor(
 		public override readonly type:     TYPE.Function,
 		public          readonly tempName: string,
 		public          readonly source:   string,
 		public          readonly builder:  Builder,
 	) {
-		super(OpCode.FUNCTION, type);
+		super(OpCode.FUNC_NEW, type);
 	}
 
 	public override toString(): string {
 		return super.toString(this.tempName, `{\n${this.builder.print()}\n}`);
 	}
 }
-export {OpFunction as Function};

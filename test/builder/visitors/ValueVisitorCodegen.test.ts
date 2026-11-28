@@ -406,7 +406,7 @@ test.suite('ValueVisitorCodegen#visit', () => {
 	});
 
 
-	test.test('OpFunction', () => {
+	test.test('FuncNew', () => {
 		const {stmts, cg, visitors, visitors: {codegen: {value: VISITOR}}} = setupScript(`{
 			\\(x: int, $y: int, zulu= z: int): void {
 				x * y + z;
@@ -414,7 +414,7 @@ test.suite('ValueVisitorCodegen#visit', () => {
 			};
 		}`, {codegen: false});
 		const op_fn: OP.Value = visitors.build.expr.visit((stmts[0] as AST.STMT.StatementExpression).expr!);
-		assert_instanceof(op_fn, OP.Function);
+		assert_instanceof(op_fn, OP.FuncNew);
 		return assertEqualBins(
 			VISITOR.visit(op_fn),
 			cg.vm.Value.fromClosure(new CodeGenerator().codegenClosure('', 3n, op_fn.builder)), // new CodeGenerator resets the count

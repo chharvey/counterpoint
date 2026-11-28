@@ -384,7 +384,7 @@ export class ExprVisitorBuild extends EXPR.ExprVisitor<OP.Value> {
 		func_builder.terminateBlock(new OP.EndProgram());
 		func_builder.validate();
 
-		return new OP.Function(expr.type as TYPE.Function, '', expr.source.replaceAll(/\s+/g, ' '), func_builder);
+		return new OP.FuncNew(expr.type as TYPE.Function, '', expr.source.replaceAll(/\s+/g, ' '), func_builder);
 	}
 
 	public override defaultVisit(_expr: EXPR.Expression): OP.Value {

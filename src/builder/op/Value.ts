@@ -13,7 +13,7 @@ import {
 	RecordNew,
 	DictNew,
 	MapNew,
-	Function as OpFunction,
+	FuncNew,
 	ObjectNew,
 	ExcpNew,
 	MaybeNew,
@@ -45,7 +45,7 @@ export abstract class ValueVisitor<T> {
 	public visitRecordNew            (val: RecordNew):            T { return this.defaultVisit(val); }
 	public visitDictNew              (val: DictNew):              T { return this.defaultVisit(val); }
 	public visitMapNew               (val: MapNew):               T { return this.defaultVisit(val); }
-	public visitFunction             (val: OpFunction):           T { return this.defaultVisit(val); }
+	public visitFuncNew              (val: FuncNew):              T { return this.defaultVisit(val); }
 	public visitObjectNew            (val: ObjectNew):            T { return this.defaultVisit(val); }
 	public visitExcpNew              (val: ExcpNew):              T { return this.defaultVisit(val); }
 	public visitMaybeNew             (val: MaybeNew):             T { return this.defaultVisit(val); }
@@ -73,7 +73,7 @@ export abstract class ValueVisitor<T> {
 			case RecordNew:            { return this.visitRecordNew            (val as RecordNew); }
 			case DictNew:              { return this.visitDictNew              (val as DictNew); }
 			case MapNew:               { return this.visitMapNew               (val as MapNew); }
-			case OpFunction:           { return this.visitFunction             (val as OpFunction); }
+			case FuncNew:              { return this.visitFuncNew              (val as FuncNew); }
 			case ObjectNew:            { return this.visitObjectNew            (val as ObjectNew); }
 			case ExcpNew:              { return this.visitExcpNew              (val as ExcpNew); }
 			case MaybeNew:             { return this.visitMaybeNew             (val as MaybeNew); } // eslint-disable-line @typescript-eslint/no-unnecessary-type-assertion

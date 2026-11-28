@@ -1916,14 +1916,14 @@ test.suite('ExprVisitorBuild#visit', () => {
 		}`, {codegen: false}).builder.print(), xjs.String.dedent`
 			"block-0":
 				(DECL <int> z (INT.CONST 42))
-				(DROP (FUNCTION {${xjs.String.dedent`
+				(DROP (FUNC.NEW {${xjs.String.dedent`
 					"block-0":
 						(DECL <int> x)
 						(DROP (GET x))
 						(RETURN void nil)
 						(ENDPROGRAM)
 				`}}))
-				(DROP (FUNCTION {${xjs.String.dedent`
+				(DROP (FUNC.NEW {${xjs.String.dedent`
 					"block-0":
 						(DECL <float> x)
 						(DECL <float> y)
