@@ -190,7 +190,7 @@ test.suite('AstNodeVisitorRefCheck#visit', () => {
 				VISITOR.visit(stmts[4]);
 				return assert.throws(() => VISITOR.visit(stmts[5]), errmsg);
 			});
-			test.test('allows function declaration backreferences.', () => {
+			test.test('allows function declaration forward references.', () => {
 				setupScript(`{
 					f;
 					func f(): void { return; };
@@ -198,6 +198,17 @@ test.suite('AstNodeVisitorRefCheck#visit', () => {
 				setupScript(`{
 					func f(): void { g; return; };
 					func g(): void { f; return; };
+				}`, {typeCheck: false});
+			});
+			test.test('forward references within function bodies.', () => {
+				setupScript(`{
+					func z(): void {
+						x.();
+						return;
+					}
+					val y: int = 42;
+					func x() with (y): int => y + 1;
+					z.();
 				}`, {typeCheck: false});
 			});
 		});
@@ -611,6 +622,20 @@ test.suite('AstNodeVisitorRefCheck#visit', () => {
 				\\() with (x): void { return; };
 			}`, {refCheck: false});
 			return assert.throws(() => VISITOR.visit(stmts[0]), ReferenceErrorUndeclared);
+		});
+		test.test('throws when capture is declared later.', {expectFailure: false}, () => {
+			const {stmts, visitors: {refCheck: VISITOR}} = setupScript(`{
+				\\() with (x): void { return; };
+				val x: int = 42;
+			}`, {refCheck: false});
+			return assert.throws(() => VISITOR.visit(stmts[0]), ReferenceErrorUndeclared);
+		});
+		test.test('forward-referencing capture creates temporal dead zone.', {expectFailure: true}, () => {
+			const {stmts, visitors: {refCheck: VISITOR}} = setupScript(`{
+				\\() with (x): void { return; };
+				val x: int = 42;
+			}`, {refCheck: false});
+			return assert.throws(() => VISITOR.visit(stmts[0]), ReferenceErrorDeadZone);
 		});
 		test.test('disallows duplicate captures.', () => {
 			const {stmts, visitors: {refCheck: VISITOR}} = setupScript(`{
