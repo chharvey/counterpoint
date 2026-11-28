@@ -30,6 +30,9 @@
 	(type $DictArray (array (mut (ref null $Property))))
 	(type $MapArray  (array (mut (ref null $Case))))
 
+	;; type signature of any author-defined function in CPL source
+	(type $Signature (func (param $env (ref $Tuple)) (param $params (ref null $Tuple)) (result (ref null $Value) (ref null $Exception))))
+
 	(type $List (struct
 		;; number of items currently in the array (for total capacity, get its `(array.len)`); mutable to allow array mutation
 		(field $size (mut i32))
@@ -48,9 +51,14 @@
 		;; the array of Map cases; mutable to allow reallocation
 		(field $array (mut (ref $MapArray)))
 	))
-
-	;; type signature of any author-defined function in CPL source
-	(type $Signature (func (param $env (ref $List)) (param $params (ref null $List)) (result (ref null $Value) (ref null $Exception))))
+	(type $Closure (struct
+		;; number of functional parameters
+		(field $arity i32)
+		;; captured variables
+		(field $upvalues (ref $Tuple))
+		;; the runnable function
+		(field $func (ref $Signature))
+	))
 
 
 
@@ -174,6 +182,17 @@
 		;; the stored value
 		(field $map (ref $Map))
 	)))
+	;; ;; precursor to the Counterpoint `Function` class
+	(type $Cpl-Function (sub final $Object (struct
+		;; --- inherited ---
+		(field $class (ref null $Class))
+		(field $fields (ref null $Dict))
+		(field $id i64)
+
+		;; --- own ---
+		;; the stored value
+		(field $closure (ref $Closure))
+	)))
 
 	;; #### Quasi-Classes
 	;; These are written here until we can build a core library in Counterpoint.
@@ -217,18 +236,5 @@
 		(field $value (ref null $Value))
 		;; the failure reason
 		(field $reason (ref null $Exception))
-	)))
-	;; precursor to the Counterpoint `Function` class
-	(type $Function (sub final $Object (struct
-		;; --- inherited ---
-		(field $class (ref null $Class))
-		(field $fields (ref null $Dict))
-		(field $id i64)
-
-		;; --- own ---
-		;; number of functional parameters
-		(field $arity i32)
-		;; the runnable function
-		(field $func (ref $Signature))
 	)))
 )

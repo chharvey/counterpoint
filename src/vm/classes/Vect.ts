@@ -9,9 +9,11 @@ import type {
 
 
 /**
- * A Binaryen vector (`v128`) representing one of the following:
+ * Namespace for fields and methods of `$Vect`.
+ *
+ * `$Vect` is a `v128` that boxes a value:
  * - one of three primitive special constants, the Counterpoint values `null`, `false`, or `true`, as a value on the stack
- * - a numeric value of Counterpoint type `int`, `nat`, `dec`, or `float`, as a value on the stack
+ * - a numeric value of Counterpoint type `sym`, `int`, `nat`, `dec`, or `float`, as a value on the stack
  *
  * # Layout
  * The 128-bit vector has 8 lanes (indexed 0–7, left-to-right), 16 bits each.

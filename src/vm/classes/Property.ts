@@ -8,7 +8,7 @@ import type {
 
 
 
-/** An entry in a record/Dict. */
+/** Namespace for fields and methods of `$Property`. */
 export class Property implements HasFuncData {
 	public constructor(private readonly vm: VirtualMachine) {}
 

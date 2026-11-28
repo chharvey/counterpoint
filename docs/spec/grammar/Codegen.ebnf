@@ -127,11 +127,7 @@ Codegen((OBJECT.NEW `true` `class`)) := (struct.new $Class
 	(ref.null $Dict)
 	(call $Object.ctr-plus-plus)
 );
-Codegen((OBJECT.NEW `true`)) := (struct.new $Class
-	(ref.null $Class)
-	(ref.null $Dict)
-	(call $Object.ctr-plus-plus)
-);
+Codegen((OBJECT.NEW `true`)) := (global.get $Class.CLASS);
 
 Codegen((EXCP.NEW `message`)) := (struct.new $Exception
 	(global.get $Class.EXCEPTION)
@@ -297,13 +293,11 @@ Codegen((FUNCTION `name` `source` `instructions`)) := [
 	(func $func-`name` (param (ref $List) (ref null $List)) (result (ref null $Value) (ref null $Exception))
 		...`Codegen(instructions)`
 	)
-	return (struct.new $Function
-		(global.get $Class.FUNCTION)
-		(ref.null $Dict)
-		(call $Object.ctr-plus-plus)
+	return (call $Value.from-closure (struct.new $Closure
 		(i32.const ‹arity›)
+		(array.new_fixed $Tuple 0)
 		(ref.func $func-`name`)
-	)
+	))
 ];
 
 Codegen((DROP `v`)) := (drop `Codegen(v)`);

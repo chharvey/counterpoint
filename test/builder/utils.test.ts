@@ -17,7 +17,7 @@ test.suite('drop_then', () => {
 		const expr1: binaryen.ExpressionRef = genConst(cg, 1n);
 		const expr2: binaryen.ExpressionRef = genConst(cg, 2n);
 		const expr3: binaryen.ExpressionRef = genConst(cg, 3n);
-		assert.strictEqual(binaryen.getExpressionType(expr3), cg.vm.reftype.Value);
+		assert.strictEqual(binaryen.getExpressionType(expr3), cg.vm.reftype.CplPrimitive);
 		return assertEqualBins(
 			drop_then(cg, [expr1, expr2], expr3),
 			wasm.block(null, [wasm.drop(expr1), wasm.drop(expr2), expr3], cg.vm.reftype.Value),

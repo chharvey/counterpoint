@@ -8,7 +8,7 @@ import type {
 
 
 
-/** Precursor to the Counterpoint `Map` class. */
+/** Namespace for fields and methods of `$Map`. */
 class VmMap implements HasFuncData {
 	public constructor(private readonly vm: VirtualMachine) {}
 
