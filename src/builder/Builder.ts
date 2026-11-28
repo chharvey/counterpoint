@@ -105,11 +105,11 @@ export class Builder {
 	}
 
 	private hasFunc(id: bigint): boolean {
-		return this.#funcs.has(id);
+		return this.#funcs.has(id) || (this.parent?.hasFunc(id) ?? false);
 	}
 
 	private getFunc(id: bigint, ovl_type: TYPE.Function): Temp | undefined {
-		return this.#funcs.get(id)?.get(ovl_type);
+		return this.#funcs.get(id)?.get(ovl_type) ?? this.parent?.getFunc(id, ovl_type);
 	}
 
 	public setFunc(id: bigint, ovl_type: TYPE.Function, temp: Temp): void {
@@ -127,7 +127,7 @@ export class Builder {
 	}
 
 	private getAllFuncs(): Map<bigint, WeakMap<TYPE.Function, Temp>> {
-		return new Map([...this.#funcs]);
+		return new Map([...(this.parent ? this.parent.#funcs : []), ...this.#funcs]);
 	}
 
 	public initiateBlock(label: string): void {
