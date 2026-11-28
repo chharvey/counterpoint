@@ -194,6 +194,54 @@ test.suite('AstNodeVisitorBuild#visit', () => {
 					(ENDPROGRAM)
 			`.trim());
 		});
+		test.test('nested captures.', {expectFailure: true}, () => {
+			assert.strictEqual(setupScript(`{
+				val x: str = "hello";
+				func outer() with (x): \\() => \\() => str {
+					func middle() with (x): \\() => str {
+						func inner() with (x): str {
+							return x;
+						}
+						return \\(): str => inner.();
+					}
+					return \\(): \\() => str => middle.();
+				}
+				outer.();
+			}`, {build: false}).builder.print(), xjs.String.dedent`
+				"block-0":
+					(DECL <Function> outer)
+					(DECL <str> x)
+					(SET x (STR.CONST "hello"))
+					(SET outer (FUNC.NEW {${xjs.String.dedent`
+						"block-0":
+							(DECL <Function> middle)
+							(SET middle (FUNC.NEW {${xjs.String.dedent`
+								"block-0":
+									(DECL <Function> inner)
+									(SET inner (FUNC.NEW {${xjs.String.dedent`
+										"block-0":
+											(RETURN (GET x) nil)
+											(ENDPROGRAM)
+									`}}))
+									(RETURN (FUNC.NEW {${xjs.String.dedent`
+										"block-0":
+											(RETURN (CALL (GET inner)) nil)
+											(ENDPROGRAM)
+									`}}) nil)
+									(ENDPROGRAM)
+							`}}))
+							(DECL <Function> $0)
+							(RETURN (FUNC.NEW {${xjs.String.dedent`
+								"block-0":
+									(RETURN (CALL (GET middle)) nil)
+									(ENDPROGRAM)
+							`}}) nil)
+							(ENDPROGRAM)
+					`}}))
+					(DROP (CALL (GET outer)))
+					(ENDPROGRAM)
+			`.trim());
+		});
 		test.test('parameters and return statement.', () => {
 			assert.strictEqual(setupScript(`{
 				func f(foo: int, bar?: int = 41, qux?: int): void {

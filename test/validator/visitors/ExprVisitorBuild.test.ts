@@ -2289,39 +2289,80 @@ test.suite('ExprVisitorBuild#visit', () => {
 	});
 
 
-	test.test('ExpressionFunction', () => {
-		assert.strictEqual(setupScript(`{
-			val mut z: int = 42;
-			\\(x: int): void {
-				x;
-				return;
-			};
-			\\(x: float, y: float) with (z): void {
-				x + y;
-				z + 10;
-				return;
-			};
-		}`, {codegen: false}).builder.print(), xjs.String.dedent`
-			"block-0":
-				(DECL <int> z)
-				(SET z (INT.CONST 42))
-				(DROP (FUNC.NEW {${xjs.String.dedent`
-					"block-0":
-						(DECL <int> x)
-						(DROP (GET x))
-						(RETURN void nil)
-						(ENDPROGRAM)
-				`}}))
-				(DROP (FUNC.NEW {${xjs.String.dedent`
-					"block-0":
-						(DECL <float> x)
-						(DECL <float> y)
-						(DROP (FLOAT.ADD (GET x) (GET y)))
-						(DROP (INT.ADD (GET z) (INT.CONST 10)))
-						(RETURN void nil)
-						(ENDPROGRAM)
-				`}}))
-				(ENDPROGRAM)
-		`.trim());
+	test.suite('ExpressionFunction', () => {
+		test.test('does not hoist expression.', () => {
+			assert.strictEqual(setupScript(`{
+				val mut z: int = 42;
+				\\(x: int): void {
+					x;
+					return;
+				};
+				\\(x: float, y: float) with (z): void {
+					x + y;
+					z + 10;
+					return;
+				};
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
+				"block-0":
+					(DECL <int> z)
+					(SET z (INT.CONST 42))
+					(DROP (FUNC.NEW {${xjs.String.dedent`
+						"block-0":
+							(DECL <int> x)
+							(DROP (GET x))
+							(RETURN void nil)
+							(ENDPROGRAM)
+					`}}))
+					(DROP (FUNC.NEW {${xjs.String.dedent`
+						"block-0":
+							(DECL <float> x)
+							(DECL <float> y)
+							(DROP (FLOAT.ADD (GET x) (GET y)))
+							(DROP (INT.ADD (GET z) (INT.CONST 10)))
+							(RETURN void nil)
+							(ENDPROGRAM)
+					`}}))
+					(ENDPROGRAM)
+			`.trim());
+		});
+		test.test('nested captures.', () => {
+			assert.strictEqual(setupScript(`{
+				val x: str = "hello";
+				val outer: \\() => \\() => \\() => str = \\() with (x): \\() => \\() => str {
+					val middle: \\() => \\() => str = \\() with (x): \\() => str {
+						val inner: \\() => str = \\() with (x): str {
+							return x;
+						};
+						return inner;
+					};
+					return middle;
+				};
+				outer;
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
+				"block-0":
+					(DECL <str> x)
+					(SET x (STR.CONST "hello"))
+					(DECL <Function> outer)
+					(SET outer (FUNC.NEW {${xjs.String.dedent`
+						"block-0":
+							(DECL <Function> middle)
+							(SET middle (FUNC.NEW {${xjs.String.dedent`
+								"block-0":
+									(DECL <Function> inner)
+									(SET inner (FUNC.NEW {${xjs.String.dedent`
+										"block-0":
+											(RETURN (GET x) nil)
+											(ENDPROGRAM)
+									`}}))
+									(RETURN (GET inner) nil)
+									(ENDPROGRAM)
+							`}}))
+							(RETURN (GET middle) nil)
+							(ENDPROGRAM)
+					`}}))
+					(DROP (GET outer))
+					(ENDPROGRAM)
+			`.trim());
+		});
 	});
 });
